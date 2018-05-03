@@ -3,7 +3,7 @@ import cmor
 import cdms2
 
 
-def handle(infile=None, tables_dir=None, user_input_path=None):
+def handle(infile, tables, user_input_path, output_path):
     """
     Transform E3SM.PRECC + E3SM.PRECL into CMIP.pr
 
@@ -18,9 +18,6 @@ def handle(infile=None, tables_dir=None, user_input_path=None):
         PRECC PRECL
         PRECC + PRECL and unit conversion
     """
-    if not infile:
-        return "hello from {}".format(__name__)
-
     # extract data from the input file
     precc_path = infile.replace('PRECL', 'PRECC')
     PRECC = cdms2.open(precc_path)
@@ -43,14 +40,13 @@ def handle(infile=None, tables_dir=None, user_input_path=None):
     PRECL.close()    
 
     # setup cmor
-    tables_path = os.path.join(tables_dir, 'Tables')
     logfile = os.path.join(os.getcwd(), 'logs')
     if not os.path.exists(logfile):
         os.makedirs(logfile)
     _, tail = os.path.split(infile)
     logfile = os.path.join(logfile, tail.replace('.nc', '.log'))
     cmor.setup(
-        inpath=tables_path,
+        inpath=tables,
         netcdf_file_action=cmor.CMOR_REPLACE, 
         logfile=logfile)
     cmor.dataset_json(user_input_path)
@@ -87,8 +83,11 @@ def handle(infile=None, tables_dir=None, user_input_path=None):
     try:
         for index, val in enumerate(precc.getTime()[:]):
             data = (precc[index, :] + precl[index, :]) * 1000
-            cmor.write(varid, data, time_vals=val,
-                       time_bnds=[time_bnds[index, :]])
+            cmor.write(
+                varid,
+                data,
+                time_vals=val,
+                time_bnds=[time_bnds[index, :]])
     except:
         raise
     finally:

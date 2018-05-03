@@ -5,8 +5,13 @@ import cdms2
 
 def handle(infile=None, tables_dir=None, user_input_path=None):
     """
-    Transform E3SM.TREFHTMN into CMIP.tasmin
+    Transform E3SM.TSMX into CMIP.tasmax
 
+    float TSMX(time, lat, lon) ;
+        TSMX:units = "K" ;
+        TSMX:long_name = "Maximum surface temperature over output period" ;
+        TSMX:cell_methods = "time: mean" ;
+        TSMX:cell_measures = "area: area" ;
 
     CMIP5_Amon
         tasmin
@@ -17,12 +22,9 @@ def handle(infile=None, tables_dir=None, user_input_path=None):
         TREFMNAV
         TREFMNAV no change
     """
-    if not infile:
-        return "hello from {}".format(__name__)
-
     # extract data from the input file
     f = cdms2.open(infile)
-    data = f('TREFHTMN')
+    data = f('TSMX')
     lat = data.getLatitude()[:]
     lon = data.getLongitude()[:]
     lat_bnds = f('lat_bnds')
@@ -46,8 +48,8 @@ def handle(infile=None, tables_dir=None, user_input_path=None):
     table = 'CMIP6_Amon.json'
     try:
         cmor.load_table(table)
-    except Exception as e:
-        print 'Unable to load table from {}'.format(__name__)
+    except:
+        raise Exception('Unable to load table from {}'.format(__name__))
 
     # create axes
     axes = [{
@@ -70,7 +72,7 @@ def handle(infile=None, tables_dir=None, user_input_path=None):
         axis_ids.append(axis_id)
 
     # create the cmor variable
-    varid = cmor.variable('tasmin', 'K', axis_ids)
+    varid = cmor.variable('tasmax', 'K', axis_ids)
 
     # write out the data
     try:

@@ -22,9 +22,6 @@ def handle(infile=None, tables_dir=None, user_input_path=None):
         U10
         U10 no change
     """
-    if not infile:
-        return "hello from {}".format(__name__)
-
     # extract data from the input file
     f = cdms2.open(infile)
     data = f('U10')
@@ -51,8 +48,8 @@ def handle(infile=None, tables_dir=None, user_input_path=None):
     table = 'CMIP6_Amon.json'
     try:
         cmor.load_table(table)
-    except Exception as e:
-        print 'Unable to load table from {}'.format(__name__)
+    except:
+        raise Exception('Unable to load table from {}'.format(__name__))
 
     # create axes
     axes = [{
