@@ -1,52 +1,47 @@
+# -*- coding: future_fstrings -*-
 import os, sys
 import argparse
 import cdms2
 import logging
 
+from imp import reload
 from random import uniform
 from multiprocessing import cpu_count
 from multiprocessing.pool import ThreadPool
 from subprocess import Popen, PIPE
 from time import sleep
 
-from lib.util import format_debug
+from lib.util import format_debug, print_message
 
 
-def split(var_list, caseid, inpath, outpath, start, end, nproc, proc_vars=False, data_type='clm2.h0'):
+def split(var_list, caseid, inpath, outpath, start, end, nproc, proc_vars=False, data_type='clm2.h0', **kwargs):
     """
     Extract all variables in var_list from all files
     found in inpath that match the caseid and are between 
     in the years start-end inclusive
     """
+    debug = kwargs.get('debug')
     prev_dir = os.getcwd()
     outpath = os.path.abspath(outpath)
     os.chdir(os.path.abspath(inpath))
 
     msg = 'starting splitter'
     logging.info(msg)
-    msg = '''
-        var_list: {vars}
-        caseid: {caseid}
-        inpath: {input}
-        outpath: {out}
-        start-year: {start}
-        end-year: {end}
-        nproc: {nproc}'''.format(
-            vars=var_list,
-            caseid=caseid,
-            input=inpath,
-            out=outpath,
-            start=start,
-            end=end,
-            nproc=nproc)
+    if debug: print msg
+    msg = f'''var_list: {var_list}
+    caseid: {caseid}
+    inpath: {inpath}
+    outpath: {outpath}
+    start-year: {start}
+    end-year: {end}
+    nproc: {nproc}'''
     logging.info(msg)
+    if debug: print_message(msg, status='debug')
 
     # First get the list of files in our year range that match the caseid
     contents = os.listdir(os.getcwd())
     files = list()
-    start_pattern = '{caseid}.{type}.'.format(
-        caseid=caseid,
-        type=data_type)
+    start_pattern = f'{caseid}.{data_type}.'
     start_pattern_len = len(start_pattern)
     end_pattern = '.nc'
     end_pattern_len = 3
@@ -63,26 +58,28 @@ def split(var_list, caseid, inpath, outpath, start, end, nproc, proc_vars=False,
             continue
         if year >= start and year <= end:
             files.append(item)
-    msg = 'found {} input files'.format(len(files))
+    file_len = len(files)
+    msg = f'found {file_len} input files'
     logging.info(msg)
+    if debug: print_message(msg, status='debug')
 
     # Second if the var_list is set to 'all' open up one of the input files
     # and grab a list of all variables
     if var_list[0] == 'all':
         msg = 'splitting all variables'
         logging.info(msg)
-        print msg
+        print_message(msg, status='ok')
         var_list = list()
         f = cdms2.open(files[0])
         for key, _ in f.variables.items():
             if key[0].isupper():
                 var_list.append(key)
 
-    msg = 'found {} variables to extract'.format(len(var_list))
+    var_len = len(var_list)
+    msg = f'found {var_len} variables to extract'
     logging.info(msg)
-    print msg
-    for var in var_list:
-        logging.info(var)
+    print_message(msg, status='ok')
+
     # Finally create a process pool of all the selected variables
     # and extract them into the output dir
     if proc_vars:
@@ -94,15 +91,15 @@ def split(var_list, caseid, inpath, outpath, start, end, nproc, proc_vars=False,
             nproc = len_vars
 
     nproc = len(var_list) if nproc > len(var_list) else nproc
-    msg = 'starting extraction with nproc = {}'.format(nproc)
+    msg = f'starting extraction with nproc = {nproc}'
     logging.info(msg)
-    print msg
+    print_message(msg, status='ok')
     pool_res = list()
     pool = ThreadPool(nproc)
     for var in var_list:
         outfile = os.path.join(
-            outpath,'{caseid}.{var}.nc'.format(
-                caseid=caseid, var=var))
+            outpath,
+            f'{var}_{start:04d}01_{end:04d}12.nc')
         pool_res.append(pool.apply_async(split_one, [var, files, outfile]))
 
     for res in pool_res:
@@ -118,7 +115,7 @@ def split_one(var, infiles, outfile):
     Split a single variable from a list of files into the outfile
     """
     cmd = ['ncrcat', '-O', '-cv', var] + infiles + [outfile]
-    msg = 'starting {}'.format(var)
+    msg = f'starting {var}'
     logging.info(msg)
     while True:
         try:
@@ -127,11 +124,14 @@ def split_one(var, infiles, outfile):
         except Exception as e:
             msg = format_debug(e)
             logging.error(e)
+            msg = 'cant start process, retrying'
+            print_message(msg)
             sleep(uniform(0.1, 0.5))
         else:
             break
-    msg = 'finished {}'.format(var)
+    msg = f'finished {var}'
     logging.info(msg)
+    if debug: print_message(msg, status='debug')
     return out, err
 
 if __name__ == "__main__":
@@ -143,38 +143,38 @@ if __name__ == "__main__":
         '-v', '--var-list',
         nargs='+',
         metavar='',
-        help='space sepperated list of variables, use \'all\' to extract all variables')
+        help='Space sepperated list of variables, use \'all\' to extract all variables')
     parser.add_argument(
         '-c', '--case-id',
         metavar='<case_id>',
-        help='name of case, e.g. 20180129.DECKv1b_piControl.ne30_oEC.edison',
+        help='Name of case, e.g. 20180129.DECKv1b_piControl.ne30_oEC.edison',
         required=True)
     parser.add_argument(
         '-i', '--input-path',
         metavar='',
-        help='path to input directory',
+        help='Path to input directory',
         required=True)
     parser.add_argument(
         '-o', '--output-path',
         metavar='',
-        help='path to output directory',
+        help='Path to output directory',
         required=True)
     parser.add_argument(
         '-s', '--start-year',
         metavar='',
-        help='first year to extract',
+        help='First year to extract',
         type=int,
         required=True)
     parser.add_argument(
         '-e', '--end-year',
         metavar='',
-        help='last year to split',
+        help='Last year to split',
         type=int,
         required=True)
     parser.add_argument(
         '-n', '--num-proc',
         metavar='',
-        help='number of parallel processes, default = 6',
+        help='Number of parallel processes, default = 6',
         type=int, default=6)
     parser.add_argument(
         '-d', '--data-type',
@@ -185,12 +185,16 @@ if __name__ == "__main__":
         '-N', '--proc-vars',
         # metavar=' ',
         action='store_true',
-        help='set the number of process to the number of variables')
+        help='Set the number of process to the number of variables')
     parser.add_argument(
         '--version',
         help='print the version number and exit',
         action='version',
         version='%(prog)s 0.1')
+    parser.add_argument(
+        '--debug',
+        help='Set output level to debug',
+        action='store_true')
     try:
         args = sys.argv[1:]
     except:
@@ -209,7 +213,7 @@ if __name__ == "__main__":
             var_list = ['TREFHT', 'TS', 'TREFHTMN', 'TREFHTMX', 'PSL', 'PS', 'UBOT', 'VBOT',
                         'U10', 'RHREFHT', 'QREFHT', 'PRECSC', 'PRECL', 'PRECC', 'QFLX', 'TAUX', 'TAUY',
                         'LHFLX']
-    from imp import reload
+    
     reload(logging)
     logging.basicConfig(
         format='%(asctime)s:%(levelname)s: %(message)s',
@@ -217,6 +221,8 @@ if __name__ == "__main__":
         filename=os.path.join(args.output_path, 'splitter.log'),
         filemode='w',
         level=logging.DEBUG)
+    
+    debug = True if args.debug else False
 
     split(var_list=var_list,
           inpath=args.input_path,
@@ -226,4 +232,5 @@ if __name__ == "__main__":
           end=args.end_year,
           nproc=args.num_proc,
           proc_vars=args.proc_vars,
-          data_type=args.data_type)
+          data_type=args.data_type,
+          debug=debug)
