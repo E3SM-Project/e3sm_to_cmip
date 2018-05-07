@@ -7,7 +7,6 @@ import re
 import logging
 
 from multiprocessing import Pool
-from threading import Event
 from importlib import import_module
 from time import sleep
 from lib.util import format_debug, print_message
@@ -23,7 +22,6 @@ class Cmorizer(object):
         self._output_path = output_path
         self._handlers_path = handlers
         self._tables_path = tables_path
-        self._event = Event()
         self._pool = None
         self._pool_res = None
     
