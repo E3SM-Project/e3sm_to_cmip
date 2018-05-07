@@ -225,7 +225,7 @@ if __name__ == "__main__":
             var_list = ['TREFHT', 'TS', 'TSMN', 'TSMX', 'PSL', 
                         'PS', 'U10', 'RHREFHT', 'QREFHT', 'PRECSC', 
                         'PRECL', 'PRECC', 'QFLX', 'TAUX', 'TAUY',
-                        'LHFLX']
+                        'LHFLX', 'PRECSL']
     
     reload(logging)
     logging.basicConfig(
