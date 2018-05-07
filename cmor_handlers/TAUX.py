@@ -20,15 +20,13 @@ def handle(infile, tables, user_input_path):
     f.close()
 
     # setup cmor
-    tables_path = os.path.join(tables, 'Tables')
-    cmor.setup(inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE)
     logfile = os.path.join(os.getcwd(), 'logs')
     if not os.path.exists(logfile):
         os.makedirs(logfile)
     _, tail = os.path.split(infile)
     logfile = os.path.join(logfile, tail.replace('.nc', '.log'))
     cmor.setup(
-        inpath=tables_path,
+        inpath=tables,
         netcdf_file_action=cmor.CMOR_REPLACE, 
         logfile=logfile)
     cmor.dataset_json(user_input_path)
@@ -59,11 +57,11 @@ def handle(infile, tables, user_input_path):
         axis_ids.append(axis_id)
 
     # create the cmor variable
-    varid = cmor.variable('tauu', 'Pa', axis_ids)
+    varid = cmor.variable('tauu', 'Pa', axis_ids, positive='up')
 
     # write out the data
     try:
-        for index, val in enumerate(data.getTime()[:]):
+        for index, val in enumerate(taux.getTime()[:]):
             data = taux[index, :]
             cmor.write(
                 varid,

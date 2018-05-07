@@ -30,14 +30,13 @@ def handle(infile, tables, user_input_path):
     f.close()
 
     # setup cmor
-    tables_path = os.path.join(tables, 'Tables')
     logfile = os.path.join(os.getcwd(), 'logs')
     if not os.path.exists(logfile):
         os.makedirs(logfile)
     _, tail = os.path.split(infile)
     logfile = os.path.join(logfile, tail.replace('.nc', '.log'))
     cmor.setup(
-        inpath=tables_path,
+        inpath=tables,
         netcdf_file_action=cmor.CMOR_REPLACE, 
         logfile=logfile)
     cmor.dataset_json(user_input_path)
