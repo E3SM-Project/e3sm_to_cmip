@@ -3,7 +3,7 @@ import cmor
 import cdms2
 
 
-def handle(infile=None, tables_dir=None, user_input_path=None):
+def handle(infile, tables, user_input_path):
     """
     Transform E3SM.QREFHT into CMIP.huss
 
@@ -30,7 +30,7 @@ def handle(infile=None, tables_dir=None, user_input_path=None):
     f.close()
 
     # setup cmor
-    tables_path = os.path.join(tables_dir, 'Tables')
+    tables_path = os.path.join(tables, 'Tables')
     logfile = os.path.join(os.getcwd(), 'logs')
     if not os.path.exists(logfile):
         os.makedirs(logfile)
@@ -79,3 +79,4 @@ def handle(infile=None, tables_dir=None, user_input_path=None):
         raise
     finally:
         cmor.close(varid)
+    return 'QREFHT'

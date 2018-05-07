@@ -3,7 +3,7 @@ import cmor
 import cdms2
 
 
-def handle(infile=None, tables_dir=None, user_input_path=None):
+def handle(infile, tables, user_input_path):
     """
     Transform E3SM.PSL into CMIP.psl
 
@@ -34,7 +34,7 @@ def handle(infile=None, tables_dir=None, user_input_path=None):
     f.close()
 
     # setup cmor
-    tables_path = os.path.join(tables_dir, 'Tables')
+    tables_path = os.path.join(tables, 'Tables')
     cmor.setup(inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE)
     logfile = os.path.join(os.getcwd(), 'logs')
     if not os.path.exists(logfile):
@@ -84,3 +84,4 @@ def handle(infile=None, tables_dir=None, user_input_path=None):
         raise
     finally:
         cmor.close(varid)
+    return 'PSL'

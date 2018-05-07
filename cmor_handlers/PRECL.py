@@ -3,7 +3,7 @@ import cmor
 import cdms2
 
 
-def handle(infile, tables, user_input_path, output_path):
+def handle(infile, tables, user_input_path):
     """
     Transform E3SM.PRECC + E3SM.PRECL into CMIP.pr
 
@@ -92,3 +92,4 @@ def handle(infile, tables, user_input_path, output_path):
         raise
     finally:
         cmor.close(varid)
+    return 'PRECL'

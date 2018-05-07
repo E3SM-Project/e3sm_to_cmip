@@ -5,36 +5,23 @@ import cdms2
 
 def handle(infile, tables, user_input_path):
     """
-    Transform E3SM.TS into CMIP.ts
+    Transform E3SM.TAUX into CMIP.tauv
 
-    float TS(time, lat, lon) ;
-        TS:units = "K" ;
-        TS:long_name = "Surface temperature (radiative)" ;
-        TS:cell_methods = "time: mean" ;
-        TS:cell_measures = "area: area" ;
-
-    CMIP5_Amon
-        ts
-        surface_temperature
-        longitude latitude time
-        atmos
-        1
-        TS
-        TS no change
     """
     # extract data from the input file
     f = cdms2.open(infile)
-    data = f('TS')
-    lat = data.getLatitude()[:]
-    lon = data.getLongitude()[:]
+    tauy = f('TAUY')
+    lat = tauy.getLatitude()[:]
+    lon = tauy.getLongitude()[:]
     lat_bnds = f('lat_bnds')
     lon_bnds = f('lon_bnds')
-    time = data.getTime()
+    time = tauy.getTime()
     time_bnds = f('time_bnds')
     f.close()
 
     # setup cmor
     tables_path = os.path.join(tables, 'Tables')
+    cmor.setup(inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE)
     logfile = os.path.join(os.getcwd(), 'logs')
     if not os.path.exists(logfile):
         os.makedirs(logfile)
@@ -72,15 +59,19 @@ def handle(infile, tables, user_input_path):
         axis_ids.append(axis_id)
 
     # create the cmor variable
-    varid = cmor.variable('ts', 'K', axis_ids)
+    varid = cmor.variable('tauy', 'Pa', axis_ids)
 
     # write out the data
     try:
         for index, val in enumerate(data.getTime()[:]):
-            cmor.write(varid, data[index, :], time_vals=val,
-                       time_bnds=[time_bnds[index, :]])
+            data = tauy[index, :]
+            cmor.write(
+                varid,
+                data,
+                time_vals=val,
+                time_bnds=[time_bnds[index, :]])
     except:
         raise
     finally:
         cmor.close(varid)
-    return 'TS'
+    return 'TAUY'
