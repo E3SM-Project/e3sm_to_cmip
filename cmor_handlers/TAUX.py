@@ -57,7 +57,7 @@ def handle(infile, tables, user_input_path):
         axis_ids.append(axis_id)
 
     # create the cmor variable
-    varid = cmor.variable('tauu', 'Pa', axis_ids, positive='up')
+    varid = cmor.variable('tauu', 'Pa', axis_ids, positive='down')
 
     # write out the data
     try:
