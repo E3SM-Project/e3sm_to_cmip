@@ -75,10 +75,21 @@ def split(var_list, caseid, inpath, outpath, start, end, nproc, proc_vars=False,
             if key[0].isupper():
                 var_list.append(key)
 
-    var_len = len(var_list)
-    msg = f'found {var_len} variables to extract'
-    logging.info(msg)
-    print_message(msg, status='ok')
+        var_len = len(var_list)
+        msg = f'found {var_len} variables to extract'
+        logging.info(msg)
+        print_message(msg, status='ok')
+    else:
+        var_list_tmp = list()
+        f = cdms2.open(files[0])
+        file_vars = f.variables.keys()
+        for var in var_list:
+            if var in file_vars:
+                var_list_tmp.append(var)
+        var_list = var_list_tmp
+        msg = f'splitting {var_list}'
+        logging.info(msg)
+        print_message(msg, status='ok')
 
     # Finally create a process pool of all the selected variables
     # and extract them into the output dir
@@ -114,6 +125,7 @@ def split_one(var, infiles, outfile):
     """
     Split a single variable from a list of files into the outfile
     """
+    infiles = sorted(infiles)
     cmd = ['ncrcat', '-O', '-cv', var] + infiles + [outfile]
     msg = f'starting {var}'
     logging.info(msg)
@@ -207,11 +219,12 @@ if __name__ == "__main__":
         var_list = args.var_list
     else:
         if args.data_type == 'clm2.h0':
-            var_list = ['SOILWATER_10CM', 'SOILICE', 'SOILLIQ', 'QOVER', 'QRUNOFF', 'QVEGE',
-                        'QSOIL', 'QVEGT', 'TSOI']
+            var_list = ['SOILWATER_10CM', 'SOILICE', 'SOILLIQ', 'QOVER', 'QRUNOFF', 
+                        'QVEGE', 'QSOIL', 'QVEGT', 'TSOI']
         elif args.data_type == 'cam.h0':
-            var_list = ['TREFHT', 'TS', 'TREFHTMN', 'TREFHTMX', 'PSL', 'PS', 'UBOT', 'VBOT',
-                        'U10', 'RHREFHT', 'QREFHT', 'PRECSC', 'PRECL', 'PRECC', 'QFLX', 'TAUX', 'TAUY',
+            var_list = ['TREFHT', 'TS', 'TSMN', 'TSMX', 'PSL', 
+                        'PS', 'U10', 'RHREFHT', 'QREFHT', 'PRECSC', 
+                        'PRECL', 'PRECC', 'QFLX', 'TAUX', 'TAUY',
                         'LHFLX']
     
     reload(logging)
@@ -223,7 +236,6 @@ if __name__ == "__main__":
         level=logging.DEBUG)
     
     debug = True if args.debug else False
-
     split(var_list=var_list,
           inpath=args.input_path,
           caseid=args.case_id,
