@@ -94,7 +94,7 @@ class Cmorizer(object):
         
         for res in self._pool_res:
             try:
-                msg = res.get()
+                msg = f'Finished {res.get()}'
                 print_message(msg, 'ok')
                 logging.info(msg)
             except Exception as e:
@@ -116,7 +116,7 @@ class Cmorizer(object):
         if self._pool:
             self._pool.close()
             self._pool.terminate()
-            self._poo.join()
+            self._pool.join()
 
 
 if __name__ == "__main__":
