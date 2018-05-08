@@ -28,12 +28,6 @@ def handle(infile, tables, user_input_path):
 
     f = cdms2.open(infile.replace('QVEGT', 'QSOIL'))
     soil = f('QSOIL')
-    lat = soil.getLatitude()[:]
-    lon = soil.getLongitude()[:]
-    lat_bnds = f('lat_bnds')
-    lon_bnds = f('lon_bnds')
-    time = soil.getTime()
-    time_bnds = f('time_bounds')
     f.close()
 
     # setup cmor

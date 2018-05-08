@@ -5,22 +5,22 @@ import cdms2
 
 def handle(infile, tables, user_input_path):
     """
-    Transform E3SM.SOILICE + E3SM.SOILIQ into CMIP.mrso
+    Transform E3SM.FLDS and E3SM.FLNS into rlus and rlns
     """
+    
     # extract data from the input file
     f = cdms2.open(infile)
-    liq = f('SOILLIQ')
-    lat = liq.getLatitude()[:]
-    lon = liq.getLongitude()[:]
+    flds = f('FLDS')
+    lat = flds.getLatitude()[:]
+    lon = flds.getLongitude()[:]
     lat_bnds = f('lat_bnds')
     lon_bnds = f('lon_bnds')
-    time = liq.getTime()
-    time_bnds = f('time_bounds')
+    time = flds.getTime()
+    time_bnds = f('time_bnds')
     f.close()
 
-    icefile = infile.replace('SOILLIQ', 'SOILICE')
-    f = cdms2.open(icefile)
-    ice = f('SOILICE')
+    f = cdms2.open(infile.replace('FLDS', 'FLNS'))
+    flns = f('FLNS')
     f.close()
 
     # setup cmor
@@ -34,7 +34,7 @@ def handle(infile, tables, user_input_path):
         netcdf_file_action=cmor.CMOR_REPLACE, 
         logfile=logfile)
     cmor.dataset_json(user_input_path)
-    table = 'CMIP6_Lmon.json'
+    table = 'CMIP6_Amon.json'
     try:
         cmor.load_table(table)
     except:
@@ -61,14 +61,22 @@ def handle(infile, tables, user_input_path):
         axis_ids.append(axis_id)
 
     # create the cmor variable
-    varid = cmor.variable('mrso', 'kg m-2', axis_ids)
+    varid = cmor.variable('rlds', 'W m-2', axis_ids, positive='down')
+    varid2 = cmor.variable('rlus', 'W m-2', axis_ids, positive='up')
 
     # write out the data
     try:
-        for index, val in enumerate(liq.getTime()[:]):
-            data = ice[index, :] + liq[index, :]
+        for index, val in enumerate(flds.getTime()[:]):
+            data = flds[index, :]
             cmor.write(
                 varid,
+                data,
+                time_vals=val,
+                time_bnds=[time_bnds[index, :]])
+            
+            data = flds[index, :] + flns[index, :]
+            cmor.write(
+                varid2,
                 data,
                 time_vals=val,
                 time_bnds=[time_bnds[index, :]])
@@ -76,4 +84,5 @@ def handle(infile, tables, user_input_path):
         raise
     finally:
         cmor.close(varid)
-    return 'SOILLIQ'
+        cmor.close(varid2)
+    return 'FLDS'

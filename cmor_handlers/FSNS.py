@@ -5,22 +5,22 @@ import cdms2
 
 def handle(infile, tables, user_input_path):
     """
-    Transform E3SM.SOILICE + E3SM.SOILIQ into CMIP.mrso
+    Transform E3SM.FSNS into CMIP.rsns and rsus
+
     """
     # extract data from the input file
     f = cdms2.open(infile)
-    liq = f('SOILLIQ')
-    lat = liq.getLatitude()[:]
-    lon = liq.getLongitude()[:]
+    fsns = f('FSNS')
+    lat = fsns.getLatitude()[:]
+    lon = fsns.getLongitude()[:]
     lat_bnds = f('lat_bnds')
     lon_bnds = f('lon_bnds')
-    time = liq.getTime()
-    time_bnds = f('time_bounds')
+    time = fsns.getTime()
+    time_bnds = f('time_bnds')
     f.close()
 
-    icefile = infile.replace('SOILLIQ', 'SOILICE')
-    f = cdms2.open(icefile)
-    ice = f('SOILICE')
+    f = cdms2.open(infile.replace('FSNS', 'FSDS'))
+    fsds = f('FSDS')
     f.close()
 
     # setup cmor
@@ -34,7 +34,7 @@ def handle(infile, tables, user_input_path):
         netcdf_file_action=cmor.CMOR_REPLACE, 
         logfile=logfile)
     cmor.dataset_json(user_input_path)
-    table = 'CMIP6_Lmon.json'
+    table = 'CMIP6_Amon.json'
     try:
         cmor.load_table(table)
     except:
@@ -60,13 +60,11 @@ def handle(infile, tables, user_input_path):
         axis_id = cmor.axis(**axis)
         axis_ids.append(axis_id)
 
-    # create the cmor variable
-    varid = cmor.variable('mrso', 'kg m-2', axis_ids)
-
-    # write out the data
+    # write out derived varible
+    varid = cmor.variable('rsus', 'W m-2', axis_ids, positive='up')
     try:
-        for index, val in enumerate(liq.getTime()[:]):
-            data = ice[index, :] + liq[index, :]
+        for index, val in enumerate(fsns.getTime()[:]):
+            data = fsds[index, :] - fsns[index, :]
             cmor.write(
                 varid,
                 data,
@@ -76,4 +74,5 @@ def handle(infile, tables, user_input_path):
         raise
     finally:
         cmor.close(varid)
-    return 'SOILLIQ'
+
+    return 'FSNS'

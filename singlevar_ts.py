@@ -79,6 +79,9 @@ class Splitter(object):
         logging.info(msg)
         if self._debug: print_message(msg, status='debug')
 
+        # sort the file list so the months are in the correct order
+        self._file_list = sorted(self._file_list)
+
         # Second if the var_list is set to 'all' open up one of the input self._file_list
         # and grab a list of all variables
         if var_list[0] == 'all':
@@ -91,10 +94,6 @@ class Splitter(object):
                 if key[0].isupper():
                     var_list.append(key)
 
-            var_len = len(var_list)
-            msg = f'found {var_len} variables to extract'
-            logging.info(msg)
-            print_message(msg, status='ok')
         else:
             var_list_tmp = list()
             f = cdms2.open(self._file_list[0])
@@ -107,9 +106,11 @@ class Splitter(object):
                         msg = f'{var} not present'
                         print_message(msg, 'error')
             var_list = var_list_tmp
-            msg = f'splitting {" ".join(var_list)}'
-            logging.info(msg)
-            print_message(msg, status='ok')
+
+        # all the variables have been found
+        msg = f'splitting {len(var_list)} variables: {" ".join(var_list)}'
+        logging.info(msg)
+        print_message(msg, status='ok')
 
 
         # Setup the number of processes that will exist in the pool
@@ -176,7 +177,6 @@ def _split_one(var, file_list, outfile):
         out (str): the stdout output returned from ncrcat
         err (str): the stderr output from ncrcat
     """
-    file_list = sorted(file_list)
     start_time = datetime.now()
     # sleep to avoid printing errors
     # sleep(uniform(0.01, 0.1))
@@ -289,10 +289,10 @@ if __name__ == "__main__":
                         'LAISHA', 'LAISUN', 'NBP']
         elif args.data_type == 'cam.h0':
             var_list = ['TREFHT', 'TS', 'TSMN', 'TSMX', 'PSL', 
-                        'PS', 'U10', 'RHREFHT', 'QREFHT', 'PRECSC', 
+                        'PS', 'U10', 'QREFHT', 'PRECSC', 'SHFLX',
                         'PRECL', 'PRECC', 'QFLX', 'TAUX', 'TAUY',
                         'LHFLX', 'PRECSL', 'FSDS', 'FSNS', 'FLNS',
-                        'FLDS', 'SHFLX']
+                        'FLDS']
     
     debug = True if args.debug else False
     try:

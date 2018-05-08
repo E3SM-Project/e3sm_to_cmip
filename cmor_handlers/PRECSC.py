@@ -20,25 +20,19 @@ def handle(infile, tables, user_input_path):
     """
 
     # extract data from the input file
-    precc_path = infile.replace('PRECSC', 'PRECSL')
-    PRECC = cdms2.open(precc_path)
-    precc = PRECC('PRECSL')
+    f = cdms2.open(infile.replace('PRECSC', 'PRECSL'))
+    precc = f('PRECSL')
     lat = precc.getLatitude()[:]
     lon = precc.getLongitude()[:]
-    lat_bnds = PRECC('lat_bnds')
-    lon_bnds = PRECC('lon_bnds')
+    lat_bnds = f('lat_bnds')
+    lon_bnds = f('lon_bnds')
     time = precc.getTime()
-    time_bnds = PRECC('time_bnds')
-    PRECC.close()
+    time_bnds = f('time_bnds')
+    f.close()
 
-    PRECL = cdms2.open(infile)
-    precl = PRECL('PRECSC')
-    lat = precl.getLatitude()[:]
-    lon = precl.getLongitude()[:]
-    lat_bnds = PRECL('lat_bnds')
-    lon_bnds = PRECL('lon_bnds')
-    time_bnds = PRECL('time_bnds')
-    PRECL.close()    
+    f = cdms2.open(infile)
+    precl = f('PRECSC')
+    f.close()    
 
     # setup cmor
     logfile = os.path.join(os.getcwd(), 'logs')
