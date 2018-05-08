@@ -102,10 +102,15 @@ class Splitter(object):
             for var in var_list:
                 if var in file_vars:
                     var_list_tmp.append(var)
+                else:
+                    if self._debug:
+                        msg = f'{var} not present'
+                        print_message(msg, 'error')
             var_list = var_list_tmp
             msg = f'splitting {" ".join(var_list)}'
             logging.info(msg)
             print_message(msg, status='ok')
+
 
         # Setup the number of processes that will exist in the pool
         if proc_vars:
@@ -117,6 +122,11 @@ class Splitter(object):
                 nproc = len_vars
 
         self._nproc = len(var_list) if nproc > len(var_list) else nproc
+        if self._nproc == 0:
+            msg = 'No variables found'
+            print_message(msg)
+            logging.error(msg)
+            sys.exit(1)
     
     def split(self):
         """
@@ -275,12 +285,14 @@ if __name__ == "__main__":
     else:
         if args.data_type == 'clm2.h0':
             var_list = ['SOILWATER_10CM', 'SOILICE', 'SOILLIQ', 'QOVER', 
-                        'QRUNOFF', 'QINTR', 'QVEGE', 'QSOIL', 'QVEGT', 'TSOI']
+                        'QRUNOFF', 'QINTR', 'QVEGE', 'QSOIL', 'QVEGT', 'TSOI',
+                        'LAISHA', 'LAISUN', 'NBP']
         elif args.data_type == 'cam.h0':
             var_list = ['TREFHT', 'TS', 'TSMN', 'TSMX', 'PSL', 
                         'PS', 'U10', 'RHREFHT', 'QREFHT', 'PRECSC', 
                         'PRECL', 'PRECC', 'QFLX', 'TAUX', 'TAUY',
-                        'LHFLX', 'PRECSL']
+                        'LHFLX', 'PRECSL', 'FSDS', 'FSNS', 'FLNS',
+                        'FLDS', 'SHFLX']
     
     debug = True if args.debug else False
     try:
