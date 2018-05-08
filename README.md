@@ -4,7 +4,7 @@ A cli utility to transform E3SM land model output into CMIP compatible data.
 
 ## singlevar_ts
 
-Extract single variables from clm2.h0 files into single-variable-per-file time series. Extract either all the variables in each of the monthly history files, or just selected variables.
+Extract single variables from clm2.h0 and cam.h0 files into single-variable-per-file time series. The var-list can be set to 'all', which will extract all the variables from the file, a list of variables, or empty which will extract a default set of variables for your data type.
 
 ```
 usage: singlevar_ts [-h]
