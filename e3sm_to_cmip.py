@@ -70,9 +70,6 @@ class Cmorizer(object):
                 
                 var_file = self.find_variable_file(key, self._input_path)
                 if var_file is None:
-                    msg = f'Unable to find {key} in {self._input_path}'
-                    logging.error(msg)
-                    print_message(msg, 'error')
                     continue
                 var_path = os.path.join(
                     self._input_path,
@@ -90,9 +87,9 @@ class Cmorizer(object):
                     self._pool.apply_async(
                         val, args=_args, kwds={}))
         
-        for res in self._pool_res:
+        for idx, res in enumerate(self._pool_res):
             try:
-                msg = f'Finished {res.get()}'
+                msg = f'Finished {res.get()}, {idx + 1}/{len(self._pool_res)} jobs complete'
                 print_message(msg, 'ok')
                 logging.info(msg)
             except Exception as e:
