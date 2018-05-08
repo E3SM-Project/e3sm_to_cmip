@@ -126,11 +126,6 @@ if __name__ == "__main__":
         metavar='',
         help='space seperated list of variables to convert from e3sm to cmip. Use \'all\' to convert all variables')
     parser.add_argument(
-        '-u', '--user-input',
-        required=True,
-        metavar='<user_input_json_path>',
-        help='path to user input json file for CMIP6 metadata')
-    parser.add_argument(
         '-i', '--input',
         metavar='',
         required=True,
@@ -140,10 +135,20 @@ if __name__ == "__main__":
         metavar='',
         help='where to store cmorized outputoutput')
     parser.add_argument(
+        '-u', '--user-input',
+        required=True,
+        metavar='<user_input_json_path>',
+        help='path to user input json file for CMIP6 metadata')
+    parser.add_argument(
         '-n', '--num-proc',
         metavar='<nproc>',
         default=6, type=int,
         help='optional: number of processes, default = 6')
+    parser.add_argument(
+        '-t', '--tables',
+        required=True,
+        metavar='<tables-path>',
+        help="Path to directory containing CMOR Tables directory")
     parser.add_argument(
         '-H', '--handlers',
         metavar='<handler_path>',
@@ -153,12 +158,7 @@ if __name__ == "__main__":
         '--version',
         help='print the version number and exit',
         action='version',
-        version='%(prog)s 0.1')
-    parser.add_argument(
-        '-t', '--tables',
-        required=True,
-        metavar='<tables-path>',
-        help="Path to directory containing CMOR Tables directory")
+        version='%(prog)s 0.0.1')
     try:
         _args = sys.argv[1:]
     except:

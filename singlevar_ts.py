@@ -257,7 +257,7 @@ if __name__ == "__main__":
         '--version',
         help='print the version number and exit',
         action='version',
-        version='%(prog)s 0.1')
+        version='%(prog)s 0.0.1')
     parser.add_argument(
         '--debug',
         help='Set output level to debug',
