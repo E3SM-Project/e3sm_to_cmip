@@ -44,13 +44,15 @@ class Splitter(object):
         msg = 'setting up splitter'
         logging.info(msg)
         if self._debug: print msg
-        msg = f'''var_list: {self._var_list}
+        msg = f''' 
+        var_list: {self._var_list}
         caseid: {caseid}
         input_path: {input_path}
         output_path: {self._output_path}
         start-year: {start}
         end-year: {end}
-        nproc: {nproc}'''
+        nproc: {nproc}
+'''
         logging.info(msg)
         if self._debug: print_message(msg, status='debug')
 
@@ -108,12 +110,13 @@ class Splitter(object):
             var_list = var_list_tmp
 
         # all the variables have been found
-        msg = f'splitting {len(var_list)} variables: {" ".join(var_list)}'
+        msg = f'splitting {len(var_list)} variable(s): {" ".join(var_list)}'
         logging.info(msg)
         print_message(msg, status='ok')
 
 
         # Setup the number of processes that will exist in the pool
+        # if proc_vars is set, create as many processes as possible
         if proc_vars:
             len_vars = len(var_list)
             ncpu = cpu_count()
@@ -121,7 +124,8 @@ class Splitter(object):
                 nproc = 100 if ncpu > 100 else ncpu - 1
             else:
                 nproc = len_vars
-
+        
+        # only make as many processes as needed
         self._nproc = len(var_list) if nproc > len(var_list) else nproc
         if self._nproc == 0:
             msg = 'No variables found'
@@ -273,39 +277,39 @@ if __name__ == "__main__":
         help='Set output level to debug',
         action='store_true')
     try:
-        args = sys.argv[1:]
+        _args = sys.argv[1:]
     except:
         parser.print_help()
         sys.exit(1)
     else:
-        args = parser.parse_args(args)
+        _args = parser.parse_args(_args)
     
-    if args.var_list:
-        var_list = args.var_list
+    if _args.var_list:
+        var_list = _args.var_list
     else:
-        if args.data_type == 'clm2.h0':
+        if _args.data_type == 'clm2.h0':
             var_list = ['SOILWATER_10CM', 'SOILICE', 'SOILLIQ', 'QOVER', 
                         'QRUNOFF', 'QINTR', 'QVEGE', 'QSOIL', 'QVEGT', 'TSOI',
                         'LAISHA', 'LAISUN', 'NBP']
-        elif args.data_type == 'cam.h0':
+        elif _args.data_type == 'cam.h0':
             var_list = ['TREFHT', 'TS', 'TSMN', 'TSMX', 'PSL', 
                         'PS', 'U10', 'QREFHT', 'PRECSC', 'SHFLX',
                         'PRECL', 'PRECC', 'QFLX', 'TAUX', 'TAUY',
                         'LHFLX', 'PRECSL', 'FSDS', 'FSNS', 'FLNS',
-                        'FLDS']
+                        'FLDS', 'CLDTOT']
     
-    debug = True if args.debug else False
+    debug = True if _args.debug else False
     try:
         splitter = Splitter(
             var_list=var_list,
-            input_path=args.input_path,
-            caseid=args.case_id,
-            output_path=args.output_path,
-            start=args.start_year,
-            end=args.end_year,
-            nproc=args.num_proc,
-            proc_vars=args.proc_vars,
-            data_type=args.data_type,
+            input_path=_args.input_path,
+            caseid=_args.case_id,
+            output_path=_args.output_path,
+            start=_args.start_year,
+            end=_args.end_year,
+            nproc=_args.num_proc,
+            proc_vars=_args.proc_vars,
+            data_type=_args.data_type,
             debug=debug)
         splitter.split()
     except KeyboardInterrupt as e:
