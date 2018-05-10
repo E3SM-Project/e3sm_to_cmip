@@ -1,13 +1,17 @@
+# -*- coding: future_fstrings -*-
 import os
 import cmor
 import cdms2
-
+import logging
+from lib.util import print_message
 
 def handle(infile, tables, user_input_path):
     """
     Transform E3SM.FSNS into CMIP.rsns and rsus
-
     """
+    msg = f'Starting {__name__} with {infile}'
+    logging.info(msg)
+    print_message(msg, 'ok')
     # extract data from the input file
     f = cdms2.open(infile)
     fsns = f('FSNS')

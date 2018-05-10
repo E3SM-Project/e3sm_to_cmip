@@ -1,13 +1,18 @@
+# -*- coding: future_fstrings -*-
 import os
 import cmor
 import cdms2
+import logging
+from lib.util import print_message
 
 
 def handle(infile, tables, user_input_path):
     """
     Transform E3SM.FLDS and E3SM.FLNS into rlus and rlns
     """
-    
+    msg = f'Starting {__name__} with {infile}'
+    logging.info(msg) 
+    print_message(msg, 'ok')
     # extract data from the input file
     f = cdms2.open(infile)
     flds = f('FLDS')

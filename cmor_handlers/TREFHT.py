@@ -1,8 +1,9 @@
+# -*- coding: future_fstrings -*-
 import os
 import cmor
 import cdms2
-
-
+import logging
+from lib.util import print_message
 def handle(infile, tables, user_input_path):
     """
     Transform E3SM.TREFHT into CMIP.tas
@@ -22,6 +23,9 @@ def handle(infile, tables, user_input_path):
         TREFHT
         TREFHT no change
     """
+    msg = f'Starting {__name__} with {infile}'
+    logging.info(msg)
+    print_message(msg, 'ok')
     # extract data from the input file
     f = cdms2.open(infile)
     data = f('TREFHT')
@@ -78,8 +82,9 @@ def handle(infile, tables, user_input_path):
         for index, val in enumerate(data.getTime()[:]):
             cmor.write(varid, data[index, :], time_vals=val,
                        time_bnds=[time_bnds[index, :]])
-    except:
-        raise
+    except Exception as e:
+        print format_debug(e)
+        raise e
     finally:
         cmor.close(varid)
     return 'TREFHT'
