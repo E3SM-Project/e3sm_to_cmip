@@ -271,7 +271,7 @@ if __name__ == "__main__":
         '--version',
         help='print the version number and exit',
         action='version',
-        version='%(prog)s 0.0.1')
+        version='%(prog)s 0.0.2')
     parser.add_argument(
         '--debug',
         help='Set output level to debug',
@@ -297,8 +297,10 @@ if __name__ == "__main__":
                         'PRECL', 'PRECC', 'QFLX', 'TAUX', 'TAUY',
                         'LHFLX', 'PRECSL', 'FSDS', 'FSNS', 'FLNS',
                         'FLDS', 'CLDTOT']
-    
-    debug = True if _args.debug else False
+        elif _args.data_type == 'mpas':
+            var_list = ['timeMonthly_avg_density', 'timeMonthly_avg_layerThickness',
+                        'areaCell']
+
     try:
         splitter = Splitter(
             var_list=var_list,
@@ -313,6 +315,6 @@ if __name__ == "__main__":
             debug=debug)
         splitter.split()
     except KeyboardInterrupt as e:
-        msg = 'Caught keyboard interrupt, killing processes'
+        msg = 'Caught KeyboardInterrupt event'
         print_message(msg)
         splitter.terminate()
