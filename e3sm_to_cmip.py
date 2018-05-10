@@ -15,7 +15,7 @@ class Cmorizer(object):
     """
     A utility class to cmorize e3sm time series files
     """
-    def __init__(self, var_list, input_path, user_input_path, tables_path, output_path='./', nproc=6, proc_vars=False, handlers='./cmor_handlers'):
+    def __init__(self, var_list, input_path, user_input_path, tables_path, **kwargs):
         """
         Parameters:
             var_list (list(str)): a list of strings of variable names to extract, or 'all' to extract all possible
@@ -30,13 +30,21 @@ class Cmorizer(object):
         self._var_list = var_list
         self._user_input_path = user_input_path
         self._input_path = input_path
-        self._output_path = output_path
-        self._handlers_path = handlers
         self._tables_path = tables_path
-        self._proc_vars = proc_vars
+        self._nproc = kwargs.get('nproc') if kwargs.get('nproc') else 6
+        self._proc_vars = kwargs.get('proc_vars', False)
+        self._output_path = os.path.abspath(kwargs.get('output_path')) if kwargs.get('output_path') else '.'
+        self._handlers_path = kwargs.get('handlers') if kwargs.get('handlers') else './cmor_handlers'
+        self._debug = kwargs.get('debug', False)
         self._pool = None
         self._pool_res = None
-        self._nproc = nproc
+
+        logging.basicConfig(
+            format='%(asctime)s:%(levelname)s: %(message)s',
+            datefmt='%m/%d/%Y %I:%M:%S %p',
+            filename=os.path.join(self._output_path, 'converter.log'),
+            filemode='w',
+            level=logging.DEBUG)
 
     def run(self):
         """
@@ -63,7 +71,12 @@ class Cmorizer(object):
                 msg = format_debug(e)
                 print_message(f'Error loading handler for {module_path}')
                 print_message(msg)
+                logging.error(msg)
                 continue
+            else:
+                msg = f'Loaded {mod}'
+                if self._debug: print_message(msg, 'debug')
+                logging.info(msg)
             self._handlers.append({module: met})
         
         # Setup the number of processes that will exist in the pool
@@ -83,7 +96,7 @@ class Cmorizer(object):
             logging.error(msg)
             sys.exit(1)
 
-        print_message(f'--- running with {self._nproc} processes ---', 'ok')
+        if self._debug: print_message(f'running with {self._nproc} processes', 'debug')
         self._pool = Pool(self._nproc)
         self._pool_res = list()
 
@@ -101,9 +114,7 @@ class Cmorizer(object):
                     'tables': self._tables_path,
                     'user_input_path': self._user_input_path
                 }
-                msg = f'Starting {key} with {var_path}'
-                logging.info(msg)
-                print_message(msg, 'ok')
+
                 _args = (kwds['infile'], kwds['tables'], kwds['user_input_path'])
                 self._pool_res.append(
                     self._pool.apply_async(
@@ -117,6 +128,7 @@ class Cmorizer(object):
                 logging.info(msg)
             except Exception as e:
                 print format_debug(e)
+                logging.error(e)
         self.terminate()
     
     def find_variable_file(self, var, path):
@@ -131,6 +143,7 @@ class Cmorizer(object):
         return None
 
     def terminate(self):
+        if self._debug: print_message('Shutting down process pool', 'debug')
         if self._pool:
             self._pool.close()
             self._pool.terminate()
@@ -185,7 +198,11 @@ if __name__ == "__main__":
         '--version',
         help='print the version number and exit',
         action='version',
-        version='%(prog)s 0.0.1')
+        version='%(prog)s 0.0.2')
+    parser.add_argument(
+        '--debug',
+        help='Set output level to debug',
+        action='store_true')
     try:
         _args = sys.argv[1:]
     except:
@@ -202,10 +219,11 @@ if __name__ == "__main__":
         nproc=_args.num_proc,
         proc_vars=_args.proc_vars,
         handlers=_args.handlers,
-        tables_path=_args.tables)
+        tables_path=_args.tables,
+        debug=_args.debug)
     try:
         cmorizer.run()
     except KeyboardInterrupt as e:
-        print '--- caught keyboard kill event ---'
+        print '--- caught KeyboardInterrupt event ---'
         cmorizer.terminate()
     
