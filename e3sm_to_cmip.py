@@ -6,38 +6,43 @@ import cdms2
 import re
 import logging
 
-from multiprocessing import Pool
+from multiprocessing import cpu_count, Pool
 from importlib import import_module
 from time import sleep
 from lib.util import format_debug, print_message
 
 class Cmorizer(object):
     """
-    A utility class to cmorize clm time series files
+    A utility class to cmorize e3sm time series files
     """
-    def __init__(self, var_list, input_path, user_input_path, tables_path, output_path='./', nproc=6, handlers='./cmor_handlers'):
+    def __init__(self, var_list, input_path, user_input_path, tables_path, output_path='./', nproc=6, proc_vars=False, handlers='./cmor_handlers'):
+        """
+        Parameters:
+            var_list (list(str)): a list of strings of variable names to extract, or 'all' to extract all possible
+            input_path (str): path to the input data
+            user_input_path (str): path the user supplied input.json file required by CMOR
+            tables_path (str): path to the tables directory supplied by CMOR
+            output_path (str): path to where to store the output
+            nproc (int): number of parallel processes
+            proc_vars (bool): should we create as many processes as there are variables?
+            handlers (str): path to directory containing cmor handlers
+        """
         self._var_list = var_list
         self._user_input_path = user_input_path
         self._input_path = input_path
         self._output_path = output_path
         self._handlers_path = handlers
         self._tables_path = tables_path
+        self._proc_vars = proc_vars
         self._pool = None
         self._pool_res = None
-    
-        if len(var_list) < nproc and var_list[0] != 'all':
-            self._nproc = len(var_list)
-        else:
-            self._nproc = nproc
+        self._nproc = nproc
 
     def run(self):
         """
         run all the requested CMOR handlers
         """
-        handlers = os.listdir(
-            os.path.join(
-                os.path.dirname(os.path.abspath(__file__)),
-                self._handlers_path))
+        handlers = os.listdir(self._handlers_path)
         self._handlers = list()
         for handler in handlers:
             if not handler.endswith('.py'):
@@ -60,6 +65,23 @@ class Cmorizer(object):
                 print_message(msg)
                 continue
             self._handlers.append({module: met})
+        
+        # Setup the number of processes that will exist in the pool
+        len_handlers = len(self._handlers)
+        if self._proc_vars:
+            ncpu = cpu_count()
+            if len_handlers >= 100:
+                self._nproc = 100 if ncpu > 100 else ncpu - 1
+            else:
+                self._nproc = len_handlers
+
+        # only make as many processes as needed
+        self._nproc = len_handlers if self._nproc > len_handlers else self._nproc
+        if self._nproc == 0:
+            msg = 'No handlers found'
+            print_message(msg)
+            logging.error(msg)
+            sys.exit(1)
 
         print_message(f'--- running with {self._nproc} processes ---', 'ok')
         self._pool = Pool(self._nproc)
@@ -89,7 +111,8 @@ class Cmorizer(object):
         
         for idx, res in enumerate(self._pool_res):
             try:
-                msg = f'Finished {res.get()}, {idx + 1}/{len(self._pool_res)} jobs complete'
+                out = res.get(9999999)
+                msg = f'Finished {out}, {idx + 1}/{len(self._pool_res)} jobs complete'
                 print_message(msg, 'ok')
                 logging.info(msg)
             except Exception as e:
@@ -155,6 +178,10 @@ if __name__ == "__main__":
         default='cmor_handlers',
         help='path to cmor handlers directory, default = ./cmor_handlers')
     parser.add_argument(
+        '-N', '--proc-vars',
+        action='store_true',
+        help='Set the number of process to the number of variables')
+    parser.add_argument(
         '--version',
         help='print the version number and exit',
         action='version',
@@ -173,6 +200,7 @@ if __name__ == "__main__":
         user_input_path=_args.user_input,
         output_path=_args.output,
         nproc=_args.num_proc,
+        proc_vars=_args.proc_vars,
         handlers=_args.handlers,
         tables_path=_args.tables)
     try:
