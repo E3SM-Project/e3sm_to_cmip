@@ -3,7 +3,9 @@ import os
 import cmor
 import cdms2
 import logging
+
 from lib.util import print_message
+from resources.levgrnd_bnds import levgrnd_bnds
 
 def handle(infile, tables, user_input_path):
     """
@@ -41,16 +43,15 @@ def handle(infile, tables, user_input_path):
     except:
         raise Exception('Unable to load table from {}'.format(__name__))
 
-    levgrnd_bnds = [0, 0.01751106046140194, 0.045087261125445366, 0.09055273048579693, 0.16551261954009533, 0.28910057805478573, 0.4928626772016287, 0.8288095649331808, 1.3826923426240683, 2.2958906944841146, 3.801500206813216, 6.28383076749742, 10.376501685008407, 17.124175196513534, 28.249208575114608, 0, 0.01751106046140194, 0.045087261125445366, 0.09055273048579693, 0.16551261954009533, 0.28910057805478573, 0.4928626772016287, 0.8288095649331808, 1.3826923426240683, 2.2958906944841146, 3.801500206813216, 6.28383076749742, 10.376501685008407, 17.124175196513534, 28.249208575114608]
-        
-
-    print_message(len(levgrnd_bnds), 'debug')
-    print_message(len(tsoi.getAxis(1)[:]), 'debug')
-
     # create axes
     axes = [{
         'table_entry': 'time',
         'units': time.units
+    }, {
+        'table_entry': 'sdepth',
+        'units': 'm',
+        'coord_vals': tsoi.getAxis(1)[:],
+        'cell_bounds': levgrnd_bnds
     }, {
         'table_entry': 'latitude',
         'units': 'degrees_north',
@@ -61,11 +62,6 @@ def handle(infile, tables, user_input_path):
         'units': 'degrees_east',
         'coord_vals': lon[:],
         'cell_bounds': lon_bnds[:]
-    }, {
-        'table_entry': 'sdepth',
-        'units': 'm',
-        'coord_vals': tsoi.getAxis(1)[:],
-        'cell_bounds': levgrnd_bnds
     }]
     axis_ids = list()
     for axis in axes:
