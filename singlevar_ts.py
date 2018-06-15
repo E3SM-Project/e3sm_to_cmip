@@ -33,6 +33,9 @@ class Splitter(object):
         self._file_list = None
         os.chdir(os.path.abspath(input_path))
 
+        if not os.path.exists(self._output_path):
+            os.makedirs(self._output_path)
+
         # reload(logging)
         logging.basicConfig(
             format='%(asctime)s:%(levelname)s: %(message)s',
@@ -290,16 +293,17 @@ if __name__ == "__main__":
         if _args.data_type == 'clm2.h0':
             var_list = ['SOILWATER_10CM', 'SOILICE', 'SOILLIQ', 'QOVER', 
                         'QRUNOFF', 'QINTR', 'QVEGE', 'QSOIL', 'QVEGT', 'TSOI',
-                        'LAISHA', 'LAISUN', 'NBP']
+                        'LAISHA', 'LAISUN']
         elif _args.data_type == 'cam.h0':
-            var_list = ['TREFHT', 'TS', 'TSMN', 'TSMX', 'PSL', 
+            var_list = ['TREFHT', 'TS', 'PSL', 'FLDS', 'CLDTOT',
                         'PS', 'U10', 'QREFHT', 'PRECSC', 'SHFLX',
                         'PRECL', 'PRECC', 'QFLX', 'TAUX', 'TAUY',
-                        'LHFLX', 'PRECSL', 'FSDS', 'FSNS', 'FLNS',
-                        'FLDS', 'CLDTOT']
+                        'LHFLX', 'PRECSL', 'FSDS', 'FSNS', 'FLNS',]
         elif _args.data_type == 'mpas':
             var_list = ['timeMonthly_avg_density', 'timeMonthly_avg_layerThickness',
                         'areaCell']
+        else:
+            print 'invalid data type'
 
     try:
         splitter = Splitter(
@@ -312,7 +316,7 @@ if __name__ == "__main__":
             nproc=_args.num_proc,
             proc_vars=_args.proc_vars,
             data_type=_args.data_type,
-            debug=debug)
+            debug=_args.debug)
         splitter.split()
     except KeyboardInterrupt as e:
         msg = 'Caught KeyboardInterrupt event'
