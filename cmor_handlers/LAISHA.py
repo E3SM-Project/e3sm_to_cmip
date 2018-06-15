@@ -81,4 +81,4 @@ def handle(infile, tables, user_input_path):
         raise
     finally:
         cmor.close(varid)
-    return 'QRUNOFF'
+    return 'LAISHA'
