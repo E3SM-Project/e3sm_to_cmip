@@ -62,6 +62,16 @@ class Cmorizer(object):
             # ignore handlers for variables that werent requested
             if module not in self._var_list and self._var_list[0] != 'all':
                 continue
+            
+            contents = os.listdir(self._input_path)
+            found = False
+            for infile in contents:
+                if module in infile:
+                    found = True
+                    break
+            if not found:
+                continue
+
             module_path = '.'.join([self._handlers_path, module])
             # load the module, and extract the "handle" method
             try:
@@ -222,6 +232,7 @@ if __name__ == "__main__":
         tables_path=_args.tables,
         debug=_args.debug)
     try:
+        # import ipdb; ipdb.set_trace()
         cmorizer.run()
     except KeyboardInterrupt as e:
         print '--- caught KeyboardInterrupt event ---'
