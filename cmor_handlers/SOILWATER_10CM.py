@@ -1,4 +1,4 @@
-# -*- coding: future_fstrings -*-
+ 
 import os
 import cmor
 import cdms2
@@ -17,7 +17,7 @@ def handle(infile, tables, user_input_path):
         SOILWATER_10CM:missing_value = 1.e+36f ;
         SOILWATER_10CM:cell_measures = "area: area" ;
     """
-    msg = f'Starting {__name__} with {infile}'
+     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
     print_message(msg, 'ok')
     # extract data from the input file

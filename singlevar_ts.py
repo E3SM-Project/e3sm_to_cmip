@@ -1,4 +1,4 @@
-# -*- coding: future_fstrings -*-
+ 
 import os, sys
 import argparse
 import cdms2

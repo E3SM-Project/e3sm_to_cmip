@@ -1,4 +1,4 @@
-# -*- coding: future_fstrings -*-
+ 
 import os, sys
 import argparse
 import cmor
@@ -79,12 +79,12 @@ class Cmorizer(object):
                 met = getattr(mod, 'handle')
             except Exception as e:
                 msg = format_debug(e)
-                print_message(f'Error loading handler for {module_path}')
+                print_message('Error loading handler for {}'.format(module_path))
                 print_message(msg)
                 logging.error(msg)
                 continue
             else:
-                msg = f'Loaded {mod}'
+                msg = 'Loaded {}'.format(mod)
                 if self._debug: print_message(msg, 'debug')
                 logging.info(msg)
             self._handlers.append({module: met})
@@ -106,7 +106,7 @@ class Cmorizer(object):
             logging.error(msg)
             sys.exit(1)
 
-        if self._debug: print_message(f'running with {self._nproc} processes', 'debug')
+        if self._debug: print_message('running with {} processes'.format(self._nproc), 'debug')
         self._pool = Pool(self._nproc)
         self._pool_res = list()
 
@@ -133,7 +133,7 @@ class Cmorizer(object):
         for idx, res in enumerate(self._pool_res):
             try:
                 out = res.get(9999999)
-                msg = f'Finished {out}, {idx + 1}/{len(self._pool_res)} jobs complete'
+                msg = 'Finished {}, {idx + 1}/{len(self._pool_res)} jobs complete'.format(out)
                 print_message(msg, 'ok')
                 logging.info(msg)
             except Exception as e:
@@ -146,7 +146,7 @@ class Cmorizer(object):
         Looks in the path given for the first file that matches VAR_\d{6}_\d{6}.nc
         """
         contents = os.listdir(path)
-        pattern = f'{var}' + r'\_\d{6}\_\d{6}.nc'
+        pattern = '{}'.format(var) + r'\_\d{6}\_\d{6}.nc'
         for item in contents:
             if re.match(pattern=pattern, string=item):
                 return item
@@ -232,7 +232,6 @@ if __name__ == "__main__":
         tables_path=_args.tables,
         debug=_args.debug)
     try:
-        # import ipdb; ipdb.set_trace()
         cmorizer.run()
     except KeyboardInterrupt as e:
         print '--- caught KeyboardInterrupt event ---'

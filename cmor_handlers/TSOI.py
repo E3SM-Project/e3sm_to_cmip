@@ -1,4 +1,4 @@
-# -*- coding: future_fstrings -*-
+ 
 import os
 import cmor
 import cdms2
@@ -11,7 +11,7 @@ def handle(infile, tables, user_input_path):
     """
     Transform E3SM.TSOI into CMIP.tsl
     """
-    msg = f'Starting {__name__} with {infile}'
+     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
     print_message(msg, 'ok')
     # extract data from the input file
