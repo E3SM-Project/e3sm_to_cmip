@@ -28,16 +28,20 @@ class Cmorizer(object):
             handlers (str): path to directory containing cmor handlers
         """
         self._var_list = var_list
-        self._user_input_path = user_input_path
         self._input_path = input_path
         self._tables_path = tables_path
         self._nproc = kwargs.get('nproc') if kwargs.get('nproc') else 6
         self._proc_vars = kwargs.get('proc_vars', False)
         self._output_path = os.path.abspath(kwargs.get('output_path')) if kwargs.get('output_path') else '.'
+        self._user_input_path = os.path.join(self._output_path, 'user_input.json')
         self._handlers_path = kwargs.get('handlers') if kwargs.get('handlers') else './cmor_handlers'
+        self._handlers_path = os.path.abspath(self._handlers_path)
         self._debug = kwargs.get('debug', False)
         self._pool = None
         self._pool_res = None
+
+        if not os.path.exists(self._output_path):
+            os.makedirs(self._output_path)
 
         logging.basicConfig(
             format='%(asctime)s:%(levelname)s: %(message)s',
@@ -46,11 +50,23 @@ class Cmorizer(object):
             filemode='w',
             level=logging.DEBUG)
 
+        with open(user_input_path, "r") as fin:
+            with open(self._user_input_path, "w") as fout:
+                for line in fin:
+                    if 'outpath' in line:
+                        fout.write('"outpath": "{}",'.format(self._output_path))
+                    else:
+                        fout.write(line)
+
     def run(self):
         """
         run all the requested CMOR handlers
         """
         handlers = os.listdir(self._handlers_path)
+        if "__init__.py" not in handlers:
+            with open(os.path.join(self._handlers_path, '__init__.py'), 'w') as fp:
+                fp.write('\n')
+
         self._handlers = list()
         for handler in handlers:
             if not handler.endswith('.py'):
@@ -59,6 +75,8 @@ class Cmorizer(object):
                 continue
 
             module, _ = handler.rsplit('.', 1)
+            module.replace('/', '.')
+
             # ignore handlers for variables that werent requested
             if module not in self._var_list and self._var_list[0] != 'all':
                 continue
@@ -72,10 +90,14 @@ class Cmorizer(object):
             if not found:
                 continue
 
-            module_path = '.'.join([self._handlers_path, module])
+            # import ipdb; ipdb.set_trace()
+            tail, head = os.path.split(self._handlers_path)
+            module_path = '.'.join([head, module])
+            
             # load the module, and extract the "handle" method
             try:
-                mod = import_module(module_path)
+                wrapper = __import__(module_path)
+                mod = getattr(wrapper, handler[:-3])
                 met = getattr(mod, 'handle')
             except Exception as e:
                 msg = format_debug(e)
@@ -133,7 +155,10 @@ class Cmorizer(object):
         for idx, res in enumerate(self._pool_res):
             try:
                 out = res.get(9999999)
-                msg = 'Finished {}, {idx + 1}/{len(self._pool_res)} jobs complete'.format(out)
+                msg = 'Finished {handler}, {done}/{total} jobs complete'.format(
+                    handler=out,
+                    done=idx + 1,
+                    total=len(self._pool_res))
                 print_message(msg, 'ok')
                 logging.info(msg)
             except Exception as e:
@@ -179,7 +204,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '-o', '--output',
         metavar='',
-        help='where to store cmorized outputoutput')
+        help='where to store cmorized output')
     parser.add_argument(
         '-u', '--user-input',
         required=True,
