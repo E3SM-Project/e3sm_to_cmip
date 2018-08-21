@@ -1,5 +1,9 @@
 #!/usr/bin/env python
-import os, sys
+"""
+A python command line tool to turn E3SM model output into CMIP6 compatable data
+"""
+import os
+import sys
 import argparse
 import cmor
 import cdms2
@@ -11,11 +15,13 @@ from importlib import import_module
 from time import sleep
 from lib.util import format_debug, print_message
 
+
 class Cmorizer(object):
     """
     A utility class to cmorize e3sm time series files
     """
-    def __init__(self, var_list, input_path, user_input_path, tables_path, **kwargs):
+
+    def __init__(self, var_list, input_path, user_input_path, tables_path, output_path='.', handlers='./cmor_handlers', **kwargs):
         """
         Parameters:
             var_list (list(str)): a list of strings of variable names to extract, or 'all' to extract all possible
@@ -32,13 +38,18 @@ class Cmorizer(object):
         self._tables_path = tables_path
         self._nproc = kwargs.get('nproc') if kwargs.get('nproc') else 6
         self._proc_vars = kwargs.get('proc_vars', False)
-        self._output_path = os.path.abspath(kwargs.get('output_path')) if kwargs.get('output_path') else '.'
-        self._user_input_path = os.path.join(self._output_path, 'user_input.json')
-        self._handlers_path = kwargs.get('handlers') if kwargs.get('handlers') else './cmor_handlers'
+        self._output_path = output_path
+
+        self._user_input_path = os.path.join(
+            self._output_path, 'user_input.json')
+
+        self._handlers_path = handlers
+
         self._handlers_path = os.path.abspath(self._handlers_path)
         self._debug = kwargs.get('debug', False)
         self._pool = None
         self._pool_res = None
+        self._handlers = list()
 
         if not os.path.exists(self._output_path):
             os.makedirs(self._output_path)
@@ -50,11 +61,14 @@ class Cmorizer(object):
             filemode='w',
             level=logging.DEBUG)
 
+        # write out the users input file for cmor into the output directory
+        # and replace the output line with the path to the output directory
         with open(user_input_path, "r") as fin:
             with open(self._user_input_path, "w") as fout:
                 for line in fin:
                     if 'outpath' in line:
-                        fout.write('"outpath": "{}",'.format(self._output_path))
+                        fout.write('"outpath": "{}",'.format(
+                            self._output_path))
                     else:
                         fout.write(line)
 
@@ -67,7 +81,6 @@ class Cmorizer(object):
             with open(os.path.join(self._handlers_path, '__init__.py'), 'w') as fp:
                 fp.write('\n')
 
-        self._handlers = list()
         for handler in handlers:
             if not handler.endswith('.py'):
                 continue
@@ -80,7 +93,7 @@ class Cmorizer(object):
             # ignore handlers for variables that werent requested
             if module not in self._var_list and self._var_list[0] != 'all':
                 continue
-            
+
             contents = os.listdir(self._input_path)
             found = False
             for infile in contents:
@@ -90,27 +103,28 @@ class Cmorizer(object):
             if not found:
                 continue
 
-            # import ipdb; ipdb.set_trace()
-            tail, head = os.path.split(self._handlers_path)
+            _, head = os.path.split(self._handlers_path)
             module_path = '.'.join([head, module])
-            
+
             # load the module, and extract the "handle" method
             try:
                 wrapper = __import__(module_path)
                 mod = getattr(wrapper, handler[:-3])
                 met = getattr(mod, 'handle')
-            except Exception as e:
+            except ImportError as e:
                 msg = format_debug(e)
-                print_message('Error loading handler for {}'.format(module_path))
+                print_message(
+                    'Error loading handler for {}'.format(module_path))
                 print_message(msg)
                 logging.error(msg)
                 continue
             else:
                 msg = 'Loaded {}'.format(mod)
-                if self._debug: print_message(msg, 'debug')
+                if self._debug:
+                    print_message(msg, 'debug')
                 logging.info(msg)
             self._handlers.append({module: met})
-        
+
         # Setup the number of processes that will exist in the pool
         len_handlers = len(self._handlers)
         if self._proc_vars:
@@ -128,13 +142,15 @@ class Cmorizer(object):
             logging.error(msg)
             sys.exit(1)
 
-        if self._debug: print_message('running with {} processes'.format(self._nproc), 'debug')
+        if self._debug:
+            print_message('running with {} processes'.format(
+                self._nproc), 'debug')
         self._pool = Pool(self._nproc)
         self._pool_res = list()
 
         for handler in self._handlers:
             for key, val in handler.items():
-                
+
                 var_file = self.find_variable_file(key, self._input_path)
                 if var_file is None:
                     continue
@@ -147,11 +163,12 @@ class Cmorizer(object):
                     'user_input_path': self._user_input_path
                 }
 
-                _args = (kwds['infile'], kwds['tables'], kwds['user_input_path'])
+                _args = (kwds['infile'], kwds['tables'],
+                         kwds['user_input_path'])
                 self._pool_res.append(
                     self._pool.apply_async(
                         val, args=_args, kwds={}))
-        
+
         for idx, res in enumerate(self._pool_res):
             try:
                 out = res.get(9999999)
@@ -165,7 +182,7 @@ class Cmorizer(object):
                 print format_debug(e)
                 logging.error(e)
         self.terminate()
-    
+
     def find_variable_file(self, var, path):
         """
         Looks in the path given for the first file that matches VAR_\d{6}_\d{6}.nc
@@ -178,7 +195,11 @@ class Cmorizer(object):
         return None
 
     def terminate(self):
-        if self._debug: print_message('Shutting down process pool', 'debug')
+        """
+        Terminates the process pool
+        """
+        if self._debug:
+            print_message('Shutting down process pool', 'debug')
         if self._pool:
             self._pool.close()
             self._pool.terminate()
@@ -192,7 +213,7 @@ if __name__ == "__main__":
         usage='%(prog)s [-h]')
     parser.add_argument(
         '-v', '--var-list',
-        nargs='+', 
+        nargs='+',
         required=True,
         metavar='',
         help='space seperated list of variables to convert from e3sm to cmip. Use \'all\' to convert all variables')
@@ -245,7 +266,7 @@ if __name__ == "__main__":
         sys.exit(1)
     else:
         _args = parser.parse_args(_args)
-    
+
     cmorizer = Cmorizer(
         var_list=_args.var_list,
         input_path=_args.input,
@@ -261,4 +282,3 @@ if __name__ == "__main__":
     except KeyboardInterrupt as e:
         print '--- caught KeyboardInterrupt event ---'
         cmorizer.terminate()
-    
