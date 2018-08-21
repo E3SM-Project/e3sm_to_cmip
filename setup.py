@@ -43,5 +43,5 @@ setup(
     description="Transform E3SM model data output into cmip6 compatable data using the Climate Model Output Rewritter.",
     scripts=["e3sm_to_cmip"],
     packages=find_packages(
-        exclude=["*.test", "*.test.*", "test.*", "test", "*_template.py"]),
+        exclude=["*.test.*"]),
     data_files=cmor_handlers)
