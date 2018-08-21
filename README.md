@@ -48,7 +48,7 @@ optional arguments:
                         to cmip. Use 'all' to convert all variables
   -i , --input          path to directory containing e3sm data with single
                         variables per file
-  -o , --output         where to store cmorized outputoutput
+  -o , --output         where to store cmorized output
   -u <user_input_json_path>, --user-input <user_input_json_path>
                         path to user input json file for CMIP6 metadata
   -n <nproc>, --num-proc <nproc>
@@ -58,5 +58,7 @@ optional arguments:
   -H <handler_path>, --handlers <handler_path>
                         path to cmor handlers directory, default =
                         ./cmor_handlers
+  -N, --proc-vars       Set the number of process to the number of variables
   --version             print the version number and exit
+  --debug               Set output level to debug
 ```
