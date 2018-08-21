@@ -9,7 +9,7 @@ def handle(infile, tables, user_input_path):
     """
     Transform E3SM.SOILICE + E3SM.SOILIQ into CMIP.mrso
     """
-     msg = 'Starting {name}'.format(name=__name__)
+    msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
     print_message(msg, 'ok')
     # extract data from the input file

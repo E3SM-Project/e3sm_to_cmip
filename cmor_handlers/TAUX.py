@@ -10,7 +10,7 @@ def handle(infile, tables, user_input_path):
     Transform E3SM.TAUX into CMIP.tauu
 
     """
-     msg = 'Starting {name}'.format(name=__name__)
+    msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
     print_message(msg, 'ok')
     # extract data from the input file

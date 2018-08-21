@@ -1,4 +1,4 @@
- 
+
 import os
 import cmor
 import cdms2
@@ -10,7 +10,7 @@ def handle(infile, tables, user_input_path):
     """
     Transform E3SM.FLDS and E3SM.FLNS into rlus and rlns
     """
-     msg = 'Starting {name}'.format(name=__name__)
+    msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg) 
     print_message(msg, 'ok')
     # extract data from the input file

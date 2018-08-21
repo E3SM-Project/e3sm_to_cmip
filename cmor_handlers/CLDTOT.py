@@ -4,12 +4,13 @@ import cdms2
 import logging
 from lib.util import print_message
 
+
 def handle(infile, tables, user_input_path):
     """
     Transform E3SM.CLDTOT into CMIP.clt
 
     """
-     msg = 'Starting {name}'.format(name=__name__)
+    msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
     print_message(msg, 'ok')
 
@@ -32,7 +33,7 @@ def handle(infile, tables, user_input_path):
     logfile = os.path.join(logfile, tail.replace('.nc', '.log'))
     cmor.setup(
         inpath=tables,
-        netcdf_file_action=cmor.CMOR_REPLACE, 
+        netcdf_file_action=cmor.CMOR_REPLACE,
         logfile=logfile)
     cmor.dataset_json(user_input_path)
     table = 'CMIP6_Amon.json'

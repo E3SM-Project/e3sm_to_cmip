@@ -24,7 +24,7 @@ def handle(infile, tables, user_input_path):
         PS
         PS no change
     """
-     msg = 'Starting {name}'.format(name=__name__)
+    msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
     print_message(msg, 'ok')
 

@@ -9,7 +9,7 @@ def handle(infile, tables, user_input_path):
     """
     Transform E3SM.LAISHA + E3SM.LAISUN into CMIP6.lia
     """
-     msg = 'Starting {name}'.format(name=__name__)
+    msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
     print_message(msg, 'ok')
     
