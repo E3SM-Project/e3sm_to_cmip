@@ -3,7 +3,7 @@ package:
   version: {{ environ['VERSION'] }}
 
 source:
-  git_url: git://github.com/E3SM-Project/e3sm_to_cmip
+  git_url: git://github.com/E3SM-Project/e3sm_to_cmip.git
   git_tag: {{ environ['TAG'] }}
 
 build:
