@@ -19,7 +19,7 @@ class Cmorizer(object):
     A utility class to cmorize e3sm time series files
     """
 
-    def __init__(self, var_list, input_path, user_input_path, tables_path, output_path='.', handlers='./cmor_handlers', **kwargs):
+    def __init__(self, var_list, input_path, user_input_path, tables_path, output_path='.', handlers=None, **kwargs):
         """
         Parameters:
             var_list (list(str)): a list of strings of variable names to extract, or 'all' to extract all possible
@@ -41,7 +41,14 @@ class Cmorizer(object):
         self._user_input_path = os.path.join(
             self._output_path, 'user_input.json')
 
-        self._handlers_path = handlers
+        if handlers is not None:
+            self._handlers_path = handlers
+        else:
+            self._handlers_path = os.path.join(
+                sys.prefix,
+                'share',
+                'e3sm_to_cmip',
+                'cmor_handlers')
 
         self._handlers_path = os.path.abspath(self._handlers_path)
         self._debug = kwargs.get('debug', False)
