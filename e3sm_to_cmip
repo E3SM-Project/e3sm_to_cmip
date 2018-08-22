@@ -246,7 +246,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '-H', '--handlers',
         metavar='<handler_path>',
-        default='cmor_handlers',
+        default=None,
         help='path to cmor handlers directory, default = ./cmor_handlers')
     parser.add_argument(
         '-N', '--proc-vars',
