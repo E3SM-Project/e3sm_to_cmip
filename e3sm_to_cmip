@@ -5,13 +5,11 @@ A python command line tool to turn E3SM model output into CMIP6 compatable data
 import os
 import sys
 import argparse
-import cmor
-import cdms2
 import re
 import logging
+import imp
 
 from multiprocessing import cpu_count, Pool
-from importlib import import_module
 from time import sleep
 from lib.util import format_debug, print_message
 
@@ -87,30 +85,27 @@ class Cmorizer(object):
             if handler == "__init__.py":
                 continue
 
-            module, _ = handler.rsplit('.', 1)
-            module.replace('/', '.')
+            module_name, _ = handler.rsplit('.', 1)
 
             # ignore handlers for variables that werent requested
-            if module not in self._var_list and self._var_list[0] != 'all':
+            if module_name not in self._var_list and self._var_list[0] != 'all':
                 continue
 
             contents = os.listdir(self._input_path)
             found = False
             for infile in contents:
-                if module in infile:
+                if module_name in infile:
                     found = True
                     break
             if not found:
                 continue
 
-            _, head = os.path.split(self._handlers_path)
-            module_path = '.'.join([head, module])
+            module_path = os.path.join(self._handlers_path, handler)
 
             # load the module, and extract the "handle" method
             try:
-                wrapper = __import__(module_path)
-                mod = getattr(wrapper, handler[:-3])
-                met = getattr(mod, 'handle')
+                module = imp.load_source(module_name, module_path)
+                method = module.handle
             except ImportError as e:
                 msg = format_debug(e)
                 print_message(
@@ -119,11 +114,11 @@ class Cmorizer(object):
                 logging.error(msg)
                 continue
             else:
-                msg = 'Loaded {}'.format(mod)
+                msg = 'Loaded {}'.format(module_name)
                 if self._debug:
                     print_message(msg, 'debug')
                 logging.info(msg)
-            self._handlers.append({module: met})
+            self._handlers.append({module_name: method})
 
         # Setup the number of processes that will exist in the pool
         len_handlers = len(self._handlers)
