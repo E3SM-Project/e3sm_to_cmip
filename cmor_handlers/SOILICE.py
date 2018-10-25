@@ -82,7 +82,7 @@ def handle(infile, tables, user_input_path):
                 time_vals=val,
                 time_bnds=[time_bnds[index, :]])
     except Exception as error:
-        raise error
+        print(repr(error))
     finally:
         cmor.close(varid)
     return 'SOILICE'
