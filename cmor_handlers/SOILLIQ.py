@@ -8,6 +8,15 @@ from lib.util import print_message
 def handle(infile, tables, user_input_path):
     """
     Transform E3SM.SOILICE + E3SM.SOILIQ into CMIP.mrso
+
+    Parameters
+    ----------
+        infiles (List): a list of strings of file names for the raw input data
+        tables (str): path to CMOR tables
+        user_input_path (str): path to user input json file
+    Returns
+    -------
+        var name (str): the name of the processed variable after processing is complete
     """
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
@@ -32,8 +41,7 @@ def handle(infile, tables, user_input_path):
     logfile = os.path.join(os.getcwd(), 'logs')
     if not os.path.exists(logfile):
         os.makedirs(logfile)
-    _, tail = os.path.split(infile)
-    logfile = os.path.join(logfile, tail.replace('.nc', '.log'))
+    logfile = os.path.join(logfile, VAR_NAME + '.log')
     cmor.setup(
         inpath=tables,
         netcdf_file_action=cmor.CMOR_REPLACE, 
@@ -66,7 +74,7 @@ def handle(infile, tables, user_input_path):
         axis_ids.append(axis_id)
 
     # create the cmor variable
-    varid = cmor.variable('mrso', 'kg m-2', axis_ids)
+    varid = cmor.variable(VAR, 'kg m-2', axis_ids)
 
     # write out the data
     try:
@@ -77,8 +85,8 @@ def handle(infile, tables, user_input_path):
                 data,
                 time_vals=val,
                 time_bnds=[time_bnds[index, :]])
-    except:
-        raise
+    except Exception as error:
+        raise error
     finally:
         cmor.close(varid)
     return 'SOILLIQ'

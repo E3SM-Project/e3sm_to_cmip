@@ -1,50 +1,58 @@
- 
+"""
+FLDS, FLNS to rlus converter
+"""
 import os
 import cmor
 import cdms2
 import logging
+
 from lib.util import print_message
 
-def handle(infile, tables, user_input_path):
+# list of raw variable names needed
+RAW_VARIABLES = ['FLDS', 'FLNS']
+
+# output variable name
+VAR_NAME = 'rlus'
+VAR_UNITS = 'W m-2'
+
+def handle(infiles, tables, user_input_path):
     """
-    Transform E3SM.PRECSC + E3SM.PRECSL into CMIP.prsn
+    Transform E3SM.FLDS into rlus
 
-
-
-    CMIP5_Amon
-        prsn
-        snowfall_flux
-        longitude latitude time
-        atmos
-        2
-        PRECSC PRECSL
-        PRECSC + PRECSL and unit conversion
+    Parameters
+    ----------
+        infiles (List): a list of strings of file names for the raw input data
+        tables (str): path to CMOR tables
+        user_input_path (str): path to user input json file
+    Returns
+    -------
+        var name (str): the name of the processed variable after processing is complete
     """
+
     msg = 'Starting {name}'.format(name=__name__)
-    logging.info(msg)
+    logging.info(msg) 
     print_message(msg, 'ok')
 
     # extract data from the input file
-    f = cdms2.open(infile.replace('PRECSC', 'PRECSL'))
-    precc = f('PRECSL')
-    lat = precc.getLatitude()[:]
-    lon = precc.getLongitude()[:]
+    f = cdms2.open(infiles[0])
+    flds = f(RAW_VARIABLES[0])
+    lat = flds.getLatitude()[:]
+    lon = flds.getLongitude()[:]
     lat_bnds = f('lat_bnds')
     lon_bnds = f('lon_bnds')
-    time = precc.getTime()
+    time = flds.getTime()
     time_bnds = f('time_bnds')
     f.close()
 
-    f = cdms2.open(infile)
-    precl = f('PRECSC')
-    f.close()    
+    f = cdms2.open(infiles[1])
+    flns = f(RAW_VARIABLES[1])
+    f.close()
 
     # setup cmor
     logfile = os.path.join(os.getcwd(), 'logs')
     if not os.path.exists(logfile):
         os.makedirs(logfile)
-    _, tail = os.path.split(infile)
-    logfile = os.path.join(logfile, tail.replace('.nc', '.log'))
+    logfile = os.path.join(logfile, VAR_NAME + '.log')
     cmor.setup(
         inpath=tables,
         netcdf_file_action=cmor.CMOR_REPLACE, 
@@ -77,16 +85,19 @@ def handle(infile, tables, user_input_path):
         axis_ids.append(axis_id)
 
     # create the cmor variable
-    varid = cmor.variable('prsn', 'kg m-2 s-1', axis_ids)
+    varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids, positive='up')
 
     # write out the data
     try:
-        for index, val in enumerate(precc.getTime()[:]):
-            data = (precc[index, :] + precl[index, :]) * 1000
-            cmor.write(varid, data, time_vals=val,
-                       time_bnds=[time_bnds[index, :]])
-    except:
-        raise
+        for index, val in enumerate(flds.getTime()[:]):
+            data = flds[index, :] + flns[index, :]
+            cmor.write(
+                varid,
+                data,
+                time_vals=val,
+                time_bnds=[time_bnds[index, :]])
+    except Exception as error:
+        raise error
     finally:
         cmor.close(varid)
-    return 'PRECSC'
+    return VAR_NAME

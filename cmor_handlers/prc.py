@@ -1,36 +1,46 @@
- 
+"""
+PRECC to prc converter
+"""
 import os
 import cmor
 import cdms2
 import logging
+
 from lib.util import print_message
 
-def handle(infile, tables, user_input_path):
+# list of raw variable names needed
+RAW_VARIABLES = ['PRECC']
+
+# output variable name
+VAR_NAME = 'prc'
+VAR_UNITS = 'kg m-2 s-1'
+
+def handle(infiles, tables, user_input_path):
     """
-    Transform E3SM.QREFHT into CMIP.huss
+    Transform E3SM.PRECC into CMIP.prc
 
-
-
-    CMIP5_Amon
-        hurs
-        relative_humidity
-        longitude latitude time height2m
-        atmos
-        1
-        RHREFHT
-        RHREFHT no change
+    Parameters
+    ----------
+        infiles (List): a list of strings of file names for the raw input data
+        tables (str): path to CMOR tables
+        user_input_path (str): path to user input json file
+    Returns
+    -------
+        var name (str): the name of the processed variable after processing is complete
     """
+
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
     print_message(msg, 'ok')
+
     # extract data from the input file
-    f = cdms2.open(infile)
-    data = f('QREFHT')
-    lat = data.getLatitude()[:]
-    lon = data.getLongitude()[:]
+    f = cdms2.open(infiles[0])
+    precc = f(RAW_VARIABLES[0])
+    lat = precc.getLatitude()[:]
+    lon = precc.getLongitude()[:]
     lat_bnds = f('lat_bnds')
     lon_bnds = f('lon_bnds')
-    time = data.getTime()
+    time = precc.getTime()
     time_bnds = f('time_bnds')
     f.close()
 
@@ -38,8 +48,7 @@ def handle(infile, tables, user_input_path):
     logfile = os.path.join(os.getcwd(), 'logs')
     if not os.path.exists(logfile):
         os.makedirs(logfile)
-    _, tail = os.path.split(infile)
-    logfile = os.path.join(logfile, tail.replace('.nc', '.log'))
+    logfile = os.path.join(logfile, VAR_NAME + '.log')
     cmor.setup(
         inpath=tables,
         netcdf_file_action=cmor.CMOR_REPLACE, 
@@ -72,15 +81,19 @@ def handle(infile, tables, user_input_path):
         axis_ids.append(axis_id)
 
     # create the cmor variable
-    varid = cmor.variable('huss', '1.0', axis_ids)
+    varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids)
 
     # write out the data
     try:
-        for index, val in enumerate(data.getTime()[:]):
-            cmor.write(varid, data[index, :], time_vals=val,
-                       time_bnds=[time_bnds[index, :]])
-    except:
-        raise
+        for index, val in enumerate(precc.getTime()[:]):
+            data = precc[index, :] * 1000
+            cmor.write(
+                varid,
+                data,
+                time_vals=val,
+                time_bnds=[time_bnds[index, :]])
+    except Exception as error:
+        raise error
     finally:
         cmor.close(varid)
-    return 'QREFHT'
+    return VAR_NAME
