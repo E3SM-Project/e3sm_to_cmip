@@ -47,22 +47,28 @@ class Splitter(object):
         msg = 'setting up splitter'
         logging.info(msg)
         if self._debug: print msg
-        msg = f''' 
-        var_list: {self._var_list}
-        caseid: {caseid}
-        input_path: {input_path}
-        output_path: {self._output_path}
-        start-year: {start}
-        end-year: {end}
-        nproc: {nproc}
-'''
+        msg = ''' 
+        var_list: {}
+        caseid: {}
+        input_path: {}
+        output_path: {}
+        start-year: {}
+        end-year: {}
+        nproc: {}'''.format(
+            self._var_list,
+            caseid,
+            input_path,
+            self._output_path,
+            start,
+            end,
+            nproc)
         logging.info(msg)
         if self._debug: print_message(msg, status='debug')
 
         # First get the list of self._file_list in our year range that match the caseid
         contents = os.listdir(os.getcwd())
         self._file_list = list()
-        start_pattern = f'{caseid}.{data_type}.'
+        start_pattern = '{}.{}.'.format(caseid, data_type)
         start_pattern_len = len(start_pattern)
         end_pattern = '.nc'
         end_pattern_len = 3
@@ -80,7 +86,7 @@ class Splitter(object):
             if year >= start and year <= end:
                 self._file_list.append(item)
         file_len = len(self._file_list)
-        msg = f'found {file_len} input files'
+        msg = 'found {} input files'.format(file_len)
         logging.info(msg)
         if self._debug: print_message(msg, status='debug')
 
@@ -108,12 +114,12 @@ class Splitter(object):
                     var_list_tmp.append(var)
                 else:
                     if self._debug:
-                        msg = f'{var} not present'
+                        msg = '{} not present'.format(var)
                         print_message(msg, 'error')
             var_list = var_list_tmp
 
         # all the variables have been found
-        msg = f'splitting {len(var_list)} variable(s): {" ".join(var_list)}'
+        msg = 'splitting {} variable(s): {}'.format(len(var_list), " ".join(var_list))
         logging.info(msg)
         print_message(msg, status='ok')
 
@@ -140,7 +146,7 @@ class Splitter(object):
         """
         Perform the requested variable extraction
         """
-        msg = f'starting extraction with nproc = {self._nproc}'
+        msg = 'starting extraction with nproc = {}'.format(self._nproc)
         logging.info(msg)
         print_message(msg, status='ok')
         pool_res = list()
@@ -148,7 +154,8 @@ class Splitter(object):
         for var in var_list:
             outfile = os.path.join(
                 self._output_path,
-                f'{var}_{self._start:04d}01_{self._end:04d}12.nc')
+                '{}_{:04d}01_{:04d}12.nc'.format(
+                    var, self._start, self._end))
             pool_res.append(
                 self._pool.apply_async(
                     _split_one, [var, self._file_list, outfile]))
@@ -160,7 +167,9 @@ class Splitter(object):
             if err:
                 print out, err
             else:
-                out += f', {idx + 1}/{len(pool_res)} jobs complete'
+                out += ', {}/{} jobs complete'.format(
+                    idx + 1,
+                    len(pool_res))
                 print_message(out, 'ok')
         self._pool.close()
         self._pool.join()
@@ -189,7 +198,7 @@ def _split_one(var, file_list, outfile):
     # sleep(uniform(0.01, 0.1))
     # print_message(f'Starting {var}', 'ok')
     cmd = ['ncrcat', '-O', '-cv', var] + file_list + [outfile]
-    msg = f'starting {var}'
+    msg = 'starting {}'.format(var)
     logging.info(msg)
     while True:
         try:
@@ -200,9 +209,7 @@ def _split_one(var, file_list, outfile):
                     return out, err
             except KeyboardInterrupt:
                 sleep(uniform(0.01, 0.1))
-                msg = f'  - killing {var}'
                 proc.terminate()
-                print_message(msg)
                 return None, None
         except Exception as e:
             msg = format_debug(e)
@@ -214,7 +221,8 @@ def _split_one(var, file_list, outfile):
             break
     end_time = datetime.now()
     tdelta = end_time - start_time
-    msg = f'finished {var} in {tdelta.seconds}.{tdelta.microseconds/1000:02d} seconds'
+    msg = 'finished {} in {}.{:02d} seconds'.format(
+        var, tdelta.seconds,tdelta.microseconds/1000)
     logging.info(msg)
     return msg, None
 

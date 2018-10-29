@@ -1,23 +1,24 @@
 """
-TS to ts converter
+SOILICE to mrfso converter
 """
 import os
 import cmor
 import cdms2
 import logging
+import numpy as np
 
 from lib.util import print_message
 
 # list of raw variable names needed
-RAW_VARIABLES = ['TS']
+RAW_VARIABLES = ['SOILICE']
 
 # output variable name
-VAR_NAME = 'ts'
-VAR_UNITS = 'K'
+VAR_NAME = 'mrfso'
+VAR_UNITS = 'kg m-2'
 
 def handle(infiles, tables, user_input_path):
     """
-    Transform E3SM.TS into CMIP.ts
+    Transform E3SM.SOILICE into CMIP.mrfso
 
     Parameters
     ----------
@@ -33,15 +34,15 @@ def handle(infiles, tables, user_input_path):
     logging.info(msg)
     print_message(msg, 'ok')
 
-    # open input file and pull out bounds info
+    # extract data from the input file
     f = cdms2.open(infiles[0])
-    data = f(RAW_VARIABLES[0])
-    lat = data.getLatitude()[:]
-    lon = data.getLongitude()[:]
+    ice = f(RAW_VARIABLES[0])
+    lat = ice.getLatitude()[:]
+    lon = ice.getLongitude()[:]
     lat_bnds = f('lat_bnds')
     lon_bnds = f('lon_bnds')
-    time = data.getTime()
-    time_bnds = f('time_bnds')
+    time = ice.getTime()
+    time_bnds = f('time_bounds')
     f.close()
 
     # setup cmor
@@ -54,7 +55,7 @@ def handle(infiles, tables, user_input_path):
         netcdf_file_action=cmor.CMOR_REPLACE, 
         logfile=logfile)
     cmor.dataset_json(user_input_path)
-    table = 'CMIP6_Amon.json'
+    table = 'CMIP6_Lmon.json'
     try:
         cmor.load_table(table)
     except:
@@ -83,12 +84,34 @@ def handle(infiles, tables, user_input_path):
     # create the cmor variable
     varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids)
 
+    # get the index for the levgrnd axis
+    levgrnd_index = ice.getAxisIds().index('levgrnd')
+    if levgrnd_index == -1:
+        msg = 'Error finding levgrnd axis index'
+        logging.error(msg)
+        return None
+    # when we actually use the index, it will be on a single slice of the time axis, reducing the index by one
+    levgrnd_index = levgrnd_index - 1
+
     # write out the data
     try:
-        for index, val in enumerate(data.getTime()[:]):
+        for index, val in enumerate(ice.getTime()[:]):
+            # create a mask so we can avoid places with no ice
+            mask = np.greater(ice[index, :], 0.0)
+            data = np.sum(
+                ice[index, :],
+                axis=levgrnd_index)
+            capped = np.where(
+                np.greater(data, 5000.0),
+                5000.0,
+                data)
+            data = np.where(
+                mask,
+                capped,
+                data)
             cmor.write(
                 varid,
-                data[index, :],
+                data,
                 time_vals=val,
                 time_bnds=[time_bnds[index, :]])
     except Exception as error:

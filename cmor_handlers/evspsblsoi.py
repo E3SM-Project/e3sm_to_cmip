@@ -1,33 +1,46 @@
- 
+"""
+QSOIL to evspsblsoi converter
+"""
 import os
 import cmor
 import cdms2
 import logging
+
 from lib.util import print_message
 
-def handle(infile, tables, user_input_path):
-    """
-    Transform E3SM.SOILWATER_10CM into CMIP.mrsos
+# list of raw variable names needed
+RAW_VARIABLES = ['QSOIL']
 
-    float QOVER(time, lat, lon) ;
-        QOVER:long_name = "surface runoff" ;
-        QOVER:units = "mm/s" ;
-        QOVER:cell_methods = "time: mean" ;
-        QOVER:_FillValue = 1.e+36f ;
-        QOVER:missing_value = 1.e+36f ;
-        QOVER:cell_measures = "area: area" ;
+# output variable name
+VAR_NAME = 'evspsblsoi'
+VAR_UNITS = 'kg m-2 s-1'
+
+def handle(infiles, tables, user_input_path):
     """
+    Transform E3SM.QSOIL into CMIP.evspsblsoi
+
+    Parameters
+    ----------
+        infiles (List): a list of strings of file names for the raw input data
+        tables (str): path to CMOR tables
+        user_input_path (str): path to user input json file
+    Returns
+    -------
+        var name (str): the name of the processed variable after processing is complete
+    """
+
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
     print_message(msg, 'ok')
+
     # extract data from the input file
-    f = cdms2.open(infile)
-    qover = f('QOVER')
-    lat = qover.getLatitude()[:]
-    lon = qover.getLongitude()[:]
+    f = cdms2.open(infiles[0])
+    qsoil = f(RAW_VARIABLES[0])
+    lat = qsoil.getLatitude()[:]
+    lon = qsoil.getLongitude()[:]
     lat_bnds = f('lat_bnds')
     lon_bnds = f('lon_bnds')
-    time = qover.getTime()
+    time = qsoil.getTime()
     time_bnds = f('time_bounds')
     f.close()
 
@@ -35,8 +48,7 @@ def handle(infile, tables, user_input_path):
     logfile = os.path.join(os.getcwd(), 'logs')
     if not os.path.exists(logfile):
         os.makedirs(logfile)
-    _, tail = os.path.split(infile)
-    logfile = os.path.join(logfile, tail.replace('.nc', '.log'))
+    logfile = os.path.join(logfile, VAR_NAME + '.log')
     cmor.setup(
         inpath=tables,
         netcdf_file_action=cmor.CMOR_REPLACE, 
@@ -69,19 +81,19 @@ def handle(infile, tables, user_input_path):
         axis_ids.append(axis_id)
 
     # create the cmor variable
-    varid = cmor.variable('mrros', 'kg m-2 s-1', axis_ids)
+    varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids, positive='up')
 
     # write out the data
     try:
-        for index, val in enumerate(qover.getTime()[:]):
-            data = qover[index, :]
+        for index, val in enumerate(qsoil.getTime()[:]):
+            data = qsoil[index, :]
             cmor.write(
                 varid,
                 data,
                 time_vals=val,
                 time_bnds=[time_bnds[index, :]])
-    except:
-        raise
+    except Exception as error:
+        print(repr(error))
     finally:
         cmor.close(varid)
-    return 'QINTR'
+    return VAR_NAME

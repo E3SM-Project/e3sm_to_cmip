@@ -1,46 +1,58 @@
- 
+"""
+LAISHA, LAISUN to lai converter
+"""
 import os
 import cmor
 import cdms2
 import logging
+
 from lib.util import print_message
 
-def handle(infile, tables, user_input_path):
-    """
-    Transform E3SM.SOILWATER_10CM into CMIP.mrsos
+# list of raw variable names needed
+RAW_VARIABLES = ['LAISHA', 'LAISUN']
 
-    float QINTR(time, lat, lon) ;
-        QINTR:long_name = "interception" ;
-        QINTR:units = "mm/s" ;
-        QINTR:cell_methods = "time: mean" ;
-        QINTR:_FillValue = 1.e+36f ;
-        QINTR:missing_value = 1.e+36f ;
-        QINTR:cell_measures = "area: area" ;
+# output variable name
+VAR_NAME = 'lai'
+VAR_UNITS = '1.0'
+
+def handle(infiles, tables, user_input_path):
     """
+    Transform E3SM.LAISHA + E3SM.LAISUN into CMIP6.lia
+
+    Parameters
+    ----------
+        infiles (List): a list of strings of file names for the raw input data
+        tables (str): path to CMOR tables
+        user_input_path (str): path to user input json file
+    Returns
+    -------
+        var name (str): the name of the processed variable after processing is complete
+    """
+
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
     print_message(msg, 'ok')
+    
     # extract data from the input file
-    f = cdms2.open(infile)
-    veg = f('QVEGT')
-    lat = veg.getLatitude()[:]
-    lon = veg.getLongitude()[:]
+    f = cdms2.open(infiles[0])
+    laisha = f(RAW_VARIABLES[0])
+    lat = laisha.getLatitude()[:]
+    lon = laisha.getLongitude()[:]
     lat_bnds = f('lat_bnds')
     lon_bnds = f('lon_bnds')
-    time = veg.getTime()
+    time = laisha.getTime()
     time_bnds = f('time_bounds')
     f.close()
 
-    f = cdms2.open(infile.replace('QVEGT', 'QSOIL'))
-    soil = f('QSOIL')
+    f = cdms2.open(infiles[1])
+    laisun = f(RAW_VARIABLES[1])
     f.close()
 
     # setup cmor
     logfile = os.path.join(os.getcwd(), 'logs')
     if not os.path.exists(logfile):
         os.makedirs(logfile)
-    _, tail = os.path.split(infile)
-    logfile = os.path.join(logfile, tail.replace('.nc', '.log'))
+    logfile = os.path.join(logfile, VAR_NAME + '.log')
     cmor.setup(
         inpath=tables,
         netcdf_file_action=cmor.CMOR_REPLACE, 
@@ -73,19 +85,19 @@ def handle(infile, tables, user_input_path):
         axis_ids.append(axis_id)
 
     # create the cmor variable
-    varid = cmor.variable('tran', 'kg m-2 s-1', axis_ids, positive='up')
+    varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids)
 
     # write out the data
     try:
-        for index, val in enumerate(veg.getTime()[:]):
-            data = veg[index, :] + soil[index, :]
+        for index, val in enumerate(laisha.getTime()[:]):
+            data = laisha[index, :] + laisun[index, :]
             cmor.write(
                 varid,
                 data,
                 time_vals=val,
                 time_bnds=[time_bnds[index, :]])
-    except:
-        raise
+    except Exception as error:
+        print(repr(error))
     finally:
         cmor.close(varid)
-    return 'QVEGT'
+    return VAR_NAME

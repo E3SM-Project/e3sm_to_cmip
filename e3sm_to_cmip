@@ -9,6 +9,7 @@ import re
 import logging
 import imp
 
+from tqdm import tqdm
 from multiprocessing import cpu_count, Pool
 from time import sleep
 from lib.util import format_debug, print_message
@@ -76,17 +77,20 @@ class Cmorizer(object):
                             self._output_path))
                     else:
                         fout.write(line)
+    
+    def load_handlers(self):
+        """
+        load the cmor handler modules
+        """
 
-    def run(self):
-        """
-        run all the requested CMOR handlers
-        """
-        handlers = os.listdir(self._handlers_path)
-        if "__init__.py" not in handlers:
+        handler_names = os.listdir(self._handlers_path)
+
+        # if the handler director doesnt have an __init__.py file create one
+        if "__init__.py" not in handler_names:
             with open(os.path.join(self._handlers_path, '__init__.py'), 'w') as fp:
                 fp.write('\n')
 
-        for handler in handlers:
+        for handler in handler_names:
             if not handler.endswith('.py'):
                 continue
             if handler == "__init__.py":
@@ -95,24 +99,18 @@ class Cmorizer(object):
             module_name, _ = handler.rsplit('.', 1)
 
             # ignore handlers for variables that werent requested
-            if module_name not in self._var_list and self._var_list[0] != 'all':
-                continue
+            if self._var_list != 'all':
+                if module_name not in self._var_list:
+                    continue
 
-            contents = os.listdir(self._input_path)
-            found = False
-            for infile in contents:
-                if module_name in infile:
-                    found = True
-                    break
-            if not found:
-                continue
 
             module_path = os.path.join(self._handlers_path, handler)
 
-            # load the module, and extract the "handle" method
+            # load the module, and extract the "handle" method and required variables
             try:
                 module = imp.load_source(module_name, module_path)
                 method = module.handle
+                raw_variables = module.RAW_VARIABLES
             except ImportError as e:
                 msg = format_debug(e)
                 print_message(
@@ -125,60 +123,71 @@ class Cmorizer(object):
                 if self._debug:
                     print_message(msg, 'debug')
                 logging.info(msg)
-            self._handlers.append({module_name: method})
+            self._handlers.append({module_name: (method, raw_variables)})
+
+    def run(self):
+        """
+        run all the requested CMOR handlers
+        """
+        self.load_handlers()
+        if len(self._handlers) == 0:
+            print_message('No handlers loaded')
+            sys.exit(1)
 
         # Setup the number of processes that will exist in the pool
         len_handlers = len(self._handlers)
         if self._proc_vars:
-            ncpu = cpu_count()
-            if len_handlers >= 100:
-                self._nproc = 100 if ncpu > 100 else ncpu - 1
-            else:
-                self._nproc = len_handlers
-
-        # only make as many processes as needed
-        self._nproc = len_handlers if self._nproc > len_handlers else self._nproc
-        if self._nproc == 0:
-            msg = 'No handlers found'
-            print_message(msg)
-            logging.error(msg)
-            sys.exit(1)
+            ncpu = cpu_count() - 1
+            self._nproc = len_handlers if len_handlers < ncpu else ncpu
 
         if self._debug:
-            print_message('running with {} processes'.format(
-                self._nproc), 'debug')
+            print_message(
+                'running with {} processes'.format(self._nproc),
+                'debug')
+        
+        # create process pool and results list
         self._pool = Pool(self._nproc)
         self._pool_res = list()
 
         for handler in self._handlers:
-            for key, val in handler.items():
+            for handle_name, handler_info in handler.items():
 
-                var_file = self.find_variable_file(key, self._input_path)
-                if var_file is None:
-                    continue
-                var_path = os.path.join(
-                    self._input_path,
-                    var_file)
+                handler_method = handler_info[0]
+                handler_variables = handler_info[1]
+                # find the input files this handler needs
+                input_files = list()
+                for variable in handler_variables:
+                    input_file = self.find_variable_file(
+                        var=variable,
+                        path=self._input_path)
+                    if input_file is None:
+                        continue
+                    var_path = os.path.join(
+                        self._input_path,
+                        input_file)
+                    input_files.append(var_path)
                 kwds = {
-                    'infile': var_path,
+                    'infiles': input_files,
                     'tables': self._tables_path,
                     'user_input_path': self._user_input_path
                 }
 
-                _args = (kwds['infile'], kwds['tables'],
+                _args = (kwds['infiles'], 
+                         kwds['tables'],
                          kwds['user_input_path'])
                 self._pool_res.append(
                     self._pool.apply_async(
-                        val, args=_args, kwds={}))
+                        handler_method,
+                        args=_args,
+                        kwds={}))
 
-        for idx, res in enumerate(self._pool_res):
+        for idx, res in enumerate(tqdm(self._pool_res)):
             try:
                 out = res.get(9999999)
                 msg = 'Finished {handler}, {done}/{total} jobs complete'.format(
                     handler=out,
                     done=idx + 1,
                     total=len(self._pool_res))
-                print_message(msg, 'ok')
                 logging.info(msg)
             except Exception as e:
                 print format_debug(e)
@@ -207,8 +216,7 @@ class Cmorizer(object):
             self._pool.terminate()
             self._pool.join()
 
-
-if __name__ == "__main__":
+def parse_argsuments():
     parser = argparse.ArgumentParser(
         description='Convert ESM model output into CMIP compatible format',
         prog='e3sm_to_cmip',
@@ -268,7 +276,13 @@ if __name__ == "__main__":
         sys.exit(1)
     else:
         _args = parser.parse_args(_args)
+    return _args
 
+if __name__ == "__main__":
+    # parse the command line arguments
+    _args = parse_argsuments()    
+
+    # run the cmorizer
     cmorizer = Cmorizer(
         var_list=_args.var_list,
         input_path=_args.input,
