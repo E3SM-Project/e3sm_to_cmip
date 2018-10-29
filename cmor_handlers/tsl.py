@@ -32,7 +32,6 @@ def handle(infiles, tables, user_input_path):
 
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
-    print_message(msg, 'ok')
 
     # open input file and pull out the bounds info
     f = cdms2.open(infiles[0])
@@ -100,7 +99,7 @@ def handle(infiles, tables, user_input_path):
                 time_vals=val,
                 time_bnds=[time_bnds[index, :]])
     except Exception as error:
-        print(repr(error))
+        logging.error("Error in {}".format(VAR_NAME))
     finally:
         cmor.close(varid)
     return VAR_NAME

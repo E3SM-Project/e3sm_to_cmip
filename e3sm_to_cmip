@@ -12,8 +12,8 @@ import imp
 from tqdm import tqdm
 from multiprocessing import cpu_count, Pool
 from time import sleep
-from lib.util import format_debug, print_message
 
+from lib.util import format_debug, print_message
 
 class Cmorizer(object):
     """
@@ -65,7 +65,7 @@ class Cmorizer(object):
             datefmt='%m/%d/%Y %I:%M:%S %p',
             filename=os.path.join(self._output_path, 'converter.log'),
             filemode='w',
-            level=logging.DEBUG)
+            level=logging.ERROR)
 
         # write out the users input file for cmor into the output directory
         # and replace the output line with the path to the output directory
@@ -99,7 +99,7 @@ class Cmorizer(object):
             module_name, _ = handler.rsplit('.', 1)
 
             # ignore handlers for variables that werent requested
-            if self._var_list != 'all':
+            if 'all' not in self._var_list:
                 if module_name not in self._var_list:
                     continue
 
@@ -140,11 +140,10 @@ class Cmorizer(object):
             ncpu = cpu_count() - 1
             self._nproc = len_handlers if len_handlers < ncpu else ncpu
 
-        if self._debug:
-            print_message(
-                'running with {} processes'.format(self._nproc),
-                'debug')
-        
+        print_message(
+            'running with {} processes'.format(self._nproc),
+            'debug')
+
         # create process pool and results list
         self._pool = Pool(self._nproc)
         self._pool_res = list()
@@ -190,7 +189,6 @@ class Cmorizer(object):
                     total=len(self._pool_res))
                 logging.info(msg)
             except Exception as e:
-                print format_debug(e)
                 logging.error(e)
         self.terminate()
 

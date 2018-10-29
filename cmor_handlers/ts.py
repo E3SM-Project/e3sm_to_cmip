@@ -1,5 +1,5 @@
 """
-PSL to psl converter
+TS to ts converter
 """
 import os
 import cmor
@@ -9,15 +9,15 @@ import logging
 from lib.util import print_message
 
 # list of raw variable names needed
-RAW_VARIABLES = ['PSL']
+RAW_VARIABLES = ['TS']
 
 # output variable name
-VAR_NAME = 'psl'
-VAR_UNITS = 'Pa'
+VAR_NAME = 'ts'
+VAR_UNITS = 'K'
 
 def handle(infiles, tables, user_input_path):
     """
-    Transform E3SM.PSL into CMIP.psl
+    Transform E3SM.TS into CMIP.ts
 
     Parameters
     ----------
@@ -31,9 +31,8 @@ def handle(infiles, tables, user_input_path):
 
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
-    print_message(msg, 'ok')
 
-    # extract data from the input file
+    # open input file and pull out bounds info
     f = cdms2.open(infiles[0])
     data = f(RAW_VARIABLES[0])
     lat = data.getLatitude()[:]
@@ -92,7 +91,7 @@ def handle(infiles, tables, user_input_path):
                 time_vals=val,
                 time_bnds=[time_bnds[index, :]])
     except Exception as error:
-        print(repr(error))
+        logging.error("Error in {}".format(VAR_NAME))
     finally:
         cmor.close(varid)
     return VAR_NAME
