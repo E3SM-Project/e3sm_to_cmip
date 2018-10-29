@@ -5,6 +5,7 @@ import os
 import cmor
 import cdms2
 import logging
+import numpy as np
 
 from lib.util import print_message
 
@@ -92,12 +93,11 @@ def handle(infiles, tables, user_input_path):
     # when we actually use the index, it will be on a single slice of the time axis, reducing the index by one
     levgrnd_index = levgrnd_index - 1
 
-    # create a mask so we can avoid places with no ice
-    mask = np.greater(ice, 0.0)
-
     # write out the data
     try:
         for index, val in enumerate(ice.getTime()[:]):
+            # create a mask so we can avoid places with no ice
+            mask = np.greater(ice[index, :], 0.0)
             data = np.sum(
                 ice[index, :],
                 axis=levgrnd_index)
@@ -105,7 +105,8 @@ def handle(infiles, tables, user_input_path):
                 np.greater(data, 5000.0),
                 5000.0,
                 data)
-            data = np.where(mask,
+            data = np.where(
+                mask,
                 capped,
                 data)
             cmor.write(

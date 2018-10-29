@@ -5,11 +5,12 @@ import os
 import cmor
 import cdms2
 import logging
+import numpy as np
 
 from lib.util import print_message
 
 # list of raw variable names needed
-RAW_VARIABLES = ['SOILICE', 'SOILIQ']
+RAW_VARIABLES = ['SOILICE', 'SOILLIQ']
 
 # output variable name
 VAR_NAME = 'mrso'
@@ -17,7 +18,7 @@ VAR_UNITS = 'kg m-2'
 
 def handle(infiles, tables, user_input_path):
     """
-    Transform E3SM.SOILICE + E3SM.SOILIQ into CMIP.mrso
+    Transform E3SM.SOILICE + E3SM.SOILLIQ into CMIP.mrso
 
     Parameters
     ----------
@@ -97,11 +98,16 @@ def handle(infiles, tables, user_input_path):
     levgrnd_index = levgrnd_index - 1
 
     # create a mask to avoid places with no ice or liq
-    mask = np.greater(ice, liq, 0.0)
+    # icemask = np.greater(ice, 0.0)
+    # liqmask = np.greater(liq, 0.0)
+    # total_mask = np.logical_or(icemask, liqmask)
 
     # write out the data
     try:
         for index, val in enumerate(liq.getTime()[:]):
+            icemask = np.greater(ice[index, :], 0.0)
+            liqmask = np.greater(liq[index, :], 0.0)
+            total_mask = np.logical_or(icemask, liqmask)
             data = np.sum(
                 ice[index, :] + liq[index, :],
                 axis=levgrnd_index)
@@ -110,7 +116,7 @@ def handle(infiles, tables, user_input_path):
                 5000.0,
                 data)
             data = np.where(
-                mask,
+                total_mask,
                 capped,
                 data)
             cmor.write(
