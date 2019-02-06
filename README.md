@@ -2,35 +2,6 @@
 
 A cli utility to transform E3SM land model output into CMIP compatible data.
 
-## singlevar_ts
-
-Extract single variables from clm2.h0 and cam.h0 files into single-variable-per-file time series. The var-list can be set to 'all', which will extract all the variables from the file, a list of variables, or empty which will extract a default set of variables for your data type.
-
-```
-usage: singlevar_ts [-h]
-
-Single variable time series extraction for ESM data
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -v  [ ...], --var-list  [ ...]
-                        Space sepperated list of variables, use 'all' to
-                        extract all variables
-  -c <case_id>, --case-id <case_id>
-                        Name of case, e.g.
-                        20180129.DECKv1b_piControl.ne30_oEC.edison
-  -i , --input-path     Path to input directory
-  -o , --output-path    Path to output directory
-  -s , --start-year     First year to extract
-  -e , --end-year       Last year to split
-  -n , --num-proc       Number of parallel processes, default = 6
-  -d , --data-type      The type of data to extract from, e.g. clm2.h0 or
-                        cam.h0. Defaults to cam.h0
-  -N, --proc-vars       Set the number of process to the number of variables
-  --version             print the version number and exit
-  --debug               Set output level to debug
-```
-
 ## e3sm_to_cmip
 
 Transform e3sm time series variables into cmip compatible data. Each variable needs its own handler script, implemented in the cmor_handlers directory (see directory for current handlers). In addition, you will need to clone [the cmor repo](https://github.com/PCMDI/cmor) to access the Test and Tables directories. Test holds the common_user_input.json file which can be used as a placeholder for the user supplied metadata, and Tables holds all the CMIP6 variable tables.
