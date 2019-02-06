@@ -35,11 +35,11 @@ def handle(infiles, tables, user_input_path):
     # extract data from the input file
     f = cdms2.open(infiles[0])
     precsc = f(RAW_VARIABLES[0])
-    lat = precc.getLatitude()[:]
-    lon = precc.getLongitude()[:]
+    lat = precsc.getLatitude()[:]
+    lon = precsc.getLongitude()[:]
     lat_bnds = f('lat_bnds')
     lon_bnds = f('lon_bnds')
-    time = precc.getTime()
+    time = precsc.getTime()
     time_bnds = f('time_bnds')
     f.close()
 
@@ -88,8 +88,8 @@ def handle(infiles, tables, user_input_path):
 
     # write out the data
     try:
-        for index, val in enumerate(precc.getTime()[:]):
-            data = (precc[index, :] + precl[index, :]) * 1000
+        for index, val in enumerate(precsc.getTime()[:]):
+            data = (precsc[index, :] + precsl[index, :]) * 1000.0
             cmor.write(
                 varid,
                 data,

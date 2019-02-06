@@ -84,14 +84,13 @@ def handle(infiles, tables, user_input_path):
     # write out the data
     try:
         for index, val in enumerate(cldtot.getTime()[:]):
-            data = cldtot[index, :]
+            data = cldtot[index, :] * 100.0
             cmor.write(
                 varid,
                 data,
                 time_vals=val,
                 time_bnds=[time_bnds[index, :]])
     except Exception as error:
-        # return ExceptionWrapper(error)
         logging.error("Error in {}".format(VAR_NAME))
         return ""
     finally:

@@ -85,7 +85,7 @@ def handle(infiles, tables, user_input_path):
     # write out the data
     try:
         for index, val in enumerate(precc.getTime()[:]):
-            data = precc[index, :] * 1000
+            data = precc[index, :] * 1000.0
             cmor.write(
                 varid,
                 data,
