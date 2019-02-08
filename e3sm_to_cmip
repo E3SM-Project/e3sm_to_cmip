@@ -240,21 +240,7 @@ class Cmorizer(object):
             datafile.e3sm_source_code_reference = 'https://github.com/E3SM-Project/E3SM/releases/tag/v1.0.0'
             datafile.doe_acknowledgement = 'This research was supported as part of the Energy Exascale Earth System Model (E3SM) project, funded by the U.S. Department of Energy, Office of Science, Office of Biological and Environmental Research.' 
             datafile.computational_acknowledgement = 'The data were produced using resources of the National Energy Research Scientific Computing Center, a DOE Office of Science User Facility supported by the Office of Science of the U.S. Department of Energy under Contract No. DE-AC02-05CH11231.'
-            datafile.ncclimo_generation_command = """drc_in='/p/user_pub/work/E3SM/1_0/piControl/1deg_atm_60-30km_ocean/atmos/native/model-output/mon/ens1/v1' # Input directory
-drc_out="/p/user_pub/work/E3SM/1_0/cmip6_variables/piControl/atm/ne30/climo" # Native grid output directory
-drc_rgr="/p/user_pub/work/E3SM/1_0/cmip6_variables/piControl/atm/ne30/rgr" # Regridded output directory
-drc_tmp='/p/cscratch/acme/baldwin32/tmp' # Temporary/intermediate-file directory
-map="/export/zender1/data/maps/map_ne30np4_to_cmip6_180x360_aave.20181001.nc" # Regridding map-file
-cmip6_opt='-7 --dfl_lvl=1 --no_cll_msr --no_frm_trm --no_stg_grd' # CMIP6-specific options
-spl_opt='--yr_srt=1 --yr_end=500 --ypf=500' # Splitter options
-vars=('TREFHT' 'TS' 'PSL' 'PS' 'QREFHT' 'PRECC' 'PRECL' 'PRECSC' 'PRECSL' 'QFLX' 'TAUX' 'TAUY' 'LHFLX' 'CLDTOT' 'FLDS' 'FLNS' 'FSDS' 'SHFLX' 'CLOUD' 'CLDICE' 'TGCLDIWP' 'CLDLIQ' 'RELHUM' 'Q' 'O3' 'P0' 'hyam' 'hybi' 'TMQ' 'FLDSC' 'FLUT' 'FSDSC' 'SOLIN' 'FSNSC' 'FSUTOA' 'FSUTOAC' 'FSNT' 'FLNT' 'T' 'U' 'V' 'OMEGA' 'Z3')
-export TMPDIR=${drc_tmp}
-cd ${drc_in}
-
-for i in "${vars[@]}"
-do
-    ls 20180129.DECKv1b_piControl.ne30_oEC.edison.cam.h0.0???-*.nc | ncclimo --var=${i} ${cmip6_opt} ${spl_opt} --map=${map} --drc_out=${drc_out} --drc_rgr=${drc_rgr} &> ${drc_out}/ncclimo_${i}.out &
-done"""
+            datafile.ncclimo_generation_command = """ncclimo --var=${var} -7 --dfl_lvl=1 --no_cll_msr --no_frm_trm --no_stg_grd --yr_srt=1 --yr_end=500 --ypf=500 --map=map_ne30np4_to_cmip6_180x360_aave.20181001.nc """
             datafile.ncclimo_version = '4.7.9-alpha04'
             datafile.close()
                 
