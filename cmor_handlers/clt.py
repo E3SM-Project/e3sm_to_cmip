@@ -13,7 +13,7 @@ RAW_VARIABLES = ['CLDTOT']
 
 # output variable name
 VAR_NAME = 'clt'
-VAR_UNITS = '1.0'
+VAR_UNITS = '5'
 
 def handle(infiles, tables, user_input_path):
     """

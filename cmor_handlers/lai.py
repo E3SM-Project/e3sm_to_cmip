@@ -13,7 +13,7 @@ RAW_VARIABLES = ['LAISHA', 'LAISUN']
 
 # output variable name
 VAR_NAME = 'lai'
-VAR_UNITS = '1.0'
+VAR_UNITS = '%'
 
 def handle(infiles, tables, user_input_path):
     """

@@ -1,5 +1,5 @@
 """
-QREFHT to huss converter
+TGCLDIWP to clivi converter
 """
 import os
 import cmor
@@ -9,15 +9,15 @@ import logging
 from lib.util import print_message
 
 # list of raw variable names needed
-RAW_VARIABLES = ['QREFHT']
+RAW_VARIABLES = ['TGCLDIWP']
 
 # output variable name
-VAR_NAME = 'huss'
-VAR_UNITS = '%'
+VAR_NAME = 'clivi'
+VAR_UNITS = 'kg m-2'
 
 def handle(infiles, tables, user_input_path):
     """
-    Transform E3SM.QREFHT into CMIP.huss
+    Transform E3SM.TGCLDIWP into CMIP.clivi
 
     Parameters
     ----------
@@ -28,18 +28,17 @@ def handle(infiles, tables, user_input_path):
     -------
         var name (str): the name of the processed variable after processing is complete
     """
-
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
 
     # extract data from the input file
     f = cdms2.open(infiles[0])
-    data = f(RAW_VARIABLES[0])
-    lat = data.getLatitude()[:]
-    lon = data.getLongitude()[:]
+    clivi = f(RAW_VARIABLES[0])
+    lat = clivi.getLatitude()[:]
+    lon = clivi.getLongitude()[:]
     lat_bnds = f('lat_bnds')
     lon_bnds = f('lon_bnds')
-    time = data.getTime()
+    time = clivi.getTime()
     time_bnds = f('time_bnds')
     f.close()
 
@@ -50,7 +49,7 @@ def handle(infiles, tables, user_input_path):
     logfile = os.path.join(logfile, VAR_NAME + '.log')
     cmor.setup(
         inpath=tables,
-        netcdf_file_action=cmor.CMOR_REPLACE, 
+        netcdf_file_action=cmor.CMOR_REPLACE,
         logfile=logfile)
     cmor.dataset_json(user_input_path)
     table = 'CMIP6_Amon.json'
@@ -84,14 +83,16 @@ def handle(infiles, tables, user_input_path):
 
     # write out the data
     try:
-        for index, val in enumerate(data.getTime()[:]):
+        for index, val in enumerate(clivi.getTime()[:]):
+            data = clivi[index, :]
             cmor.write(
                 varid,
-                data[index, :],
+                data,
                 time_vals=val,
                 time_bnds=[time_bnds[index, :]])
     except Exception as error:
         logging.error("Error in {}".format(VAR_NAME))
+        return ""
     finally:
         cmor.close(varid)
     return VAR_NAME
