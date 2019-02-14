@@ -1,5 +1,6 @@
 import sys
 import traceback
+import cdutil
 
 def format_debug(e):
     """
@@ -45,3 +46,37 @@ def print_message(message, status='error'):
         print colors.OKGREEN + '[+] ' + colors.ENDC + str(message)
     elif status == 'debug':
         print colors.OKBLUE + '[*] ' + colors.ENDC + str(message) + colors.OKBLUE + ' [*]' + colors.ENDC
+
+
+def hybrid_to_plevs(var, hyam, hybm, ps, plev):
+    """Convert from hybrid pressure coordinate to desired pressure level(s).
+    
+    Parameters
+    ----------
+        var (cdms2 transient variable): the variable to convert into the new plev
+        hyam (cdms2 transient variable): the hyam attribute from the file that contained the variable
+        hybm (cdms2 transient variable): the hybm attribute
+        ps (cdms2 transient variable): the PS variable from the file
+        plev (list): A list of integers containing the new pressure levels
+
+    Returns
+    -------
+        var_p (cdms2 transient variable): the var variable, but converted to the new plev levels
+    
+    Notes:
+        This is taken from the e3sm_diags package. Original code can be found here https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/utils/general.py#L107
+    """
+    p0 = 1000.  # mb
+    ps = ps / 100.  # convert unit from 'Pa' to mb
+    levels_orig = cdutil.vertical.reconstructPressureFromHybrid(
+        ps, hyam, hybm, p0)
+    levels_orig.units = 'mb'
+    # Make sure z is positive down
+    if var.getLevel()[0] > var.getLevel()[-1]:
+        var = var(lev=slice(-1, None, -1))
+        levels_orig = levels_orig(lev=slice(-1, None, -1))
+    var_p = cdutil.vertical.logLinearInterpolation(
+        var(squeeze=1),
+        levels_orig(squeeze=1), plev)
+
+    return var_p
