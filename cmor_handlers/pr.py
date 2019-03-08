@@ -1,6 +1,9 @@
 """
 PRECL, PRECC to pr converter
 """
+from __future__ import absolute_import, division, print_function, \
+    unicode_literals
+
 import os
 import cmor
 import cdms2
@@ -45,7 +48,7 @@ def handle(infiles, tables, user_input_path):
 
     f = cdms2.open(infiles[1])
     precl = f(RAW_VARIABLES[1])
-    f.close()    
+    f.close()
 
     # setup cmor
     logfile = os.path.join(os.getcwd(), 'logs')
@@ -55,14 +58,14 @@ def handle(infiles, tables, user_input_path):
     logfile = os.path.join(logfile, VAR_NAME + '.log')
     cmor.setup(
         inpath=tables,
-        netcdf_file_action=cmor.CMOR_REPLACE, 
+        netcdf_file_action=cmor.CMOR_REPLACE,
         logfile=logfile)
     cmor.dataset_json(user_input_path)
     table = 'CMIP6_Amon.json'
     try:
         cmor.load_table(table)
     except Exception as e:
-        print 'Unable to load table from {}'.format(__name__)
+        print('Unable to load table from {}'.format(__name__))
 
     # create axes
     axes = [{

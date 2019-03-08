@@ -1,6 +1,9 @@
 """
 SOILWATER_10CM to mrsos converter
 """
+from __future__ import absolute_import, division, print_function, \
+    unicode_literals
+
 import os
 import cmor
 import cdms2
@@ -56,7 +59,7 @@ def handle(infiles, tables, user_input_path):
     table = 'CMIP6_Lmon.json'
     try:
         cmor.load_table(table)
-    except:
+    except (Exception, BaseException):
         raise Exception('Unable to load table from {}'.format(__name__))
 
     # create axes
