@@ -1,6 +1,10 @@
+from __future__ import absolute_import, division, print_function, \
+    unicode_literals
+
 import sys
 import traceback
 import cdutil
+
 
 def format_debug(e):
     """
@@ -41,16 +45,18 @@ def print_message(message, status='error'):
         message (str): the message to print
         status (str): th"""
     if status == 'error':
-        print colors.FAIL + '[-] ' + colors.ENDC + colors.BOLD + str(message) + colors.ENDC
+        print(colors.FAIL + '[-] ' + colors.ENDC + colors.BOLD + str(message)
+              + colors.ENDC)
     elif status == 'ok':
-        print colors.OKGREEN + '[+] ' + colors.ENDC + str(message)
+        print(colors.OKGREEN + '[+] ' + colors.ENDC + str(message))
     elif status == 'debug':
-        print colors.OKBLUE + '[*] ' + colors.ENDC + str(message) + colors.OKBLUE + ' [*]' + colors.ENDC
+        print(colors.OKBLUE + '[*] ' + colors.ENDC + str(message)
+              + colors.OKBLUE + ' [*]' + colors.ENDC)
 
 
 def hybrid_to_plevs(var, hyam, hybm, ps, plev):
     """Convert from hybrid pressure coordinate to desired pressure level(s).
-    
+
     Parameters
     ----------
         var (cdms2 transient variable): the variable to convert into the new plev
@@ -62,7 +68,7 @@ def hybrid_to_plevs(var, hyam, hybm, ps, plev):
     Returns
     -------
         var_p (cdms2 transient variable): the var variable, but converted to the new plev levels
-    
+
     Notes:
         This is taken from the e3sm_diags package. Original code can be found here https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/utils/general.py#L107
     """
