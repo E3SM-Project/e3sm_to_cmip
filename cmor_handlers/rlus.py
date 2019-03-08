@@ -17,7 +17,7 @@ VAR_UNITS = 'W m-2'
 
 def handle(infiles, tables, user_input_path):
     """
-    Transform E3SM.FLDS into rlus
+    Transform E3SM.FLDS + E3SM.FLNS into rlus
 
     Parameters
     ----------
