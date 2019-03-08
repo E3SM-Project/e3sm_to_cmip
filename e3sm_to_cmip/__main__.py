@@ -14,7 +14,7 @@ from tqdm import tqdm
 from multiprocessing import cpu_count, Pool
 from time import sleep
 
-from lib.util import format_debug, print_message
+from e3sm_to_cmip.util import format_debug, print_message
 
 import numpy as np
 np.warnings.filterwarnings('ignore')
@@ -319,7 +319,8 @@ def parse_argsuments():
         _args = parser.parse_args(_args)
     return _args
 
-if __name__ == "__main__":
+
+def main():
     # parse the command line arguments
     _args = parse_argsuments()    
 
@@ -339,3 +340,8 @@ if __name__ == "__main__":
     except KeyboardInterrupt as e:
         print '--- caught KeyboardInterrupt event ---'
         cmorizer.terminate()
+
+
+if __name__ == "__main__":
+    main()
+
