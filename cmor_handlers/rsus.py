@@ -16,7 +16,7 @@ VAR_UNITS = 'W m-2'
 
 def handle(infiles, tables, user_input_path):
     """
-    Transform E3SM.FSNS into CMIP.rsns and rsus
+    Transform E3SM.FSDS - E3SM.FSNS into rsus
 
     Parameters
     ----------
