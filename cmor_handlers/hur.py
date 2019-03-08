@@ -10,7 +10,7 @@ import cdms2
 import logging
 import numpy
 
-from lib.util import print_message, plev19, hybrid_to_plevs
+from e3sm_to_cmip.util import print_message, plev19, hybrid_to_plevs
 
 # list of raw variable names needed
 RAW_VARIABLES = ['RELHUM']

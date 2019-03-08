@@ -9,7 +9,7 @@ import cmor
 import cdms2
 import logging
 
-from lib.util import print_message
+from e3sm_to_cmip.util import print_message
 from resources.levgrnd_bnds import levgrnd_bnds
 
 # list of raw variable names needed

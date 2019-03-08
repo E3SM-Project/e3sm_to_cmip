@@ -9,7 +9,7 @@ import cmor
 import cdms2
 import logging
 
-from lib.util import print_message
+from e3sm_to_cmip.util import print_message
 
 # list of raw variable names needed
 RAW_VARIABLES = ['LHFLX']
