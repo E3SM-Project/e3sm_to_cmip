@@ -28,7 +28,6 @@ requirements:
     - python
     - setuptools
     - cmor
-    - tqdm
     - cdutil
 
 test:

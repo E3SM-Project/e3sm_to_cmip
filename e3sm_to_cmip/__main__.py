@@ -15,7 +15,6 @@ import logging
 import imp
 import cdms2
 
-from tqdm import tqdm
 from multiprocessing import cpu_count, Pool
 from time import sleep
 
@@ -190,7 +189,7 @@ class Cmorizer(object):
                         args=_args,
                         kwds={}))
 
-        for idx, res in enumerate(tqdm(self._pool_res)):
+        for idx, res in enumerate(self._pool_res):
             try:
                 out = res.get(9999999)
                 msg = 'Finished {handler}, {done}/{total} jobs complete'.format(
@@ -240,7 +239,7 @@ class Cmorizer(object):
                     print_message("Adding additional metadata to {}".format(name), 'ok')
                     filepaths.append(os.path.join(root, name))
 
-        for idx, filepath in enumerate(tqdm(filepaths)):
+        for idx, filepath in enumerate(filepaths):
             datafile = cdms2.open(filepath, 'a')
             datafile.e3sm_source_code_doi = '10.11578/E3SM/dc.20180418.36'
             datafile.e3sm_source_code_reference = 'https://github.com/E3SM-Project/E3SM/releases/tag/v1.0.0'
