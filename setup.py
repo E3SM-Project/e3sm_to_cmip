@@ -10,7 +10,7 @@ cmor_handlers = [(sys.prefix + '/share/e3sm_to_cmip/cmor_handlers',
 
 setup(
     name="e3sm_to_cmor",
-    version="1.0.1",
+    version="1.1.0",
     author="Sterling Baldwin",
     author_email="baldwin32@llnl.gov",
     description="Transform E3SM model data output into cmip6 compatable data "
