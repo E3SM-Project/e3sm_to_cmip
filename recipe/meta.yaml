@@ -3,6 +3,7 @@ package:
   version: {{ environ['VERSION'] }}
 
 source:
+  #path: ..
   git_url: git://github.com/E3SM-Project/e3sm_to_cmip.git
   git_tag: {{ environ['TAG'] }}
 
@@ -11,17 +12,27 @@ build:
   string: {{ environ['BUILD_NAME'] }}
 
 about:
-    home: https://github.com/E3SM-Project/e3sm_to_cmip
-    summary: Transform E3SM model data output into cmip6 compatable data using the Climate Model Output Rewritter.
+  home: https://github.com/E3SM-Project/e3sm_to_cmip
+  summary: |
+    Transform E3SM model data output into cmip6 compatable data using the
+    Climate Model Output Rewritter.
 
 requirements:
   build:
     - python
     - setuptools
-  
+
   run:
     - nco
     - pip
     - python
     - setuptools
     - cmor
+    - tqdm
+    - cdutil
+
+test:
+  imports:
+    - e3sm_to_cmip
+  commands:
+    - export CDAT_ANONYMOUS_LOG=no; e3sm_to_cmip -h

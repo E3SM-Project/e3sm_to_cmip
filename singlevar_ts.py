@@ -1,4 +1,6 @@
- 
+from __future__ import absolute_import, division, print_function, \
+    unicode_literals
+
 import os, sys
 import argparse
 import cdms2
@@ -15,7 +17,7 @@ from lib.util import format_debug, print_message
 
 class Splitter(object):
     """
-    Extract regridded monthly means into single variable time series 
+    Extract regridded monthly means into single variable time series
     """
     def __init__(self, var_list, caseid, input_path, output_path, start, end, nproc, proc_vars=False, data_type='clm2.h0', **kwargs):
         """
@@ -46,8 +48,8 @@ class Splitter(object):
 
         msg = 'setting up splitter'
         logging.info(msg)
-        if self._debug: print msg
-        msg = ''' 
+        if self._debug: print(msg)
+        msg = '''
         var_list: {}
         caseid: {}
         input_path: {}
@@ -81,7 +83,7 @@ class Splitter(object):
                 continue
             try:
                 year = int(item[index + start_pattern_len: end_index - end_pattern_len])
-            except:
+            except (Exception, BaseException):
                 continue
             if year >= start and year <= end:
                 self._file_list.append(item)
@@ -133,7 +135,7 @@ class Splitter(object):
                 nproc = 100 if ncpu > 100 else ncpu - 1
             else:
                 nproc = len_vars
-        
+
         # only make as many processes as needed
         self._nproc = len(var_list) if nproc > len(var_list) else nproc
         if self._nproc == 0:
@@ -141,7 +143,7 @@ class Splitter(object):
             print_message(msg)
             logging.error(msg)
             sys.exit(1)
-    
+
     def split(self):
         """
         Perform the requested variable extraction
@@ -165,7 +167,7 @@ class Splitter(object):
         for idx, res in enumerate(pool_res):
             out, err = res.get(9999999)
             if err:
-                print out, err
+                print(out, err)
             else:
                 out += ', {}/{} jobs complete'.format(
                     idx + 1,
@@ -175,7 +177,7 @@ class Splitter(object):
         self._pool.join()
         os.chdir(self._prev_dir)
 
-    
+
     def terminate(self):
         self._pool.close()
         self._pool.terminate()
@@ -289,17 +291,17 @@ if __name__ == "__main__":
         action='store_true')
     try:
         _args = sys.argv[1:]
-    except:
+    except (Exception, BaseException):
         parser.print_help()
         sys.exit(1)
     else:
         _args = parser.parse_args(_args)
-    
+
     if _args.var_list:
         var_list = _args.var_list
     else:
         if _args.data_type == 'clm2.h0':
-            var_list = ['SOILWATER_10CM', 'SOILICE', 'SOILLIQ', 'QOVER', 
+            var_list = ['SOILWATER_10CM', 'SOILICE', 'SOILLIQ', 'QOVER',
                         'QRUNOFF', 'QINTR', 'QVEGE', 'QSOIL', 'QVEGT', 'TSOI',
                         'LAISHA', 'LAISUN']
         elif _args.data_type == 'cam.h0':
@@ -311,7 +313,7 @@ if __name__ == "__main__":
             var_list = ['timeMonthly_avg_density', 'timeMonthly_avg_layerThickness',
                         'areaCell']
         else:
-            print 'invalid data type'
+            print('invalid data type')
 
     try:
         splitter = Splitter(

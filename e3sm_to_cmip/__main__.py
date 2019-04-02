@@ -2,6 +2,11 @@
 """
 A python command line tool to turn E3SM model output into CMIP6 compatable data
 """
+
+from __future__ import absolute_import, division, print_function, \
+    unicode_literals
+
+
 import os
 import sys
 import argparse
@@ -14,10 +19,11 @@ from tqdm import tqdm
 from multiprocessing import cpu_count, Pool
 from time import sleep
 
-from lib.util import format_debug, print_message
+from e3sm_to_cmip.util import format_debug, print_message
 
 import numpy as np
 np.warnings.filterwarnings('ignore')
+
 
 class Cmorizer(object):
     """
@@ -81,7 +87,7 @@ class Cmorizer(object):
                             self._output_path))
                     else:
                         fout.write(line)
-    
+
     def load_handlers(self):
         """
         load the cmor handler modules
@@ -175,7 +181,7 @@ class Cmorizer(object):
                     'user_input_path': self._user_input_path
                 }
 
-                _args = (kwds['infiles'], 
+                _args = (kwds['infiles'],
                          kwds['tables'],
                          kwds['user_input_path'])
                 self._pool_res.append(
@@ -208,7 +214,7 @@ class Cmorizer(object):
             if re.match(pattern=pattern, string=item):
                 return item
         return None
-    
+
     def add_metadata(self, metadata=None):
         """
         Add additional custom metadata to the output files
@@ -238,12 +244,12 @@ class Cmorizer(object):
             datafile = cdms2.open(filepath, 'a')
             datafile.e3sm_source_code_doi = '10.11578/E3SM/dc.20180418.36'
             datafile.e3sm_source_code_reference = 'https://github.com/E3SM-Project/E3SM/releases/tag/v1.0.0'
-            datafile.doe_acknowledgement = 'This research was supported as part of the Energy Exascale Earth System Model (E3SM) project, funded by the U.S. Department of Energy, Office of Science, Office of Biological and Environmental Research.' 
+            datafile.doe_acknowledgement = 'This research was supported as part of the Energy Exascale Earth System Model (E3SM) project, funded by the U.S. Department of Energy, Office of Science, Office of Biological and Environmental Research.'
             datafile.computational_acknowledgement = 'The data were produced using resources of the National Energy Research Scientific Computing Center, a DOE Office of Science User Facility supported by the Office of Science of the U.S. Department of Energy under Contract No. DE-AC02-05CH11231.'
             datafile.ncclimo_generation_command = """ncclimo --var=${var} -7 --dfl_lvl=1 --no_cll_msr --no_frm_trm --no_stg_grd --yr_srt=1 --yr_end=500 --ypf=500 --map=map_ne30np4_to_cmip6_180x360_aave.20181001.nc """
             datafile.ncclimo_version = '4.7.9-alpha04'
             datafile.close()
-                
+
 
     def terminate(self):
         """
@@ -319,9 +325,10 @@ def parse_argsuments():
         _args = parser.parse_args(_args)
     return _args
 
-if __name__ == "__main__":
+
+def main():
     # parse the command line arguments
-    _args = parse_argsuments()    
+    _args = parse_argsuments()
 
     # run the cmorizer
     cmorizer = Cmorizer(
@@ -337,5 +344,9 @@ if __name__ == "__main__":
     try:
         cmorizer.run()
     except KeyboardInterrupt as e:
-        print '--- caught KeyboardInterrupt event ---'
+        print('--- caught KeyboardInterrupt event ---')
         cmorizer.terminate()
+
+
+if __name__ == "__main__":
+    main()
