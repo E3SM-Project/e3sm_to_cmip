@@ -29,7 +29,7 @@ class Cmorizer(object):
     A utility class to cmorize e3sm time series files
     """
 
-    def __init__(self, var_list, input_path, user_input_path, tables_path, output_path='.', handlers=None, **kwargs):
+    def __init__(self, var_list, input_path, user_input_path, tables_path, output_path='.', handlers=None, no_metadata=False, **kwargs):
         """
         Parameters:
             var_list (list(str)): a list of strings of variable names to extract, or 'all' to extract all possible
@@ -47,6 +47,7 @@ class Cmorizer(object):
         self._nproc = kwargs.get('nproc') if kwargs.get('nproc') else 6
         self._proc_vars = kwargs.get('proc_vars', False)
         self._output_path = output_path
+        self._no_metadata = no_metadata
 
         self._user_input_path = os.path.join(
             self._output_path, 'user_input.json')
@@ -201,7 +202,10 @@ class Cmorizer(object):
                 logging.error(e)
         self.terminate()
 
-        self.add_metadata()
+        if self._no_metadata:
+            print_message('Not adding additional metadata', 'ok')
+        else:
+            self.add_metadata()
 
     def find_variable_file(self, var, path):
         """
@@ -214,7 +218,7 @@ class Cmorizer(object):
                 return item
         return None
 
-    def add_metadata(self, metadata=None):
+    def add_metadata(self):
         """
         Add additional custom metadata to the output files
 
@@ -223,9 +227,6 @@ class Cmorizer(object):
             metadata (dict): The keys are the names of the metadata fields, the values the values for the fields
         """
         cmip_path = os.path.join(self._output_path, 'CMIP6')
-
-        procPool = Pool(10)
-        results = list()
 
         filepaths = list()
 
@@ -239,14 +240,15 @@ class Cmorizer(object):
                     print_message("Adding additional metadata to {}".format(name), 'ok')
                     filepaths.append(os.path.join(root, name))
 
-        for idx, filepath in enumerate(filepaths):
+        for filepath in filepaths:
             datafile = cdms2.open(filepath, 'a')
             datafile.e3sm_source_code_doi = '10.11578/E3SM/dc.20180418.36'
+            datafile.e3sm_paper_reference = 'https://doi.org/10.1029/2018MS001603'
             datafile.e3sm_source_code_reference = 'https://github.com/E3SM-Project/E3SM/releases/tag/v1.0.0'
             datafile.doe_acknowledgement = 'This research was supported as part of the Energy Exascale Earth System Model (E3SM) project, funded by the U.S. Department of Energy, Office of Science, Office of Biological and Environmental Research.'
             datafile.computational_acknowledgement = 'The data were produced using resources of the National Energy Research Scientific Computing Center, a DOE Office of Science User Facility supported by the Office of Science of the U.S. Department of Energy under Contract No. DE-AC02-05CH11231.'
             datafile.ncclimo_generation_command = """ncclimo --var=${var} -7 --dfl_lvl=1 --no_cll_msr --no_frm_trm --no_stg_grd --yr_srt=1 --yr_end=500 --ypf=500 --map=map_ne30np4_to_cmip6_180x360_aave.20181001.nc """
-            datafile.ncclimo_version = '4.7.9-alpha04'
+            datafile.ncclimo_version = '4.7.9'
             datafile.close()
 
 
@@ -315,6 +317,10 @@ def parse_argsuments():
         '--debug',
         help='Set output level to debug',
         action='store_true')
+    parser.add_argument(
+        '--no-metadata',
+        help='Do not add E3SM metadata to the output',
+        action='store_true')
     try:
         _args = sys.argv[1:]
     except:
@@ -339,7 +345,8 @@ def main():
         proc_vars=_args.proc_vars,
         handlers=_args.handlers,
         tables_path=_args.tables,
-        debug=_args.debug)
+        debug=_args.debug,
+        no_metadata=_args.no_metadata)
     try:
         cmorizer.run()
     except KeyboardInterrupt as e:
