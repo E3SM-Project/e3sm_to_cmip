@@ -1,23 +1,22 @@
 """
 TSOI to tsl converter
 """
-from __future__ import absolute_import, division, print_function, \
-    unicode_literals
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
 import cmor
 import cdms2
 import logging
 
-from e3sm_to_cmip.util import print_message
+from e3sm_to_cmip.util import print_message, setup_cmor
 from resources.levgrnd_bnds import levgrnd_bnds
 
 # list of raw variable names needed
 RAW_VARIABLES = ['TSOI']
 
 # output variable name
-VAR_NAME = 'tsl'
-VAR_UNITS = 'K'
+VAR_NAME = 'tsl'.encode('ascii')
+VAR_UNITS = 'K'.encode('ascii')
 
 def handle(infiles, tables, user_input_path):
     """
@@ -36,6 +35,7 @@ def handle(infiles, tables, user_input_path):
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
 
+
     # open input file and pull out the bounds info
     f = cdms2.open(infiles[0])
     tsoi = f(RAW_VARIABLES[0])
@@ -49,20 +49,11 @@ def handle(infiles, tables, user_input_path):
     f.close()
 
     # setup cmor
-    logfile = os.path.join(os.getcwd(), 'logs')
-    if not os.path.exists(logfile):
-        os.makedirs(logfile)
-    logfile = os.path.join(logfile, VAR_NAME + '.log')
-    cmor.setup(
-        inpath=tables,
-        netcdf_file_action=cmor.CMOR_REPLACE, 
-        logfile=logfile)
-    cmor.dataset_json(user_input_path)
-    table = 'CMIP6_Lmon.json'
-    try:
-        cmor.load_table(table)
-    except (Exception, BaseException):
-        raise Exception('Unable to load table from {}'.format(__name__))
+    setup_cmor(
+        VAR_NAME,
+        tables,
+        'CMIP6_Lmon.json',
+        user_input_path)
 
     # create axes
     axes = [{

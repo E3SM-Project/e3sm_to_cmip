@@ -1,10 +1,10 @@
-from __future__ import absolute_import, division, print_function, \
-    unicode_literals
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import sys
 import traceback
 import cdutil
-
+import cmor
+import os
 
 def format_debug(e):
     """
@@ -86,3 +86,26 @@ def hybrid_to_plevs(var, hyam, hybm, ps, plev):
         levels_orig(squeeze=1), plev)
 
     return var_p
+
+def setup_cmor(var_name, table_path, table_name, user_input_path):
+    
+    var_name = var_name.encode('ascii')
+    table_path = table_path.encode('ascii')
+    table_name = table_name.encode('ascii')
+    user_input_path = user_input_path.encode('ascii')
+
+    logfile = os.path.join(os.getcwd(), 'logs')
+    if not os.path.exists(logfile):
+        os.makedirs(logfile)
+
+    logfile = os.path.join(logfile, var_name + '.log')
+    cmor.setup(
+        inpath=table_path,
+        netcdf_file_action=cmor.CMOR_REPLACE,
+        logfile=logfile)
+
+    cmor.dataset_json(user_input_path)
+    try:
+        cmor.load_table(table_name)
+    except (Exception, BaseException) as error:
+        print(format_debug(error))

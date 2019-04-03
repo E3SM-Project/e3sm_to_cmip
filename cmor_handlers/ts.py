@@ -1,22 +1,21 @@
 """
 TS to ts converter
 """
-from __future__ import absolute_import, division, print_function, \
-    unicode_literals
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
 import cmor
 import cdms2
 import logging
 
-from e3sm_to_cmip.util import print_message
+from e3sm_to_cmip.util import print_message, setup_cmor
 
 # list of raw variable names needed
 RAW_VARIABLES = ['TS']
 
 # output variable name
-VAR_NAME = 'ts'
-VAR_UNITS = 'K'
+VAR_NAME = 'ts'.encode('ascii')
+VAR_UNITS = 'K'.encode('ascii')
 
 def handle(infiles, tables, user_input_path):
     """
@@ -35,6 +34,7 @@ def handle(infiles, tables, user_input_path):
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
 
+
     # open input file and pull out bounds info
     f = cdms2.open(infiles[0])
     data = f(RAW_VARIABLES[0])
@@ -47,35 +47,26 @@ def handle(infiles, tables, user_input_path):
     f.close()
 
     # setup cmor
-    logfile = os.path.join(os.getcwd(), 'logs')
-    if not os.path.exists(logfile):
-        os.makedirs(logfile)
-    logfile = os.path.join(logfile, VAR_NAME + '.log')
-    cmor.setup(
-        inpath=tables,
-        netcdf_file_action=cmor.CMOR_REPLACE, 
-        logfile=logfile)
-    cmor.dataset_json(user_input_path)
-    table = 'CMIP6_Amon.json'
-    try:
-        cmor.load_table(table)
-    except (Exception, BaseException):
-        raise Exception('Unable to load table from {}'.format(__name__))
+    setup_cmor(
+        VAR_NAME,
+        tables,
+        'CMIP6_Amon.json',
+        user_input_path)
 
     # create axes
     axes = [{
-        'table_entry': 'time',
-        'units': time.units
+        str('table_entry'): str('time'),
+        str('units'): time.units
     }, {
-        'table_entry': 'latitude',
-        'units': 'degrees_north',
-        'coord_vals': lat[:],
-        'cell_bounds': lat_bnds[:]
+        str('table_entry'): str('latitude'),
+        str('units'): str('degrees_north'),
+        str('coord_vals'): lat[:],
+        str('cell_bounds'): lat_bnds[:]
     }, {
-        'table_entry': 'longitude',
-        'units': 'degrees_east',
-        'coord_vals': lon[:],
-        'cell_bounds': lon_bnds[:]
+        str('table_entry'): str('longitude'),
+        str('units'): str('degrees_east'),
+        str('coord_vals'): lon[:],
+        str('cell_bounds'): lon_bnds[:]
     }]
     axis_ids = list()
     for axis in axes:

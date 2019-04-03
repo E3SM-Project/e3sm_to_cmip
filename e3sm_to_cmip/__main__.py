@@ -3,9 +3,7 @@
 A python command line tool to turn E3SM model output into CMIP6 compatable data
 """
 
-from __future__ import absolute_import, division, print_function, \
-    unicode_literals
-
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
 import sys
@@ -29,7 +27,7 @@ class Cmorizer(object):
     A utility class to cmorize e3sm time series files
     """
 
-    def __init__(self, var_list, input_path, user_input_path, tables_path, output_path='.', handlers=None, no_metadata=False, **kwargs):
+    def __init__(self, var_list, input_path, user_input_path, tables_path, num_proc=None, output_path='.', handlers=None, no_metadata=False, serial=False, debug=False, **kwargs):
         """
         Parameters:
             var_list (list(str)): a list of strings of variable names to extract, or 'all' to extract all possible
@@ -44,13 +42,20 @@ class Cmorizer(object):
         self._var_list = var_list
         self._input_path = input_path
         self._tables_path = tables_path
-        self._nproc = kwargs.get('nproc') if kwargs.get('nproc') else 6
-        self._proc_vars = kwargs.get('proc_vars', False)
+
+        if isinstance(self._tables_path, unicode):
+            self._tables_path = self._tables_path.encode('ascii', 'ignore')
+
+        self._nproc = num_proc
         self._output_path = output_path
         self._no_metadata = no_metadata
+        self._serial = serial
 
         self._user_input_path = os.path.join(
-            self._output_path, 'user_input.json')
+            self._output_path, 
+            'user_input.json')
+        if isinstance(self._user_input_path, unicode):
+            self._user_input_path = self._user_input_path.encode('ascii', 'ignore')
 
         if handlers is not None:
             self._handlers_path = handlers
@@ -62,7 +67,7 @@ class Cmorizer(object):
                 'cmor_handlers')
 
         self._handlers_path = os.path.abspath(self._handlers_path)
-        self._debug = kwargs.get('debug', False)
+        self._debug = debug
         self._pool = None
         self._pool_res = None
         self._handlers = list()
@@ -113,7 +118,6 @@ class Cmorizer(object):
                 if module_name not in self._var_list:
                     continue
 
-
             module_path = os.path.join(self._handlers_path, handler)
 
             # load the module, and extract the "handle" method and required variables
@@ -144,11 +148,43 @@ class Cmorizer(object):
             print_message('No handlers loaded')
             sys.exit(1)
 
-        # Setup the number of processes that will exist in the pool
-        len_handlers = len(self._handlers)
-        if self._proc_vars:
-            ncpu = cpu_count() - 1
-            self._nproc = len_handlers if len_handlers < ncpu else ncpu
+        if self._serial:
+            print_message('Running CMOR handlers in serial', 'ok')
+            self.run_serial()
+        else:
+            self.run_parallel()
+
+        if self._no_metadata:
+            print_message('Not adding additional metadata', 'ok')
+        else:
+            self.add_metadata()
+
+    def run_serial(self):
+
+        for handler in self._handlers:
+            for _, handler_info in handler.items():
+
+                handler_method = handler_info[0]
+                handler_variables = handler_info[1]
+                # find the input files this handler needs
+                input_files = list()
+                for variable in handler_variables:
+                    input_file = self.find_variable_file(
+                        var=variable,
+                        path=self._input_path)
+                    if input_file is None:
+                        continue
+                    var_path = os.path.join(
+                        self._input_path,
+                        input_file)
+                    input_files.append(var_path)
+
+                handler_method(
+                    input_files,
+                    self._tables_path,
+                    self._user_input_path)
+
+    def run_parallel(self):
 
         print_message(
             'running with {} processes'.format(self._nproc),
@@ -159,7 +195,7 @@ class Cmorizer(object):
         self._pool_res = list()
 
         for handler in self._handlers:
-            for handle_name, handler_info in handler.items():
+            for _, handler_info in handler.items():
 
                 handler_method = handler_info[0]
                 handler_variables = handler_info[1]
@@ -200,12 +236,8 @@ class Cmorizer(object):
                 logging.info(msg)
             except Exception as e:
                 logging.error(e)
-        self.terminate()
 
-        if self._no_metadata:
-            print_message('Not adding additional metadata', 'ok')
-        else:
-            self.add_metadata()
+        self.terminate()
 
     def find_variable_file(self, var, path):
         """
@@ -237,20 +269,20 @@ class Cmorizer(object):
                     continue
                 index = name.find('_')
                 if index != -1 and name[:index] in self._var_list:
-                    print_message("Adding additional metadata to {}".format(name), 'ok')
+                    print_message(
+                        "Adding additional metadata to {}".format(name), 'ok')
                     filepaths.append(os.path.join(root, name))
 
         for filepath in filepaths:
             datafile = cdms2.open(filepath, 'a')
-            datafile.e3sm_source_code_doi = '10.11578/E3SM/dc.20180418.36'
-            datafile.e3sm_paper_reference = 'https://doi.org/10.1029/2018MS001603'
-            datafile.e3sm_source_code_reference = 'https://github.com/E3SM-Project/E3SM/releases/tag/v1.0.0'
-            datafile.doe_acknowledgement = 'This research was supported as part of the Energy Exascale Earth System Model (E3SM) project, funded by the U.S. Department of Energy, Office of Science, Office of Biological and Environmental Research.'
-            datafile.computational_acknowledgement = 'The data were produced using resources of the National Energy Research Scientific Computing Center, a DOE Office of Science User Facility supported by the Office of Science of the U.S. Department of Energy under Contract No. DE-AC02-05CH11231.'
-            datafile.ncclimo_generation_command = """ncclimo --var=${var} -7 --dfl_lvl=1 --no_cll_msr --no_frm_trm --no_stg_grd --yr_srt=1 --yr_end=500 --ypf=500 --map=map_ne30np4_to_cmip6_180x360_aave.20181001.nc """
-            datafile.ncclimo_version = '4.7.9'
+            datafile.e3sm_source_code_doi = str('10.11578/E3SM/dc.20180418.36')
+            datafile.e3sm_paper_reference = str('https://doi.org/10.1029/2018MS001603')
+            datafile.e3sm_source_code_reference = str('https://github.com/E3SM-Project/E3SM/releases/tag/v1.0.0')
+            datafile.doe_acknowledgement = str('This research was supported as part of the Energy Exascale Earth System Model (E3SM) project, funded by the U.S. Department of Energy, Office of Science, Office of Biological and Environmental Research.')
+            datafile.computational_acknowledgement = str('The data were produced using resources of the National Energy Research Scientific Computing Center, a DOE Office of Science User Facility supported by the Office of Science of the U.S. Department of Energy under Contract No. DE-AC02-05CH11231.')
+            datafile.ncclimo_generation_command = str("""ncclimo --var=${var} -7 --dfl_lvl=1 --no_cll_msr --no_frm_trm --no_stg_grd --yr_srt=1 --yr_end=500 --ypf=500 --map=map_ne30np4_to_cmip6_180x360_aave.20181001.nc """)
+            datafile.ncclimo_version = str('4.7.9')
             datafile.close()
-
 
     def terminate(self):
         """
@@ -263,6 +295,7 @@ class Cmorizer(object):
             self._pool.terminate()
             self._pool.join()
 # ------------------------------------------------------------------
+
 
 def parse_argsuments():
     parser = argparse.ArgumentParser(
@@ -292,7 +325,8 @@ def parse_argsuments():
     parser.add_argument(
         '-n', '--num-proc',
         metavar='<nproc>',
-        default=6, type=int,
+        default=6,
+        type=int,
         help='optional: number of processes, default = 6')
     parser.add_argument(
         '-t', '--tables',
@@ -321,6 +355,10 @@ def parse_argsuments():
         '--no-metadata',
         help='Do not add E3SM metadata to the output',
         action='store_true')
+    parser.add_argument(
+        '--serial',
+        help='Run in serial mode, usefull for debugging purposes',
+        action="store_true")
     try:
         _args = sys.argv[1:]
     except:
@@ -341,12 +379,13 @@ def main():
         input_path=_args.input,
         user_input_path=_args.user_input,
         output_path=_args.output,
-        nproc=_args.num_proc,
+        num_proc=_args.num_proc,
         proc_vars=_args.proc_vars,
         handlers=_args.handlers,
         tables_path=_args.tables,
         debug=_args.debug,
-        no_metadata=_args.no_metadata)
+        no_metadata=_args.no_metadata,
+        serial=_args.serial)
     try:
         cmorizer.run()
     except KeyboardInterrupt as e:

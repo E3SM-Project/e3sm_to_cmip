@@ -9,7 +9,7 @@ cmor_handlers = [(sys.prefix + '/share/e3sm_to_cmip/cmor_handlers',
 
 
 setup(
-    name="e3sm_to_cmor",
+    name="e3sm_to_cmip",
     version="1.1.0",
     author="Sterling Baldwin",
     author_email="baldwin32@llnl.gov",
