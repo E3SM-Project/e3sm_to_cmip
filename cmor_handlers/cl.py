@@ -40,10 +40,22 @@ def handle(infiles, tables, user_input_path):
     cloud = f(RAW_VARIABLES[0])
     lat = cloud.getLatitude()[:]
     lon = cloud.getLongitude()[:]
+
     lat_bnds = f('lat_bnds')
     lon_bnds = f('lon_bnds')
+    
     time = cloud.getTime()
     time_bnds = f('time_bnds')
+    
+    lev = f.getAxis('lev')[:]/1000
+    ilev = f.getAxis('ilev')[:]/1000
+    ps = f('PS')[:]
+    p0 = f('P0')
+    hyam = f('hyam')
+    hyai = f('hyai')
+    hybm = f('hybm')
+    hybi = f('hybi')
+
     f.close()
 
     # setup cmor
@@ -67,15 +79,44 @@ def handle(infiles, tables, user_input_path):
         str('units'): str('degrees_east'),
         str('coord_vals'): lon[:],
         str('cell_bounds'): lon_bnds[:]
-    }, {
-        str('table_entry'): str('alevel'),
-        str('units'): str('')
     }]
+
     axis_ids = list()
     for axis in axes:
         axis_id = cmor.axis(**axis)
-        print(axis['table_entry'])
         axis_ids.append(axis_id)
+    
+    lev_axis = {
+        str('table_entry'): str('standard_hybrid_sigma'),
+        str('units'): str('1'),
+        str('coord_vals'): lev,
+        str('cell_bounds'): ilev
+    }
+    lev_id = cmor.axis(**lev_axis)
+    axis_ids.append(lev_id)
+
+    cmor.zfactor(
+        zaxis_id=lev_id,
+        zfactor_name=str('a'),
+        axis_ids=[lev_id, ],
+        zfactor_values=hyam,
+        zfactor_bounds=hyai)
+    cmor.zfactor(
+        zaxis_id=lev_id,
+        zfactor_name=str('b'),
+        axis_ids=[lev_id, ],
+        zfactor_values=hybm,
+        zfactor_bounds=hybi)
+    cmor.zfactor(
+        zaxis_id=lev_id,
+        zfactor_name=str('p0'),
+        units=str('Pa'),
+        zfactor_values=p0)
+    ips = cmor.zfactor(
+        zaxis_id=lev_id,
+        zfactor_name=str('ps'),
+        axis_ids=[axis_ids[0], axis_ids[1], axis_ids[2]],
+        units=str('Pa'))
 
     # create the cmor variable
     varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids)
@@ -89,6 +130,12 @@ def handle(infiles, tables, user_input_path):
                 data,
                 time_vals=val,
                 time_bnds=[time_bnds[index, :]])
+            cmor.write(
+                ips, 
+                ps, 
+                time_vals=val,
+                time_bnds=[time_bnds[index, :]],
+                store_with=varid)
     except Exception as error:
         logging.error("Error in {}".format(VAR_NAME))
         return ""
