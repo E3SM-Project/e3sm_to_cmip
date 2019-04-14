@@ -8,6 +8,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os
 import sys
 import logging
+import tempfile
+import shutil
 
 from multiprocessing import cpu_count, Pool
 from time import sleep
@@ -59,6 +61,13 @@ def main():
     # create the output dir if it doesnt exist
     if not os.path.exists(output_path):
         os.makedirs(output_path)
+
+    temp_path = '{}/tmp'.format(output_path)
+
+    if not os.path.exists(temp_path):
+        os.makedirs(temp_path)
+
+    tempfile.tempdir = temp_path
 
     logging_path = os.path.join(output_path, 'converter.log')
     print_message("Writing log output to: {}".format(logging_path), 'debug')
@@ -131,6 +140,8 @@ def main():
         add_metadata(
             file_path=output_path,
             var_list=var_list)
+
+    shutil.rmtree(temp_path)
     return 0
 # ------------------------------------------------------------------
 
