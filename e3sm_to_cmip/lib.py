@@ -150,12 +150,9 @@ def terminate(pool, debug=False):
 # ------------------------------------------------------------------
 
 
-def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None):
+def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None):
     """
     """
-
-    # print_message('{}: idx = {}'.format(outvar_name, position))
-
     msg = '{}: Starting'.format(outvar_name)
     logging.info(msg)
     if serial:
@@ -165,7 +162,6 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
         outvar_name,
         infiles)
     logging.info(msg)
-
 
     # setup cmor
     setup_cmor(
@@ -181,7 +177,6 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
 
     data = {}
 
-    # num_variables = len(RAW_VARIABLES)
     # assuming all year ranges are the same for every variable
     num_files_per_variable = len(infiles[raw_variables[0]])
 
@@ -206,7 +201,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             new_data = get_dimension_data(
                 filename=infiles[var_name][index],
                 variable=var_name,
-                levels=True,
+                levels=False,
                 get_dims=get_dims)
             data.update(new_data)
             get_dims = False
@@ -218,7 +213,10 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
 
         # create the cmor variable and axis
         axis_ids, _ = load_axis(data=data)
-        varid = cmor.variable(outvar_name, outvar_units, axis_ids)
+        if positive:
+            varid = cmor.variable(outvar_name, outvar_units, axis_ids, positive=positive)
+        else:
+            varid = cmor.variable(outvar_name, outvar_units, axis_ids)
 
         # write out the data
         msg = "{}: writing {} - {}".format(
@@ -260,3 +258,112 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
     if serial:
         print(msg)
 # ------------------------------------------------------------------
+
+# def handle_variables_3d(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None):
+#     """
+#     """
+#     msg = '{}: Starting'.format(outvar_name)
+#     logging.info(msg)
+#     if serial:
+#         print(msg)
+    
+#     msg = '{}: running with input files: {}'.format(
+#         outvar_name,
+#         infiles)
+#     logging.info(msg)
+
+#     # setup cmor
+#     setup_cmor(
+#         outvar_name,
+#         tables,
+#         table,
+#         metadata_path)
+
+#     msg = '{}: CMOR setup complete'.format(outvar_name)
+#     logging.info(msg)
+#     if serial:
+#         print(msg)
+
+#     data = {}
+
+#     # assuming all year ranges are the same for every variable
+#     num_files_per_variable = len(infiles[raw_variables[0]])
+
+#     # sort the input files for each variable
+#     for var_name in raw_variables:
+#         infiles[var_name].sort()
+
+#     for index in range(num_files_per_variable):
+
+#         # reload the dimensions for each time slice
+#         get_dims = True
+
+#         # load data for each variable
+#         for var_name in raw_variables:
+
+#             # extract data from the input file
+#             msg = '{name}: loading {variable}'.format(
+#                 name=outvar_name,
+#                 variable=var_name)
+#             logging.info(msg)
+
+#             new_data = get_dimension_data(
+#                 filename=infiles[var_name][index],
+#                 variable=var_name,
+#                 levels=False,
+#                 get_dims=get_dims)
+#             data.update(new_data)
+#             get_dims = False
+
+#         msg = '{name}: loading axes'.format(name=outvar_name)
+#         logging.info(msg)
+#         if serial:
+#             print(msg)
+
+#         # create the cmor variable and axis
+#         axis_ids, _ = load_axis(data=data)
+#         if positive:
+#             varid = cmor.variable(outvar_name, outvar_units, axis_ids, positive=positive)
+#         else:
+#             varid = cmor.variable(outvar_name, outvar_units, axis_ids)
+
+#         # write out the data
+#         msg = "{}: writing {} - {}".format(
+#             outvar_name,
+#             data['time_bnds'][0][0],
+#             data['time_bnds'][-1][-1])
+#         if serial:
+#             print(msg)
+#             for index, val in enumerate(  # data['time']):
+#                 tqdm(
+#                     data['time'],
+#                     position=0,
+#                     desc="{}: {} - {}".format(
+#                         outvar_name,
+#                         data['time_bnds'][0][0],
+#                         data['time_bnds'][-1][-1]))):
+
+#                 write_data(
+#                     varid=varid,
+#                     data=data,
+#                     timeval=val,
+#                     timebnds=[data['time_bnds'][index, :]],
+#                     index=index)
+#         else:
+#             for index, val in enumerate(data['time']):
+#                 write_data(
+#                     varid=varid,
+#                     data=data,
+#                     timeval=val,
+#                     timebnds=[data['time_bnds'][index, :]],
+#                     index=index)
+#     msg = '{}: write complete, closing'.format(outvar_name)
+#     logging.info(msg)
+#     if serial:
+#         print(msg)
+#     cmor.close()
+#     msg = '{}: file close complete'.format(outvar_name)
+#     logging.info(msg)
+#     if serial:
+#         print(msg)
+# # ------------------------------------------------------------------

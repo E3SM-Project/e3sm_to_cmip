@@ -24,7 +24,7 @@ TABLE = str('CMIP6_Amon.json')
 
 def write_ps(varid, data, timeval, timebnds, index):
     """
-    No data transform required for PS to ps
+    No data transform required
     """
     cmor.write(
         varid,
@@ -35,8 +35,6 @@ def write_ps(varid, data, timeval, timebnds, index):
 
 def handle(infiles, tables, user_input_path, serial=None):
     """
-    Transform E3SM.TS into CMIP.ts
-
     Parameters
     ----------
         infiles (List): a list of strings of file names for the raw input data

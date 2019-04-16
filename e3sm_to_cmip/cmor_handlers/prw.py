@@ -1,5 +1,5 @@
 """
-FSNS, FSDS to rsus converter
+TMQ to prw converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -16,19 +16,19 @@ from e3sm_to_cmip.util import load_axis
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('FSNS'), str('FSDS')]
-VAR_NAME = str('rsus')
-VAR_UNITS = str('W m-2')
+RAW_VARIABLES = [str('TMQ')]
+VAR_NAME = str('prw')
+VAR_UNITS = str('kg m-2')
 TABLE = str('CMIP6_Amon.json')
-POSITIVE = str('up')
 
-def write_rsus(varid, data, timeval, timebnds, index):
+
+def write_prw(varid, data, timeval, timebnds, index):
     """
-    rsus = FSDS - FSNS
+    No data transform required
     """
     cmor.write(
         varid,
-        data[RAW_VARIABLES[0]][index, :] + data[RAW_VARIABLES[1]][index, :],
+        data[RAW_VARIABLES[0]][index, :],
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
@@ -51,11 +51,10 @@ def handle(infiles, tables, user_input_path, serial=None):
         table=TABLE,
         infiles=infiles,
         raw_variables=RAW_VARIABLES,
-        write_data=write_rsus,
+        write_data=write_prw,
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
-        serial=serial,
-        positive=POSITIVE)
+        serial=serial)
 
     return VAR_NAME
 # ------------------------------------------------------------------

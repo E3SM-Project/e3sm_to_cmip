@@ -8,15 +8,18 @@ import cmor
 import cdms2
 import logging
 
-from e3sm_to_cmip.util import print_message, setup_cmor
+from tqdm import tqdm
+from e3sm_to_cmip.util import print_message
+from e3sm_to_cmip.util import get_dimension_data
+from e3sm_to_cmip.util import setup_cmor
+from e3sm_to_cmip.util import load_axis
+from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
 RAW_VARIABLES = [str('CLOUD')]
-
-# output variable name
 VAR_NAME = str('cl')
 VAR_UNITS = str('%')
-
+TABLE = str('CMIP6_Amon.json')
 
 def handle(infiles, tables, user_input_path, position=None):
     """
