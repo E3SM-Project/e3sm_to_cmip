@@ -10,6 +10,7 @@ import argparse
 import imp
 import cdms2
 
+from tqdm import tqdm
 
 def format_debug(e):
     """
@@ -200,7 +201,6 @@ def load_handlers(handlers_path, var_list, debug=False):
             continue
 
         module_name, _ = handler.rsplit('.', 1)
-
         # ignore handlers for variables that werent requested
         if module_name not in var_list and 'all' not in var_list:
             continue
@@ -283,11 +283,9 @@ def add_metadata(file_path, var_list):
                 continue
             index = name.find('_')
             if index != -1 and name[:index] in var_list:
-                print_message(
-                    "Adding additional metadata to {}".format(name), 'ok')
                 filepaths.append(os.path.join(root, name))
 
-    for filepath in filepaths:
+    for filepath in tqdm(filepaths):
         datafile = cdms2.open(filepath, 'a')
         try:
             datafile.e3sm_source_code_doi = str('10.11578/E3SM/dc.20180418.36')
@@ -365,26 +363,26 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
                 'time': variable_data.getTime(),
                 'time_bnds': f('time_bnds')
             })
-        # load level and lev bounds
-        if levels:
-            # load lev and ilev
-            data.update({
-                'lev': f.getAxis('lev')[:]/1000,
-                'ilev': f.getAxis('ilev')[:]/1000,
-                'ps': f('PS'),
-                'p0': f('P0'),
-                'hyam': f('hyam'),
-                'hyai': f('hyai'),
-                'hybm': f('hybm'),
-                'hybi': f('hybi'),
-            })
+            # load level and lev bounds
+            if levels:
+                # load lev and ilev
+                data.update({
+                    'lev': f.getAxis('lev')[:]/1000,
+                    'ilev': f.getAxis('ilev')[:]/1000,
+                    'ps': f('PS'),
+                    'p0': f('P0'),
+                    'hyam': f('hyam'),
+                    'hyai': f('hyai'),
+                    'hybm': f('hybm'),
+                    'hybi': f('hybi'),
+                })
     finally:
         f.close()
         return data
 # ------------------------------------------------------------------
 
 
-def load_axis(data, levels):
+def load_axis(data, levels=None):
 
     # create axes
     axes = [{
@@ -519,6 +517,13 @@ def find_mpas_files(component, path):
         # needs to be filled in by the driver
         return []
     
+    elif component == 'mpaso_moc_regions':
+
+        pattern = '_region_'
+        for infile in contents:
+            if pattern in infile:
+                return [os.path.abspath(infile)]
+
     else:
 
         raise IOError("Unrecognized component {}, unable to find input files".format(component))

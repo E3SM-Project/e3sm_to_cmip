@@ -34,7 +34,7 @@ def main():
     # parse the command line arguments
     _args = parse_argsuments().__dict__
 
-    var_list = _args.get('var_list')
+    var_list = [x.strip(',') for x in _args.get('var_list')]
     input_path = _args.get('input_path')
     output_path = _args.get('output_path')
     tables_path = _args.get('tables_path')

@@ -15,7 +15,7 @@ from e3sm_to_cmip.util import setup_cmor
 from e3sm_to_cmip.util import load_axis
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('CLDICE'), str('CLOUD')]
+RAW_VARIABLES = [str('CLDICE')]
 
 # output variable name
 VAR_NAME = str('cli')
@@ -35,7 +35,7 @@ def handle(infiles, tables, user_input_path, position=None):
     -------
         var name (str): the name of the processed variable after processing is complete
     """
-    # import ipdb; ipdb.set_trace()
+
     msg = '{name}: Starting'.format(name=__name__)
     print(msg)
     logging.info(msg)
@@ -64,6 +64,7 @@ def handle(infiles, tables, user_input_path, position=None):
 
         for index in range(num_files_per_variable):
 
+            get_dims = True
             # load data for each variable
             for var_name in RAW_VARIABLES:
                 
@@ -71,21 +72,18 @@ def handle(infiles, tables, user_input_path, position=None):
                 msg = '{name}: loading {variable}'.format(
                     name=__name__, 
                     variable=var_name)
-                print(msg)
+                logging.info(msg)
 
-                import ipdb; ipdb.set_trace()
-                data.update(
-                    get_dimension_data(
-                        filename=infiles[var_name][index],
-                        variable=var_name,
-                        levels=True,
-                        get_dims=get_dims))
-                # turn off dimension loading for all but the first
-                if get_dims:
-                    get_dims = False 
+                new_data = get_dimension_data(
+                    filename=infiles[var_name][index],
+                    variable=var_name,
+                    levels=True,
+                    get_dims=get_dims)
+                data.update(new_data)
+                get_dims = False 
             
             msg = '{name}: loading axes'.format(name=__name__)
-            print(msg)
+            logging.info(msg)
             axis_ids, ips = load_axis(
                 data=data,
                 levels=True)
@@ -98,21 +96,20 @@ def handle(infiles, tables, user_input_path, position=None):
                     data['time'], 
                     position=position,
                     desc="{}: {} - {}".format(
-                        RAW_VARIABLES[0], 
+                        __name__, 
                         data['time_bnds'][0][0], 
                         data['time_bnds'][-1][-1]))):
                 
-                import ipdb; ipdb.set_trace()
                 cmor.write(
                     varid,
-                    data['data'][index, :],
+                    data['CLDICE'][index, :],
                     time_vals=val,
-                    time_bnds=[data['time_bnds'][index, :]])
+                    time_bnds=[ data['time_bnds'][index, :] ])
                 cmor.write(
                     ips,
                     data['ps'],
                     time_vals=val,
-                    time_bnds=[data['time_bnds'][index, :]],
+                    time_bnds=[ data['time_bnds'][index, :] ],
                     store_with=varid)
     finally:
         cmor.close()

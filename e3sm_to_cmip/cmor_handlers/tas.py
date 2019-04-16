@@ -8,16 +8,30 @@ import cmor
 import cdms2
 import logging
 
-from e3sm_to_cmip.util import print_message, setup_cmor
+from tqdm import tqdm
+from e3sm_to_cmip.util import print_message
+from e3sm_to_cmip.util import get_dimension_data
+from e3sm_to_cmip.util import setup_cmor
+from e3sm_to_cmip.util import load_axis
+from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = ['TREFHT']
+RAW_VARIABLES = [str('TREFHT')]
+VAR_NAME = str('tas')
+VAR_UNITS = str('K')
+TABLE = str('CMIP6_Amon.json')
 
-# output variable name
-VAR_NAME = 'tas'.encode('ascii')
-VAR_UNITS = 'K'.encode('ascii')
 
-def handle(infiles, tables, user_input_path):
+def write_tas(varid, data, timeval, timebnds, index):
+    cmor.write(
+        varid,
+        data[RAW_VARIABLES[0]][index, :],
+        time_vals=timeval,
+        time_bnds=timebnds)
+# ------------------------------------------------------------------
+
+
+def handle(infiles, tables, user_input_path, serial=None):
     """
     Transform E3SM.TREFHT into CMIP.tas
 
@@ -31,61 +45,16 @@ def handle(infiles, tables, user_input_path):
         var name (str): the name of the processed variable after processing is complete
     """
 
-    msg = 'Starting {name}'.format(name=__name__)
-    logging.info(msg)
+    handle_variables(
+        metadata_path=user_input_path,
+        tables=tables,
+        table=TABLE,
+        infiles=infiles,
+        raw_variables=RAW_VARIABLES,
+        write_data=write_tas,
+        outvar_name=VAR_NAME,
+        outvar_units=VAR_UNITS,
+        serial=serial)
 
-
-    # extract data from the input file
-    f = cdms2.open(infiles[0])
-    data = f(RAW_VARIABLES[0])
-    lat = data.getLatitude()[:]
-    lon = data.getLongitude()[:]
-    lat_bnds = f('lat_bnds')
-    lon_bnds = f('lon_bnds')
-    time = data.getTime()
-    time_bnds = f('time_bnds')
-    f.close()
-
-    # setup cmor
-    setup_cmor(
-        VAR_NAME,
-        tables,
-        'CMIP6_Amon.json',
-        user_input_path)
-
-    # create axes
-    axes = [{
-        str('table_entry'): str('time'),
-        str('units'): time.units
-    }, {
-        str('table_entry'): str('latitude'),
-        str('units'): str('degrees_north'),
-        str('coord_vals'): lat[:],
-        str('cell_bounds'): lat_bnds[:]
-    }, {
-        str('table_entry'): str('longitude'),
-        str('units'): str('degrees_east'),
-        str('coord_vals'): lon[:],
-        str('cell_bounds'): lon_bnds[:]
-    }]
-    axis_ids = list()
-    for axis in axes:
-        axis_id = cmor.axis(**axis)
-        axis_ids.append(axis_id)
-
-    # create the cmor variable
-    varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids)
-
-    # write out the data
-    try:
-        for index, val in enumerate(data.getTime()[:]):
-            cmor.write(
-                varid,
-                data[index, :],
-                time_vals=val,
-                time_bnds=[time_bnds[index, :]])
-    except Exception as error:
-        logging.error("Error in {}".format(VAR_NAME))
-    finally:
-        cmor.close(varid)
     return VAR_NAME
+# ------------------------------------------------------------------

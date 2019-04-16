@@ -8,18 +8,33 @@ import cmor
 import cdms2
 import logging
 
-from e3sm_to_cmip.util import print_message, setup_cmor
+from tqdm import tqdm
+from e3sm_to_cmip.util import print_message
+from e3sm_to_cmip.util import get_dimension_data
+from e3sm_to_cmip.util import setup_cmor
+from e3sm_to_cmip.util import load_axis
+from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = ['PRECSC', 'PRECSL']
+RAW_VARIABLES = [str('PRECSC'), str('PRECSL')]
+VAR_NAME = str('prsn')
+VAR_UNITS = str('kg m-2 s-1')
+TABLE = str('CMIP6_Amon.json')
 
-# output variable name
-VAR_NAME = 'prsn'.encode('ascii')
-VAR_UNITS = 'kg m-2 s-1'.encode('ascii')
-
-def handle(infiles, tables, user_input_path):
+def write_prsn(varid, data, timeval, timebnds, index):
     """
-    Transform E3SM.PRECSC + E3SM.PRECSL into CMIP.prsn
+    prsn = (PRECSC  + PRECSL) * 1000.0
+    """
+    out_data = (data['PRECSC'][index, :] + data['PRECSL'][index, :]) * 1000.0
+    cmor.write(
+        varid,
+        out_data,
+        time_vals=timeval,
+        time_bnds=timebnds)
+
+def handle(infiles, tables, user_input_path, serial=None):
+    """
+    Transform E3SM.TS into CMIP.ts
 
     Parameters
     ----------
@@ -31,66 +46,16 @@ def handle(infiles, tables, user_input_path):
         var name (str): the name of the processed variable after processing is complete
     """
 
-    msg = 'Starting {name}'.format(name=__name__)
-    logging.info(msg)
+    handle_variables(
+        metadata_path=user_input_path,
+        tables=tables,
+        table=TABLE,
+        infiles=infiles,
+        raw_variables=RAW_VARIABLES,
+        write_data=write_prsn,
+        outvar_name=VAR_NAME,
+        outvar_units=VAR_UNITS,
+        serial=serial)
 
-
-    # extract data from the input file
-    f = cdms2.open(infiles[0])
-    precsc = f(RAW_VARIABLES[0])
-    lat = precsc.getLatitude()[:]
-    lon = precsc.getLongitude()[:]
-    lat_bnds = f('lat_bnds')
-    lon_bnds = f('lon_bnds')
-    time = precsc.getTime()
-    time_bnds = f('time_bnds')
-    f.close()
-
-    f = cdms2.open(infiles[1])
-    precsl = f(RAW_VARIABLES[1])
-    f.close()    
-
-    # setup cmor
-    setup_cmor(
-        VAR_NAME,
-        tables,
-        'CMIP6_Amon.json',
-        user_input_path)
-
-    # create axes
-    axes = [{
-        str('table_entry'): str('time'),
-        str('units'): time.units
-    }, {
-        str('table_entry'): str('latitude'),
-        str('units'): str('degrees_north'),
-        str('coord_vals'): lat[:],
-        str('cell_bounds'): lat_bnds[:]
-    }, {
-        str('table_entry'): str('longitude'),
-        str('units'): str('degrees_east'),
-        str('coord_vals'): lon[:],
-        str('cell_bounds'): lon_bnds[:]
-    }]
-    axis_ids = list()
-    for axis in axes:
-        axis_id = cmor.axis(**axis)
-        axis_ids.append(axis_id)
-
-    # create the cmor variable
-    varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids)
-
-    # write out the data
-    try:
-        for index, val in enumerate(precsc.getTime()[:]):
-            data = (precsc[index, :] + precsl[index, :]) * 1000.0
-            cmor.write(
-                varid,
-                data,
-                time_vals=val,
-                time_bnds=[time_bnds[index, :]])
-    except Exception as error:
-        logging.error("Error in {}".format(VAR_NAME))
-    finally:
-        cmor.close(varid)
     return VAR_NAME
+# ------------------------------------------------------------------
