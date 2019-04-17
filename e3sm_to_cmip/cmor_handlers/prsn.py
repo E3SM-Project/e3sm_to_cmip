@@ -21,7 +21,7 @@ VAR_NAME = str('prsn')
 VAR_UNITS = str('kg m-2 s-1')
 TABLE = str('CMIP6_Amon.json')
 
-def write_prsn(varid, data, timeval, timebnds, index):
+def write_data(varid, data, timeval, timebnds, index):
     """
     prsn = (PRECSC  + PRECSL) * 1000.0
     """
@@ -52,7 +52,7 @@ def handle(infiles, tables, user_input_path, serial=None):
         table=TABLE,
         infiles=infiles,
         raw_variables=RAW_VARIABLES,
-        write_data=write_prsn,
+        write_data=write_data,
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
         serial=serial)

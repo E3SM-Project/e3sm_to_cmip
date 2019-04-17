@@ -21,7 +21,7 @@ VAR_NAME = str('clt')
 VAR_UNITS = str('5')
 TABLE = str('CMIP6_Amon.json')
 
-def write_clt(varid, data, timeval, timebnds, index):
+def write_data(varid, data, timeval, timebnds, index):
     """
     clt = CLDTOT * 100.0
     """
@@ -52,7 +52,7 @@ def handle(infiles, tables, user_input_path, serial=None):
         table=TABLE,
         infiles=infiles,
         raw_variables=RAW_VARIABLES,
-        write_data=write_clt,
+        write_data=write_data,
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
         serial=serial)

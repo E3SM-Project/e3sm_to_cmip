@@ -1,5 +1,5 @@
 """
-TGCLDIWP to clivi converter
+AODABS to abs550aer converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -15,20 +15,21 @@ from e3sm_to_cmip.util import setup_cmor
 from e3sm_to_cmip.util import load_axis
 from e3sm_to_cmip.lib import handle_variables
 
-
-RAW_VARIABLES = [str('TGCLDIWP')]
-VAR_NAME = str('clivi')
-VAR_UNITS = str('kg m-2')
-TABLE = str('CMIP6_Amon.json')
-
+# list of raw variable names needed
+RAW_VARIABLES = [str('AODABS')]
+VAR_NAME = str('abs550aer')
+VAR_UNITS = str('1')
+TABLE = str('CMIP6_AERmon.json')
+POSITIVE = str('')
 
 def write_data(varid, data, timeval, timebnds, index):
     """
-    No data transform required
+    abs550aer = AODABS
     """
+    outdata = data['AODABS'][index, :]
     cmor.write(
         varid,
-        data[RAW_VARIABLES[0]][index, :],
+        outdata,
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
@@ -54,7 +55,8 @@ def handle(infiles, tables, user_input_path, serial=None):
         write_data=write_data,
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
-        serial=serial)
+        serial=serial,
+        positive=POSITIVE)
 
     return VAR_NAME
 # ------------------------------------------------------------------

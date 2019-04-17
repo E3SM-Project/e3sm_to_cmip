@@ -22,7 +22,7 @@ VAR_UNITS = str('kg m-2')
 TABLE = str('CMIP6_Amon.json')
 
 
-def write_clwvi(varid, data, timeval, timebnds, index):
+def write_data(varid, data, timeval, timebnds, index):
     """
     No data transform required
     """
@@ -51,7 +51,7 @@ def handle(infiles, tables, user_input_path, serial=None):
         table=TABLE,
         infiles=infiles,
         raw_variables=RAW_VARIABLES,
-        write_data=write_clwvi,
+        write_data=write_data,
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
         serial=serial)
