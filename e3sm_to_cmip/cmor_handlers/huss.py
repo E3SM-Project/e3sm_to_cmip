@@ -21,6 +21,7 @@ VAR_NAME = str('huss')
 VAR_UNITS = str('%')
 TABLE = str('CMIP6_Amon.json')
 
+
 def write_data(varid, data, timeval, timebnds, index):
     """
     No data transform required for TS to ts
@@ -31,6 +32,7 @@ def write_data(varid, data, timeval, timebnds, index):
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
+
 
 def handle(infiles, tables, user_input_path, serial=None):
     """

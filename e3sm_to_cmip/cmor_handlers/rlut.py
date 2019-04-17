@@ -22,17 +22,20 @@ VAR_UNITS = str('W m-2')
 TABLE = str('CMIP6_Amon.json')
 POSITIVE = str('up')
 
+
 def write_data(varid, data, timeval, timebnds, index):
     """
     rlut = FSNTOA - FSNT + FLNT
     """
-    outdata = data['FSNTOA'][index, :] - data['FSNT'][index, :] + data['FLNT'][index, :]
+    outdata = data['FSNTOA'][index, :] - \
+        data['FSNT'][index, :] + data['FLNT'][index, :]
     cmor.write(
         varid,
         outdata,
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
+
 
 def handle(infiles, tables, user_input_path, serial=None):
     """

@@ -21,6 +21,7 @@ VAR_NAME = str('cl')
 VAR_UNITS = str('%')
 TABLE = str('CMIP6_Amon.json')
 
+
 def handle(infiles, tables, user_input_path, position=None):
     """
     Transform E3SM.CLOUD into CMIP.cl
@@ -44,13 +45,13 @@ def handle(infiles, tables, user_input_path, position=None):
         tables,
         'CMIP6_Amon.json',
         user_input_path)
-    
+
     msg = '{}: CMOR setup complete'.format(__name__)
     logging.info(msg)
-    
+
     try:
         for infile in sorted(infiles[RAW_VARIABLES[0]]):
-        # extract data from the input file
+            # extract data from the input file
         f = cdms2.open(infile)
 
         data = f[RAW_VARIABLES[0]]
@@ -60,10 +61,10 @@ def handle(infiles, tables, user_input_path, position=None):
 
         lat_bnds = f('lat_bnds')
         lon_bnds = f('lon_bnds')
-        
+
         time = cloud.getTime()
         time_bnds = f('time_bnds')
-        
+
         lev = f.getAxis('lev')[:]/1000
         ilev = f.getAxis('ilev')[:]/1000
         ps = f('PS')[:]
@@ -74,7 +75,6 @@ def handle(infiles, tables, user_input_path, position=None):
         hybi = f('hybi')
 
         f.close()
-
 
         # create axes
         axes = [{
@@ -138,8 +138,8 @@ def handle(infiles, tables, user_input_path, position=None):
                     time_vals=val,
                     time_bnds=[time_bnds[index, :]])
                 cmor.write(
-                    ips, 
-                    ps, 
+                    ips,
+                    ps,
                     time_vals=val,
                     time_bnds=[time_bnds[index, :]],
                     store_with=varid)

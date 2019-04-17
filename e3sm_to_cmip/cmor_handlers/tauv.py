@@ -22,6 +22,7 @@ VAR_UNITS = str('Pa')
 TABLE = str('CMIP6_Amon.json')
 POSITIVE = str('down')
 
+
 def write_data(varid, data, timeval, timebnds, index):
     """
     tauv = -TAUY
@@ -32,6 +33,7 @@ def write_data(varid, data, timeval, timebnds, index):
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
+
 
 def handle(infiles, tables, user_input_path, serial=None):
     """

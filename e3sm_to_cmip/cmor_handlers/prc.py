@@ -21,6 +21,7 @@ VAR_NAME = str('prc')
 VAR_UNITS = str('kg m-2 s-1')
 TABLE = str('CMIP6_Amon.json')
 
+
 def write_data(varid, data, timeval, timebnds, index):
     """
     prc = PRECC * 1000.0
@@ -31,6 +32,7 @@ def write_data(varid, data, timeval, timebnds, index):
         out_data,
         time_vals=timeval,
         time_bnds=timebnds)
+
 
 def handle(infiles, tables, user_input_path, serial=None):
     """

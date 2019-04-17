@@ -33,6 +33,7 @@ def write_data(varid, data, timeval, timebnds, index):
         time_bnds=timebnds)
 # ------------------------------------------------------------------
 
+
 def handle(infiles, tables, user_input_path, serial=None):
     """
     Parameters

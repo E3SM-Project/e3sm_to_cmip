@@ -33,6 +33,7 @@ def write_data(varid, data, timeval, timebnds, index):
         time_vals=timeval,
         time_bnds=timebnds)
 
+
 def handle(infiles, tables, user_input_path, serial=None):
     """
     Transform E3SM.TS into CMIP.ts
