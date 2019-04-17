@@ -18,7 +18,7 @@ from e3sm_to_cmip.lib import handle_variables
 # list of raw variable names needed
 RAW_VARIABLES = [str('CLDTOT')]
 VAR_NAME = str('clt')
-VAR_UNITS = str('5')
+VAR_UNITS = str('%')
 TABLE = str('CMIP6_Amon.json')
 
 def write_data(varid, data, timeval, timebnds, index):
