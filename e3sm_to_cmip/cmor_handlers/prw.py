@@ -8,7 +8,7 @@ import cmor
 import cdms2
 import logging
 
-from tqdm import tqdm
+
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.util import get_dimension_data
 from e3sm_to_cmip.util import setup_cmor
@@ -34,7 +34,7 @@ def write_data(varid, data, timeval, timebnds, index):
 # ------------------------------------------------------------------
 
 
-def handle(infiles, tables, user_input_path, serial=None):
+def handle(infiles, tables, user_input_path, **kwargs):
     """
     Parameters
     ----------
@@ -55,7 +55,7 @@ def handle(infiles, tables, user_input_path, serial=None):
         write_data=write_data,
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
-        serial=serial)
+        serial=kwargs.get('serial'))
 
     return VAR_NAME
 # ------------------------------------------------------------------

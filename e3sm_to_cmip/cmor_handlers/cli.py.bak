@@ -8,7 +8,8 @@ import cmor
 import cdms2
 import logging
 
-from tqdm import tqdm
+from progressbar import progressbar
+
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.util import get_dimension_data
 from e3sm_to_cmip.util import setup_cmor
@@ -22,7 +23,7 @@ VAR_NAME = str('cli')
 VAR_UNITS = str('kg kg-1')
 
 
-def handle(infiles, tables, user_input_path, position=None):
+def handle(infiles, tables, user_input_path, logging=None):
     """
     Transform E3SM.CLDICE into CMIP.cli
 
@@ -38,7 +39,7 @@ def handle(infiles, tables, user_input_path, position=None):
 
     msg = '{name}: Starting'.format(name=__name__)
     print(msg)
-    logging.info(msg)
+
     get_dims = True
     
     # setup cmor
@@ -50,7 +51,7 @@ def handle(infiles, tables, user_input_path, position=None):
 
     msg = '{}: CMOR setup complete'.format(__name__)
     print(msg)
-    logging.info(msg)
+
 
     try:
         data = {}
@@ -68,11 +69,12 @@ def handle(infiles, tables, user_input_path, position=None):
             # load data for each variable
             for var_name in RAW_VARIABLES:
                 
-                # extract data from the input file
-                msg = '{name}: loading {variable}'.format(
-                    name=__name__, 
-                    variable=var_name)
-                logging.info(msg)
+                if logging:
+                    # extract data from the input file
+                    msg = '{name}: loading {variable}'.format(
+                        name=__name__, 
+                        variable=var_name)
+                    logging.info(msg)
 
                 new_data = get_dimension_data(
                     filename=infiles[var_name][index],
@@ -82,8 +84,9 @@ def handle(infiles, tables, user_input_path, position=None):
                 data.update(new_data)
                 get_dims = False 
             
-            msg = '{name}: loading axes'.format(name=__name__)
-            logging.info(msg)
+            if logging:
+                msg = '{name}: loading axes'.format(name=__name__)
+                logging.info(msg)
             axis_ids, ips = load_axis(
                 data=data,
                 levels=True)
@@ -92,7 +95,7 @@ def handle(infiles, tables, user_input_path, position=None):
 
             # write out the data
             for index, val in enumerate(
-                tqdm(
+                progressbar(
                     data['time'], 
                     position=position,
                     desc="{}: {} - {}".format(

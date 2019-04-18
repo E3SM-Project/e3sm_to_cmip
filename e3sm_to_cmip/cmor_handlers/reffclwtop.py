@@ -1,5 +1,5 @@
 """
-CLDTOT to clt converter
+AREL to reffclwtop converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -8,7 +8,6 @@ import cmor
 import cdms2
 import logging
 
-
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.util import get_dimension_data
 from e3sm_to_cmip.util import setup_cmor
@@ -16,28 +15,26 @@ from e3sm_to_cmip.util import load_axis
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('CLDTOT')]
-VAR_NAME = str('clt')
-VAR_UNITS = str('%')
-TABLE = str('CMIP6_Amon.json')
-
+RAW_VARIABLES = [str('AREL')]
+VAR_NAME = str('reffclwtop')
+VAR_UNITS = str('m')
+TABLE = str('CMIP6_AERmon.json')
+POSITIVE = str('')
 
 def write_data(varid, data, timeval, timebnds, index):
     """
-    clt = CLDTOT * 100.0
+    reffclwtop = AODVIS
     """
+    outdata = data['AREL'][index, :]
     cmor.write(
         varid,
-        data['CLDTOT'][index, :] * 100.0,
+        outdata,
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
 
-
 def handle(infiles, tables, user_input_path, **kwargs):
     """
-    Transform E3SM.TS into CMIP.ts
-
     Parameters
     ----------
         infiles (List): a list of strings of file names for the raw input data
@@ -57,7 +54,8 @@ def handle(infiles, tables, user_input_path, **kwargs):
         write_data=write_data,
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
-        serial=kwargs.get('serial'))
+        serial=kwargs.get('serial'),
+        positive=POSITIVE)
 
     return VAR_NAME
 # ------------------------------------------------------------------

@@ -13,12 +13,13 @@ from multiprocessing import cpu_count, Pool
 from time import sleep
 from e3sm_to_cmip import cmor_handlers
 
-from e3sm_to_cmip.util import format_debug
+# from e3sm_to_cmip.util import format_debug
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.util import parse_argsuments
 from e3sm_to_cmip.util import load_handlers
 from e3sm_to_cmip.util import add_metadata
 from e3sm_to_cmip.util import copy_user_metadata
+from e3sm_to_cmip.util import print_debug
 
 from e3sm_to_cmip.lib import run_parallel
 from e3sm_to_cmip.lib import run_serial
@@ -59,11 +60,14 @@ def main():
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
+    logging_path = os.path.join(output_path, 'converter.log')
+    print_message("Writing log output to: {}".format(logging_path), 'debug')
+
     # setup logging
     logging.basicConfig(
         format='%(asctime)s:%(levelname)s: %(message)s',
         datefmt='%m/%d/%Y %I:%M:%S %p',
-        filename=os.path.join(output_path, 'converter.log'),
+        filename=logging_path,
         filemode='w',
         level=logging.WARNING)
 
@@ -83,12 +87,18 @@ def main():
     # run in the user-selected mode
     if serial:
         print_message('Running CMOR handlers in serial', 'ok')
-        status = run_serial(
-            handlers=handlers,
-            input_path=input_path,
-            tables_path=tables_path,
-            metadata_path=new_metadata_path,
-            mode=mode)
+        try:
+            status = run_serial(
+                handlers=handlers,
+                input_path=input_path,
+                tables_path=tables_path,
+                metadata_path=new_metadata_path,
+                mode=mode,
+                logging=logging)
+        except Exception as e:
+            print_debug(e)
+            return 1
+            # status = 1
     else:
         print_message('Running CMOR handlers in parallel', 'ok')
         try:
@@ -99,10 +109,14 @@ def main():
                 input_path=input_path,
                 tables_path=tables_path,
                 metadata_path=new_metadata_path,
-                mode=mode)
+                mode=mode,
+                logging=logging)
         except KeyboardInterrupt as error:
             print_message(' -- keyboard interrupt -- ', 'error')
             terminate(pool, debug)
+            return 1
+        except Exception as error:
+            print_debug(error)
             return 1
     if status != 0:
         print_message("Error running handlers")

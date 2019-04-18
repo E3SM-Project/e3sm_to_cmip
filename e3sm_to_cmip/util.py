@@ -10,27 +10,16 @@ import argparse
 import imp
 import cdms2
 
-from tqdm import tqdm
+from progressbar import progressbar
 
-def format_debug(e):
+
+def print_debug(e):
     """
     Return a string of an exceptions relavent information
     """
     _, _, tb = sys.exc_info()
-    return """
-1: {doc}
-2: {exec_info}
-3: {exec_0}
-4: {exec_1}
-5: {lineno}
-6: {stack}
-""".format(
-        doc=e.__doc__,
-        exec_info=sys.exc_info(),
-        exec_0=sys.exc_info()[0],
-        exec_1=sys.exc_info()[1],
-        lineno=traceback.tb_lineno(sys.exc_info()[2]),
-        stack=traceback.print_tb(tb))
+    traceback.print_tb(tb)
+    print(e)
 # ------------------------------------------------------------------
 
 
@@ -84,10 +73,7 @@ def setup_cmor(var_name, table_path, table_name, user_input_path):
         logfile=logfile)
 
     cmor.dataset_json(user_input_path)
-    try:
-        cmor.load_table(table_name)
-    except (Exception, BaseException) as error:
-        print(format_debug(error))
+    cmor.load_table(table_name)
 # ------------------------------------------------------------------
 
 
@@ -144,7 +130,7 @@ def parse_argsuments():
         '-H', '--handlers',
         metavar='<handler_path>',
         default=None,
-        help='path to cmor handlers directory, default = ./cmor_handlers')
+        help='path to cmor handlers directory, default = e3sm_to_cmip/cmor_handlers')
     parser.add_argument(
         '--no-metadata',
         help='Do not add E3SM metadata to the output',
@@ -208,20 +194,13 @@ def load_handlers(handlers_path, var_list, debug=False):
         module_path = os.path.join(handlers_path, handler)
 
         # load the module, and extract the "handle" method and required variables
-        try:
-            module = imp.load_source(module_name, module_path)
-            method = module.handle
-            raw_variables = module.RAW_VARIABLES
-        except ImportError as e:
-            msg = format_debug(e)
-            print_message(
-                'Error loading handler for {}'.format(module_path))
-            print_message(msg)
-            continue
-        else:
-            msg = 'Loaded {}'.format(module_name)
-            if debug:
-                print_message(msg, 'debug')
+        module = imp.load_source(module_name, module_path)
+        method = module.handle
+        raw_variables = module.RAW_VARIABLES
+
+        msg = 'Loaded {}'.format(module_name)
+        if debug:
+            print_message(msg, 'debug')
         handlers.append({module_name: (method, raw_variables)})
 
     return handlers
@@ -282,10 +261,10 @@ def add_metadata(file_path, var_list):
             if name[-3:] != '.nc':
                 continue
             index = name.find('_')
-            if index != -1 and name[:index] in var_list:
+            if index != -1 and name[:index] in var_list or 'all' in var_list:
                 filepaths.append(os.path.join(root, name))
 
-    for filepath in tqdm(filepaths):
+    for _, filepath in enumerate(progressbar(filepaths)):
         datafile = cdms2.open(filepath, 'a')
         try:
             datafile.e3sm_source_code_doi = str('10.11578/E3SM/dc.20180418.36')
@@ -493,7 +472,7 @@ def find_mpas_files(component, path):
                 return [os.path.abspath(infile)]
 
         raise IOError("Unable to find MPASO_namelist in the input directory")
-    
+
     elif component == 'mpassi_namelist':
 
         pattern = 'mpas-cice_in'
@@ -516,7 +495,7 @@ def find_mpas_files(component, path):
 
         # needs to be filled in by the driver
         return []
-    
+
     elif component == 'mpaso_moc_regions':
 
         pattern = '_region_'
@@ -525,7 +504,7 @@ def find_mpas_files(component, path):
                 return [os.path.abspath(infile)]
 
     else:
-
-        raise IOError("Unrecognized component {}, unable to find input files".format(component))
+        raise IOError(
+            "Unrecognized component {}, unable to find input files".format(component))
 
 # ------------------------------------------------------------------

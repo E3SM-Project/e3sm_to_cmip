@@ -1,21 +1,21 @@
 import os
 import cmor
-import logging
+# import logging
 import cdms2
 import logging
 
-from tqdm import tqdm
+from progressbar import progressbar
 
 from e3sm_to_cmip.util import find_atm_files
 from e3sm_to_cmip.util import find_mpas_files
 from e3sm_to_cmip.util import print_message
-from e3sm_to_cmip.util import format_debug
+from e3sm_to_cmip.util import print_debug
 from e3sm_to_cmip.util import get_dimension_data
 from e3sm_to_cmip.util import setup_cmor
 from e3sm_to_cmip.util import load_axis
 
 
-def run_parallel(pool, handlers, input_path, tables_path, metadata_path, mode='atm', nproc=6):
+def run_parallel(pool, handlers, input_path, tables_path, metadata_path, mode='atm', nproc=6, logging=None):
     """
     Run all the handlers in parallel
     Params:
@@ -30,6 +30,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path, mode='a
     --------
         returns 1 if an error occurs, else 0
     """
+
     pool_res = list()
     for idx, handler in enumerate(handlers):
         for _, handler_info in handler.items():
@@ -61,7 +62,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path, mode='a
                     kwds={}))
 
     # wait for each result to complete
-    for idx, res in enumerate(tqdm(pool_res)):
+    for idx, res in enumerate(progressbar(pool_res)):
         try:
             out = res.get(9999999)
             msg = 'Finished {handler}, {done}/{total} jobs complete'.format(
@@ -69,18 +70,19 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path, mode='a
                 done=idx + 1,
                 total=len(pool_res))
             logging.info(msg)
-        except Exception as e:
-            print(format_debug(e))
-            logging.error(e)
+        except Exception as error:
+            # print(format_debug(e))
+            logging.error(error)
             terminate(pool)
-            return 1
+            raise error
+            # return 1
 
     terminate(pool)
     return 0
 # ------------------------------------------------------------------
 
 
-def run_serial(handlers, input_path, tables_path, metadata_path, mode='atm'):
+def run_serial(handlers, input_path, tables_path, metadata_path, mode='atm', logging=None):
     """
     Run each of the handlers one at a time on the main process
 
@@ -113,7 +115,8 @@ def run_serial(handlers, input_path, tables_path, metadata_path, mode='atm'):
                     input_paths,
                     tables_path,
                     metadata_path,
-                    serial=True)
+                    serial=True,
+                    logging=logging)
                 msg = 'Finished {handler}, {done}/{total} jobs complete'.format(
                     handler=name,
                     done=idx + 1,
@@ -122,7 +125,7 @@ def run_serial(handlers, input_path, tables_path, metadata_path, mode='atm'):
                 print_message(msg, 'ok')
 
     except Exception as error:
-        print_message(format_debug(error))
+        print_debug(error)
         return 1
     else:
         print_message("All handlers complete", 'ok')
@@ -154,10 +157,10 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
     """
     """
     msg = '{}: Starting'.format(outvar_name)
-    logging.info(msg)
+
     if serial:
         print(msg)
-    
+
     msg = '{}: running with input files: {}'.format(
         outvar_name,
         infiles)
@@ -171,7 +174,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
         metadata_path)
 
     msg = '{}: CMOR setup complete'.format(outvar_name)
-    logging.info(msg)
+
     if serial:
         print(msg)
 
@@ -196,7 +199,8 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             msg = '{name}: loading {variable}'.format(
                 name=outvar_name,
                 variable=var_name)
-            logging.info(msg)
+            if logging:
+                logging.info(msg)
 
             new_data = get_dimension_data(
                 filename=infiles[var_name][index],
@@ -207,14 +211,16 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             get_dims = False
 
         msg = '{name}: loading axes'.format(name=outvar_name)
-        logging.info(msg)
+        if logging:
+            logging.info(msg)
         if serial:
             print(msg)
 
         # create the cmor variable and axis
         axis_ids, _ = load_axis(data=data)
         if positive:
-            varid = cmor.variable(outvar_name, outvar_units, axis_ids, positive=positive)
+            varid = cmor.variable(outvar_name, outvar_units,
+                                  axis_ids, positive=positive)
         else:
             varid = cmor.variable(outvar_name, outvar_units, axis_ids)
 
@@ -223,10 +229,12 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             outvar_name,
             data['time_bnds'][0][0],
             data['time_bnds'][-1][-1])
+        if logging:
+            logging.info(msg)
         if serial:
             print(msg)
             for index, val in enumerate(  # data['time']):
-                tqdm(
+                progressbar(
                     data['time'],
                     position=0,
                     desc="{}: {} - {}".format(
@@ -249,12 +257,12 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
                     timebnds=[data['time_bnds'][index, :]],
                     index=index)
     msg = '{}: write complete, closing'.format(outvar_name)
-    logging.info(msg)
+
     if serial:
         print(msg)
     cmor.close()
     msg = '{}: file close complete'.format(outvar_name)
-    logging.info(msg)
+
     if serial:
         print(msg)
 # ------------------------------------------------------------------
@@ -266,7 +274,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
 #     logging.info(msg)
 #     if serial:
 #         print(msg)
-    
+
 #     msg = '{}: running with input files: {}'.format(
 #         outvar_name,
 #         infiles)

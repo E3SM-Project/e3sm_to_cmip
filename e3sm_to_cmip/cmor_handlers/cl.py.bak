@@ -8,7 +8,6 @@ import cmor
 import cdms2
 import logging
 
-from tqdm import tqdm
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.util import get_dimension_data
 from e3sm_to_cmip.util import setup_cmor
@@ -22,7 +21,7 @@ VAR_UNITS = str('%')
 TABLE = str('CMIP6_Amon.json')
 
 
-def handle(infiles, tables, user_input_path, position=None):
+def handle(infiles, tables, user_input_path):
     """
     Transform E3SM.CLOUD into CMIP.cl
 
