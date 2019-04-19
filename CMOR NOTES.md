@@ -52,10 +52,10 @@
 
 | variable | handler | run | checked | sample_path |
 | -------- | ------- | --- | ------- | ----------- |
-| hur | no | no | no | no          |
-| hus | no | no | no | no          |
-| o3  | no | no | no | no          |
-| ta  | no | no | no | no          |
-| ua  | no | no | no | no          |
-| va  | no | no | no | no          |
-| zg  | no | no | no | no          |
+| hur      | no      | no  | no      | no          |
+| hus      | no      | no  | no      | no          |
+| o3       | no      | no  | no      | no          |
+| ta       | no      | no  | no      | no          |
+| ua       | no      | no  | no      | no          |
+| va       | no      | no  | no      | no          |
+| zg       | no      | no  | no      | no          |
