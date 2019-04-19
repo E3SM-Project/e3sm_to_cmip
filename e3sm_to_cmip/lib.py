@@ -142,6 +142,14 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
 
     if serial:
         print(msg)
+    nonzero = False
+    for variable in raw_variables:
+        if len(infiles[variable]) == 0:
+            msg = '{}: Unable to find input files for {}'.format(outvar_name, variable)
+            print_message(msg)
+            nonzero = True
+    if nonzero:
+        return
 
     msg = '{}: running with input files: {}'.format(
         outvar_name,
@@ -343,8 +351,8 @@ def load_axis(data, levels=None):
     }]
     if levels:
         lev_axis = {
-            str('table_entry'): str('standard_hybrid_sigma'),
-            str('units'): str('1'),
+            str('table_entry'): levels.get('name'),
+            str('units'): levels.get('units'),
             str('coord_vals'): data['lev'][:],
             str('cell_bounds'): data['ilev'][:]
         }

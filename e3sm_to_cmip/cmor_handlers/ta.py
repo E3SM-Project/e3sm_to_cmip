@@ -16,22 +16,20 @@ from e3sm_to_cmip.lib import load_axis
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('CLOUD')]
-VAR_NAME = str('cl')
-VAR_UNITS = str('%')
+RAW_VARIABLES = [str('T')]
+VAR_NAME = str('ta')
+VAR_UNITS = str('K')
 TABLE = str('CMIP6_Amon.json')
-
 LEVELS = {
-    'name': 'standard_hybrid_sigma',
-    'units': '1'
+    'name': 'plev19',
+    'units': 'Pa'
 }
-
 
 def write_data(varid, data, timeval, timebnds, index):
     """
-    cl = CLOUD * 100.0
+    ta = T on plev19 levels
     """
-    outdata = data['CLOUD'][index, :] * 100.0
+    outdata = data['T'][index, :]
     cmor.write(
         varid,
         outdata,

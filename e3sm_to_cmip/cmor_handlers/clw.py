@@ -1,5 +1,5 @@
 """
-CLOUD to cl converter
+CLDLIQ to clw converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -16,22 +16,20 @@ from e3sm_to_cmip.lib import load_axis
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('CLOUD')]
-VAR_NAME = str('cl')
-VAR_UNITS = str('%')
+RAW_VARIABLES = [str('CLDLIQ')]
+VAR_NAME = str('clw')
+VAR_UNITS = str('kg kg-1')
 TABLE = str('CMIP6_Amon.json')
-
 LEVELS = {
     'name': 'standard_hybrid_sigma',
     'units': '1'
 }
 
-
 def write_data(varid, data, timeval, timebnds, index):
     """
-    cl = CLOUD * 100.0
+    clw = CLDLIQ
     """
-    outdata = data['CLOUD'][index, :] * 100.0
+    outdata = data['CLDLIQ'][index, :]
     cmor.write(
         varid,
         outdata,
@@ -44,6 +42,7 @@ def write_data(varid, data, timeval, timebnds, index):
         time_bnds=timebnds,
         store_with=varid)
 # ------------------------------------------------------------------
+
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
