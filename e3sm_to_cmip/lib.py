@@ -4,15 +4,14 @@ import cmor
 import cdms2
 import logging
 
-from progressbar import progressbar
+from progressbar import ProgressBar
 
 from e3sm_to_cmip.util import find_atm_files
 from e3sm_to_cmip.util import find_mpas_files
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.util import print_debug
-from e3sm_to_cmip.util import get_dimension_data
 from e3sm_to_cmip.util import setup_cmor
-from e3sm_to_cmip.util import load_axis
+from e3sm_to_cmip.util import terminate
 
 
 def run_parallel(pool, handlers, input_path, tables_path, metadata_path, mode='atm', nproc=6, logging=None):
@@ -62,7 +61,9 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path, mode='a
                     kwds={}))
 
     # wait for each result to complete
-    for idx, res in enumerate(progressbar(pool_res)):
+    pbar = ProgressBar(maxval=len(pool_res))
+    pbar.start()
+    for idx, res in enumerate(pool_res):
         try:
             out = res.get(9999999)
             msg = 'Finished {handler}, {done}/{total} jobs complete'.format(
@@ -70,13 +71,14 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path, mode='a
                 done=idx + 1,
                 total=len(pool_res))
             logging.info(msg)
+            pbar.update(idx)
         except Exception as error:
             # print(format_debug(e))
             logging.error(error)
             terminate(pool)
             raise error
             # return 1
-
+    pbar.finish()
     terminate(pool)
     return 0
 # ------------------------------------------------------------------
@@ -133,27 +135,7 @@ def run_serial(handlers, input_path, tables_path, metadata_path, mode='atm', log
 # ------------------------------------------------------------------
 
 
-def terminate(pool, debug=False):
-    """
-    Terminates the process pool
-
-    Params:
-    -------
-        pool (multiprocessing.Pool): the pool to shutdown
-        debug (bool): if we're running in debug mode
-    Returns:
-    --------
-        None
-    """
-    if debug:
-        print_message('Shutting down process pool', 'debug')
-    pool.close()
-    pool.terminate()
-    pool.join()
-# ------------------------------------------------------------------
-
-
-def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None):
+def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None, levels=None):
     """
     """
     msg = '{}: Starting'.format(outvar_name)
@@ -205,7 +187,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             new_data = get_dimension_data(
                 filename=infiles[var_name][index],
                 variable=var_name,
-                levels=False,
+                levels=levels,
                 get_dims=get_dims)
             data.update(new_data)
             get_dims = False
@@ -217,7 +199,9 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             print(msg)
 
         # create the cmor variable and axis
-        axis_ids, _ = load_axis(data=data)
+        axis_ids, ips = load_axis(data=data, levels=levels)
+        if ips:
+            data['ips'] = ips
         if positive:
             varid = cmor.variable(outvar_name, outvar_units,
                                   axis_ids, positive=positive)
@@ -233,14 +217,9 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             logging.info(msg)
         if serial:
             print(msg)
-            for index, val in enumerate(  # data['time']):
-                progressbar(
-                    data['time'],
-                    position=0,
-                    desc="{}: {} - {}".format(
-                        outvar_name,
-                        data['time_bnds'][0][0],
-                        data['time_bnds'][-1][-1]))):
+            pbar = ProgressBar(maxval=len(data['time']))
+            pbar.start()
+            for index, val in enumerate(data['time']):
 
                 write_data(
                     varid=varid,
@@ -248,6 +227,8 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
                     timeval=val,
                     timebnds=[data['time_bnds'][index, :]],
                     index=index)
+                pbar.update(index)
+            pbar.finish()
         else:
             for index, val in enumerate(data['time']):
                 write_data(
@@ -267,111 +248,139 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
         print(msg)
 # ------------------------------------------------------------------
 
-# def handle_variables_3d(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None):
-#     """
-#     """
-#     msg = '{}: Starting'.format(outvar_name)
-#     logging.info(msg)
-#     if serial:
-#         print(msg)
+def get_dimension_data(filename, variable, levels=None, get_dims=False):
+    """
+    Returns a list of data, along with the dimension and dimension bounds
+    for a given lis of variables, with the option for vertical levels.
 
-#     msg = '{}: running with input files: {}'.format(
-#         outvar_name,
-#         infiles)
-#     logging.info(msg)
+    Params:
+    -------
+        filename: the netCDF file to look inside
+        variable: (str): then name of the variable to load
+        levels (bool): return verticle information
+        get_dims (bool): is dimension data should be loaded too
+    Returns:
 
-#     # setup cmor
-#     setup_cmor(
-#         outvar_name,
-#         tables,
-#         table,
-#         metadata_path)
+        {
+            data: cdms2 transient variable from the file
+            lat: numpy array of lat midpoints,
+            lat_bnds: numpy array of lat edge points,
+            lon: numpy array of lon midpoints,
+            lon_bnds: numpy array of lon edge points,
+            time: array of time points,
+            time_bdns: array of time bounds
+        }
 
-#     msg = '{}: CMOR setup complete'.format(outvar_name)
-#     logging.info(msg)
-#     if serial:
-#         print(msg)
+        optionally for 3d:
 
-#     data = {}
+        lev, ilev, ps, p0, hyam, hyai, hybm, hybi
+    """
+    # extract data from the input file
+    data = dict()
 
-#     # assuming all year ranges are the same for every variable
-#     num_files_per_variable = len(infiles[raw_variables[0]])
+    if not os.path.exists(filename):
+        raise IOError("File not found: {}".format(filename))
 
-#     # sort the input files for each variable
-#     for var_name in raw_variables:
-#         infiles[var_name].sort()
+    try:
+        f = cdms2.open(filename)
 
-#     for index in range(num_files_per_variable):
+        # load the data for each variable
+        variable_data = f(variable)
 
-#         # reload the dimensions for each time slice
-#         get_dims = True
+        if not variable_data.any():
+            return data
 
-#         # load data for each variable
-#         for var_name in raw_variables:
+        # load
+        data.update({
+            variable: variable_data
+        })
 
-#             # extract data from the input file
-#             msg = '{name}: loading {variable}'.format(
-#                 name=outvar_name,
-#                 variable=var_name)
-#             logging.info(msg)
+        # load the lon and lat info & bounds
+        # load time & time bounds
+        if get_dims:
+            data.update({
+                'lat': variable_data.getLatitude(),
+                'lon': variable_data.getLongitude(),
+                'lat_bnds': f('lat_bnds'),
+                'lon_bnds': f('lon_bnds'),
+                'time': variable_data.getTime(),
+                'time_bnds': f('time_bnds')
+            })
+            # load level and level bounds
+            if levels:
+                data.update({
+                    'lev': f.getAxis('lev')[:]/1000,
+                    'ilev': f.getAxis('ilev')[:]/1000,
+                    'ps': f('PS'),
+                    'p0': f('P0'),
+                    'hyam': f('hyam'),
+                    'hyai': f('hyai'),
+                    'hybm': f('hybm'),
+                    'hybi': f('hybi'),
+                })
+    finally:
+        f.close()
+        return data
+# ------------------------------------------------------------------
 
-#             new_data = get_dimension_data(
-#                 filename=infiles[var_name][index],
-#                 variable=var_name,
-#                 levels=False,
-#                 get_dims=get_dims)
-#             data.update(new_data)
-#             get_dims = False
 
-#         msg = '{name}: loading axes'.format(name=outvar_name)
-#         logging.info(msg)
-#         if serial:
-#             print(msg)
+def load_axis(data, levels=None):
 
-#         # create the cmor variable and axis
-#         axis_ids, _ = load_axis(data=data)
-#         if positive:
-#             varid = cmor.variable(outvar_name, outvar_units, axis_ids, positive=positive)
-#         else:
-#             varid = cmor.variable(outvar_name, outvar_units, axis_ids)
+    # create axes
+    axes = [{
+        str('table_entry'): str('time'),
+        str('units'): data['time'].units
+    }, {
+        str('table_entry'): str('latitude'),
+        str('units'): data['lat'].units,
+        str('coord_vals'): data['lat'][:],
+        str('cell_bounds'): data['lat_bnds'][:]
+    }, {
+        str('table_entry'): str('longitude'),
+        str('units'): data['lon'].units,
+        str('coord_vals'): data['lon'][:],
+        str('cell_bounds'): data['lon_bnds'][:]
+    }]
+    if levels:
+        lev_axis = {
+            str('table_entry'): str('standard_hybrid_sigma'),
+            str('units'): str('1'),
+            str('coord_vals'): data['lev'][:],
+            str('cell_bounds'): data['ilev'][:]
+        }
+        axes.insert(1, lev_axis)
 
-#         # write out the data
-#         msg = "{}: writing {} - {}".format(
-#             outvar_name,
-#             data['time_bnds'][0][0],
-#             data['time_bnds'][-1][-1])
-#         if serial:
-#             print(msg)
-#             for index, val in enumerate(  # data['time']):
-#                 tqdm(
-#                     data['time'],
-#                     position=0,
-#                     desc="{}: {} - {}".format(
-#                         outvar_name,
-#                         data['time_bnds'][0][0],
-#                         data['time_bnds'][-1][-1]))):
+    axis_ids = list()
+    for axis in axes:
+        axis_id = cmor.axis(**axis)
+        axis_ids.append(axis_id)
 
-#                 write_data(
-#                     varid=varid,
-#                     data=data,
-#                     timeval=val,
-#                     timebnds=[data['time_bnds'][index, :]],
-#                     index=index)
-#         else:
-#             for index, val in enumerate(data['time']):
-#                 write_data(
-#                     varid=varid,
-#                     data=data,
-#                     timeval=val,
-#                     timebnds=[data['time_bnds'][index, :]],
-#                     index=index)
-#     msg = '{}: write complete, closing'.format(outvar_name)
-#     logging.info(msg)
-#     if serial:
-#         print(msg)
-#     cmor.close()
-#     msg = '{}: file close complete'.format(outvar_name)
-#     logging.info(msg)
-#     if serial:
-#         print(msg)
-# # ------------------------------------------------------------------
+    ips = None
+
+    # add hybrid level formula terms
+    if levels:
+        cmor.zfactor(
+            zaxis_id=axis_ids[1],
+            zfactor_name=str('a'),
+            axis_ids=[axis_ids[1], ],
+            zfactor_values=data['hyam'][:],
+            zfactor_bounds=data['hyai'][:])
+        cmor.zfactor(
+            zaxis_id=axis_ids[1],
+            zfactor_name=str('b'),
+            axis_ids=[axis_ids[1], ],
+            zfactor_values=data['hybm'][:],
+            zfactor_bounds=data['hybi'][:])
+        cmor.zfactor(
+            zaxis_id=axis_ids[1],
+            zfactor_name=str('p0'),
+            units=str('Pa'),
+            zfactor_values=data['p0'])
+        ips = cmor.zfactor(
+            zaxis_id=axis_ids[1],
+            zfactor_name=str('ps'),
+            axis_ids=[axis_ids[0], axis_ids[2], axis_ids[3]],
+            units=str('Pa'))
+
+    return axis_ids, ips
+# ------------------------------------------------------------------

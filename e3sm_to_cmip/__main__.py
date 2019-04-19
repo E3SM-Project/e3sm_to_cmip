@@ -11,19 +11,18 @@ import logging
 
 from multiprocessing import cpu_count, Pool
 from time import sleep
-from e3sm_to_cmip import cmor_handlers
 
-# from e3sm_to_cmip.util import format_debug
+from e3sm_to_cmip import cmor_handlers
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.util import parse_argsuments
 from e3sm_to_cmip.util import load_handlers
 from e3sm_to_cmip.util import add_metadata
 from e3sm_to_cmip.util import copy_user_metadata
 from e3sm_to_cmip.util import print_debug
+from e3sm_to_cmip.util import terminate
 
 from e3sm_to_cmip.lib import run_parallel
 from e3sm_to_cmip.lib import run_serial
-from e3sm_to_cmip.lib import terminate
 
 
 import numpy as np

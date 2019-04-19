@@ -1,11 +1,13 @@
 """
-PS to ps converter
+CLOUD to cl converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
 import cmor
 import cdms2
+import logging
+
 
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.lib import get_dimension_data
@@ -14,22 +16,28 @@ from e3sm_to_cmip.lib import load_axis
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('PS')]
-VAR_NAME = str('ps')
-VAR_UNITS = str('Pa')
+RAW_VARIABLES = [str('CLOUD')]
+VAR_NAME = str('cl')
+VAR_UNITS = str('%')
 TABLE = str('CMIP6_Amon.json')
 
 
 def write_data(varid, data, timeval, timebnds, index):
     """
-    No data transform required
+    cl = CLOUD * 100.0
     """
+    outdata = data['CLOUD'][index, :] * 100.0
     cmor.write(
         varid,
-        data[RAW_VARIABLES[0]][index, :],
+        outdata,
         time_vals=timeval,
         time_bnds=timebnds)
-# ------------------------------------------------------------------
+    cmor.write(
+        data['ips'],
+        data['ps'],
+        time_vals=timeval,
+        time_bnds=timebnds,
+        store_with=varid)
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
@@ -53,7 +61,8 @@ def handle(infiles, tables, user_input_path, **kwargs):
         write_data=write_data,
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
-        serial=kwargs.get('serial'))
+        serial=kwargs.get('serial'),
+        levels=True)
 
     return VAR_NAME
 # ------------------------------------------------------------------

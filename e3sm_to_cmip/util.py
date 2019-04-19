@@ -10,7 +10,7 @@ import argparse
 import imp
 import cdms2
 
-from progressbar import progressbar
+from progressbar import ProgressBar
 
 
 def print_debug(e):
@@ -264,7 +264,9 @@ def add_metadata(file_path, var_list):
             if index != -1 and name[:index] in var_list or 'all' in var_list:
                 filepaths.append(os.path.join(root, name))
 
-    for _, filepath in enumerate(progressbar(filepaths)):
+    pbar = ProgressBar(maxval=len(filepaths))
+    pbar.start()
+    for idx, filepath in enumerate(filepaths):
         datafile = cdms2.open(filepath, 'a')
         try:
             datafile.e3sm_source_code_doi = str('10.11578/E3SM/dc.20180418.36')
@@ -279,147 +281,10 @@ def add_metadata(file_path, var_list):
             datafile.ncclimo_generation_command = str(
                 """ncclimo --var=${var} -7 --dfl_lvl=1 --no_cll_msr --no_frm_trm --no_stg_grd --yr_srt=1 --yr_end=500 --ypf=500 --map=map_ne30np4_to_cmip6_180x360_aave.20181001.nc """)
             datafile.ncclimo_version = str('4.7.9')
+            pbar.update(idx)
         finally:
             datafile.close()
-# ------------------------------------------------------------------
-
-
-def get_dimension_data(filename, variable, levels=None, get_dims=False):
-    """
-    Returns a list of data, along with the dimension and dimension bounds
-    for a given lis of variables, with the option for vertical levels.
-
-    Params:
-    -------
-        filename: the netCDF file to look inside
-        variable: (str): then name of the variable to load
-        levels (bool): return verticle information
-        get_dims (bool): is dimension data should be loaded too
-    Returns:
-
-        {
-            data: cdms2 transient variable from the file
-            lat: numpy array of lat midpoints,
-            lat_bnds: numpy array of lat edge points,
-            lon: numpy array of lon midpoints,
-            lon_bnds: numpy array of lon edge points,
-            time: array of time points,
-            time_bdns: array of time bounds
-        }
-
-        optionally for 3d:
-
-        lev, ilev, ps, p0, hyam, hyai, hybm, hybi
-    """
-    # extract data from the input file
-    data = dict()
-
-    if not os.path.exists(filename):
-        raise IOError("File not found: {}".format(filename))
-
-    try:
-        f = cdms2.open(filename)
-
-        # load the data for each variable
-        variable_data = f(variable)
-
-        if not variable_data.any():
-            return data
-
-        # load
-        data.update({
-            variable: variable_data
-        })
-
-        # load the lon and lat info & bounds
-        # load time & time bounds
-        if get_dims:
-            data.update({
-                'lat': variable_data.getLatitude(),
-                'lon': variable_data.getLongitude(),
-                'lat_bnds': f('lat_bnds'),
-                'lon_bnds': f('lon_bnds'),
-                'time': variable_data.getTime(),
-                'time_bnds': f('time_bnds')
-            })
-            # load level and lev bounds
-            if levels:
-                # load lev and ilev
-                data.update({
-                    'lev': f.getAxis('lev')[:]/1000,
-                    'ilev': f.getAxis('ilev')[:]/1000,
-                    'ps': f('PS'),
-                    'p0': f('P0'),
-                    'hyam': f('hyam'),
-                    'hyai': f('hyai'),
-                    'hybm': f('hybm'),
-                    'hybi': f('hybi'),
-                })
-    finally:
-        f.close()
-        return data
-# ------------------------------------------------------------------
-
-
-def load_axis(data, levels=None):
-
-    # create axes
-    axes = [{
-        str('table_entry'): str('time'),
-        str('units'): data['time'].units
-    }, {
-        str('table_entry'): str('latitude'),
-        str('units'): data['lat'].units,
-        str('coord_vals'): data['lat'][:],
-        str('cell_bounds'): data['lat_bnds'][:]
-    }, {
-        str('table_entry'): str('longitude'),
-        str('units'): data['lon'].units,
-        str('coord_vals'): data['lon'][:],
-        str('cell_bounds'): data['lon_bnds'][:]
-    }]
-    if levels:
-        lev_axis = {
-            str('table_entry'): str('standard_hybrid_sigma'),
-            str('units'): str('1'),
-            str('coord_vals'): data['lev'][:],
-            str('cell_bounds'): data['ilev'][:]
-        }
-        axes.insert(1, lev_axis)
-
-    axis_ids = list()
-    for axis in axes:
-        axis_id = cmor.axis(**axis)
-        axis_ids.append(axis_id)
-
-    ips = None
-
-    # add hybrid level formula terms
-    if levels:
-        cmor.zfactor(
-            zaxis_id=axis_ids[1],
-            zfactor_name=str('a'),
-            axis_ids=[axis_ids[1], ],
-            zfactor_values=data['hyam'][:],
-            zfactor_bounds=data['hyai'][:])
-        cmor.zfactor(
-            zaxis_id=axis_ids[1],
-            zfactor_name=str('b'),
-            axis_ids=[axis_ids[1], ],
-            zfactor_values=data['hybm'][:],
-            zfactor_bounds=data['hybi'][:])
-        cmor.zfactor(
-            zaxis_id=axis_ids[1],
-            zfactor_name=str('p0'),
-            units=str('Pa'),
-            zfactor_values=data['p0'])
-        ips = cmor.zfactor(
-            zaxis_id=axis_ids[1],
-            zfactor_name=str('ps'),
-            axis_ids=[axis_ids[0], axis_ids[2], axis_ids[3]],
-            units=str('Pa'))
-
-    return axis_ids, ips
+    pbar.finish()
 # ------------------------------------------------------------------
 
 
@@ -507,4 +372,23 @@ def find_mpas_files(component, path):
         raise IOError(
             "Unrecognized component {}, unable to find input files".format(component))
 
+# ------------------------------------------------------------------
+
+def terminate(pool, debug=False):
+    """
+    Terminates the process pool
+
+    Params:
+    -------
+        pool (multiprocessing.Pool): the pool to shutdown
+        debug (bool): if we're running in debug mode
+    Returns:
+    --------
+        None
+    """
+    if debug:
+        print_message('Shutting down process pool', 'debug')
+    pool.close()
+    pool.terminate()
+    pool.join()
 # ------------------------------------------------------------------
