@@ -360,7 +360,7 @@ def find_mpas_files(component, path, map_path):
 
     elif component == 'mpas_mesh':
 
-        pattern = r'mpaso.rst.\d{4}-01-01_00000.nc'
+        pattern = r'mpaso.rst.\d{4}-\d{2}-\d{2}_\d{5}.nc'
         for infile in contents:
             if re.match(pattern, infile):
                 return os.path.join(path, infile)
