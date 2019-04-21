@@ -45,9 +45,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
                                      find_atm_files(var, input_path)]
                                for var in handler_variables}
             else:
-                input_paths = {var: [os.path.join(input_path, x) for x in
-                                     find_mpas_files(var, input_path,
-                                                     map_path)]
+                input_paths = {var: find_mpas_files(var, input_path, map_path)
                                for var in handler_variables}
 
             # setup the input args for the handler
@@ -116,9 +114,8 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
                                          find_atm_files(var, input_path)]
                                    for var in handler_variables}
                 else:
-                    input_paths = {var: [os.path.join(input_path, x) for x in
-                                         find_mpas_files(var, input_path,
-                                                         map_path)]
+                    input_paths = {var: find_mpas_files(var, input_path,
+                                                        map_path)
                                    for var in handler_variables}
 
                 name = handler_method(
