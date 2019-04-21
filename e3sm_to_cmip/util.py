@@ -337,11 +337,11 @@ def find_mpas_files(component, path, map_path):
         pattern = 'mpaso_in'
         for infile in contents:
             if re.match(pattern, infile):
-                return os.path.join(path, infile)
+                return os.path.abspath(os.path.join(path, infile))
         pattern = 'mpas-o_in'
         for infile in contents:
             if re.match(pattern, infile):
-                return os.path.join(path, infile)
+                return os.path.abspath(os.path.join(path, infile))
 
         raise IOError("Unable to find MPASO_namelist in the input directory")
 
@@ -350,11 +350,11 @@ def find_mpas_files(component, path, map_path):
         pattern = 'mpassi_in'
         for infile in contents:
             if re.match(pattern, infile):
-                return os.path.join(path, infile)
+                return os.path.abspath(os.path.join(path, infile))
         pattern = 'mpas-cice_in'
         for infile in contents:
             if re.match(pattern, infile):
-                return os.path.join(path, infile)
+                return os.path.abspath(os.path.join(path, infile))
 
         raise IOError("Unable to find MPASSI_namelist in the input directory")
 
@@ -363,18 +363,18 @@ def find_mpas_files(component, path, map_path):
         pattern = r'mpaso.rst.\d{4}-\d{2}-\d{2}_\d{5}.nc'
         for infile in contents:
             if re.match(pattern, infile):
-                return os.path.join(path, infile)
+                return os.path.abspath(os.path.join(path, infile))
 
     elif component == 'mpas_map':
 
-        return [map_path]
+        return os.path.abspath(map_path)
 
     elif component == 'mpaso_moc_regions':
 
         pattern = '_region_'
         for infile in contents:
             if pattern in infile:
-                return os.path.join(path, infile)
+                return os.path.abspath(os.path.join(path, infile))
 
     else:
         raise IOError(
