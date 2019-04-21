@@ -330,7 +330,7 @@ def find_mpas_files(component, path, map_path):
                 '\d{2}.nc'
             result = [os.path.join(path, x) for x in contents if re.match(
                 pattern=pattern, string=x)]
-        return result
+        return sorted(result)
 
     elif component == 'mpaso_namelist':
 
