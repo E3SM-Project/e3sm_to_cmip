@@ -44,6 +44,7 @@ def main():
     serial = _args['serial'] if _args.get('serial') else False
     mode = _args['mode'] if _args.get('mode') else 'atm'
     debug = True if _args.get('debug') else False
+    map_path = _args['map'] if _args.get('map') else None
 
     if _args.get('handlers'):
         handlers_path = os.path.abspath(_args.get('handlers'))
@@ -92,6 +93,7 @@ def main():
                 input_path=input_path,
                 tables_path=tables_path,
                 metadata_path=new_metadata_path,
+                map_path=map_path,
                 mode=mode,
                 logging=logging)
         except Exception as e:
@@ -108,6 +110,7 @@ def main():
                 input_path=input_path,
                 tables_path=tables_path,
                 metadata_path=new_metadata_path,
+                map_path=map_path,
                 mode=mode,
                 logging=logging)
         except KeyboardInterrupt as error:

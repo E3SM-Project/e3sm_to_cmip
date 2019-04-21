@@ -306,7 +306,7 @@ def find_atm_files(var, path):
 # ------------------------------------------------------------------
 
 
-def find_mpas_files(component, path):
+def find_mpas_files(component, path, map_path):
     """
     Looks in the path given for MPAS monthly-averaged files
 
@@ -360,17 +360,14 @@ def find_mpas_files(component, path):
 
     elif component == 'mpas_mesh':
 
-        # needs to be filled in by the driver
-        pattern = '{}.rst.'.format(component) + \
-            r'\d{4}-01-01_00000.nc'
+        pattern = r'mpaso.rst.\d{4}-01-01_00000.nc'
         for infile in contents:
             if re.match(pattern, infile):
                 return [os.path.abspath(infile)]
 
     elif component == 'mpas_map':
 
-        # needs to be filled in by the driver
-        return []
+        return [map_path]
 
     elif component == 'mpaso_moc_regions':
 

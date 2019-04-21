@@ -14,7 +14,8 @@ from e3sm_to_cmip.util import setup_cmor
 from e3sm_to_cmip.util import terminate
 
 
-def run_parallel(pool, handlers, input_path, tables_path, metadata_path, mode='atm', nproc=6, logging=None):
+def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
+                 map_path=None, mode='atm', nproc=6, logging=None):
     """
     Run all the handlers in parallel
     Params:
@@ -40,13 +41,14 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path, mode='a
             # find the input files this handler needs
             if mode in ['atm', 'lnd']:
 
-                input_paths = {var: [
-                    os.path.join(input_path, x) for x in find_atm_files(var, input_path)
-                ] for var in handler_variables}
+                input_paths = {var: [os.path.join(input_path, x) for x in
+                                     find_atm_files(var, input_path)]
+                               for var in handler_variables}
             else:
-                input_paths = {var: [
-                    os.path.join(input_path, x) for x in find_mpas_files(var, input_path)
-                ] for var in handler_variables}
+                input_paths = {var: [os.path.join(input_path, x) for x in
+                                     find_mpas_files(var, input_path,
+                                                     map_path)]
+                               for var in handler_variables}
 
             # setup the input args for the handler
             _args = (input_paths,
@@ -84,7 +86,8 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path, mode='a
 # ------------------------------------------------------------------
 
 
-def run_serial(handlers, input_path, tables_path, metadata_path, mode='atm', logging=None):
+def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
+               mode='atm', logging=None):
     """
     Run each of the handlers one at a time on the main process
 
@@ -109,9 +112,14 @@ def run_serial(handlers, input_path, tables_path, metadata_path, mode='atm', log
                 # find the input files this handler needs
                 if mode in ['atm', 'lnd']:
 
-                    input_paths = {var: [
-                        os.path.join(input_path, x) for x in find_atm_files(var, input_path)
-                    ] for var in handler_variables}
+                    input_paths = {var: [os.path.join(input_path, x) for x in
+                                         find_atm_files(var, input_path)]
+                                   for var in handler_variables}
+                else:
+                    input_paths = {var: [os.path.join(input_path, x) for x in
+                                         find_mpas_files(var, input_path,
+                                                         map_path)]
+                                   for var in handler_variables}
 
                 name = handler_method(
                     input_paths,
