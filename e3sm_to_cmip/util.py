@@ -109,14 +109,6 @@ def parse_argsuments():
         metavar='<tables-path>',
         help="Path to directory containing CMOR Tables directory")
     parser.add_argument(
-        '--mpaso',
-        metavar='<mpaso_file_path>',
-        help="Use this option for handling MPAS ocean data, point to a directory containing at least one of each of the following: mpaso restart, mpaso namelist. Must also specify a mapfile with --map")
-    parser.add_argument(
-        '--mpassi',
-        metavar='<mpassi_file_path>',
-        help="Use this option for handling MPAS sea-ice data, point to a directory containing at least one of each of the following: mpaso restart, mpas sea-ice namelist. Must also specify a mapfile with --map")
-    parser.add_argument(
         '--map',
         metavar='<map_mpas_to_std_grid>',
         help="The path to an mpas remapping file. Must be used when using the --mpaso or --mpassi options")
@@ -144,20 +136,24 @@ def parse_argsuments():
         help='Set output level to debug',
         action='store_true')
     parser.add_argument(
+        '--mode',
+        metavar='<mode>',
+        help="The component to analyze, atm, lnd, ocn or ice")
+    parser.add_argument(
         '--version',
         help='print the version number and exit',
         action='version',
         version='%(prog)s 0.0.2')
     try:
         _args = sys.argv[1:]
-    except:
+    except (Exception, BaseException):
         parser.print_help()
         sys.exit(1)
     else:
         _args = parser.parse_args(_args)
-        if _args.mpaso and not _args.map:
+        if _args.mode == 'ocn' and not _args.map:
             print("MPAS ocean handling requires a map file")
-        if _args.mpassi and not _args.map:
+        if _args.mode == 'ice' and not _args.map:
             print("MPAS sea-ice handling requires a map file")
     return _args
 # ------------------------------------------------------------------
@@ -173,8 +169,8 @@ def load_handlers(handlers_path, var_list, debug=False):
         var_list (list(str)): A list of strings with the names of cmip6 variables to convert to, optionally "all" to run all handlers found
     Returns:
     --------
-        handlers (list(dict()): A list of dictionaries mapping module names 
-        (which are the cmip6 output variable name), to a tuple of (function pointer, 
+        handlers (list(dict()): A list of dictionaries mapping module names
+        (which are the cmip6 output variable name), to a tuple of (function pointer,
         list of required input variables)
     """
 
@@ -326,11 +322,22 @@ def find_mpas_files(component, path):
 
         pattern = '{}.hist.am.timeSeriesStatsMonthly.'.format(component) + \
             r'\d{4}-\d{2}-\d{2}.nc'
-        return [os.path.join(path, x) for x in contents if re.match(
+        result = [os.path.join(path, x) for x in contents if re.match(
             pattern=pattern, string=x)]
+
+        if component == 'mpassi' and len(result) == 0:
+            pattern = r'mpascice.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-' \
+                '\d{2}.nc'
+            result = [os.path.join(path, x) for x in contents if re.match(
+                pattern=pattern, string=x)]
+        return result
 
     elif component == 'mpaso_namelist':
 
+        pattern = 'mpaso_in'
+        for infile in contents:
+            if re.match(pattern, infile):
+                return [os.path.abspath(infile)]
         pattern = 'mpas-o_in'
         for infile in contents:
             if re.match(pattern, infile):
@@ -340,6 +347,10 @@ def find_mpas_files(component, path):
 
     elif component == 'mpassi_namelist':
 
+        pattern = 'mpassi_in'
+        for infile in contents:
+            if re.match(pattern, infile):
+                return [os.path.abspath(infile)]
         pattern = 'mpas-cice_in'
         for infile in contents:
             if re.match(pattern, infile):
