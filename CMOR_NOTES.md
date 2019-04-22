@@ -2,7 +2,7 @@
 
 ## 2D
 
-| variable   | handler | run | checked | sample_path | 
+| variable   | handler | run | checked | sample_path |
 | --------   | ------- | --- | ------- | ----------- |
 | tas        | YES     | no  | no      | no          |
 | ts         | YES     | no  | no      | no          |
@@ -59,3 +59,64 @@
 | ua       | no      | no  | no      | no          |
 | va       | no      | no  | no      | no          |
 | zg       | no      | no  | no      | no          |
+
+
+# OCN variable handlers
+
+## Scalar
+
+| variable   | handler | run | checked | sample_path |
+| --------   | ------- | --- | ------- | ----------- |
+| masso      | YES     | no  | no      | no          |
+| volo       | YES     | no  | no      | no          |
+| thetaoga   | YES     | no  | no      | no          |
+| tosga      | YES     | no  | no      | no          |
+| soga       | YES     | no  | no      | no          |
+| sosga      | YES     | no  | no      | no          |
+
+
+## 1D
+
+| variable   | handler | run | checked | sample_path |
+| --------   | ------- | --- | ------- | ----------- |
+| hfbasin    | NO      | no  | no      | no          |
+
+
+## 2D
+
+| variable   | handler | run | checked | sample_path |
+| --------   | ------- | --- | ------- | ----------- |
+| pbo        | YES     | no  | no      | no          |
+| pso        | YES     | no  | no      | no          |
+| zos        | YES     | no  | no      | no          |
+| masscello  | YES     | no  | no      | no          |
+| tos        | YES     | no  | no      | no          |
+| tob        | YES     | no  | no      | no          |
+| sos        | YES     | no  | no      | no          |
+| sob        | YES     | no  | no      | no          |
+| mlotst     | YES     | no  | no      | no          |
+| msftmz     | YES     | no  | no      | no          |
+| fsitherm   | YES     | no  | no      | no          |
+| wfo        | YES     | no  | no      | no          |
+| sfdsi      | YES     | no  | no      | no          |
+| hfds       | YES     | no  | no      | no          |
+| tauuo      | YES     | no  | no      | no          |
+| tauvo      | YES     | no  | no      | no          |
+
+## 3D model level
+
+| variable   | handler | run | checked | sample_path |
+| --------   | ------- | --- | ------- | ----------- |
+| thetao     | YES     | no  | no      | no          |
+| so         | YES     | no  | no      | no          |
+| uo         | YES     | no  | no      | no          |
+| vo         | YES     | no  | no      | no          |
+| wo         | YES     | no  | no      | no          |
+| hfsifrazil | NO      | no  | no      | no          |
+
+## 3D olevhalf
+
+| variable | handler | run | checked | sample_path |
+| -------- | ------- | --- | ------- | ----------- |
+| zhalfo   | YES     | no  | no      | no          |
+
