@@ -112,7 +112,7 @@
 | uo         | YES     | no  | no      | no          |
 | vo         | YES     | no  | no      | no          |
 | wo         | YES     | no  | no      | no          |
-| hfsifrazil | NO      | no  | no      | no          |
+| hfsifrazil | YES     | no  | no      | no          |
 
 ## 3D olevhalf
 
@@ -120,3 +120,19 @@
 | -------- | ------- | --- | ------- | ----------- |
 | zhalfo   | YES     | no  | no      | no          |
 
+
+# ICE variable handlers
+
+## 2D
+
+| variable   | handler | run | checked | sample_path |
+| --------   | ------- | --- | ------- | ----------- |
+| sitimefrac | YES     | no  | no      | no          |
+| siconc     | YES     | no  | no      | no          |
+| simass     | YES     | no  | no      | no          |
+| sithick    | YES     | no  | no      | no          |
+| sisnmass   | YES     | no  | no      | no          |
+| sisnthick  | YES     | no  | no      | no          |
+| sitemptop  | YES     | no  | no      | no          |
+| siu        | YES     | no  | no      | no          |
+| siv        | YES     | no  | no      | no          |
