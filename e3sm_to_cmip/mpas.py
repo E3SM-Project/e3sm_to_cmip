@@ -160,6 +160,25 @@ def add_mask(ds, mask):
     return ds
 
 
+def add_si_mask(ds, mask, siconc, threshold=0.05):
+    '''
+    Add a 2D mask to the data sets and apply the mask to all variabels
+    '''
+
+    mask = numpy.logical_and(
+        mask, siconc > threshold)
+
+    ds = ds.copy()
+    for varName in ds.data_vars:
+        var = ds[varName]
+        if all([dim in var.dims for dim in mask.dims]):
+            ds[varName] = var.where(mask, 0.)
+
+    ds['cellMask'] = 1.0*mask
+
+    return ds
+
+
 def get_cell_masks(dsMesh):
     '''Get 2D and 3D masks of valid MPAS cells from the mesh Dataset'''
 
