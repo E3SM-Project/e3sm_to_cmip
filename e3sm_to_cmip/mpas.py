@@ -449,6 +449,43 @@ def compute_moc_streamfunction(dsIn=None, dsMesh=None, dsMasks=None,
         return dsOut
 
 
+def interp_vertex_to_cell(varOnVertices, dsMesh):
+    """ Interpolate a 2D field on vertices to MPAS cell centers """
+    nCells = dsMesh.sizes['nCells']
+    vertexDegree = dsMesh.sizes['vertexDegree']
+    maxEdges = dsMesh.sizes['maxEdges']
+
+    kiteAreas = dsMesh.kiteAreasOnVertex.values
+    verticesOnCell = dsMesh.verticesOnCell.values-1
+    cellsOnVertex = dsMesh.cellsOnVertex.values-1
+
+    cellIndices = numpy.arange(nCells)
+
+    weights = numpy.zeros((nCells, maxEdges))
+    for iVertex in range(maxEdges):
+        vertices = verticesOnCell[:, iVertex]
+        mask1 = vertices > 0
+        for iCell in range(vertexDegree):
+            mask2 = numpy.equal(cellsOnVertex[vertices, iCell], cellIndices)
+            mask = numpy.logical_and(mask1, mask2)
+            weights[:, iVertex] += mask * kiteAreas[vertices, iCell]
+
+    weights =  \
+        xarray.DataArray.from_dict({'dims': ('nCells', 'maxEdges'),
+                                    'data': weights})
+
+    weights /= dsMesh.areaCell
+
+    varOnVertices = varOnVertices.chunk(chunks={'nVertices': None, 'Time': 36})
+
+    varOnCells = (varOnVertices[:, dsMesh.verticesOnCell-1]*weights).sum(
+        dim='maxEdges')
+
+    varOnCells.compute()
+
+    return varOnCells
+
+
 def _string_to_days_since_date(dateStrings, referenceDate='0001-01-01'):
     """
     Turn an array-like of date strings into the number of days since the
