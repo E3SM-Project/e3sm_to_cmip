@@ -102,29 +102,33 @@ def run_serial(handlers, input_path, tables_path, metadata_path, mode='atm', log
 
     try:
         for idx, handler in enumerate(handlers):
-            for _, handler_info in handler.items():
+            
+            handler_method = handler['method']
+            handler_variables = handler['raw_variables']
+            # find the input files this handler needs
+            if mode in ['atm', 'lnd']:
 
-                handler_method = handler_info[0]
-                handler_variables = handler_info[1]
-                # find the input files this handler needs
-                if mode in ['atm', 'lnd']:
+                input_paths = {var: [
+                    os.path.join(input_path, x) for x in find_atm_files(var, input_path)
+                ] for var in handler_variables}
 
-                    input_paths = {var: [
-                        os.path.join(input_path, x) for x in find_atm_files(var, input_path)
-                    ] for var in handler_variables}
-
-                name = handler_method(
-                    input_paths,
-                    tables_path,
-                    metadata_path,
-                    serial=True,
-                    logging=logging)
-                msg = 'Finished {handler}, {done}/{total} jobs complete'.format(
-                    handler=name,
-                    done=idx + 1,
-                    total=len(handlers))
-                logging.info(msg)
-                print_message(msg, 'ok')
+            name = handler_method(
+                input_paths,
+                tables_path,
+                metadata_path,
+                raw_variables=handler.get('raw_variables'),
+                units=handler.get('units'),
+                name=handler.get('name'),
+                table=handler.get('table'),
+                positive=handler.get('positive'),
+                serial=True,
+                logging=logging)
+            msg = 'Finished {handler}, {done}/{total} jobs complete'.format(
+                handler=name,
+                done=idx + 1,
+                total=len(handlers))
+            logging.info(msg)
+            print_message(msg, 'ok')
 
     except Exception as error:
         print_debug(error)
