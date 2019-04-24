@@ -3,7 +3,7 @@ package:
   version: {{ environ['VERSION'] }}
 
 source:
-  #path: ..
+  #path: ..  
   git_url: git://github.com/E3SM-Project/e3sm_to_cmip.git
   git_tag: {{ environ['TAG'] }}
 
@@ -29,6 +29,8 @@ requirements:
     - setuptools
     - cmor
     - cdutil
+    - cdms2 >=3.1
+    - tqdm
 
 test:
   imports:
