@@ -29,7 +29,7 @@ def write_data(varid, data, timeval, timebnds, index):
     """
     cmor.write(
         varid,
-        data[RAW_VARIABLES[0]][index, :] - data[RAW_VARIABLES[1]][index, :],
+        data['FSDS'][index, :] - data['FSNS'][index, :],
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
