@@ -9,6 +9,7 @@ import re
 import argparse
 import imp
 import cdms2
+import yaml
 
 from progressbar import ProgressBar
 
@@ -159,7 +160,7 @@ def parse_argsuments():
 # ------------------------------------------------------------------
 
 
-def load_handlers(handlers_path, var_list, debug=False):
+def load_handlers(handlers_path, var_list, debug=None):
     """
     load the cmor handler modules
 
@@ -173,31 +174,70 @@ def load_handlers(handlers_path, var_list, debug=False):
         (which are the cmip6 output variable name), to a tuple of (function pointer,
         list of required input variables)
     """
-
     handlers = list()
+    # load default varibles
+    defaults_path = os.path.join(
+        handlers_path,
+        'default_names.yaml')
+    with open(defaults_path, 'r') as infile:
 
+        defaults = yaml.load(infile)
+        module_name = "default_handler.py"
+        module_path = os.path.join(handlers_path, module_name)
+
+        module = imp.load_source(module_name, module_path)
+        method = module.handle_default
+
+        for default in defaults['default_handlers']:
+
+            if default.get('cmip_name') in var_list or 'all' in var_list:
+
+                handlers.append({
+                    'name': default.get('cmip_name'),
+                    'method': method,
+                    'raw_variables': [default.get('e3sm_name')],
+                    'units': default.get('units'),
+                    'table': default.get('table'),
+                    'positive': default.get('positive')
+                })
+
+    # load the more complex handlers
     for handler in os.listdir(handlers_path):
+
         if not handler.endswith('.py'):
             continue
         if handler == "__init__.py":
             continue
 
         module_name, _ = handler.rsplit('.', 1)
-        # ignore handlers for variables that werent requested
         if module_name not in var_list and 'all' not in var_list:
             continue
+
+        to_break = False
+        for h in handlers:
+            if h['name'] == module_name:
+                to_break = True
+        if to_break:
+            break
 
         module_path = os.path.join(handlers_path, handler)
 
         # load the module, and extract the "handle" method and required variables
         module = imp.load_source(module_name, module_path)
         method = module.handle
-        raw_variables = module.RAW_VARIABLES
+        handlers.append({
+            'name': module_name,
+            'method': method,
+            'raw_variables': module.RAW_VARIABLES,
+            'units': module.VAR_UNITS,
+            'table': module.TABLE,
+            'positive': module.POSITIVE if hasattr(module, 'POSITIVE') else None
+        })
 
-        msg = 'Loaded {}'.format(module_name)
+    for handler in handlers:
+        msg = 'Loaded {}'.format(handler['name'])
         if debug:
             print_message(msg, 'debug')
-        handlers.append({module_name: (method, raw_variables)})
 
     return handlers
 # ------------------------------------------------------------------
@@ -381,6 +421,7 @@ def find_mpas_files(component, path, map_path):
             "Unrecognized component {}, unable to find input files".format(component))
 
 # ------------------------------------------------------------------
+
 
 def terminate(pool, debug=False):
     """

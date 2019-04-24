@@ -1,11 +1,13 @@
 """
-PS to ps converter
+Convert from E3SM variable name to CMIP6 equivalent, no data transformation
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
 import cmor
 import cdms2
+import logging
+
 
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.lib import get_dimension_data
@@ -13,26 +15,10 @@ from e3sm_to_cmip.util import setup_cmor
 from e3sm_to_cmip.lib import load_axis
 from e3sm_to_cmip.lib import handle_variables
 
-# list of raw variable names needed
-RAW_VARIABLES = [str('PS')]
-VAR_NAME = str('ps')
-VAR_UNITS = str('Pa')
-TABLE = str('CMIP6_Amon.json')
-
-
-def write_data(varid, data, timeval, timebnds, index):
-    """
-    No data transform required
-    """
-    cmor.write(
-        varid,
-        data[RAW_VARIABLES[0]][index, :],
-        time_vals=timeval,
-        time_bnds=timebnds)
 # ------------------------------------------------------------------
 
 
-def handle(infiles, tables, user_input_path, **kwargs):
+def handle_default(infiles, tables, user_input_path, **kwargs):
     """
     Parameters
     ----------
@@ -43,17 +29,28 @@ def handle(infiles, tables, user_input_path, **kwargs):
     -------
         var name (str): the name of the processed variable after processing is complete
     """
+    
+    def write_data(varid, data, timeval, timebnds, index):
+        """
+        Write out whatever the first raw variable listed is named
+        """
+        cmor.write(
+            varid,
+            data[ kwargs.get('raw_variables')[0] ][index, :],
+            time_vals=timeval,
+            time_bnds=timebnds)
 
     handle_variables(
         metadata_path=user_input_path,
         tables=tables,
-        table=TABLE,
         infiles=infiles,
-        raw_variables=RAW_VARIABLES,
         write_data=write_data,
-        outvar_name=VAR_NAME,
-        outvar_units=VAR_UNITS,
-        serial=kwargs.get('serial'))
+        table=kwargs.get('table'),
+        serial=kwargs.get('serial'),
+        positive=kwargs.get('positive'),
+        outvar_name=kwargs.get('name'),
+        outvar_units=kwargs.get('units'),
+        raw_variables=kwargs.get('raw_variables'))
 
-    return VAR_NAME
+    return kwargs.get('var_name')
 # ------------------------------------------------------------------
