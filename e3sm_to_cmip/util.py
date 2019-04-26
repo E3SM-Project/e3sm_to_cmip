@@ -355,6 +355,8 @@ def find_mpas_files(component, path, map_path):
         component (str): Either the mpaso or mpassi component name
         path (str): The path of the directory to search for files in
     """
+    # save original in case it's an atm var
+    var = str(component)
     component = component.lower()
     contents = os.listdir(path)
 
@@ -417,8 +419,13 @@ def find_mpas_files(component, path, map_path):
                 return os.path.abspath(os.path.join(path, infile))
 
     else:
-        raise IOError(
-            "Unrecognized component {}, unable to find input files".format(component))
+        files = find_atm_files(var, path)
+        if len(files) > 0:
+            files = [os.path.join(path, name) for name in files]
+            return files
+        else:
+            raise ValueError("Unrecognized component {}, unable to find input "
+                             "files".format(component))
 
 # ------------------------------------------------------------------
 
