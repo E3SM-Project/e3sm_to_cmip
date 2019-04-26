@@ -15,6 +15,7 @@ RAW_VARIABLES = ['MPASO', 'MPAS_mesh', 'MPASO_MOC_regions']
 # output variable name
 VAR_NAME = 'msftmz'
 VAR_UNITS = 'kg s-1'
+TABLE = 'CMIP6_Omon.json'
 
 
 def handle(infiles, tables, user_input_path, **kwargs):

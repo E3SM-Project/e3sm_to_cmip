@@ -15,6 +15,7 @@ RAW_VARIABLES = ['MPASO', 'MPASO_namelist', 'MPAS_mesh', 'MPAS_map']
 # output variable name
 VAR_NAME = 'masscello'
 VAR_UNITS = 'kg m-2'
+TABLE = 'CMIP6_Omon.json'
 
 
 def handle(infiles, tables, user_input_path, **kwargs):

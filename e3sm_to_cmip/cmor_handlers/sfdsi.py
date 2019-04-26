@@ -15,6 +15,7 @@ RAW_VARIABLES = ['MPASO', 'MPAS_map']
 # output variable name
 VAR_NAME = 'sfdsi'
 VAR_UNITS = 'kg m-2 s-1'
+TABLE = 'CMIP6_Omon.json'
 
 
 def handle(infiles, tables, user_input_path, **kwargs):

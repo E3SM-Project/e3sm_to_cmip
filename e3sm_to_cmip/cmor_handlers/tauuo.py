@@ -15,6 +15,7 @@ RAW_VARIABLES = ['MPASO', 'MPAS_map']
 # output variable name
 VAR_NAME = 'tauuo'
 VAR_UNITS = 'N m-2'
+TABLE = 'CMIP6_Omon.json'
 
 
 def handle(infiles, tables, user_input_path, **kwargs):

@@ -16,6 +16,7 @@ RAW_VARIABLES = ['MPASO', 'MPAS_mesh']
 # output variable name
 VAR_NAME = 'soga'
 VAR_UNITS = '0.001'
+TABLE = 'CMIP6_Omon.json'
 
 
 def handle(infiles, tables, user_input_path, **kwargs):

@@ -15,6 +15,7 @@ RAW_VARIABLES = ['MPASO', 'MPASO_namelist', 'MPAS_mesh', 'MPAS_map', 'PSL']
 # output variable name
 VAR_NAME = 'pbo'
 VAR_UNITS = 'Pa'
+TABLE = 'CMIP6_Omon.json'
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
