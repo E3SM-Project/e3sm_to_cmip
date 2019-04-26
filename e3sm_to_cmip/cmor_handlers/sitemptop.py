@@ -16,6 +16,7 @@ RAW_VARIABLES = ['MPASSI', 'MPAS_mesh', 'MPAS_map']
 # output variable name
 VAR_NAME = 'sitemptop'
 VAR_UNITS = 'K'
+TABLE = 'CMIP6_SImon.json'
 
 
 def handle(infiles, tables, user_input_path, **kwargs):

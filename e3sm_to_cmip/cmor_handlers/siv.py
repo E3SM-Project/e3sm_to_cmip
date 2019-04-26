@@ -16,6 +16,7 @@ RAW_VARIABLES = ['MPASSI', 'MPAS_mesh', 'MPAS_map']
 # output variable name
 VAR_NAME = 'siv'
 VAR_UNITS = 'm s-1'
+TABLE = 'CMIP6_SImon.json'
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
