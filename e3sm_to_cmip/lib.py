@@ -33,32 +33,30 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
 
     pool_res = list()
     for idx, handler in enumerate(handlers):
-        for _, handler_info in handler.items():
+        handler_method = handler['method']
+        handler_variables = handler['raw_variables']
+        # find the input files this handler needs
+        if mode in ['atm', 'lnd']:
 
-            handler_method = handler_info[0]
-            handler_variables = handler_info[1]
+            input_paths = {var: [os.path.join(input_path, x) for x in
+                                 find_atm_files(var, input_path)]
+                           for var in handler_variables}
+        else:
+            input_paths = {var: find_mpas_files(var, input_path,
+                                                map_path)
+                           for var in handler_variables}
 
-            # find the input files this handler needs
-            if mode in ['atm', 'lnd']:
+        # setup the input args for the handler
+        _args = (input_paths,
+                 tables_path,
+                 metadata_path)
 
-                input_paths = {var: [os.path.join(input_path, x) for x in
-                                     find_atm_files(var, input_path)]
-                               for var in handler_variables}
-            else:
-                input_paths = {var: find_mpas_files(var, input_path, map_path)
-                               for var in handler_variables}
-
-            # setup the input args for the handler
-            _args = (input_paths,
-                     tables_path,
-                     metadata_path)
-
-            # add the future to the results list
-            pool_res.append(
-                pool.apply_async(
-                    handler_method,
-                    args=_args,
-                    kwds={}))
+        # add the future to the results list
+        pool_res.append(
+            pool.apply_async(
+                handler_method,
+                args=_args,
+                kwds={}))
 
     # wait for each result to complete
     pbar = ProgressBar(maxval=len(pool_res))
