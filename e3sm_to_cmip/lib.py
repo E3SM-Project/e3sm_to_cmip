@@ -142,7 +142,7 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
 # ------------------------------------------------------------------
 
 
-def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None, levels=None):
+def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None, levels=None, axis=None):
     """
     """
     msg = '{}: Starting'.format(outvar_name)
@@ -215,11 +215,13 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
 
         # create the cmor variable and axis
         axis_ids, ips = load_axis(data=data, levels=levels)
+
         if ips:
             data['ips'] = ips
+
         if positive:
             varid = cmor.variable(outvar_name, outvar_units,
-                                  axis_ids, positive=positive)
+                                axis_ids, positive=positive)
         else:
             varid = cmor.variable(outvar_name, outvar_units, axis_ids)
 
@@ -322,7 +324,7 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
                 'time_bnds': f('time_bnds')
             })
             # load level and level bounds
-            if levels:
+            if levels.get('name') == 'standard_hybrid_sigma':
                 data.update({
                     'lev': f.getAxis('lev')[:]/1000,
                     'ilev': f.getAxis('ilev')[:]/1000,
@@ -333,6 +335,12 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
                     'hybm': f('hybm'),
                     'hybi': f('hybi'),
                 })
+            else:
+                name = levels.get('e3sm_axis_name')
+                data[name] = f.getAxis(name)[:]
+                bnds = levels.get('e3sm_axis_bnds')
+                if bnds:
+                    data[bnds] = f.getAxis(bnds)[:]
     finally:
         f.close()
         return data
@@ -358,11 +366,13 @@ def load_axis(data, levels=None):
     }]
     if levels:
         lev_axis = {
-            str('table_entry'): levels.get('name'),
-            str('units'): levels.get('units'),
-            str('coord_vals'): data['lev'][:],
-            str('cell_bounds'): data['ilev'][:]
+            str('table_entry'): str(levels.get('name')),
+            str('units'): str(levels.get('units')),
+            str('coord_vals'): data[ levels.get('e3sm_axis_name') ][:]
         }
+        axis_bnds = levels.get('e3sm_axis_bnds')
+        if axis_bnds:
+            lev_axis['cell_bounds'] = data[ axis_bnds ][:]
         axes.insert(1, lev_axis)
 
     axis_ids = list()
@@ -373,7 +383,7 @@ def load_axis(data, levels=None):
     ips = None
 
     # add hybrid level formula terms
-    if levels:
+    if levels and levels.get('name') == 'standard_hybrid_sigma':
         cmor.zfactor(
             zaxis_id=axis_ids[1],
             zfactor_name=str('a'),

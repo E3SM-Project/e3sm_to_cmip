@@ -1,33 +1,41 @@
 """
-CLDTOT to clt converter
+RELHUM to hur converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import cmor
+import cdms2
+import logging
+logger = logging.getLogger()
+
 from e3sm_to_cmip.lib import handle_variables
+from e3sm_to_cmip.lib import load_axis
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('CLDTOT')]
-VAR_NAME = str('clt')
-VAR_UNITS = str('%')
+RAW_VARIABLES = [str('RELHUM')]
+VAR_NAME = str('hur')
+VAR_UNITS = str('1.0')
 TABLE = str('CMIP6_Amon.json')
-
+LEVELS = {
+    'name': str('plev19'),
+    'units': str('Pa'),
+    'e3sm_axis_name': 'plev'
+}
 
 def write_data(varid, data, timeval, timebnds, index):
     """
-    clt = CLDTOT * 100.0
+    hur = RELHUM
     """
     cmor.write(
         varid,
-        data['CLDTOT'][index, :] * 100.0,
+        data['RELHUM'][index, :],
         time_vals=timeval,
         time_bnds=timebnds)
-# ------------------------------------------------------------------
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
     """
-    Transform E3SM.TS into CMIP.ts
+    Transform E3SM.RELHUM into CMIP.hur
 
     Parameters
     ----------
@@ -38,7 +46,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
     -------
         var name (str): the name of the processed variable after processing is complete
     """
-
     handle_variables(
         metadata_path=user_input_path,
         tables=tables,
@@ -48,7 +55,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         write_data=write_data,
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
-        serial=kwargs.get('serial'))
+        serial=kwargs.get('serial'),
+        levels=LEVELS)
 
     return VAR_NAME
-# ------------------------------------------------------------------

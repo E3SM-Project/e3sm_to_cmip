@@ -3,16 +3,8 @@ Convert from E3SM variable name to CMIP6 equivalent, no data transformation
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os
 import cmor
-import cdms2
-import logging
 
-
-from e3sm_to_cmip.util import print_message
-from e3sm_to_cmip.lib import get_dimension_data
-from e3sm_to_cmip.util import setup_cmor
-from e3sm_to_cmip.lib import load_axis
 from e3sm_to_cmip.lib import handle_variables
 
 # ------------------------------------------------------------------

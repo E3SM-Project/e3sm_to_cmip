@@ -52,10 +52,24 @@
 
 | variable | handler | run | checked | sample_path |
 | -------- | ------- | --- | ------- | ----------- |
-| hur      | no      | no  | no      | no          |
-| hus      | no      | no  | no      | no          |
-| o3       | no      | no  | no      | no          |
-| ta       | no      | no  | no      | no          |
-| ua       | no      | no  | no      | no          |
-| va       | no      | no  | no      | no          |
-| zg       | no      | no  | no      | no          |
+| hur      | YES     | no  | no      | no          |
+| hus      | YES     | no  | no      | no          |
+| o3       | YES     | no  | no      | no          |
+| ta       | YES     | no  | no      | no          |
+| ua       | YES     | no  | no      | no          |
+| va       | YES     | no  | no      | no          |
+| zg       | YES     | no  | no      | no          |
+
+# CFmon handlers
+
+| variable    | handler | run | checked | sample_path |
+| --------    | ------- | --- | ------- | ----------- |
+| clisccp     | YES     | no  | no      | no          |
+| cltisccp    | YES     | no  | no      | no          |
+| albisccp    | YES     | no  | no      | no          |
+| pctisccp    | YES     | no  | no      | no          |
+| clcalipso   | YES     | no  | no      | no          |
+| cltcalipso  | YES     | no  | no      | no          |
+| cllcalipso  | YES     | no  | no      | no          |
+| clmcalipso  | YES     | no  | no      | no          |
+| clhcalipso  | YES     | no  | no      | no          |

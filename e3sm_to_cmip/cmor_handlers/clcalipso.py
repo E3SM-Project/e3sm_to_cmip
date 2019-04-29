@@ -11,9 +11,7 @@ import logging
 from progressbar import ProgressBar
 
 from e3sm_to_cmip.util import print_message
-from e3sm_to_cmip.lib import get_dimension_data
 from e3sm_to_cmip.util import setup_cmor
-from e3sm_to_cmip.lib import load_axis
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
