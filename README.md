@@ -33,3 +33,17 @@ optional arguments:
   --version             print the version number and exit
   --debug               Set output level to debug
 ```
+
+## conda environment
+
+To create a conda environment with the required dependencies, run:
+```
+conda create -n e3sm_to_cmip -c conda-forge nco cmor cdutil cdms2 progressbar2 pyyaml xarray \
+    netcdf4 dask scipy
+```
+
+You can also install the `e3sm_to_cmip` conda package directly from the `e3sm` channel:
+```
+conda create -n e3sm_to_cmip -c conda-forge -c e3sm e3sm_to_cmip
+```
+
