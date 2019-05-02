@@ -4,6 +4,11 @@ default_handlers:
     units: "%"
     table: CMIP6_CFmon.json
   
+  - cmip_name: abs550aer
+    e3sm_name: AODABS
+    units: "1"
+    table: CMIP6_AERmon.json
+  
   - cmip_name: albisccp
     e3sm_name: MEANCLDALB_ISCCP
     units: "1"
