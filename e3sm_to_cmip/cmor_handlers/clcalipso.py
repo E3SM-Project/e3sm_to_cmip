@@ -7,6 +7,7 @@ import os
 import cmor
 import cdms2
 import logging
+logger = logging.getLogger()
 
 from progressbar import ProgressBar
 
@@ -21,7 +22,7 @@ VAR_UNITS = str('%')
 TABLE = str('CMIP6_CFmon.json')
 
 
-def write_data(varid, data, timeval, timebnds, index):
+def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     clcalipso = CLD_CAL with alt40 levels
     """
@@ -64,7 +65,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     msg = '{}: running with input files: {}'.format(
         VAR_NAME,
         infiles)
-    logging.info(msg)
+    logger.info(msg)
 
     # setup cmor
     setup_cmor(
@@ -139,8 +140,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
             VAR_NAME,
             data['time_bnds'][0][0],
             data['time_bnds'][-1][-1])
-        if logging:
-            logging.info(msg)
+        logger.info(msg)
         if serial:
             print(msg)
             pbar = ProgressBar(maxval=len(data['time']))

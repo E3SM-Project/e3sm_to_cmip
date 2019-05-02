@@ -23,7 +23,7 @@ TABLE = str('CMIP6_Amon.json')
 POSITIVE = str('down')
 
 
-def write_data(varid, data, timeval, timebnds, index):
+def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     rtmt = FSNT - FLNT
     """

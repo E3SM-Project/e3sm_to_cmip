@@ -13,7 +13,7 @@ VAR_UNITS = str('%')
 TABLE = str('CMIP6_Amon.json')
 
 
-def write_data(varid, data, timeval, timebnds, index):
+def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     clt = CLDTOT * 100.0
     """

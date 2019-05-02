@@ -19,7 +19,7 @@ LEVELS = {
     'e3sm_axis_bnds': 'ilev'
 }
 
-def write_data(varid, data, timeval, timebnds, index):
+def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     cl = CLOUD * 100.0
     """
