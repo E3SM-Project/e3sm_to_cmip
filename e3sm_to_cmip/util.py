@@ -2,14 +2,12 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import sys
 import traceback
-import cdutil
 import cmor
 import os
 import re
 import argparse
 import imp
 import cdms2
-import yaml
 
 from progressbar import ProgressBar
 
@@ -174,32 +172,8 @@ def load_handlers(handlers_path, var_list, debug=None):
         (which are the cmip6 output variable name), to a tuple of (function pointer,
         list of required input variables)
     """
+
     handlers = list()
-    # load default varibles
-    defaults_path = os.path.join(
-        handlers_path,
-        'default_names.yaml')
-    with open(defaults_path, 'r') as infile:
-
-        defaults = yaml.load(infile)
-        module_name = "default_handler.py"
-        module_path = os.path.join(handlers_path, module_name)
-
-        module = imp.load_source(module_name, module_path)
-        method = module.handle_default
-
-        for default in defaults['default_handlers']:
-
-            if default.get('cmip_name') in var_list or 'all' in var_list:
-
-                handlers.append({
-                    'name': default.get('cmip_name'),
-                    'method': method,
-                    'raw_variables': [default.get('e3sm_name')],
-                    'units': default.get('units'),
-                    'table': default.get('table'),
-                    'positive': default.get('positive')
-                })
 
     # load the more complex handlers
     for handler in os.listdir(handlers_path):
@@ -224,10 +198,10 @@ def load_handlers(handlers_path, var_list, debug=None):
 
         # load the module, and extract the "handle" method and required variables
         module = imp.load_source(module_name, module_path)
-        method = module.handle
+
         handlers.append({
             'name': module_name,
-            'method': method,
+            'method': module.handle,
             'raw_variables': module.RAW_VARIABLES,
             'units': module.VAR_UNITS,
             'table': module.TABLE,
@@ -326,7 +300,7 @@ def add_metadata(file_path, var_list):
 
 def find_atm_files(var, path):
     """
-    Looks in the given path for all files that match that matche VAR_\d{6}_\d{6}.nc
+    Looks in the given path for all files that match that match VAR_\d{6}_\d{6}.nc
 
     Params:
     -------

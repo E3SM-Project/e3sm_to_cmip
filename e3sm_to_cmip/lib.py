@@ -1,21 +1,13 @@
+from progressbar import ProgressBar
 import os
 import cmor
-# import logging
 import cdms2
 import logging
-
-from progressbar import ProgressBar
-
-from e3sm_to_cmip.util import find_atm_files
-from e3sm_to_cmip.util import find_mpas_files
-from e3sm_to_cmip.util import print_message
-from e3sm_to_cmip.util import print_debug
-from e3sm_to_cmip.util import setup_cmor
-from e3sm_to_cmip.util import terminate
+logger = logging.getLogger()
 
 
 def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
-                 map_path=None, mode='atm', nproc=6, logging=None):
+                 map_path=None, mode='atm', nproc=6):
     """
     Run all the handlers in parallel
     Params:
@@ -30,6 +22,10 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
     --------
         returns 1 if an error occurs, else 0
     """
+    from e3sm_to_cmip.util import find_atm_files
+    from e3sm_to_cmip.util import find_mpas_files
+    from e3sm_to_cmip.util import print_debug
+    from e3sm_to_cmip.util import terminate
 
     pool_res = list()
     for idx, handler in enumerate(handlers):
@@ -47,16 +43,21 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
                            for var in handler_variables}
 
         # setup the input args for the handler
-        _args = (input_paths,
-                 tables_path,
-                 metadata_path)
+        _kwargs = {
+            'table': handler.get('table'),
+            'raw_variables': handler.get('raw_variables'),
+            'units': handler.get('units'),
+            'positive': handler.get('positive'),
+            'name': handler.get('name')
+        }
 
-        # add the future to the results list
         pool_res.append(
-            pool.apply_async(
+            pool.apipe(
                 handler_method,
-                args=_args,
-                kwds={}))
+                input_paths,
+                tables_path,
+                metadata_path,
+                **_kwargs))
 
     # wait for each result to complete
     pbar = ProgressBar(maxval=len(pool_res))
@@ -68,14 +69,11 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
                 handler=out,
                 done=idx + 1,
                 total=len(pool_res))
-            logging.info(msg)
+            logger.info(msg)
             pbar.update(idx)
-        except Exception as error:
-            # print(format_debug(e))
-            logging.error(error)
-            terminate(pool)
-            raise error
-            # return 1
+        except Exception as e:
+            print_debug(e)
+            return 1
     pbar.finish()
     terminate(pool)
     return 0
@@ -83,7 +81,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
 
 
 def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
-               mode='atm', logging=None):
+               mode='atm'):
     """
     Run each of the handlers one at a time on the main process
 
@@ -98,10 +96,13 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
     --------
         returns 1 if an error occurs, else 0
     """
-
+    from e3sm_to_cmip.util import find_atm_files
+    from e3sm_to_cmip.util import find_mpas_files
+    from e3sm_to_cmip.util import print_message
+    from e3sm_to_cmip.util import print_debug
     try:
         for idx, handler in enumerate(handlers):
-            
+
             handler_method = handler['method']
             handler_variables = handler['raw_variables']
             # find the input files this handler needs
@@ -124,13 +125,12 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
                 name=handler.get('name'),
                 table=handler.get('table'),
                 positive=handler.get('positive'),
-                serial=True,
-                logging=logging)
+                serial=True)
             msg = 'Finished {handler}, {done}/{total} jobs complete'.format(
                 handler=name,
                 done=idx + 1,
                 total=len(handlers))
-            logging.info(msg)
+            logger.info(msg)
             print_message(msg, 'ok')
 
     except Exception as error:
@@ -145,6 +145,8 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
 def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None, levels=None, axis=None):
     """
     """
+    from e3sm_to_cmip.util import print_message
+
     msg = '{}: Starting'.format(outvar_name)
 
     if serial:
@@ -152,23 +154,21 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
     nonzero = False
     for variable in raw_variables:
         if len(infiles[variable]) == 0:
-            msg = '{}: Unable to find input files for {}'.format(outvar_name, variable)
+            msg = '{}: Unable to find input files for {}'.format(
+                outvar_name, variable)
             print_message(msg)
             nonzero = True
     if nonzero:
         return
 
-    msg = '{}: running with input files: {}'.format(
-        outvar_name,
-        infiles)
-    logging.info(msg)
+    logfile = os.path.join(os.getcwd(), 'logs', outvar_name + '.log')
+    cmor.setup(
+        inpath=tables,
+        netcdf_file_action=cmor.CMOR_REPLACE,
+        logfile=logfile)
 
-    # setup cmor
-    setup_cmor(
-        outvar_name,
-        tables,
-        table,
-        metadata_path)
+    cmor.dataset_json(str(metadata_path))
+    cmor.load_table(str(table))
 
     msg = '{}: CMOR setup complete'.format(outvar_name)
 
@@ -196,8 +196,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             msg = '{name}: loading {variable}'.format(
                 name=outvar_name,
                 variable=var_name)
-            if logging:
-                logging.info(msg)
+            logger.info(msg)
 
             new_data = get_dimension_data(
                 filename=infiles[var_name][index],
@@ -208,8 +207,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             get_dims = False
 
         msg = '{name}: loading axes'.format(name=outvar_name)
-        if logging:
-            logging.info(msg)
+        logger.info(msg)
         if serial:
             print(msg)
 
@@ -221,7 +219,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
 
         if positive:
             varid = cmor.variable(outvar_name, outvar_units,
-                                axis_ids, positive=positive)
+                                  axis_ids, positive=positive)
         else:
             varid = cmor.variable(outvar_name, outvar_units, axis_ids)
 
@@ -230,20 +228,19 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             outvar_name,
             data['time_bnds'][0][0],
             data['time_bnds'][-1][-1])
-        if logging:
-            logging.info(msg)
+        logger.info(msg)
         if serial:
             print(msg)
             pbar = ProgressBar(maxval=len(data['time']))
             pbar.start()
             for index, val in enumerate(data['time']):
-
                 write_data(
                     varid=varid,
                     data=data,
                     timeval=val,
                     timebnds=[data['time_bnds'][index, :]],
-                    index=index)
+                    index=index,
+                    raw_variables=raw_variables)
                 pbar.update(index)
             pbar.finish()
         else:
@@ -253,7 +250,8 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
                     data=data,
                     timeval=val,
                     timebnds=[data['time_bnds'][index, :]],
-                    index=index)
+                    index=index,
+                    raw_variables=raw_variables)
     msg = '{}: write complete, closing'.format(outvar_name)
 
     if serial:
@@ -264,6 +262,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
     if serial:
         print(msg)
 # ------------------------------------------------------------------
+
 
 def get_dimension_data(filename, variable, levels=None, get_dims=False):
     """
@@ -368,11 +367,11 @@ def load_axis(data, levels=None):
         lev_axis = {
             str('table_entry'): str(levels.get('name')),
             str('units'): str(levels.get('units')),
-            str('coord_vals'): data[ levels.get('e3sm_axis_name') ][:]
+            str('coord_vals'): data[levels.get('e3sm_axis_name')][:]
         }
         axis_bnds = levels.get('e3sm_axis_bnds')
         if axis_bnds:
-            lev_axis['cell_bounds'] = data[ axis_bnds ][:]
+            lev_axis['cell_bounds'] = data[axis_bnds][:]
         axes.insert(1, lev_axis)
 
     axis_ids = list()
