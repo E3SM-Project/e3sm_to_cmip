@@ -24,13 +24,13 @@ requirements:
 
   run:
     - nco
-    - pip
     - python
     - setuptools
     - cmor
     - cdutil
     - cdms2 >=3.1
-    - tqdm
+    - progressbar2
+    - pathos
 
 test:
   imports:
