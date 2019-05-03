@@ -4,12 +4,7 @@ RELHUM to hur converter
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import cmor
-import cdms2
-import logging
-logger = logging.getLogger()
-
 from e3sm_to_cmip.lib import handle_variables
-from e3sm_to_cmip.lib import load_axis
 
 # list of raw variable names needed
 RAW_VARIABLES = [str('RELHUM')]
@@ -22,6 +17,7 @@ LEVELS = {
     'e3sm_axis_name': 'plev'
 }
 
+
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     hur = RELHUM
@@ -31,6 +27,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
         data['RELHUM'][index, :],
         time_vals=timeval,
         time_bnds=timebnds)
+# ------------------------------------------------------------------
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
@@ -46,7 +43,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     -------
         var name (str): the name of the processed variable after processing is complete
     """
-    handle_variables(
+    return handle_variables(
         metadata_path=user_input_path,
         tables=tables,
         table=TABLE,
@@ -57,5 +54,4 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
         levels=LEVELS)
-
-    return VAR_NAME
+# ------------------------------------------------------------------

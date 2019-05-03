@@ -2,15 +2,14 @@
 FISCCP1_COSP to clisccp converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
+from e3sm_to_cmip.util import setup_cmor
+from e3sm_to_cmip.util import print_message
 
 import cmor
 import cdms2
 import logging
 logger = logging.getLogger()
-from progressbar import ProgressBar
 
-from e3sm_to_cmip.util import print_message
-from e3sm_to_cmip.util import setup_cmor
 
 # list of raw variable names needed
 RAW_VARIABLES = [str('FISCCP1_COSP')]
@@ -44,26 +43,25 @@ def handle(infiles, tables, user_input_path, **kwargs):
     -------
         var name (str): the name of the processed variable after processing is complete
     """
-    serial = kwargs.get('serial')
 
     msg = '{}: Starting'.format(VAR_NAME)
-
-    if serial:
-        print(msg)
+    logger.info(msg)
 
     nonzero = False
     for variable in RAW_VARIABLES:
         if len(infiles[variable]) == 0:
-            msg = '{}: Unable to find input files for {}'.format(VAR_NAME, variable)
+            msg = '{}: Unable to find input files for {}'.format(
+                VAR_NAME, variable)
             print_message(msg)
+            logging.error(msg)
             nonzero = True
     if nonzero:
-        return
+        return None
 
     msg = '{}: running with input files: {}'.format(
         VAR_NAME,
         infiles)
-    logger.info(msg)
+    logger.debug(msg)
 
     # setup cmor
     setup_cmor(
@@ -73,9 +71,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         user_input_path)
 
     msg = '{}: CMOR setup complete'.format(VAR_NAME)
-
-    if serial:
-        print(msg)
+    logger.info(msg)
 
     data = {}
 
@@ -121,12 +117,12 @@ def handle(infiles, tables, user_input_path, **kwargs):
             str('units'): str('Pa'),
             str('coord_vals'): data['plev7c'],
             str('cell_bounds'): data['plev7c_bnds']
-        },{
+        }, {
             str('table_entry'): str('tau'),
             str('units'): str('1'),
             str('coord_vals'): data['tau'],
             str('cell_bounds'): data['tau_bnds']
-        },{
+        }, {
             str('table_entry'): str('latitude'),
             str('units'): data['lat'].units,
             str('coord_vals'): data['lat'][:],
@@ -151,37 +147,21 @@ def handle(infiles, tables, user_input_path, **kwargs):
             data['time_bnds'][0][0],
             data['time_bnds'][-1][-1])
         logger.info(msg)
-        if serial:
-            print(msg)
-            pbar = ProgressBar(maxval=len(data['time']))
-            pbar.start()
-            for index, val in enumerate(data['time']):
 
-                write_data(
-                    varid=varid,
-                    data=data,
-                    timeval=val,
-                    timebnds=[data['time_bnds'][index, :]],
-                    index=index)
-                pbar.update(index)
-            pbar.finish()
-        else:
-            for index, val in enumerate(data['time']):
-                write_data(
-                    varid=varid,
-                    data=data,
-                    timeval=val,
-                    timebnds=[data['time_bnds'][index, :]],
-                    index=index)
+        for index, val in enumerate(data['time']):
+            write_data(
+                varid=varid,
+                data=data,
+                timeval=val,
+                timebnds=[data['time_bnds'][index, :]],
+                index=index)
+
     msg = '{}: write complete, closing'.format(VAR_NAME)
+    logger.info(msg)
 
-    if serial:
-        print(msg)
     cmor.close()
     msg = '{}: file close complete'.format(VAR_NAME)
-
-    if serial:
-        print(msg)
+    logger.info(msg)
 
     return VAR_NAME
 # ------------------------------------------------------------------

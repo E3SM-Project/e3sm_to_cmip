@@ -67,7 +67,7 @@ def main():
         datefmt='%m/%d/%Y %I:%M:%S %p',
         filename=logging_path,
         filemode='w',
-        level=logging.WARNING)
+        level=logging.INFO)
 
     # copy the users metadata json file with the updated output directory
     copy_user_metadata(

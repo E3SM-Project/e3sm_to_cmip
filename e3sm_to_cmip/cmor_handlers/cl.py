@@ -3,11 +3,7 @@ CLOUD to cl converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os
 import cmor
-import cdms2
-import logging
-
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
@@ -54,7 +50,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         var name (str): the name of the processed variable after processing is complete
     """
 
-    handle_variables(
+    return handle_variables(
         metadata_path=user_input_path,
         tables=tables,
         table=TABLE,
@@ -65,6 +61,4 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
         levels=LEVELS)
-
-    return VAR_NAME
 # ------------------------------------------------------------------

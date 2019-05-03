@@ -8,6 +8,7 @@ import re
 import argparse
 import imp
 import cdms2
+import yaml
 
 from progressbar import ProgressBar
 
@@ -174,6 +175,27 @@ def load_handlers(handlers_path, var_list, debug=None):
     """
 
     handlers = list()
+    from e3sm_to_cmip.default import default_handler
+
+    # load default handlers if they're in the variable list
+    defaults_path = os.path.join(
+        handlers_path,
+        'default_handler_info.yaml')
+    with open(defaults_path, 'r') as infile:
+
+        defaults = yaml.load(infile)
+        for default in defaults:
+
+            if default.get('cmip_name') in var_list or 'all' in var_list:
+
+                handlers.append({
+                    'name': default.get('cmip_name'),
+                    'method': default_handler,
+                    'raw_variables': [default.get('e3sm_name')],
+                    'units': default.get('units'),
+                    'table': default.get('table'),
+                    'positive': default.get('positive')
+                })
 
     # load the more complex handlers
     for handler in os.listdir(handlers_path):
