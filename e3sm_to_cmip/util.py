@@ -87,7 +87,7 @@ def parse_argsuments():
         nargs='+',
         required=True,
         metavar='',
-        help='space seperated list of variables to convert from e3sm to cmip. Use \'all\' to convert all variables')
+        help='space seperated list of variables to convert from e3sm to cmip. Use \'all\' to convert all variables or the name of a CMIP6 table to run all handlers from that table')
     parser.add_argument(
         '-i', '--input-path',
         metavar='',
@@ -173,9 +173,14 @@ def load_handlers(handlers_path, var_list, debug=None):
         (which are the cmip6 output variable name), to a tuple of (function pointer,
         list of required input variables)
     """
-
-    handlers = list()
     from e3sm_to_cmip.default import default_handler
+    handlers = list()
+
+    table_names = ['CFmon', 'Amon', 'Lmon', 'Omon', 'AERmon', 'SImon', 'LImon']
+    load_tables = list()
+    for variable in var_list:
+        if variable in table_names:
+            load_tables.append(variable)
 
     # load default handlers if they're in the variable list
     defaults_path = os.path.join(
@@ -185,8 +190,9 @@ def load_handlers(handlers_path, var_list, debug=None):
 
         defaults = yaml.load(infile)
         for default in defaults:
-
-            if default.get('cmip_name') in var_list or 'all' in var_list:
+            
+            table = default.get('table').split('.')[0].split('_')[-1]
+            if default.get('cmip_name') in var_list or 'all' in var_list or table in load_tables:
 
                 handlers.append({
                     'name': default.get('cmip_name'),
@@ -206,8 +212,7 @@ def load_handlers(handlers_path, var_list, debug=None):
             continue
 
         module_name, _ = handler.rsplit('.', 1)
-        if module_name not in var_list and 'all' not in var_list:
-            continue
+
 
         to_break = False
         for h in handlers:
@@ -221,14 +226,19 @@ def load_handlers(handlers_path, var_list, debug=None):
         # load the module, and extract the "handle" method and required variables
         module = imp.load_source(module_name, module_path)
 
-        handlers.append({
-            'name': module_name,
-            'method': module.handle,
-            'raw_variables': module.RAW_VARIABLES,
-            'units': module.VAR_UNITS,
-            'table': module.TABLE,
-            'positive': module.POSITIVE if hasattr(module, 'POSITIVE') else None
-        })
+        # pull the table name out from the format CMIP6_Amon.json
+        table = module.TABLE.split('.')[0].split('_')[-1]
+
+        if module_name in var_list or 'all' in var_list or table in load_tables:
+
+            handlers.append({
+                'name': module_name,
+                'method': module.handle,
+                'raw_variables': module.RAW_VARIABLES,
+                'units': module.VAR_UNITS,
+                'table': module.TABLE,
+                'positive': module.POSITIVE if hasattr(module, 'POSITIVE') else None
+            })
 
     for handler in handlers:
         msg = 'Loaded {}'.format(handler['name'])
@@ -443,4 +453,8 @@ def terminate(pool, debug=False):
     pool.close()
     pool.terminate()
     pool.join()
+# ------------------------------------------------------------------
+
+def get_levgrnd_bnds():
+    return [0, 0.01751106046140194, 0.045087261125445366, 0.09055273048579693, 0.16551261954009533, 0.28910057805478573, 0.4928626772016287, 0.8288095649331808, 1.3826923426240683, 2.2958906944841146, 3.801500206813216, 6.28383076749742, 10.376501685008407, 17.124175196513534, 28.249208575114608, 42.098968505859375]
 # ------------------------------------------------------------------

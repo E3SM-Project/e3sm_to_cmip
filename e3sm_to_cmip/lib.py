@@ -1,4 +1,3 @@
-# from progressbar import ProgressBar
 from e3sm_to_cmip.util import terminate
 from e3sm_to_cmip.util import print_debug
 from e3sm_to_cmip.util import print_message
@@ -127,58 +126,45 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
     """
     try:
         
-        myMessage = progressbar.DynamicMessage('var_name')
-        myMessage.__call__ = my_dynamic_message
-        widgets = [
-            progressbar.DynamicMessage('running'), ' [',
-            progressbar.Timer(), '] ',
-            progressbar.Bar(),
-            ' (', progressbar.ETA(), ') '
-        ]
-        progressbar.DynamicMessage.__call__ = my_dynamic_message
         num_handlers = len(handlers)
         num_success = 0
-        with progressbar.ProgressBar(widgets=widgets, maxval=num_handlers) as pbar:
-            for idx, handler in enumerate(handlers):
+        for handler in handlers:
 
-                handler_name = handler['name']
-                handler_method = handler['method']
-                handler_variables = handler['raw_variables']
+            handler_method = handler['method']
+            handler_variables = handler['raw_variables']
 
-                pbar.update(idx, running=handler_name)
+            # find the input files this handler needs
+            if mode in ['atm', 'lnd']:
 
-                # find the input files this handler needs
-                if mode in ['atm', 'lnd']:
+                input_paths = {var: [os.path.join(input_path, x) for x in
+                                        find_atm_files(var, input_path)]
+                                for var in handler_variables}
+            else:
+                input_paths = {var: find_mpas_files(var, input_path,
+                                                    map_path)
+                                for var in handler_variables}
 
-                    input_paths = {var: [os.path.join(input_path, x) for x in
-                                         find_atm_files(var, input_path)]
-                                   for var in handler_variables}
-                else:
-                    input_paths = {var: find_mpas_files(var, input_path,
-                                                        map_path)
-                                   for var in handler_variables}
-
-                name = handler_method(
-                    input_paths,
-                    tables_path,
-                    metadata_path,
-                    raw_variables=handler.get('raw_variables'),
-                    units=handler.get('units'),
-                    name=handler.get('name'),
-                    table=handler.get('table'),
-                    positive=handler.get('positive'),
-                    serial=True)
-                
-                if name is not None:
-                    num_success += 1
-                    msg = 'Finished {handler}, {done}/{total} jobs complete'.format(
-                        handler=name,
-                        done=num_success,
-                        total=num_handlers)
-                else:
-                    msg = 'Error running handler {}'.format(handler['name'])
-                    print_message(msg, 'error')
-                logger.info(msg)
+            name = handler_method(
+                input_paths,
+                tables_path,
+                metadata_path,
+                raw_variables=handler.get('raw_variables'),
+                units=handler.get('units'),
+                name=handler.get('name'),
+                table=handler.get('table'),
+                positive=handler.get('positive'),
+                serial=True)
+            
+            if name is not None:
+                num_success += 1
+                msg = 'Finished {handler}, {done}/{total} jobs complete'.format(
+                    handler=name,
+                    done=num_success,
+                    total=num_handlers)
+            else:
+                msg = 'Error running handler {}'.format(handler['name'])
+                print_message(msg, 'error')
+            logger.info(msg)
 
     except Exception as error:
         print_debug(error)
@@ -276,14 +262,14 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             varid = cmor.variable(outvar_name, outvar_units, axis_ids)
 
         # write out the data
-        msg = "{}: time {} - {}".format(
+        msg = "{}: time {:1.1f} - {:1.1f}".format(
             outvar_name,
             data['time_bnds'][0][0],
             data['time_bnds'][-1][-1])
         logger.info(msg)
 
         if serial:
-            myMessage = progressbar.DynamicMessage('var_name')
+            myMessage = progressbar.DynamicMessage('running')
             myMessage.__call__ = my_dynamic_message
             widgets = [
                 progressbar.DynamicMessage('running'), ' [',
@@ -368,6 +354,9 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
             variable: variable_data
         })
 
+        # atm uses "time_bnds" but the lnd component uses "time_bounds"
+        time_bounds_name = 'time_bnds' if 'time_bnds' in f.variables.keys() else 'time_bounds'
+
         # load the lon and lat info & bounds
         # load time & time bounds
         if get_dims:
@@ -377,8 +366,18 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
                 'lat_bnds': f('lat_bnds'),
                 'lon_bnds': f('lon_bnds'),
                 'time': variable_data.getTime(),
-                'time_bnds': f('time_bnds')
+                'time_bnds': f(time_bounds_name)
             })
+
+            try:
+                index = variable_data.getAxisIds().index('levgrnd')
+            except:
+                pass
+            else:
+                data.update({
+                    'levgrnd': variable_data.getAxis(index)
+                })
+
             # load level and level bounds
             if levels.get('name') == 'standard_hybrid_sigma':
                 data.update({
