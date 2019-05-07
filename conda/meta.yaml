@@ -18,19 +18,23 @@ about:
     Climate Model Output Rewritter.
 
 requirements:
-  build:
+  host:
     - python
+    - pip
     - setuptools
 
   run:
     - nco
-    - python
-    - setuptools
     - cmor
     - cdutil
     - cdms2 >=3.1
     - progressbar2
     - pathos
+    - pyyaml
+    - xarray
+    - netcdf4
+    - dask
+    - scipy
 
 test:
   imports:
