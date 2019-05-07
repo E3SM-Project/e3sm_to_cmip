@@ -146,4 +146,52 @@
   units: 'K'
   table: CMIP6_Amon.json
 
+- cmip_name: mrros
+  e3sm_name: QOVER
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
 
+- cmip_name: mrro
+  e3sm_name: QRUNOFF
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
+
+- cmip_name: prveg
+  e3sm_name: QINTR
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
+
+- cmip_name: evspsblveg
+  e3sm_name: QVEGE
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
+
+- cmip_name: evspsblsoi
+  e3sm_name: QSOIL
+  units: 'kg m-2 s-1'
+  table: CMIP6_Lmon.json
+
+- cmip_name: cProduct
+  e3sm_name: TOTPRODC
+  units: "kg m-2"
+  table: CMIP6_Lmon.json
+
+- cmip_name: cSoil
+  e3sm_name: TOTSOMC
+  units: "kg m-2"
+  table: CMIP6_Lmon.json
+
+- cmip_name: fFire
+  e3sm_name: COL_FIRE_CLOSS
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
+
+- cmip_name: fHarvest
+  e3sm_name: WOOD_HARVESTC
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
+
+- cmip_name: mrsos
+  e3sm_name: SOILWATER_10CM
+  units: "kg m-2"
+  table: CMIP6_Lmon.json

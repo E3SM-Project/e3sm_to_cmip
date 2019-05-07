@@ -1,5 +1,5 @@
 """
-Q to hus converter
+QVEGT, QSOIL to tran converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -7,28 +7,22 @@ import cmor
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('Q')]
-VAR_NAME = str('hus')
-VAR_UNITS = str('1')
-TABLE = str('CMIP6_Amon.json')
-LEVELS = {
-    'name': str('plev19'),
-    'units': str('Pa'),
-    'e3sm_axis_name': 'plev'
-}
-
+RAW_VARIABLES = [str('QVEGT'), str('QSOIL')]
+VAR_NAME = str('tran')
+VAR_UNITS = str('kg m-2 s-1')
+TABLE = str('CMIP6_Lmon.json')
+POSITIVE = str('up')
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
-    hus = Q
+    tran = QSOIL + QVEGT
     """
+    outdata = data['QVEGT'][index, :] + data['QSOIL'][index, :]
     cmor.write(
         varid,
-        data['Q'][index, :],
+        outdata,
         time_vals=timeval,
         time_bnds=timebnds)
-# ------------------------------------------------------------------
-
 
 def handle(infiles, tables, user_input_path, **kwargs):
 
@@ -42,5 +36,5 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
-        levels=LEVELS)
+        positive=POSITIVE)
 # ------------------------------------------------------------------
