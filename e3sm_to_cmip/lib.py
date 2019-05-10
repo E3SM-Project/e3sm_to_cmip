@@ -80,7 +80,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
                     done=idx + 1,
                     total=num_handlers)
             else:
-                msg = 'Error running handler {}'.format(handler['name'])
+                msg = 'Error running handler {}'.format(handlers[idx]['name'])
                 print_message(msg, 'error')
                 
             logger.info(msg)
@@ -199,8 +199,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
     # Create the logging directory and setup cmor
     outpath, _ = os.path.split(logger.__dict__['handlers'][0].baseFilename)
     logpath = os.path.join(outpath, 'cmor_logs')
-    if not os.path.exists(logpath):
-        os.makedirs(logpath)
+    os.makedirs(logpath, exist_ok=True)
 
     logfile = os.path.join(logpath, outvar_name + '.log')
 
