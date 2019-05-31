@@ -1,45 +1,50 @@
 """
-PRECSC, PRECSL to prsn converter
+SOILICE, SOILIQ to mrso converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import os
 import cmor
+import cdms2
+import logging
+import numpy as np
+
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('PRECSC'), str('PRECSL')]
-VAR_NAME = str('prsn')
-VAR_UNITS = str('kg m-2 s-1')
-TABLE = str('CMIP6_Amon.json')
+RAW_VARIABLES = [str('SOILICE'), str('SOILLIQ')]
+VAR_NAME = str('mrso')
+VAR_UNITS = str('kg m-2')
+TABLE = str('CMIP6_Lmon.json')
 
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
-    prsn = (PRECSC  + PRECSL) * 1000.0
+    mrso = verticalSum(SOILICE + SOILLIQ, capped_at=5000)
     """
-    out_data = (data['PRECSC'][index, :] + data['PRECSL'][index, :]) * 1000.0
+    icemask = np.greater(data['SOILICE'][index, :], 0.0)
+    liqmask = np.greater(data['SOILLIQ'][index, :], 0.0)
+    total_mask = np.logical_or(icemask, liqmask)
+
+    outdata = np.sum(
+        data['SOILICE'][index, :] + data['SOILLIQ'][index, :],
+        axis=0)
+    capped = np.where(
+        np.greater(outdata, 5000.0),
+        5000.0,
+        outdata)
+    outdata = np.where(
+        total_mask,
+        capped,
+        outdata)
     cmor.write(
         varid,
-        out_data,
+        outdata,
         time_vals=timeval,
         time_bnds=timebnds)
-# ------------------------------------------------------------------
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
-    """
-    Transform E3SM.TS into CMIP.ts
-
-    Parameters
-    ----------
-        infiles (List): a list of strings of file names for the raw input data
-        tables (str): path to CMOR tables
-        user_input_path (str): path to user input json file
-    Returns
-    -------
-        var name (str): the name of the processed variable after processing is complete
-    """
-
     return handle_variables(
         metadata_path=user_input_path,
         tables=tables,

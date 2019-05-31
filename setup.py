@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="e3sm_to_cmip",
-    version="1.1.1",
+    version="1.2.0",
     author="Sterling Baldwin",
     author_email="baldwin32@llnl.gov",
     description="Transform E3SM model data output into cmip6 compatable data "

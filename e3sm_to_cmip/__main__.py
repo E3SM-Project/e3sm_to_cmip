@@ -11,8 +11,7 @@ import logging
 import tempfile
 import shutil
 
-from multiprocessing import cpu_count, Pool
-from time import sleep
+from pathos.multiprocessing import ProcessPool as Pool
 
 from e3sm_to_cmip import cmor_handlers
 from e3sm_to_cmip.util import print_message
@@ -21,7 +20,6 @@ from e3sm_to_cmip.util import load_handlers
 from e3sm_to_cmip.util import add_metadata
 from e3sm_to_cmip.util import copy_user_metadata
 from e3sm_to_cmip.util import print_debug
-from e3sm_to_cmip.util import terminate
 
 from e3sm_to_cmip.lib import run_parallel
 from e3sm_to_cmip.lib import run_serial
@@ -78,7 +76,7 @@ def main():
         datefmt='%m/%d/%Y %I:%M:%S %p',
         filename=logging_path,
         filemode='w',
-        level=logging.WARNING)
+        level=logging.INFO)
 
     # copy the users metadata json file with the updated output directory
     copy_user_metadata(
@@ -103,12 +101,10 @@ def main():
                 tables_path=tables_path,
                 metadata_path=new_metadata_path,
                 map_path=map_path,
-                mode=mode,
-                logging=logging)
+                mode=mode)
         except Exception as e:
             print_debug(e)
             return 1
-            # status = 1
     else:
         print_message('Running CMOR handlers in parallel', 'ok')
         try:
@@ -120,11 +116,9 @@ def main():
                 tables_path=tables_path,
                 metadata_path=new_metadata_path,
                 map_path=map_path,
-                mode=mode,
-                logging=logging)
+                mode=mode)
         except KeyboardInterrupt as error:
             print_message(' -- keyboard interrupt -- ', 'error')
-            terminate(pool, debug)
             return 1
         except Exception as error:
             print_debug(error)

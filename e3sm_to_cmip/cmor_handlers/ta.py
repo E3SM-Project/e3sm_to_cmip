@@ -1,46 +1,32 @@
 """
-CLOUD to cl converter
+T to ta converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os
 import cmor
-import cdms2
-import logging
-
-
-from e3sm_to_cmip.util import print_message
-from e3sm_to_cmip.lib import get_dimension_data
-from e3sm_to_cmip.util import setup_cmor
-from e3sm_to_cmip.lib import load_axis
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
 RAW_VARIABLES = [str('T')]
 VAR_NAME = str('ta')
-VAR_UNITS = str('K')
+VAR_UNITS = str("K")
 TABLE = str('CMIP6_Amon.json')
 LEVELS = {
-    'name': 'plev19',
-    'units': 'Pa'
+    'name': str('plev19'),
+    'units': str('Pa'),
+    'e3sm_axis_name': 'plev'
 }
 
-def write_data(varid, data, timeval, timebnds, index):
+
+def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
-    ta = T on plev19 levels
+    ta = T
     """
-    outdata = data['T'][index, :]
     cmor.write(
         varid,
-        outdata,
+        data['T'][index, :],
         time_vals=timeval,
         time_bnds=timebnds)
-    cmor.write(
-        data['ips'],
-        data['ps'],
-        time_vals=timeval,
-        time_bnds=timebnds,
-        store_with=varid)
 # ------------------------------------------------------------------
 
 
@@ -55,8 +41,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     -------
         var name (str): the name of the processed variable after processing is complete
     """
-
-    handle_variables(
+    return handle_variables(
         metadata_path=user_input_path,
         tables=tables,
         table=TABLE,
@@ -67,6 +52,4 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
         levels=LEVELS)
-
-    return VAR_NAME
 # ------------------------------------------------------------------

@@ -29,6 +29,7 @@ requirements:
     - cdutil
     - cdms2 >=3.1
     - progressbar2
+    - pathos
     - pyyaml
     - xarray
     - netcdf4

@@ -1,35 +1,30 @@
 """
-LHFLX to hfls converter
+V to va converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os
 import cmor
-import cdms2
-import logging
-
-
-from e3sm_to_cmip.util import print_message
-from e3sm_to_cmip.lib import get_dimension_data
-from e3sm_to_cmip.util import setup_cmor
-from e3sm_to_cmip.lib import load_axis
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('LHFLX')]
-VAR_NAME = str('hfls')
-VAR_UNITS = str('W m-2')
+RAW_VARIABLES = [str('V')]
+VAR_NAME = str('va')
+VAR_UNITS = str("m s-1")
 TABLE = str('CMIP6_Amon.json')
-POSITIVE = str('up')
+LEVELS = {
+    'name': str('plev19'),
+    'units': str('Pa'),
+    'e3sm_axis_name': 'plev'
+}
 
 
-def write_data(varid, data, timeval, timebnds, index):
+def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
-    No data transformation needed
+    va = V
     """
     cmor.write(
         varid,
-        data[RAW_VARIABLES[0]][index, :],
+        data['V'][index, :],
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
@@ -46,8 +41,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     -------
         var name (str): the name of the processed variable after processing is complete
     """
-
-    handle_variables(
+    return handle_variables(
         metadata_path=user_input_path,
         tables=tables,
         table=TABLE,
@@ -57,7 +51,5 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
-        positive=POSITIVE)
-
-    return VAR_NAME
+        levels=LEVELS)
 # ------------------------------------------------------------------
