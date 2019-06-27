@@ -34,23 +34,37 @@ def main():
     # parse the command line arguments
     _args = parse_argsuments().__dict__
 
-    var_list = [x.strip(',') for x in _args.get('var_list')]
+    if len(_args.get('var_list')) == 1 and " " in _args.get('var_list')[0]:
+        var_list = _args.get('var_list')[0].split()
+    else:
+        var_list = _args.get('var_list')
+    var_list = [x.strip(',') for x in var_list]
     input_path = _args.get('input_path')
     output_path = _args.get('output_path')
     tables_path = _args.get('tables_path')
     user_metadata = _args.get('user_metadata')
     no_metadata = _args['no_metadata'] if _args.get('no_metadata') else False
+    only_metadata = _args['only_metadata'] if _args.get('only_metadata') else False
     nproc = _args['num_proc'] if _args.get('num_proc') else 6
     serial = _args['serial'] if _args.get('serial') else False
     mode = _args['mode'] if _args.get('mode') else 'atm'
     debug = True if _args.get('debug') else False
     map_path = _args['map'] if _args.get('map') else None
+    cmor_log_dir = _args['logdir'] if _args.get('logdir') else None
 
     if _args.get('handlers'):
         handlers_path = os.path.abspath(_args.get('handlers'))
     else:
         handlers_path, _ = os.path.split(
             os.path.abspath(cmor_handlers.__file__))
+    
+    # add additional optional metadata to the output files
+    if only_metadata:
+        print_message('Updating file metadata and exiting', 'ok')
+        add_metadata(
+            file_path=output_path,
+            var_list=var_list)
+        return 0
 
     new_metadata_path = os.path.join(
         output_path,
@@ -101,7 +115,8 @@ def main():
                 tables_path=tables_path,
                 metadata_path=new_metadata_path,
                 map_path=map_path,
-                mode=mode)
+                mode=mode,
+                logdir=cmor_log_dir)
         except Exception as e:
             print_debug(e)
             return 1
@@ -116,7 +131,8 @@ def main():
                 tables_path=tables_path,
                 metadata_path=new_metadata_path,
                 map_path=map_path,
-                mode=mode)
+                mode=mode,
+                logdir=cmor_log_dir)
         except KeyboardInterrupt as error:
             print_message(' -- keyboard interrupt -- ', 'error')
             return 1

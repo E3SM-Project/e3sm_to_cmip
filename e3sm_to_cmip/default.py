@@ -23,5 +23,6 @@ def default_handler(infiles, tables, user_input_path, **kwargs):
         outvar_name=kwargs['name'],
         outvar_units=kwargs['units'],
         serial=kwargs.get('serial'),
-        positive=kwargs.get('positive'))
+        positive=kwargs.get('positive'),
+        logdir=kwargs.get('logdir'))
 # ------------------------------------------------------------------

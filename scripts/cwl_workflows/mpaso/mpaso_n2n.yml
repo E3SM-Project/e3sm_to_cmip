@@ -1,0 +1,15 @@
+frequency: 1
+start_year: 1
+end_year: 5
+data_path: /lcrc/group/acme/v1DECKoutput/piControl/
+map_path: /home/zender/data/maps/map_oEC60to30v3_to_cmip6_180x360_aave.20181001.nc
+region_path: /lcrc/group/acme/v1DECKoutput/cmip6/piControl/input/oEC60to30v3_Atlantic_region_and_southern_transect.nc
+restart_path: /lcrc/group/acme/v1DECKoutput/cmip6/piControl/input/mpaso.rst.0005-01-01_00000.nc
+tables_path: /home/sbaldwin/projects/cmip6-cmor-tables/Tables/
+metadata_path: /home/sbaldwin/projects/e3sm_to_cmip/e3sm_user_config_picontrol.json
+cmor_var_list: [masso, volo, thetaoga, tosga, soga, sosga]
+num_workers: 1
+logdir: /lcrc/group/acme/v1DECKoutput/cmip6/piControl/output
+output_path: /lcrc/group/acme/v1DECKoutput/cmip6/piControl/output
+psl_path: /lcrc/group/acme/v1DECKoutput/cmip6/piControl/input/PSL_000101_000512.nc
+namelist_path: /lcrc/group/acme/v1DECKoutput/cmip6/piControl/input/mpas-o_in

@@ -12,7 +12,7 @@ logger = logging.getLogger()
 
 
 def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
-                 map_path=None, mode='atm', nproc=6):
+                 map_path=None, mode='atm', nproc=6, **kwargs):
     """
     Run all the handlers in parallel
     Params:
@@ -27,10 +27,6 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
     --------
         returns 1 if an error occurs, else 0
     """
-    # from e3sm_to_cmip.util import find_atm_files
-    # from e3sm_to_cmip.util import find_mpas_files
-    # from e3sm_to_cmip.util import print_debug
-    # from e3sm_to_cmip.util import terminate
 
     pool_res = list()
     for idx, handler in enumerate(handlers):
@@ -53,7 +49,8 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
             'raw_variables': handler.get('raw_variables'),
             'units': handler.get('units'),
             'positive': handler.get('positive'),
-            'name': handler.get('name')
+            'name': handler.get('name'),
+            'logdir': kwargs.get('logdir')
         }
 
         pool_res.append(
@@ -82,7 +79,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
             else:
                 msg = 'Error running handler {}'.format(handlers[idx]['name'])
                 print_message(msg, 'error')
-                
+
             logger.info(msg)
             pbar.update(idx)
         except Exception as e:
@@ -91,7 +88,8 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
 
     pbar.finish()
     terminate(pool)
-    print_message("{} of {} handlers complete".format(num_success, num_handlers), 'ok')
+    print_message("{} of {} handlers complete".format(
+        num_success, num_handlers), 'ok')
     return 0
 # ------------------------------------------------------------------
 
@@ -109,7 +107,7 @@ def my_dynamic_message(self, progress, data):
 
 
 def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
-               mode='atm'):
+               mode='atm', logdir=None):
     """
     Run each of the handlers one at a time on the main process
 
@@ -125,10 +123,15 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
         returns 1 if an error occurs, else 0
     """
     try:
-        
+
         num_handlers = len(handlers)
         num_success = 0
-        for handler in handlers:
+
+        if mode != 'atm':
+            pbar = progressbar.ProgressBar(maxval=len(handlers))
+            pbar.start()
+
+        for idx, handler in enumerate(handlers):
 
             handler_method = handler['method']
             handler_variables = handler['raw_variables']
@@ -137,12 +140,12 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
             if mode in ['atm', 'lnd']:
 
                 input_paths = {var: [os.path.join(input_path, x) for x in
-                                        find_atm_files(var, input_path)]
-                                for var in handler_variables}
+                                     find_atm_files(var, input_path)]
+                               for var in handler_variables}
             else:
                 input_paths = {var: find_mpas_files(var, input_path,
                                                     map_path)
-                                for var in handler_variables}
+                               for var in handler_variables}
 
             name = handler_method(
                 input_paths,
@@ -153,8 +156,9 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
                 name=handler.get('name'),
                 table=handler.get('table'),
                 positive=handler.get('positive'),
-                serial=True)
-            
+                serial=True,
+                logdir=logdir)
+
             if name is not None:
                 num_success += 1
                 msg = 'Finished {handler}, {done}/{total} jobs complete'.format(
@@ -166,18 +170,23 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
                 print_message(msg, 'error')
             logger.info(msg)
 
+            if mode != 'atm':
+                pbar.update(idx)
+        if mode != 'atm':
+            pbar.finish()
+
     except Exception as error:
         print_debug(error)
         return 1
     else:
-        print_message("{} of {} handlers complete".format(num_success, num_handlers), 'ok')
+        print_message("{} of {} handlers complete".format(
+            num_success, num_handlers), 'ok')
         return 0
 # ------------------------------------------------------------------
 
 
-def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None, levels=None, axis=None):
-    """
-    """
+def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None, levels=None, axis=None, logdir=None):
+
     from e3sm_to_cmip.util import print_message
     logger = logging.getLogger()
 
@@ -197,8 +206,11 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
         return None
 
     # Create the logging directory and setup cmor
-    outpath, _ = os.path.split(logger.__dict__['handlers'][0].baseFilename)
-    logpath = os.path.join(outpath, 'cmor_logs')
+    if logdir:
+        logpath = logdir
+    else:
+        outpath, _ = os.path.split(logger.__dict__['handlers'][0].baseFilename)
+        logpath = os.path.join(outpath, 'cmor_logs')
     os.makedirs(logpath, exist_ok=True)
 
     logfile = os.path.join(logpath, outvar_name + '.log')
@@ -365,6 +377,7 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
                 'lat_bnds': f('lat_bnds'),
                 'lon_bnds': f('lon_bnds'),
                 'time': variable_data.getTime(),
+                'time2': variable_data.getTime(),
                 'time_bnds': f(time_bounds_name)
             })
 
@@ -378,7 +391,7 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
                 })
 
             # load level and level bounds
-            if levels.get('name') == 'standard_hybrid_sigma':
+            if levels.get('name') == 'standard_hybrid_sigma' or levels.get('name') == 'standard_hybrid_sigma_half':
                 data.update({
                     'lev': f.getAxis('lev')[:]/1000,
                     'ilev': f.getAxis('ilev')[:]/1000,
@@ -404,7 +417,6 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
                         data[bnds] = f(bnds)[:]
                     else:
                         raise IOError("Unable to find e3sm_axis_bnds")
-
     finally:
         f.close()
         return data
@@ -414,20 +426,47 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
 def load_axis(data, levels=None):
 
     # create axes
-    axes = [{
-        str('table_entry'): str('time'),
-        str('units'): data['time'].units
-    }, {
+    axes = []
+    if levels.get('time_name'):
+        axes.append({
+            str('table_entry'): levels.get('time_name'),
+            str('units'): data[levels.get('time_name')].units
+        })
+    else:
+        axes.append({
+            str('table_entry'): str('time'),
+            str('units'): data['time'].units
+        })
+
+    axes.append({
         str('table_entry'): str('latitude'),
         str('units'): data['lat'].units,
         str('coord_vals'): data['lat'][:],
         str('cell_bounds'): data['lat_bnds'][:]
-    }, {
+    })
+    axes.append({
         str('table_entry'): str('longitude'),
         str('units'): data['lon'].units,
         str('coord_vals'): data['lon'][:],
         str('cell_bounds'): data['lon_bnds'][:]
-    }]
+    })
+
+    # axes = [{
+    #     str('table_entry'): str('time'),
+    #     str('units'): data['time'].units
+    # }, {
+    #     str('table_entry'): str('latitude'),
+    #     str('units'): data['lat'].units,
+    #     str('coord_vals'): data['lat'][:],
+    #     str('cell_bounds'): data['lat_bnds'][:]
+    # }, {
+    #     str('table_entry'): str('longitude'),
+    #     str('units'): data['lon'].units,
+    #     str('coord_vals'): data['lon'][:],
+    #     str('cell_bounds'): data['lon_bnds'][:]
+    # }]
+
+
     if levels:
         lev_axis = {
             str('table_entry'): str(levels.get('name')),
@@ -447,7 +486,7 @@ def load_axis(data, levels=None):
     ips = None
 
     # add hybrid level formula terms
-    if levels and levels.get('name') == 'standard_hybrid_sigma':
+    if levels and levels.get('name') in ['standard_hybrid_sigma', 'standard_hybrid_sigma_half']:
         cmor.zfactor(
             zaxis_id=axis_ids[1],
             zfactor_name=str('a'),

@@ -37,6 +37,8 @@
 | abs550aer  | YES     | no  | no      | no          |
 | od550aer   | YES     | no  | no      | no          |
 | reffclwtop | YES     | no  | no      | no          |
+| rsdscs     | YES     |     |         |             |
+
 
 ## 3D model level
 
@@ -59,6 +61,7 @@
 | ua       | YES     | no  | no      | no          |
 | va       | YES     | no  | no      | no          |
 | zg       | YES     | no  | no      | no          |
+| wap      | YES     | no  | no      | no          |
 
 # CFmon handlers
 
@@ -72,6 +75,18 @@
 | cltcalipso  | YES     | no  | no      | no          |
 | cllcalipso  | YES     | no  | no      | no          |
 | clmcalipso  | YES     | no  | no      | no          |
+
+# Lmon handlers
+
+| variable    | handler | run | checked | sample_path |
+| --------    | ------- | --- | ------- | ----------- |
+| mrros     | YES     | no  | no      | no          |
+| mrro     | YES     | no  | no      | no          |
+| prveg     | YES     | no  | no      | no          |
+| evspsblveg     | YES     | no  | no      | no          |
+| clisccp     | YES     | no  | no      | no          |
+| clisccp     | YES     | no  | no      | no          |
+| clisccp     | YES     | no  | no      | no          |
 
 
 # OCN variable handlers

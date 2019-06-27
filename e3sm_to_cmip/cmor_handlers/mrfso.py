@@ -55,5 +55,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
         write_data=write_data,
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
-        serial=kwargs.get('serial'))
+        serial=kwargs.get('serial'),
+        logdir=kwargs.get('logdir'))
 # ------------------------------------------------------------------

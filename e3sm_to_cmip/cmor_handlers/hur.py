@@ -9,7 +9,7 @@ from e3sm_to_cmip.lib import handle_variables
 # list of raw variable names needed
 RAW_VARIABLES = [str('RELHUM')]
 VAR_NAME = str('hur')
-VAR_UNITS = str('1.0')
+VAR_UNITS = str('%')
 TABLE = str('CMIP6_Amon.json')
 LEVELS = {
     'name': str('plev19'),
@@ -22,9 +22,10 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     hur = RELHUM
     """
+    outdata = data['RELHUM'][index, :]
     cmor.write(
         varid,
-        data['RELHUM'][index, :],
+        outdata,
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
@@ -53,5 +54,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
-        levels=LEVELS)
+        levels=LEVELS,
+        logdir=kwargs.get('logdir'))
 # ------------------------------------------------------------------

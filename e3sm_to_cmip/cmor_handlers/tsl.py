@@ -68,11 +68,21 @@ def handle(infiles, tables, user_input_path, **kwargs):
     logger.debug(msg)
 
     # setup cmor
-    setup_cmor(
-        VAR_NAME,
-        tables,
-        TABLE,
-        user_input_path)
+    logdir = kwargs.get('logdir')
+    if logdir:
+        logfile = logfile = os.path.join(logdir, VAR_NAME + '.log')
+    else:
+        logfile = os.path.join(os.getcwd(), 'logs')
+        if not os.path.exists(logfile):
+            os.makedirs(logfile)
+        logfile = os.path.join(logfile, VAR_NAME + '.log')
+
+    cmor.setup(
+        inpath=tables,
+        netcdf_file_action=cmor.CMOR_REPLACE,
+        logfile=logfile)
+    cmor.dataset_json(user_input_path)
+    cmor.load_table(TABLE)
 
     msg = '{}: CMOR setup complete'.format(VAR_NAME)
     logger.info(msg)

@@ -1,12 +1,22 @@
-- cmip_name: cltisccp
-  e3sm_name: CLDTOT_ISCCP
-  units: "%"
-  table: CMIP6_CFmon.json
-
 - cmip_name: abs550aer
   e3sm_name: AODABS
   units: "1"
   table: CMIP6_AERmon.json
+
+- cmip_name: od550aer
+  e3sm_name: AODVIS
+  units: '1'
+  table: CMIP6_AERmon.json
+
+- cmip_name: reffclwtop
+  e3sm_name: AREL
+  units: m
+  table: CMIP6_AERmon.json
+  
+- cmip_name: cltisccp
+  e3sm_name: CLDTOT_ISCCP
+  units: "%"
+  table: CMIP6_CFmon.json
 
 - cmip_name: albisccp
   e3sm_name: MEANCLDALB_ISCCP
@@ -67,13 +77,8 @@
 
 - cmip_name: huss
   e3sm_name: QREFHT
-  units: '%'
-  table: CMIP6_Amon.json
-
-- cmip_name: od550aer
-  e3sm_name: AODVIS
   units: '1'
-  table: CMIP6_AERmon.json
+  table: CMIP6_Amon.json
 
 - cmip_name: prw
   e3sm_name: TMQ
@@ -90,18 +95,13 @@
   units: Pa
   table: CMIP6_Amon.json
 
-- cmip_name: reffclwtop
-  e3sm_name: AREL
-  units: m
-  table: CMIP6_AERmon.json
-
 - cmip_name: rlds
   e3sm_name: FLDS
   units: 'W m-2'
   table: CMIP6_Amon.json
   positive: down
 
-- cmip_name: rlus
+- cmip_name: rlutcs
   e3sm_name: FLUTC
   units: 'W m-2'
   table: CMIP6_Amon.json
@@ -113,7 +113,7 @@
   table: CMIP6_Amon.json
   positive: up
 
-- cmip_name: rlut
+- cmip_name: rsdt
   e3sm_name: SOLIN
   units: 'W m-2'
   table: CMIP6_Amon.json
@@ -135,6 +135,12 @@
   e3sm_name: U10
   units: 'm s-1'
   table: CMIP6_Amon.json
+
+- cmip_name: rsdscs
+  e3sm_name: FSDSC
+  units: 'W m-2'
+  table: CMIP6_Amon.json
+  positive: down
 
 - cmip_name: tas
   e3sm_name: TREFHT

@@ -1,0 +1,13 @@
+frequency: 25
+start_year: 151
+end_year: 500
+data_path: /p/user_pub/work/E3SM/1_0/piControl/1deg_atm_60-30km_ocean/sea-ice/native/model-output/mon/ens1/v1/
+map_path: /export/zender1/data/maps/map_oEC60to30v3_to_cmip6_180x360_aave.20181001.nc
+namelist_path: /p/user_pub/e3sm/baldwin32/piControl/mpassi/mpas-cice_in
+restart_path: /p/user_pub/e3sm/baldwin32/piControl/mpassi/mpaso.rst.0005-01-01_00000.nc
+tables_path: /export/baldwin32/projects/cmip6-cmor-tables/Tables/
+metadata_path: /export/baldwin32/projects/e3sm_to_cmip/e3sm_user_config_picontrol.json
+cmor_var_list: [sitimefrac, siconc, simass, sithick, sisnmass, sisnthick, sitemptop, siu, siv]
+num_workers: 9
+logdir: /p/user_pub/e3sm/baldwin32/piControl/mpassi
+output_path: /export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/output

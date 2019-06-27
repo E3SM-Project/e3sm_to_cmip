@@ -34,22 +34,19 @@ def remap(ds, mappingFileName, threshold=0.05):
     # set an environment variable to make sure we're not using czender's
     # local version of NCO instead of one we have intentionally loaded
     env = os.environ.copy()
-    env['NCO_PATH_OVERRIDE'] = 'No'
+    env['NCO_PATH_OVERRIDE'] = 'Yes'
 
-    args = ['ncremap', '-m', 'mpas', '--d2f', '-7', '--dfl_lvl=1',
+    args = ['ncremap', '--no_stdin', '-m', 'mpas', '--d2f', '-7', '--dfl_lvl=1',
             '--no_cll_msr', '--no_frm_trm', '--no_stg_grd', '--msk_src=none',
             '--mask_dst=none', '--map={}'.format(mappingFileName), inFileName,
             outFileName]
-
 
     proc = subprocess.Popen(args, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, env=env)
     (out, err) = proc.communicate()
     logging.info(out)
     if(proc.returncode):
-        print(err)
-        raise subprocess.CalledProcessError('ncremap returned {}'.format(
-            proc.returncode))
+        raise subprocess.CalledProcessError('ncremap returned {}'.format(proc.returncode))
 
     ds = xarray.open_dataset(outFileName, decode_times=False,
                              mask_and_scale=False)
