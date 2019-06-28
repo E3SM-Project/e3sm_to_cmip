@@ -427,7 +427,7 @@ def load_axis(data, levels=None):
 
     # create axes
     axes = []
-    if levels.get('time_name'):
+    if levels and levels.get('time_name'):
         axes.append({
             str('table_entry'): levels.get('time_name'),
             str('units'): data[levels.get('time_name')].units
