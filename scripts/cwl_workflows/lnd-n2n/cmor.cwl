@@ -24,7 +24,9 @@ inputs:
     inputBinding:
       prefix: --num-proc
   var_list:
-    type: string[]
+    type: string
+    inputBinding:
+      prefix: -v
   raw_file_list:
     type: File[]
   logdir:
@@ -35,8 +37,6 @@ inputs:
 arguments: 
   - prefix: --output-path
     valueFrom: $(runtime.outdir)
-  - prefix: --var-list
-    valueFrom: $(inputs.var_list.join(", "))
   - prefix: --input-path
     valueFrom: $(runtime.outdir)
 

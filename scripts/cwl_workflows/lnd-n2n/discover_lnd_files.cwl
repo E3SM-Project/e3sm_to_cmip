@@ -10,11 +10,11 @@ inputs:
     inputBinding:
       prefix: --input
   start:
-    type: string
+    type: int
     inputBinding:
       prefix: --start
   end:
-    type: string
+    type: int
     inputBinding:
       prefix: --end
 

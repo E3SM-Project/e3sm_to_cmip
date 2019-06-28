@@ -1,0 +1,17 @@
+lnd_data_path: /p/user_pub/e3sm/baldwin32/bgc/CNTL/lnd/
+hrz_lnd_mapfile: /export/zender1/data/maps/map_ne30np4_to_cmip6_180x360_aave.20181001.nc
+
+native_out_dir: /p/user_pub/e3sm/baldwin32/bgc/CNTL/output/native
+regrid_out_dir: /p/user_pub/e3sm/baldwin32/bgc/CNTL/output/rgr
+
+frequency: 5
+num_workers: 12
+casename: 20181217.CNTL_CNPCTC1850_OIBGC.ne30_oECv3.edison
+start_year: 1850
+end_year: 1855
+metadata_path: /export/baldwin32/projects/e3sm_to_cmip/e3sm_user_config_picontrol.json
+tables_path: /export/baldwin32/projects/cmip6-cmor-tables/Tables/
+logdir: /p/user_pub/e3sm/baldwin32/bgc/CNTL/output
+
+lnd_var_list:  [QOVER, QRUNOFF, QINTR, QVEGE,      QSOIL,      TOTPRODC, TOTSOMC, COL_FIRE_CLOSS, WOOD_HARVESTC, SOILWATER_10CM, TOTVEGC, NBP, GPP, AR, HR]
+cmor_var_list: [mrros, mrro,    prveg, evspsblveg, evspsblsoi, cProduct, cSoil,   fFire,          fHarvest,      mrsos,          cVeg,    nbp, gpp, ra, rh]

@@ -10,35 +10,30 @@ requirements:
 
 inputs:
 
-  # list of e3sm land variables
   lnd_var_list: string
-  # base directory for land input
   lnd_data_path: string
-  # remapping file
   hrz_lnd_mapfile: File
 
   native_out_dir: string
   regrid_out_dir: string
 
-  frequency: string
-  num_workers: string
+  frequency: int
+  num_workers: int
+  start_year: int
+  end_year: int
+  
   casename: string
-  start_year: string
-  end_year: string
   metadata_path: string
   tables_path: string
   cmor_var_list: string
+  logdir: string
 
 outputs:
   cmorized:
     type: Directory
     outputSource: step_cmor/cmip6_dir
-  cmor_log:
-    type: File
-    outputSource: step_cmor/log
 
 steps:
-
   step_segments:
     run: generate_segments.cwl
     in:
@@ -77,15 +72,6 @@ steps:
     out:
       - remaped_time_series
   
-  mv_hrz_lnd:
-    run: mv.cwl
-    scatter: input_path
-    in:
-      input_path: step_hrz_lnd/remaped_time_series
-      output_path: regrid_out_dir
-    out:
-      - moved_file
-  
   step_cmor:
     run: cmor.cwl
     in:
@@ -94,7 +80,7 @@ steps:
       metadata_path: metadata_path
       num_workers: num_workers
       var_list: cmor_var_list
-      dummy1: mv_hrz_lnd/moved_file
+      raw_file_list: step_hrz_lnd/remaped_time_series
+      logdir: logdir
     out:
       - cmip6_dir
-      - log

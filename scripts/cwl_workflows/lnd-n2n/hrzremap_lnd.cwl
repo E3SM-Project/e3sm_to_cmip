@@ -13,25 +13,23 @@ inputs:
       position: 1
       prefix: -v
   start_year:
-    type: string
+    type: int
     inputBinding:
       position: 2
       prefix: -s
   end_year:
-    type: string
+    type: int
     inputBinding:
       position: 3
       prefix: -e
   year_per_file:
-    type: string
+    type: int
     inputBinding:
       position: 4
       prefix: --ypf=
       separate: false
   native_out_dir:
     type: string
-    # inputBinding:
-    #   position: 6
   casename:
     type: string
     inputBinding:
@@ -42,12 +40,10 @@ inputs:
 
 stdin:
   $(inputs.input_files.path)
-# arguments:
-#   - prefix: --drc_out
-#     valueFrom: $(runtime.outdir)
+
 outputs:
   time_series_files:
     type: File[]
     outputBinding:
       glob: 
-        - $("*_" + inputs.start_year.padStart(4, "0") + "01_" + inputs.end_year.padStart(4, "0") + "12.nc")
+        - $("*_" + inputs.start_year.toString().padStart(4, "0") + "01_" + inputs.end_year.toString().padStart(4, "0") + "12.nc")

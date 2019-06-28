@@ -1,8 +1,8 @@
 atm_data_path: /p/user_pub/work/E3SM/1_0/piControl/1deg_atm_60-30km_ocean/atmos/native/model-output/mon/ens1/v1/
 start_year: '1'
-end_year: '1'
-frequency: '1'
-year_per_file: '1'
+end_year: '5'
+frequency: '5'
+year_per_file: '5'
 num_workers: '12'
 casename: 20180129.DECKv1b_piControl.ne30_oEC.edison
 
@@ -21,7 +21,7 @@ cmor_output_path: /p/user_pub/work/E3SM/cmip6_variables/piControl/cmor_sample/
 #cmor_var_list: [tas, ts, psl, ps, sfcWind, huss, pr, prc, prsn, evspsbl, tauu, tauv, hfls, clt, rlds, rlus, rsds, rsus, hfss, cl, cli, clivi, clwvi, prw, rldscs, rlut, rlutcs, rsdt, rsuscs, rsut, rsutcs, rtmt, abs550aer, od550aer, reffclwtop, rsdscs]
 #std_var_list: [TREFHT, TS, PSL, PS, U10, QREFHT, PRECC, PRECL, PRECSC, PRECSL, QFLX, TAUX, TAUY, LHFLX, CLDTOT, FLDS, FLNS, FSDS, FSNS, SHFLX, CLOUD, CLDICE, TGCLDIWP, CLDLIQ, TGCLDCWP, TMQ, FLNSC, FSNTOA, FSNT, FLNT, FLUTC, FSDSC, SOLIN, FSNSC, FSUTOA, FSUTOAC, AODABS, AODVIS, AREL]
 
-cmor_var_list: [pfull]
-std_var_list: [PS, CLOUD]
+cmor_var_list: [phalf, pfull]
+std_var_list: [PS, hyam, hybm, hyai, hybi]
 
 logdir: /p/user_pub/work/E3SM/cmip6_variables/piControl/cwl

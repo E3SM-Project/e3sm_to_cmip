@@ -11,9 +11,9 @@ requirements:
 inputs:
   casename: string
   variable_name: string
-  segments_start: string[]
-  segments_end: string[]
-  year_per_file: string
+  segments_start: int[]
+  segments_end: int[]
+  year_per_file: int
   native_out_dir: string
   lnd_mapfile: File
   lnd_data_path: string
