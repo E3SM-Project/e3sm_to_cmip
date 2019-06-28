@@ -201,3 +201,28 @@
   e3sm_name: SOILWATER_10CM
   units: "kg m-2"
   table: CMIP6_Lmon.json
+
+- cmip_name: cVeg
+  e3sm_name: TOTVEGC
+  units: "kg m-2"
+  table: CMIP6_Lmon.json
+
+- cmip_name: nbp
+  e3sm_name: NBP
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
+
+- cmip_name: gpp
+  e3sm_name: GPP
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
+
+- cmip_name: ra
+  e3sm_name: AR
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
+
+- cmip_name: rh
+  e3sm_name: HR
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
