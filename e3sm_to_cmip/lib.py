@@ -351,46 +351,43 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     if not os.path.exists(filename):
         raise IOError("File not found: {}".format(filename))
 
-    try:
-        f = cdms2.open(filename)
+    f = cdms2.open(filename)
 
-        # load the data for each variable
-        variable_data = f(variable)
+    # load the data for each variable
+    variable_data = f(variable)
 
-        if not variable_data.any():
-            return data
+    # load
+    data.update({
+        variable: variable_data
+    })
 
-        # load
+    # atm uses "time_bnds" but the lnd component uses "time_bounds"
+    time_bounds_name = 'time_bnds' if 'time_bnds' in f.variables.keys() else 'time_bounds'
+
+    # load the lon and lat info & bounds
+    # load time & time bounds
+    if get_dims:
         data.update({
-            variable: variable_data
+            'lat': variable_data.getLatitude(),
+            'lon': variable_data.getLongitude(),
+            'lat_bnds': f('lat_bnds'),
+            'lon_bnds': f('lon_bnds'),
+            'time': variable_data.getTime(),
+            'time2': variable_data.getTime(),
+            'time_bnds': f(time_bounds_name)
         })
 
-        # atm uses "time_bnds" but the lnd component uses "time_bounds"
-        time_bounds_name = 'time_bnds' if 'time_bnds' in f.variables.keys() else 'time_bounds'
-
-        # load the lon and lat info & bounds
-        # load time & time bounds
-        if get_dims:
+        try:
+            index = variable_data.getAxisIds().index('levgrnd')
+        except:
+            pass
+        else:
             data.update({
-                'lat': variable_data.getLatitude(),
-                'lon': variable_data.getLongitude(),
-                'lat_bnds': f('lat_bnds'),
-                'lon_bnds': f('lon_bnds'),
-                'time': variable_data.getTime(),
-                'time2': variable_data.getTime(),
-                'time_bnds': f(time_bounds_name)
+                'levgrnd': variable_data.getAxis(index)
             })
 
-            try:
-                index = variable_data.getAxisIds().index('levgrnd')
-            except:
-                pass
-            else:
-                data.update({
-                    'levgrnd': variable_data.getAxis(index)
-                })
-
-            # load level and level bounds
+        # load level and level bounds
+        if levels is not None:
             if levels.get('name') == 'standard_hybrid_sigma' or levels.get('name') == 'standard_hybrid_sigma_half':
                 data.update({
                     'lev': f.getAxis('lev')[:]/1000,
@@ -417,9 +414,7 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
                         data[bnds] = f(bnds)[:]
                     else:
                         raise IOError("Unable to find e3sm_axis_bnds")
-    finally:
-        f.close()
-        return data
+    return data
 # ------------------------------------------------------------------
 
 

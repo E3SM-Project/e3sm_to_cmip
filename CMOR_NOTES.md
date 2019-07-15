@@ -36,7 +36,6 @@
 | rtmt       | YES     | no  | no      | no          |
 | abs550aer  | YES     | no  | no      | no          |
 | od550aer   | YES     | no  | no      | no          |
-| reffclwtop | YES     | no  | no      | no          |
 | rsdscs     | YES     |     |         |             |
 
 

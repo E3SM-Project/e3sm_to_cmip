@@ -7,11 +7,6 @@
   e3sm_name: AODVIS
   units: '1'
   table: CMIP6_AERmon.json
-
-- cmip_name: reffclwtop
-  e3sm_name: AREL
-  units: m
-  table: CMIP6_AERmon.json
   
 - cmip_name: cltisccp
   e3sm_name: CLDTOT_ISCCP
@@ -111,7 +106,7 @@
   e3sm_name: FSDS
   units: 'W m-2'
   table: CMIP6_Amon.json
-  positive: up
+  positive: down
 
 - cmip_name: rsdt
   e3sm_name: SOLIN
@@ -182,20 +177,22 @@
   units: "kg m-2"
   table: CMIP6_Lmon.json
 
-- cmip_name: cSoil
-  e3sm_name: TOTSOMC
-  units: "kg m-2"
-  table: CMIP6_Lmon.json
+# - cmip_name: cSoil
+#   e3sm_name: TOTSOMC
+#   units: "kg m-2"
+#   table: CMIP6_Lmon.json
 
 - cmip_name: fFire
   e3sm_name: COL_FIRE_CLOSS
   units: "kg m-2 s-1"
   table: CMIP6_Lmon.json
+  positive: up
 
 - cmip_name: fHarvest
   e3sm_name: WOOD_HARVESTC
   units: "kg m-2 s-1"
   table: CMIP6_Lmon.json
+  positive: up
 
 - cmip_name: mrsos
   e3sm_name: SOILWATER_10CM
@@ -211,18 +208,22 @@
   e3sm_name: NBP
   units: "kg m-2 s-1"
   table: CMIP6_Lmon.json
+  positive: down
 
 - cmip_name: gpp
   e3sm_name: GPP
   units: "kg m-2 s-1"
   table: CMIP6_Lmon.json
+  positive: down
 
 - cmip_name: ra
   e3sm_name: AR
   units: "kg m-2 s-1"
   table: CMIP6_Lmon.json
+  positive: up
 
 - cmip_name: rh
   e3sm_name: HR
   units: "kg m-2 s-1"
   table: CMIP6_Lmon.json
+  positive: up
