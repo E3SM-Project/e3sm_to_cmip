@@ -1,9 +1,9 @@
 atm_data_path: /p/user_pub/work/E3SM/1_0/piControl/1deg_atm_60-30km_ocean/atmos/native/
 start_year: '1'
-end_year: '500'
-frequency: '25'
-year_per_file: '25'
-num_workers: '2'
+end_year: '5'
+frequency: '5'
+year_per_file: '5'
+num_workers: '12'
 casename: 20180129.DECKv1b_piControl.ne30_oEC.edison
 
 vrtmap_path: /p/user_pub/work/E3SM/cmip6_variables/vrt_remap_plev19.nc
@@ -18,5 +18,6 @@ cmor_output_path: /p/user_pub/work/E3SM/cmip6_variables/piControl/cmor_sample/
 
 cmor_var_list: [hus, o3, ta, ua, va, zg, hur,    wap]
 plev_var_list: [Q,   O3, T,  U,  V,  Z3, RELHUM, OMEGA]
+
 
 logdir: /p/user_pub/work/E3SM/cmip6_variables/piControl/cwl

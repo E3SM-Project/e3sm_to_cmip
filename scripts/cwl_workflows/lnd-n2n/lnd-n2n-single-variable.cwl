@@ -32,6 +32,9 @@ outputs:
   cmorized:
     type: Directory
     outputSource: step_cmor/cmip6_dir
+  remaped_time_series:
+    type: File[]
+    outputSource: step_hrz_lnd/remaped_time_series
 
 steps:
   step_segments:

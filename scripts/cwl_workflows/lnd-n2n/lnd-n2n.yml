@@ -13,5 +13,5 @@ metadata_path: /export/baldwin32/projects/e3sm_to_cmip/e3sm_user_config_picontro
 tables_path: /export/baldwin32/projects/cmip6-cmor-tables/Tables/
 logdir: /p/user_pub/e3sm/baldwin32/bgc/CNTL/output
 
-lnd_var_list:  [QOVER, QRUNOFF, QINTR, QVEGE,      QSOIL,      TOTPRODC, TOTSOMC, COL_FIRE_CLOSS, WOOD_HARVESTC, SOILWATER_10CM, TOTVEGC, NBP, GPP, AR, HR]
-cmor_var_list: [mrros, mrro,    prveg, evspsblveg, evspsblsoi, cProduct, cSoil,   fFire,          fHarvest,      mrsos,          cVeg,    nbp, gpp, ra, rh]
+lnd_var_list:  [QOVER, QRUNOFF, QINTR, QVEGE,      QSOIL,      TOTPRODC, COL_FIRE_CLOSS, WOOD_HARVESTC, SOILWATER_10CM, TOTVEGC, NBP, GPP, AR, HR]
+cmor_var_list: [mrros, mrro,    prveg, evspsblveg, evspsblsoi, cProduct, fFire,          fHarvest,      mrsos,          cVeg,    nbp, gpp, ra, rh]

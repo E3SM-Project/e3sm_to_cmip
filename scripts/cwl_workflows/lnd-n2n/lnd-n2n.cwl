@@ -32,6 +32,13 @@ outputs:
   cmorized:
     type: Directory[]
     outputSource: run_cmor/cmip6_dir
+  remaped_time_series:
+    type:
+      type: array
+      items:
+        type: array
+        items: File
+    outputSource: run_cmor/remaped_time_series
 
 steps:
   run_cmor:
@@ -98,11 +105,16 @@ steps:
           type: string
           inputBinding:
             prefix: --logdir
+
       outputs:
         cmip6_dir: 
           type: Directory
           outputBinding:
             glob: "CMIP6"
+        remaped_time_series:
+          type: File[]
+          outputBinding:
+            glob: "*.nc"
     scatter:
       - cmor_var_list
       - lnd_var_list
@@ -124,3 +136,4 @@ steps:
       logdir: logdir
     out:
       - cmip6_dir
+      - remaped_time_series

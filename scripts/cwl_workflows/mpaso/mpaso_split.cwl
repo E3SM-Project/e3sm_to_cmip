@@ -21,6 +21,10 @@ inputs:
     type: string
     inputBinding:
       prefix: --map
+  region_path:
+    type: string
+    inputBinding:
+      prefix: --region
   namelist:
     type: string
     inputBinding:
