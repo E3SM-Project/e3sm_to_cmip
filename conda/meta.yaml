@@ -3,7 +3,6 @@ package:
   version: {{ environ['VERSION'] }}
 
 source:
-  #path: ..  
   git_url: git://github.com/E3SM-Project/e3sm_to_cmip.git
   git_tag: {{ environ['TAG'] }}
 
@@ -19,7 +18,7 @@ about:
 
 requirements:
   host:
-    - python
+    - python >=3
     - pip
     - setuptools
 
