@@ -18,7 +18,7 @@ else
 fi
 echo "Building" $VERSION"-"$BUILD_NAME "for label:" $TAG
 
-conda build -c e3sm -c conda-forge .
+conda build -c PCMDI/label/nightly -c conda-forge .
 
 if [ $? -eq 1 ]; then
     echo "conda build failed"
