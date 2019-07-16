@@ -2,7 +2,7 @@
 
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [srun, -A, condo, -p, acme-centos7, e3sm_to_cmip, --no-metadata]
+baseCommand: [srun, -A, condo, -p, acme-centos6, e3sm_to_cmip, --no-metadata]
 requirements:
   - class: InlineJavascriptRequirement
 
@@ -36,10 +36,10 @@ inputs:
   output_path: 
     type: string
     inputBinding:
-      prefix: --output-path
+      prefix: --output
 
 arguments: 
-  - prefix: --input-path
+  - prefix: --input
     valueFrom: $(inputs.input_path.path)
   - prefix: --mode
     valueFrom: $("ocn")
