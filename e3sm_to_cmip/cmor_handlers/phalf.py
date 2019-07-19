@@ -67,7 +67,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
     -------
         var name (str): the name of the processed variable after processing is complete
     """
-    print(infiles)
     logger = logging.getLogger()
     msg = '{}: Starting'.format(VAR_NAME)
     logger.info(msg)
