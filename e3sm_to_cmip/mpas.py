@@ -46,7 +46,9 @@ def remap(ds, mappingFileName, threshold=0.05):
     (out, err) = proc.communicate()
     logging.info(out)
     if(proc.returncode):
-        raise subprocess.CalledProcessError('ncremap returned {}'.format(proc.returncode))
+        print(err)
+        raise subprocess.CalledProcessError(
+            'ncremap returned {}'.format(proc.returncode))
 
     ds = xarray.open_dataset(outFileName, decode_times=False,
                              mask_and_scale=False)
@@ -713,5 +715,9 @@ def _compute_dask(ds, showProgress, message):
 
 def _get_temp_path():
     '''Returns the name of a temporary NetCDF file'''
-    return '{}/{}.nc'.format(tempfile.gettempdir(),
-                             next(tempfile._get_candidate_names()))
+    tmpdir = tempfile.gettempdir()
+    tmpfile = tempfile.NamedTemporaryFile(dir=tmpdir, delete=False)
+    tmpname = tmpfile.name
+    tmpfile.close()
+
+    return tmpname
