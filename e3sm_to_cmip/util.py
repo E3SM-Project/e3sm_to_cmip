@@ -91,7 +91,7 @@ def parse_argsuments():
     parser.add_argument(
         '-i', '--input-path',
         metavar='',
-        required=True,
+        required=False,
         help='path to directory containing e3sm time series data files. Additionally namelist, restart, and mappings files if handling MPAS data.')
     parser.add_argument(
         '-o', '--output-path',
@@ -100,12 +100,12 @@ def parse_argsuments():
         help='where to store cmorized output')
     parser.add_argument(
         '-u', '--user-metadata',
-        required=True,
+        required=False,
         metavar='<user_input_json_path>',
         help='path to user json file for CMIP6 metadata')
     parser.add_argument(
         '-t', '--tables-path',
-        required=True,
+        required=False,
         metavar='<tables-path>',
         help="Path to directory containing CMOR Tables directory")
     parser.add_argument(
@@ -306,7 +306,7 @@ def copy_user_metadata(input_path, output_path):
 
 def add_metadata(file_path, var_list):
     """
-    Recurses down a file try, adding metadata to any netcdf files in the tree
+    Recurses down a file tree, adding metadata to any netcdf files in the tree
     that are on the variable list.
 
     Parameters
@@ -317,7 +317,7 @@ def add_metadata(file_path, var_list):
     filepaths = list()
 
     print_message('Adding additional metadata to output files', 'ok')
-    for root, dirs, files in os.walk(file_path, topdown=False):
+    for root, _, files in os.walk(file_path, topdown=False):
         for name in files:
             if name[-3:] != '.nc':
                 continue
@@ -343,6 +343,9 @@ def add_metadata(file_path, var_list):
         datafile.ncclimo_generation_command = str(
             """ncclimo --var=${var} -7 --dfl_lvl=1 --no_cll_msr --no_frm_trm --no_stg_grd --yr_srt=1 --yr_end=500 --ypf=25 --map=map_ne30np4_to_cmip6_180x360_aave.20181001.nc """)
         datafile.ncclimo_version = str('4.8.1-alpha04')
+
+        # picontrol specific
+        datafile.base_year = str("1850")
 
         datafile.close()
         pbar.update(idx)
