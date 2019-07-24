@@ -20,7 +20,7 @@ TABLE = 'CMIP6_Omon.json'
 
 def handle(infiles, tables, user_input_path, **kwargs):
     """
-    Transform MPASO timeMonthly_avg_tThreshMLD into CMIP.mlotst
+    Transform MPASO timeMonthly_avg_dThreshMLD into CMIP.mlotst
 
     Parameters
     ----------
@@ -48,12 +48,12 @@ def handle(infiles, tables, user_input_path, **kwargs):
     dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
     cellMask2D, _ = mpas.get_cell_masks(dsMesh)
 
-    variableList = ['timeMonthly_avg_tThreshMLD',
+    variableList = ['timeMonthly_avg_dThreshMLD',
                     'xtime_startMonthly', 'xtime_endMonthly']
 
     ds = xarray.Dataset()
     with mpas.open_mfdataset(timeSeriesFiles, variableList) as dsIn:
-        ds[VAR_NAME] = dsIn.timeMonthly_avg_tThreshMLD.where(cellMask2D)
+        ds[VAR_NAME] = dsIn.timeMonthly_avg_dThreshMLD.where(cellMask2D)
 
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
