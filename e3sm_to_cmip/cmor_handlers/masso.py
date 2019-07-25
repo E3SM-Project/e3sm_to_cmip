@@ -58,7 +58,8 @@ def handle(infiles, tables, user_input_path, **kwargs):
     ds = xarray.Dataset()
     with mpas.open_mfdataset(timeSeriesFiles, variableList) as dsIn:
         ds[VAR_NAME] = (config_density0 *
-                        dsIn.timeMonthly_avg_layerThickness.where(cellMask3D) *
+                        dsIn.timeMonthly_avg_layerThickness.where(
+                            cellMask3D, 0.) *
                         dsMesh.areaCell).sum(dim=['nVertLevels', 'nCells'])
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
