@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import xarray
 import logging
+import netCDF4
 
 from e3sm_to_cmip import mpas
 
@@ -58,7 +59,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     ds = xarray.Dataset()
     with mpas.open_mfdataset(timeSeriesFiles, variableList) as dsIn:
         ds[VAR_NAME] = config_density0 * \
-            dsIn.timeMonthly_avg_layerThickness.where(cellMask3D)
+            dsIn.timeMonthly_avg_layerThickness.where(cellMask3D, 0.)
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
 
@@ -66,6 +67,10 @@ def handle(infiles, tables, user_input_path, **kwargs):
     ds.compute()
 
     ds = mpas.remap(ds, mappingFileName)
+
+    # set masked values (where there are no MPAS grid cells) to zero
+    ds[VAR_NAME] = ds[VAR_NAME].where(
+        ds[VAR_NAME] != netCDF4.default_fillvals['f8'], 0.)
 
     mpas.setup_cmor(VAR_NAME, tables, user_input_path, component='ocean')
 
