@@ -17,6 +17,9 @@ import tempfile
 import logging
 import argparse
 from dask.diagnostics import ProgressBar
+import dask
+import multiprocessing
+from multiprocessing.pool import ThreadPool
 
 
 def remap(ds, mappingFileName, threshold=0.05):
@@ -36,11 +39,10 @@ def remap(ds, mappingFileName, threshold=0.05):
     env = os.environ.copy()
     env['NCO_PATH_OVERRIDE'] = 'No'
 
-    args = ['ncremap', '-m', 'mpas', '--d2f', '-7', '--dfl_lvl=1',
+    args = ['ncremap', '--d2f', '-7', '--dfl_lvl=1',
             '--no_cll_msr', '--no_frm_trm', '--no_stg_grd', '--msk_src=none',
             '--mask_dst=none', '--map={}'.format(mappingFileName), inFileName,
             outFileName]
-
 
     proc = subprocess.Popen(args, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, env=env)
@@ -226,8 +228,13 @@ def get_sea_floor_values(ds, dsMesh):
 
 
 def open_mfdataset(fileNames, variableList=None,
-                   chunks={'nCells': 32768, 'Time': 6}):
+                   chunks={'nCells': 32768, 'Time': 6}, daskThreads=6):
     '''Open a multi-file xarray Dataset, retaining only the listed variables'''
+
+    dask.config.set(schedular='threads',
+                    pool=ThreadPool(min(multiprocessing.cpu_count(),
+                                        daskThreads)))
+
 
     ds = xarray.open_mfdataset(fileNames, concat_dim='Time',
                                mask_and_scale=False, chunks=chunks)
@@ -260,7 +267,7 @@ def write_netcdf(ds, fileName, fillValues=netCDF4.default_fillvals):
     variableNames = list(ds.data_vars.keys()) + list(ds.coords.keys())
     for variableName in variableNames:
         isNumeric = numpy.issubdtype(ds[variableName].dtype, numpy.number)
-        if isNumeric and numpy.any(numpy.isnan(ds[variableName])):
+        if isNumeric:
             dtype = ds[variableName].dtype
             for fillType in fillValues:
                 if dtype == numpy.dtype(fillType):

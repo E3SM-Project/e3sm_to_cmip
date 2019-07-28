@@ -70,7 +70,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     # set masked values (where there are no MPAS grid cells) to zero
     ds[VAR_NAME] = ds[VAR_NAME].where(
-        ds[VAR_NAME] != netCDF4.default_fillvals['f8'], 0.)
+        ds[VAR_NAME] != netCDF4.default_fillvals['f4'], 0.)
 
     mpas.setup_cmor(VAR_NAME, tables, user_input_path, component='ocean')
 
