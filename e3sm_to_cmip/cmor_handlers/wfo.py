@@ -80,7 +80,12 @@ def handle(infiles, tables, user_input_path, **kwargs):
              'coord_vals': ds.lon.values,
              'cell_bounds': ds.lon_bnds.values}]
     try:
-        mpas.write_cmor(axes, ds, VAR_NAME, VAR_UNITS)
+        mpas.write_cmor(axes, ds, VAR_NAME, VAR_UNITS,
+                        comment='Computed as the water flux into the ocean '
+                                'divided by the area of the ocean portion of '
+                                'the grid cell. This is the sum of sea-ice'
+                                'freshwater, river runoff, ice runoff, rain,'
+                                'and snow fluxes.')
     except Exception:
         return ""
     return VAR_NAME
