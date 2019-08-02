@@ -74,11 +74,14 @@ def main():
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    temp_path = '{}/tmp'.format(output_path)
-
-    if not os.path.exists(temp_path):
-        os.makedirs(temp_path)
-
+    # setup temp storage directory
+    temp_path = os.environ.get('TMPDIR')
+    if temp_path is None:
+     
+        temp_path = '{}/tmp'.format(output_path)
+        if not os.path.exists(temp_path):
+            os.makedirs(temp_path)
+            
     tempfile.tempdir = temp_path
 
     logging_path = os.path.join(output_path, 'converter.log')
