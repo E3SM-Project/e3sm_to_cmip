@@ -9,7 +9,7 @@ from e3sm_to_cmip.lib import handle_variables
 # list of raw variable names needed
 RAW_VARIABLES = [str('LAISHA'), str('LAISUN')]
 VAR_NAME = str('lai')
-VAR_UNITS = str('%')
+VAR_UNITS = str('1')
 TABLE = str('CMIP6_Lmon.json')
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
