@@ -147,6 +147,10 @@ def parse_argsuments():
         '--logdir',
         help="Where to put the logging output from CMOR")
     parser.add_argument(
+        '--no-rm-tmpdir',
+        help='Dont remove the temp dir on exit',
+        action='store_true')
+    parser.add_argument(
         '--version',
         help='print the version number and exit',
         action='version',
@@ -345,7 +349,7 @@ def add_metadata(file_path, var_list):
         datafile.ncclimo_version = str('4.8.1-alpha04')
 
         # picontrol specific
-        datafile.base_year = str("1850")
+        # datafile.base_year = str("1850")
 
         datafile.close()
         pbar.update(idx)

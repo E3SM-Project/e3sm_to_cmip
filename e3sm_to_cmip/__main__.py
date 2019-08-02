@@ -81,7 +81,7 @@ def main():
         temp_path = '{}/tmp'.format(output_path)
         if not os.path.exists(temp_path):
             os.makedirs(temp_path)
-            
+
     tempfile.tempdir = temp_path
 
     logging_path = os.path.join(output_path, 'converter.log')
@@ -154,7 +154,9 @@ def main():
             file_path=output_path,
             var_list=var_list)
 
-    shutil.rmtree(temp_path)
+    if not _args.no_rm_tmpdir:
+        shutil.rmtree(temp_path)
+
     return 0
 # ------------------------------------------------------------------
 
