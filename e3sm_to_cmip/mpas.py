@@ -78,6 +78,19 @@ def remap(ds, mappingFileName, threshold=0.05):
     return ds
 
 
+def avg_to_mid_level(ds):
+    dsNew = xarray.Dataset()
+    for varName in ds.data_vars:
+        var = ds[varName]
+        if 'nVertLevelsP1' in var.dims:
+            nVertP1 = var.sizes['nVertLevelsP1']
+            dsNew[varName] = 0.5*(var.isel(nVertLevelsP1=slice(0, nVertP1-1)) +
+                                  var.isel(nVertLevelsP1=slice(1, nVertP1)))
+        else:
+            dsNew[varName] = ds[varName]
+    return dsNew
+
+
 def add_time(ds, dsIn, referenceDate='0001-01-01', offsetYears=0):
     '''Parse the MPAS xtime variable into CF-compliant time'''
 
