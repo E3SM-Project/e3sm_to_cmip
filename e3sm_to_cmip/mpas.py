@@ -330,7 +330,7 @@ def write_cmor(axes, ds, varname, varunits, **kwargs):
         axis_id = cmor.axis(**axis)
         axis_ids.append(axis_id)
 
-    fillValue = 1e20
+    fillValue = netCDF4.default_fillvals['f4']
     if numpy.any(numpy.isnan(ds[varname])):
         mask = numpy.isfinite(ds[varname])
         ds[varname] = ds[varname].where(mask, fillValue)
