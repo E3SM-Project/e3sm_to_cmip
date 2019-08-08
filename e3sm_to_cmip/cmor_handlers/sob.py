@@ -76,7 +76,10 @@ def handle(infiles, tables, user_input_path, **kwargs):
              'coord_vals': ds.lon.values,
              'cell_bounds': ds.lon_bnds.values}]
     try:
-        mpas.write_cmor(axes, ds, VAR_NAME, VAR_UNITS)
+        mpas.write_cmor(axes, ds, VAR_NAME, VAR_UNITS,
+                        comment='Model prognostic salinity at bottom-most '
+                                'model grid cell on the Practical Salinity '
+                                'Scale of 1978.')
     except Exception:
         return ""
     return VAR_NAME
