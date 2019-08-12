@@ -61,7 +61,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
                     'xtime_startMonthly', 'xtime_endMonthly']
 
     with mpas.open_mfdataset(timeSeriesFiles, variableList) as dsIn:
-        showProgress = 'serial' in kwargs and kwards['serial']
+        showProgress = 'serial' in kwargs and kwargs['serial']
         ds = mpas.compute_moc_streamfunction(dsIn, dsMesh, dsMasks,
                                              showProgress=showProgress)
     ds = ds.rename({'moc': VAR_NAME})
