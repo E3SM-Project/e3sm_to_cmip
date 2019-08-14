@@ -42,7 +42,7 @@ steps:
   
   step_render_cmor_template:
     run:
-      mpaso_sbatch_scripter.cwl
+      mpaso_sbatch_render.cwl
     in:
       input_path: step_segments/segments
       tables_path: tables_path

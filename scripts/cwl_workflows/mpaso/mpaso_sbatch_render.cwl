@@ -2,7 +2,7 @@
 
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [python, mpaso_sbatch_render.py]
+baseCommand: [python, /qfs/people/bald158/projects/e3sm_to_cmip/scripts/cwl_workflows/mpaso/mpaso_sbatch_render.py]
 inputs:
   input_path:
     type: Directory
@@ -31,7 +31,7 @@ inputs:
     inputBinding:
       prefix: --outdir
   timeout:
-    type: string
+    type: int
     inputBinding:
       prefix: --timeout
 
