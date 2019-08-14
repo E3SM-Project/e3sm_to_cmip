@@ -28,11 +28,13 @@ from e3sm_to_cmip.lib import run_serial
 import numpy as np
 np.warnings.filterwarnings('ignore')
 
+__version__ = "1.2.1"
+
 
 def main():
 
     # parse the command line arguments
-    _args = parse_argsuments().__dict__
+    _args = parse_argsuments(version=__version__).__dict__
 
     if len(_args.get('var_list')) == 1 and " " in _args.get('var_list')[0]:
         var_list = _args.get('var_list')[0].split()
@@ -154,7 +156,7 @@ def main():
             file_path=output_path,
             var_list=var_list)
 
-    if not _args.no_rm_tmpdir:
+    if not _args['no_rm_tmpdir']:
         shutil.rmtree(temp_path)
 
     return 0

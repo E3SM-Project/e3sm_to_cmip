@@ -11,7 +11,6 @@ import progressbar
 logger = logging.getLogger()
 
 from e3sm_to_cmip.util import print_message, setup_cmor, get_levgrnd_bnds
-from e3sm_to_cmip.lib import my_dynamic_message
 
 
 # list of raw variable names needed
@@ -24,6 +23,17 @@ LEVELS = {
     'units': 'm',
     'e3sm_axis_name': 'levgrnd'
 }
+
+def my_dynamic_message(self, progress, data):
+    """
+    Make the progressbar not crash, and also give a nice custom message
+    """
+    val = data['dynamic_messages'].get('running')
+    if val:
+        return 'Running: {0: <16}'.format(data['dynamic_messages'].get('running'))
+    else:
+        return 'Running: ' + 16 * '-'
+# ------------------------------------------------------------------
 
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
@@ -168,15 +178,21 @@ def handle(infiles, tables, user_input_path, **kwargs):
                 maxval=len(data['time']), widgets=widgets)
             pbar.start()
 
+        
         for index, val in enumerate(data['time']):
             if serial:
                 pbar.update(index, running=msg)
-            write_data(
-                varid=varid,
-                data=data,
-                timeval=val,
-                timebnds=[data['time_bnds'][index, :]],
-                index=index)
+            # write_data(
+            #     varid=varid,
+            #     data=data,
+            #     timeval=val,
+            #     timebnds=[data['time_bnds'][index, :]],
+            #     index=index)
+            cmor.write(
+                varid,
+                data['TSOI'][index, :],
+                time_vals=val,
+                time_bnds=[data['time_bnds'][index, :]])
             if serial:
                 pbar.finish()
 
