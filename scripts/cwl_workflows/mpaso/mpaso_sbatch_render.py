@@ -5,8 +5,8 @@ import argparse
 
 template_string = """#!/bin/bash
 
-RETURN=true
-until [ RETURN -eq 0 ]; do
+RETURN=1
+until [ $RETURN -eq 0 ]; do
     
     /qfs/people/bald158/anaconda2/envs/cwl/bin/e3sm_to_cmip \
         --no-metadata -s --mode ocn \
@@ -19,7 +19,7 @@ until [ RETURN -eq 0 ]; do
         --output {{ outdir }} \
         --input {{ input }} \
         --timeout {{ timeout }}
-    RETURN=?$
+    RETURN=$?
 done
 """
 
@@ -35,11 +35,13 @@ def render_sbatch(values):
             num_proc=values.num_proc,
             map=values.map,
             outdir=values.outdir,
-            input=values.input)
+            input=values.input,
+            timeout=values.timeout)
         with open(script_path, 'w') as outfile:
             outfile.write(script_contents)
         
         call(['chmod', '+x', script_path])
+        call(['srun', '-A', 'e3sm', '-t', '1-00:00', script_path])
     except Exception as e:
         raise(e)
         return 1

@@ -152,8 +152,7 @@ def parse_argsuments(version):
         action='store_true')
     parser.add_argument(
         '--timeout',
-        help='Exit with code -1 if execution time exceeds given time',
-        action='store_true')
+        help='Exit with code -1 if execution time exceeds given time in seconds')
     parser.add_argument(
         '--version',
         help='print the version number and exit',

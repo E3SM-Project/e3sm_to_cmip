@@ -30,6 +30,10 @@ np.warnings.filterwarnings('ignore')
 
 __version__ = "1.2.1"
 
+def timeout_exit():
+    print_message("Hit timeout limit, exiting")
+    sys.exit(-1)
+
 
 def main():
 
@@ -53,10 +57,10 @@ def main():
     debug = True if _args.get('debug') else False
     map_path = _args['map'] if _args.get('map') else None
     cmor_log_dir = _args['logdir'] if _args.get('logdir') else None
-    timeout = _args['timeout'] if _args.get('timeout') else None
+    timeout = int(_args['timeout']) if _args.get('timeout') else None
 
     if timeout:
-        timer = threading.Timer(timeout, lambda: sys.exit(-1))
+        timer = threading.Timer(timeout, timeout_exit)
         timer.start()
 
     if _args.get('handlers'):

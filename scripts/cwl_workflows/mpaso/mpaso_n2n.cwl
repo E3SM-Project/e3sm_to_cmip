@@ -66,8 +66,12 @@ steps:
       srun.cwl
     in:
       batch_script: step_render_cmor_template/sbatch_script
+      input_path: step_segments/segments
     scatter:
-      batch_script
+      - batch_script
+      - input_path
+    scatterMethod:
+      dotproduct
     out: []
       # - cmorized
 
