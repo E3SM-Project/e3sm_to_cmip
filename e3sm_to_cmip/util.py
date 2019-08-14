@@ -77,7 +77,7 @@ def setup_cmor(var_name, table_path, table_name, user_input_path):
 # ------------------------------------------------------------------
 
 
-def parse_argsuments():
+def parse_argsuments(version):
     parser = argparse.ArgumentParser(
         description='Convert ESM model output into CMIP compatible format',
         prog='e3sm_to_cmip',
@@ -151,10 +151,14 @@ def parse_argsuments():
         help='Dont remove the temp dir on exit',
         action='store_true')
     parser.add_argument(
+        '--timeout',
+        help='Exit with code -1 if execution time exceeds given time',
+        action='store_true')
+    parser.add_argument(
         '--version',
         help='print the version number and exit',
         action='version',
-        version='%(prog)s 0.0.2')
+        version='%(prog)s {}'.format(version))
     try:
         _args = sys.argv[1:]
     except (Exception, BaseException):
@@ -386,7 +390,7 @@ def find_mpas_files(component, path, map_path):
 
     Params:
     -------
-        component (str): Either the mpaso or mpassi component name
+        component (str): Either the mpaso or mpassi component name or variable name
         path (str): The path of the directory to search for files in
     """
     # save original in case it's an atm var

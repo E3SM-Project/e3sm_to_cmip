@@ -10,7 +10,7 @@ import sys
 import logging
 import tempfile
 import shutil
-
+import threading
 from pathos.multiprocessing import ProcessPool as Pool
 
 from e3sm_to_cmip import cmor_handlers
@@ -53,6 +53,11 @@ def main():
     debug = True if _args.get('debug') else False
     map_path = _args['map'] if _args.get('map') else None
     cmor_log_dir = _args['logdir'] if _args.get('logdir') else None
+    timeout = _args['timeout'] if _args.get('timeout') else None
+
+    if timeout:
+        timer = threading.Timer(timeout, lambda: sys.exit(-1))
+        timer.start()
 
     if _args.get('handlers'):
         handlers_path = os.path.abspath(_args.get('handlers'))
