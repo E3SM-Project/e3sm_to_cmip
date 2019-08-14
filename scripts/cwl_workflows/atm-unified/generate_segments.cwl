@@ -6,28 +6,38 @@ requirements:
 
 inputs:
   start:
-    type: string
+    type: int
     inputBinding:
       prefix: --start
   end:
-    type: string
+    type: int
     inputBinding:
       prefix: --end
   frequency:
-    type: string
+    type: int
     inputBinding:
       prefix: --frequency
 
 outputs:
   segments_start:
-    type: string[]
+    type: int[]
     outputBinding:
       glob: segments_start*
       loadContents: true
-      outputEval: $(self[0].contents.split('\n'))
+      outputEval: |
+        $( 
+          self[0].contents.split('\n').map(function(x){
+            return parseInt(x);
+          }).filter(function(x){return x})
+        )
   segments_end:
-    type: string[]
+    type: int[]
     outputBinding:
       glob: segments_end*
       loadContents: true
-      outputEval: $(self[0].contents.split('\n'))
+      outputEval: |
+        $( 
+          self[0].contents.split('\n').map(function(x){
+            return parseInt(x);
+          }).filter(function(x){return x})
+        )

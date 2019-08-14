@@ -10,21 +10,20 @@ requirements:
 
 inputs:
   # generate segments
-  frequency: string
+  frequency: int
 
   # discover_atm_files
   atm_data_path: string
-  start_year: string
-  end_year: string
+  start_year: int
+  end_year: int
 
   # vrt_remap
   vrtmap_path: string
-  num_workers: string
+  num_workers: int
   casename: string
 
   # hrzremap
   plev_var_list: string[]
-  year_per_file: string
   hrz_atm_map_path: string
   native_out_dir: string
   regrid_out_dir: string
@@ -40,13 +39,13 @@ outputs:
     type: 
       Directory[]
     outputSource: step_run_segment/cmorized
-  time_series:
-    type:
-      type: array
-      items:
-        type: array
-        items: File
-    outputSource: step_run_segment/ts_files
+  # time_series:
+  #   type:
+  #     type: array
+  #     items:
+  #       type: array
+  #       items: File
+  #   outputSource: step_run_segment/ts_files
 
 steps:
 
@@ -75,7 +74,7 @@ steps:
       num_workers: num_workers
       casename: casename
       plev_var_list: plev_var_list
-      year_per_file: year_per_file
+      year_per_file: frequency
       hrz_atm_map_path: hrz_atm_map_path
       native_out_dir: native_out_dir
       regrid_out_dir: regrid_out_dir
@@ -104,7 +103,7 @@ steps:
             glob: "*.nc"
       arguments:
         - position: 1
-          valueFrom: $("/export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-plev-single-segment.cwl")
+          valueFrom: $("/export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-unified/atm-plev-single-segment.cwl")
         - position: 2
           valueFrom: $(inputs.cwl_input.path)
     in:

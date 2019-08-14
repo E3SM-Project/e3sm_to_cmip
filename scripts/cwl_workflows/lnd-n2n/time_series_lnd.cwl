@@ -2,16 +2,13 @@
 
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [ncclimo, '-7', '--dfl_lvl=1', '--no_cll_msr', '--no_frm_trm', '--no_stg_grd']
+baseCommand: [ncclimo]
 requirements:
   - class: InlineJavascriptRequirement
 
 inputs:
   variable_name:
-    type: string
-    inputBinding:
-      position: 1
-      prefix: -v
+    type: string[]
   start_year:
     type: int
     inputBinding:
@@ -28,21 +25,29 @@ inputs:
       position: 4
       prefix: --ypf=
       separate: false
-  native_out_dir:
-    type: string
   casename:
     type: string
     inputBinding:
       prefix: -c
       position: 7
-  input_files:
-    type: File
+  remapped_lnd_files:
+    type: File[]
 
-stdin:
-  $(inputs.input_files.path)
+arguments:
+  - '-7'
+  - '--dfl_lvl=1'
+  - '--no_cll_msr'
+  - '-a'
+  - 'sdd'
+  - prefix: -v
+    valueFrom: $(inputs.variable_name.join(' ')) 
+  - position: 8
+    valueFrom: --no_stdin
+  - position: 9
+    valueFrom: $(inputs.remapped_lnd_files.map(function(el){return el.path}))
 
 outputs:
-  time_series_files:
+  remaped_time_series:
     type: File[]
     outputBinding:
       glob: 

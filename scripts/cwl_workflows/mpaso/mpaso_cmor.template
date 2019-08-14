@@ -1,0 +1,24 @@
+#!/bin/bash
+# ---------------------------------------------------------------------
+#SBATCH --job-name={name}_{start}_{end}
+#SBATCH --account={account}
+#SBATCH --time=1-00:00
+# ---------------------------------------------------------------------
+echo "Starting run at: `date`"
+# ---------------------------------------------------------------------
+
+/qfs/people/bald158/anaconda2/envs/cwl/bin/e3sm_to_cmip \
+    --no-metadata -s --mode ocn 
+    -v {variables} \
+    --tables-path {tables} \
+    --user-metadata {metadata} \
+    --num-proc {num_proc} \
+    --map {map} \
+    --logdir {outdir} \
+    --output {outdir} \
+    --input {input} \
+    --timeout {timeout}
+
+if [ $? == -1 ]; then
+     sbatch ${BASH_SOURCE[0]}
+fi

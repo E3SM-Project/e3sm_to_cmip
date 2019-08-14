@@ -2,7 +2,6 @@ atm_data_path: /p/user_pub/work/E3SM/1_0/piControl/1deg_atm_60-30km_ocean/atmos/
 start_year: '1'
 end_year: '5'
 frequency: '5'
-year_per_file: '5'
 num_workers: '12'
 casename: 20180129.DECKv1b_piControl.ne30_oEC.edison
 

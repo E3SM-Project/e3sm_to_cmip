@@ -5,7 +5,7 @@ class: Workflow
 
 requirements:
   - class: ScatterFeatureRequirement
-  - class: SubworkflowFeatureRequirement
+  # - class: SubworkflowFeatureRequirement
 
 inputs:
   frequency: int
@@ -41,8 +41,9 @@ steps:
     out:
       - segments
   
-  step_cmor:
-    run: mpaso_cmor.cwl
+  step_render_cmor_template:
+    run:
+      mpaso_sbatch_scripter.cwl
     in:
       input_path: step_segments/segments
       tables_path: tables_path
@@ -55,8 +56,18 @@ steps:
     scatter:
       - input_path
       - var_list
-    scatterMethod: flat_crossproduct
-
+    scatterMethod: 
+      flat_crossproduct
+    out:
+      - sbatch_script
+  
+  step_sbatch:
+    run: 
+      sbatch.cwl
+    in:
+      batch_script: step_render_cmor_template/sbatch_script
+    scatter:
+      batch_script
     out: []
       # - cmorized
 

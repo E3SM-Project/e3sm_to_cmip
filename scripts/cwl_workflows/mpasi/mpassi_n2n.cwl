@@ -50,6 +50,9 @@ steps:
       output_path: output_path
     scatter:
       - input_path
+      - var_list
+    scatterMethod: 
+      nested_crossproduct
     out: []
       # - cmorized
 

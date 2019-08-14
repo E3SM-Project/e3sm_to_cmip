@@ -10,19 +10,18 @@ requirements:
 
 inputs:
   # generate segments
-  frequency: string
+  frequency: int
 
   # discover_atm_files
   atm_data_path: string
-  start_year: string
-  end_year: string
+  start_year: int
+  end_year: int
 
-  num_workers: string
+  num_workers: int
   casename: string
 
   # hrzremap
   std_var_list: string[]
-  year_per_file: string
   hrz_atm_map_path: string
   native_out_dir: string
   regrid_out_dir: string
@@ -38,13 +37,13 @@ outputs:
     type: 
       Directory[]
     outputSource: step_run_segment/cmorized
-  time_series:
-    type:
-      type: array
-      items:
-        type: array
-        items: File
-    outputSource: step_run_segment/ts_files
+  # time_series:
+  #   type:
+  #     type: array
+  #     items:
+  #       type: array
+  #       items: File
+  #   outputSource: step_run_segment/ts_files
 
 steps:
 
@@ -72,7 +71,7 @@ steps:
       num_workers: num_workers
       casename: casename
       std_var_list: std_var_list
-      year_per_file: year_per_file
+      year_per_file: frequency
       hrz_atm_map_path: hrz_atm_map_path
       native_out_dir: native_out_dir
       regrid_out_dir: regrid_out_dir
@@ -86,7 +85,7 @@ steps:
   step_run_segment:
     run:
       class: CommandLineTool
-      baseCommand: [cwltool, --parallel]
+      baseCommand: [cwltool, --parallel, --no-compute-checksum]
       inputs:
         cwl_input:
           type: File

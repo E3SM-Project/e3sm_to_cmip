@@ -2,7 +2,7 @@
 
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [time, e3sm_to_cmip, --no-metadata]
+baseCommand: [srun, -A, e3sm, e3sm_to_cmip, --no-metadata]
 requirements:
   - class: InlineJavascriptRequirement
 

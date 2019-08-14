@@ -2,7 +2,7 @@
 
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [srun, -A, condo, -p, acme-centos6, e3sm_to_cmip, --no-metadata]
+baseCommand: [bash]
 requirements:
   - class: InlineJavascriptRequirement
 
@@ -24,7 +24,7 @@ inputs:
   var_list:
     type: string
     inputBinding:
-        prefix: --var-list
+      prefix: --var-list
   mapfile:
     type: string
     inputBinding:
@@ -33,19 +33,18 @@ inputs:
     type: string
     inputBinding:
       prefix: --logdir
-  output_path: 
+  output_path:
     type: string
     inputBinding:
       prefix: --output
 
-arguments: 
-  - prefix: --input
-    valueFrom: $(inputs.input_path.path)
-  - prefix: --mode
-    valueFrom: $("ocn")
+arguments:
+  - /qfs/people/bald158/anaconda2/envs/cwl/bin/e3sm_to_cmip
+  - --no-metadata
+  - -s
+  - --input
+  - $(inputs.input_path.path)
+  - --mode
+  - ocn
 
 outputs: []
-  # cmorized: 
-  #   type: Directory
-  #   outputBinding:
-  #     glob: "CMIP6"

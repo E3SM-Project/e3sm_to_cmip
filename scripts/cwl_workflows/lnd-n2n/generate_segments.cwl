@@ -24,10 +24,20 @@ outputs:
     outputBinding:
       glob: segments_start*
       loadContents: true
-      outputEval: $([parseInt(self[0].contents.split('\n'))])
+      outputEval: |
+        $( 
+          self[0].contents.split('\n').map(function(x){
+            return parseInt(x);
+          }).filter(function(x){return x})
+        )
   segments_end:
     type: int[]
     outputBinding:
       glob: segments_end*
       loadContents: true
-      outputEval: $([parseInt(self[0].contents.split('\n'))])
+      outputEval: |
+        $( 
+          self[0].contents.split('\n').map(function(x){
+            return parseInt(x);
+          }).filter(function(x){return x})
+        )

@@ -2,15 +2,13 @@
 
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [e3sm_to_cmip, -s, --no-metadata]
+baseCommand: [/export/baldwin32/anaconda2/envs/cwl/bin/e3sm_to_cmip, --no-metadata]
 requirements:
   InlineJavascriptRequirement: {}
   InitialWorkDirRequirement:
     listing: 
       - $(inputs.raw_file_list)
 inputs:
-  input_path:
-    type: string
   tables_path:
     type: string
     inputBinding:
@@ -24,24 +22,22 @@ inputs:
     inputBinding:
       prefix: --num-proc
   var_list:
-    type: string
+    type: string[]
     inputBinding:
       prefix: -v
   raw_file_list:
     type: File[]
-  logdir:
+  output_path:
     type: string
     inputBinding:
-      prefix: --logdir
+      prefix: --output-path
 
 arguments: 
-  - prefix: --output-path
-    valueFrom: $(runtime.outdir)
   - prefix: --input-path
     valueFrom: $(runtime.outdir)
 
-outputs:
-  cmip6_dir: 
-    type: Directory
-    outputBinding:
-      glob: "CMIP6"
+outputs: []
+  # cmip6_dir: 
+  #   type: Directory
+  #   outputBinding:
+  #     glob: "CMIP6"
