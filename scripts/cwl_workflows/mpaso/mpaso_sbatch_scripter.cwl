@@ -36,7 +36,7 @@ inputs:
       prefix: --timeout
 
 outputs:
-  mpaso_sbatch_script:
+  sbatch_script:
     type: File
     outputBinding:
       glob: "run_mpaso_sbatch.sh"

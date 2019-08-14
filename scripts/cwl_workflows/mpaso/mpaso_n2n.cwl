@@ -5,7 +5,6 @@ class: Workflow
 
 requirements:
   - class: ScatterFeatureRequirement
-  # - class: SubworkflowFeatureRequirement
 
 inputs:
   frequency: int
@@ -23,9 +22,9 @@ inputs:
   logdir: string
   output_path: string
   region_path: string
+  timeout: int
 
 steps:
-
   step_segments:
     run: mpaso_split.cwl
     in:
@@ -53,6 +52,7 @@ steps:
       mapfile: map_path
       logdir: logdir
       output_path: output_path
+      timeout: timeout
     scatter:
       - input_path
       - var_list
