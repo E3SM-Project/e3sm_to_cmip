@@ -61,9 +61,9 @@ steps:
     out:
       - sbatch_script
   
-  step_sbatch:
+  step_slurm:
     run: 
-      sbatch.cwl
+      srun.cwl
     in:
       batch_script: step_render_cmor_template/sbatch_script
     scatter:

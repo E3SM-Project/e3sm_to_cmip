@@ -42,7 +42,5 @@ outputs:
       glob: "run_mpaso_sbatch.sh"
 
 arguments:
-  - --account
-  - e3sm
   - --input
   - $(inputs.input_path.path)
