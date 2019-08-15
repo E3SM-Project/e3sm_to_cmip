@@ -11,6 +11,7 @@ import logging
 import tempfile
 import shutil
 import threading
+import signal
 from pathos.multiprocessing import ProcessPool as Pool
 
 from e3sm_to_cmip import cmor_handlers
@@ -32,7 +33,7 @@ __version__ = "1.2.1"
 
 def timeout_exit():
     print_message("Hit timeout limit, exiting")
-    sys.exit(-1)
+    os.kill(os.getpid(), signal.SIGINT)
 
 
 def main():
@@ -131,6 +132,9 @@ def main():
                 map_path=map_path,
                 mode=mode,
                 logdir=cmor_log_dir)
+        except KeyboardInterrupt as error:
+            print_message(' -- keyboard interrupt -- ', 'error')
+            return 1
         except Exception as e:
             print_debug(e)
             return 1

@@ -9,7 +9,7 @@ RETURN=1
 until [ $RETURN -eq 0 ]; do
     
     /qfs/people/bald158/anaconda2/envs/cwl/bin/e3sm_to_cmip \
-        --no-metadata -s --mode ocn \
+        --no-metadata --mode ocn \
         -v {{ variables }} \
         --tables-path {{ tables }} \
         --user-metadata {{ metadata }} \
@@ -44,7 +44,6 @@ def render_sbatch(values):
         call(['srun', '-A', 'e3sm', '-t', '1-00:00', script_path])
     except Exception as e:
         raise(e)
-        return 1
     else:
         return 0
 

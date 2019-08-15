@@ -60,19 +60,20 @@ steps:
       flat_crossproduct
     out:
       - sbatch_script
+      # - data_path 
   
-  step_slurm:
-    run: 
-      srun.cwl
-    in:
-      batch_script: step_render_cmor_template/sbatch_script
-      input_path: step_segments/segments
-    scatter:
-      - batch_script
-      - input_path
-    scatterMethod:
-      dotproduct
-    out: []
+  # step_slurm:
+  #   run: 
+  #     srun.cwl
+  #   in:
+  #     batch_script: step_render_cmor_template/sbatch_script
+  #     input_path: step_render_cmor_template/data_path
+  #   scatter:
+  #     - batch_script
+  #     - input_path
+  #   scatterMethod:
+  #     dotproduct
+  #   out: []
       # - cmorized
 
 outputs: []
