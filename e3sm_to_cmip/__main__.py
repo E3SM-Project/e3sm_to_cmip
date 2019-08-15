@@ -172,6 +172,8 @@ def main():
     if not _args['no_rm_tmpdir']:
         shutil.rmtree(temp_path)
 
+    if timeout:
+        timer.cancel()
     return 0
 # ------------------------------------------------------------------
 
