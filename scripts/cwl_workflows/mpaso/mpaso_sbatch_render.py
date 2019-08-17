@@ -9,7 +9,7 @@ RETURN=1
 until [ $RETURN -eq 0 ]; do
     
     /qfs/people/bald158/anaconda2/envs/cwl/bin/e3sm_to_cmip \
-        --no-metadata --mode ocn \
+        --no-metadata --mode ocn --no-rm-tmpdir \
         -v {{ variables }} \
         --tables-path {{ tables }} \
         --user-metadata {{ metadata }} \
@@ -20,6 +20,9 @@ until [ $RETURN -eq 0 ]; do
         --input {{ input }} \
         --timeout {{ timeout }}
     RETURN=$?
+    if [ $RETURN != 0 ]; then
+        echo "Restarting"
+    fi
 done
 """
 
