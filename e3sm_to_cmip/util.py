@@ -154,6 +154,10 @@ def parse_argsuments(version):
         '--timeout',
         help='Exit with code -1 if execution time exceeds given time in seconds')
     parser.add_argument(
+        '--precheck',
+        help="Check for each variable if its already in the output CMIP6 directory, only run variables that dont have CMIP6 output",
+        action="store_true")
+    parser.add_argument(
         '--version',
         help='print the version number and exit',
         action='version',
@@ -383,7 +387,7 @@ def find_atm_files(var, path):
 # ------------------------------------------------------------------
 
 
-def find_mpas_files(component, path, map_path):
+def find_mpas_files(component, path, map_path=None):
     """
     Looks in the path given for MPAS monthly-averaged files
 
@@ -399,20 +403,16 @@ def find_mpas_files(component, path, map_path):
 
     if component == 'mpaso':
 
-        pattern = '{}.hist.am.timeSeriesStatsMonthly.'.format(component) + \
-            r'\d{4}-\d{2}-\d{2}.nc'
+        pattern = r'mpaso.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc'
         results = [os.path.join(path, x) for x in contents if re.match(
             pattern=pattern, string=x)]
         return sorted(results)
 
     if component == 'mpassi':
 
-        patterns = ['{}.hist.am.timeSeriesStatsMonthly.'.format(component) +
-                    r'\d{4}-\d{2}-\d{2}.nc', r'mpascice.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-'
-                    '\d{2}.nc']
+        patterns = [r'mpassi.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc', 
+                    r'mpascice.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc']
         for pattern in patterns:
-            pattern = r'mpascice.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-' \
-                '\d{2}.nc'
             results = [os.path.join(path, x) for x in contents if re.match(
                 pattern=pattern, string=x)]
             if results:
@@ -446,7 +446,8 @@ def find_mpas_files(component, path, map_path):
         raise IOError("Unable to find mpas_mesh in the input directory")
 
     elif component == 'mpas_map':
-
+        if not map_path:
+            raise ValueError("No map path given")
         map_path = os.path.abspath(map_path)
         if os.path.exists(map_path):
             return map_path
@@ -497,3 +498,80 @@ def terminate(pool, debug=False):
 def get_levgrnd_bnds():
     return [0, 0.01751106046140194, 0.045087261125445366, 0.09055273048579693, 0.16551261954009533, 0.28910057805478573, 0.4928626772016287, 0.8288095649331808, 1.3826923426240683, 2.2958906944841146, 3.801500206813216, 6.28383076749742, 10.376501685008407, 17.124175196513534, 28.249208575114608, 42.098968505859375]
 # ------------------------------------------------------------------
+
+
+def get_years_from_raw(path, mode, var):
+    """
+    given a file path, return the start and end years for the data
+    Parameters:
+    -----------
+        path (str): the directory to look in for data
+        mode (str): the type of data to look for, i.e atm, lnd, mpaso, mpassi
+    """
+    start = 0
+    end = 0
+    if mode in ['atm', 'lnd']:
+        contents = sorted([f for f in os.listdir(path)
+                           if f.endswith("nc") and 
+                           var in f])
+        p = var + r'\d{6}_\d{6}.nc'
+        s = re.match(pattern=p, string=contents[0])
+        start = int(contents[0][ s.start(): s.start()+4 ])
+        s = re.search(pattern=p, string=contents[-1])
+        end = int(contents[-1][ s.start(): s.start()+4 ])
+    elif mode in ['mpassi', 'mpaso']:
+        
+        files = sorted(find_mpas_files(mode, path))
+        p = r'\d{4}-\d{2}'
+        s = re.search(pattern=p, string=files[0])
+        start = int(files[0][s.start(): s.start() + 4])
+        s = re.search(pattern=p, string=files[1])
+        end = int(files[-1][s.start(): s.start() + 4])
+        
+    else:
+        raise ValueError("Invalid mode")
+    return start, end
+
+
+def get_year_from_cmip(filename):
+    """
+    Given a file name, assuming its a cmip file, return the start and end year
+    """
+    p = r'\d{6}-\d{6}\.nc'
+    s = re.search(pattern=p, string=filename)
+    if not s:
+        raise ValueError("unable to match file years for {}".format(filename))
+
+    start, end = [int(x[:-2]) if not x.endswith('.nc') else int(x[:-5])
+                  for x in filename[s.span()[0]: s.span()[1]].split('-')]
+    return start, end
+
+
+def precheck(inpath, outpath, variables, mode):
+    """
+    Check if the data has already been produced and skip
+
+    returns a list of variable names that were not found in the output directory with matching years
+    """
+
+    # First check the inpath for the start and end years
+    start, end = get_years_from_raw(inpath, mode, variables[0])
+    var_map = [{'found': False, 'name': var} for var in variables]
+
+    # then check the output tree for files with the correct variables for those years
+    if mode in ['mpaso', 'mpassi']:
+        for val in var_map:
+            for _, _, files in os.walk(outpath, topdown=False):
+                if files and val['var'] in files[0]:
+                    files = sorted(files)
+                    for f in files:
+                        cmip_start, cmip_end = get_year_from_cmip(f)
+                        if cmip_start == start and cmip_end == end:
+                            val['found'] = True
+                            break
+                    if val['found'] == True:
+                        break
+        
+        return [x['name'] for x in var_map if x['found']]
+    else:
+        raise ValueError("still working on it")

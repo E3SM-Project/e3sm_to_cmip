@@ -21,6 +21,7 @@ from e3sm_to_cmip.util import load_handlers
 from e3sm_to_cmip.util import add_metadata
 from e3sm_to_cmip.util import copy_user_metadata
 from e3sm_to_cmip.util import print_debug
+from e3sm_to_cmip.util import precheck
 
 from e3sm_to_cmip.lib import run_parallel
 from e3sm_to_cmip.lib import run_serial
@@ -59,16 +60,26 @@ def main():
     map_path = _args['map'] if _args.get('map') else None
     cmor_log_dir = _args['logdir'] if _args.get('logdir') else None
     timeout = int(_args['timeout']) if _args.get('timeout') else None
+    precheck = _args.get('precheck')
 
     if timeout:
         timer = threading.Timer(timeout, timeout_exit)
         timer.start()
-
+    
     if _args.get('handlers'):
         handlers_path = os.path.abspath(_args.get('handlers'))
     else:
         handlers_path, _ = os.path.split(
             os.path.abspath(cmor_handlers.__file__))
+    
+    if precheck:
+        new_var_list = precheck(input_path, output_path, var_list, mode)
+        if not var_list:
+            print("All variables previously computed")
+            sys.exit(0)
+        else:
+            print("Setting up conversion for {}".format(new_var_list))
+            var_list = new_var_list
     
     # add additional optional metadata to the output files
     if only_metadata:
