@@ -75,10 +75,10 @@ def main():
     
     if should_precheck:
         new_var_list = precheck(input_path, output_path, var_list, mode)
-        if not var_list:
+        if not new_var_list:
             print("All variables previously computed")
             if timer: timer.cancel()
-            sys.exit(0)
+            return 0
         else:
             print("Setting up conversion for {}".format(new_var_list))
             var_list = new_var_list

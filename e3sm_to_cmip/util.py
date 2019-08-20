@@ -522,7 +522,7 @@ def get_years_from_raw(path, mode, var):
     elif mode in ['mpassi', 'mpaso']:
         
         files = sorted(find_mpas_files(mode, path))
-        p = r'\d{4}-\d{2}'
+        p = r'\d{4}-\d{2}-\d{2}.nc'
         s = re.search(pattern=p, string=files[0])
         start = int(files[0][s.start(): s.start() + 4])
         s = re.search(pattern=p, string=files[1])
@@ -562,7 +562,7 @@ def precheck(inpath, outpath, variables, mode):
     if mode in ['mpaso', 'mpassi']:
         for val in var_map:
             for _, _, files in os.walk(outpath, topdown=False):
-                if files and val['var'] in files[0]:
+                if files and val['name'] in files[0]:
                     files = [x for x in sorted(files) if x.endswith('.nc')]
                     for f in files:
                         cmip_start, cmip_end = get_year_from_cmip(f)
@@ -572,6 +572,6 @@ def precheck(inpath, outpath, variables, mode):
                     if val['found'] == True:
                         break
         
-        return [x['name'] for x in var_map if x['found']]
+        return [x['name'] for x in var_map if not x['found']]
     else:
         raise ValueError("still working on it")

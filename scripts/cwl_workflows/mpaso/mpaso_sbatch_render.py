@@ -44,7 +44,7 @@ def render_sbatch(values):
             outfile.write(script_contents)
         
         call(['chmod', '+x', script_path])
-        call(['srun', '-A', 'e3sm', '-t', '1-00:00', script_path])
+        call(['srun', '-A', 'e3sm', '-t', '01:00:00', script_path])
     except Exception as e:
         raise(e)
     else:
