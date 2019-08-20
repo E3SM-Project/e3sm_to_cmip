@@ -563,7 +563,7 @@ def precheck(inpath, outpath, variables, mode):
         for val in var_map:
             for _, _, files in os.walk(outpath, topdown=False):
                 if files and val['var'] in files[0]:
-                    files = sorted(files)
+                    files = [x for x in sorted(files) if x.endswith('.nc')]
                     for f in files:
                         cmip_start, cmip_end = get_year_from_cmip(f)
                         if cmip_start == start and cmip_end == end:
