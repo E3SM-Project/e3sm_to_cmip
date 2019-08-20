@@ -80,7 +80,7 @@ def main():
             if timer: timer.cancel()
             return 0
         else:
-            print("Setting up conversion for {}".format(new_var_list))
+            print("Setting up conversion for {}".format(" ".join(new_var_list)))
             var_list = new_var_list
     
     # add additional optional metadata to the output files
