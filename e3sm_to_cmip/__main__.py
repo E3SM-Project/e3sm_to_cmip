@@ -60,8 +60,9 @@ def main():
     map_path = _args['map'] if _args.get('map') else None
     cmor_log_dir = _args['logdir'] if _args.get('logdir') else None
     timeout = int(_args['timeout']) if _args.get('timeout') else None
-    precheck = _args.get('precheck')
+    should_precheck = _args.get('precheck')
 
+    timer = None
     if timeout:
         timer = threading.Timer(timeout, timeout_exit)
         timer.start()
@@ -72,10 +73,11 @@ def main():
         handlers_path, _ = os.path.split(
             os.path.abspath(cmor_handlers.__file__))
     
-    if precheck:
+    if should_precheck:
         new_var_list = precheck(input_path, output_path, var_list, mode)
         if not var_list:
             print("All variables previously computed")
+            if timer: timer.cancel()
             sys.exit(0)
         else:
             print("Setting up conversion for {}".format(new_var_list))
