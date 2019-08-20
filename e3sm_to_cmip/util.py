@@ -169,9 +169,9 @@ def parse_argsuments(version):
         sys.exit(1)
     else:
         _args = parser.parse_args(_args)
-        if _args.mode == 'ocn' and not _args.map:
+        if _args.mode == 'mpaso' and not _args.map:
             print("MPAS ocean handling requires a map file")
-        if _args.mode == 'ice' and not _args.map:
+        if _args.mode == 'mpassi' and not _args.map:
             print("MPAS sea-ice handling requires a map file")
     return _args
 # ------------------------------------------------------------------

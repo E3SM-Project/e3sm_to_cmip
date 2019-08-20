@@ -9,7 +9,7 @@ RETURN=1
 until [ $RETURN -eq 0 ]; do
     
     /qfs/people/bald158/anaconda2/envs/cwl/bin/e3sm_to_cmip \
-        --no-metadata --mode ocn --no-rm-tmpdir \
+        --no-metadata --mode mpaso --precheck --no-rm-tmpdir \
         -v {{ variables }} \
         --tables-path {{ tables }} \
         --user-metadata {{ metadata }} \
