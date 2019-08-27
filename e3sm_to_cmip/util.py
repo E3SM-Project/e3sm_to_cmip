@@ -11,6 +11,7 @@ import yaml
 import cdms2
 
 from progressbar import ProgressBar
+from e3sm_to_cmip.version import __version__
 
 
 def print_debug(e):
@@ -77,7 +78,7 @@ def setup_cmor(var_name, table_path, table_name, user_input_path):
 # ------------------------------------------------------------------
 
 
-def parse_argsuments(version):
+def parse_argsuments():
     parser = argparse.ArgumentParser(
         description='Convert ESM model output into CMIP compatible format',
         prog='e3sm_to_cmip',
@@ -161,7 +162,7 @@ def parse_argsuments(version):
         '--version',
         help='print the version number and exit',
         action='version',
-        version='%(prog)s {}'.format(version))
+        version='%(prog)s {}'.format(__version__))
     try:
         _args = sys.argv[1:]
     except (Exception, BaseException):

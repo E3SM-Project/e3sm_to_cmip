@@ -22,15 +22,12 @@ from e3sm_to_cmip.util import add_metadata
 from e3sm_to_cmip.util import copy_user_metadata
 from e3sm_to_cmip.util import print_debug
 from e3sm_to_cmip.util import precheck
-
 from e3sm_to_cmip.lib import run_parallel
 from e3sm_to_cmip.lib import run_serial
-
 
 import numpy as np
 np.warnings.filterwarnings('ignore')
 
-__version__ = "1.2.1"
 
 def timeout_exit():
     print_message("Hit timeout limit, exiting")
@@ -40,7 +37,7 @@ def timeout_exit():
 def main():
 
     # parse the command line arguments
-    _args = parse_argsuments(version=__version__).__dict__
+    _args = parse_argsuments().__dict__
 
     if len(_args.get('var_list')) == 1 and " " in _args.get('var_list')[0]:
         var_list = _args.get('var_list')[0].split()
