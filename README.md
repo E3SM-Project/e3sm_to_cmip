@@ -1,6 +1,6 @@
 # e3sm_to_cmip
 
-A cli utility to transform E3SM land model output into CMIP compatible data.
+A cli utility to transform E3SM model output into CMIP compatible data.
 
 ## e3sm_to_cmip
 
