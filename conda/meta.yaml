@@ -18,8 +18,6 @@ about:
     Climate Model Output Rewritter.
 
 requirements:
-  build:
-    - python >=3
   host:
     - python >=3
     - pip
