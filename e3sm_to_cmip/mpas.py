@@ -37,9 +37,10 @@ def remap(ds, mappingFileName, threshold=0.05):
     # set an environment variable to make sure we're not using czender's
     # local version of NCO instead of one we have intentionally loaded
     env = os.environ.copy()
-    env['NCO_PATH_OVERRIDE'] = 'No'
+    env['NCO_PATH_OVERRIDE'] = 'Yes'
 
-    args = ['ncremap', '--d2f', '-7', '--dfl_lvl=1',
+
+    args = ['ncremap', '--d2f', '-7', '--dfl_lvl=1', '--no_stdin',
             '--no_cll_msr', '--no_frm_trm', '--no_stg_grd', '--msk_src=none',
             '--mask_dst=none', '--map={}'.format(mappingFileName), inFileName,
             outFileName]
@@ -50,8 +51,8 @@ def remap(ds, mappingFileName, threshold=0.05):
     logging.info(out)
     if(proc.returncode):
         print(err)
-        raise subprocess.CalledProcessError('ncremap returned {}'.format(
-            proc.returncode))
+        raise subprocess.CalledProcessError(
+            'ncremap returned {}'.format(proc.returncode))
 
     ds = xarray.open_dataset(outFileName, decode_times=False,
                              mask_and_scale=False)
@@ -736,5 +737,9 @@ def _compute_dask(ds, showProgress, message):
 
 def _get_temp_path():
     '''Returns the name of a temporary NetCDF file'''
-    return '{}/{}.nc'.format(tempfile.gettempdir(),
-                             next(tempfile._get_candidate_names()))
+    tmpdir = tempfile.gettempdir()
+    tmpfile = tempfile.NamedTemporaryFile(dir=tmpdir, delete=False)
+    tmpname = tmpfile.name
+    tmpfile.close()
+
+    return tmpname

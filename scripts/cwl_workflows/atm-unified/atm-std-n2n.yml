@@ -1,0 +1,26 @@
+atm_data_path: /p/user_pub/work/E3SM/1_0/piControl/1deg_atm_60-30km_ocean/atmos/native/model-output/mon/ens1/v1/
+start_year: '1'
+end_year: '5'
+frequency: '5'
+year_per_file: '5'
+num_workers: '12'
+casename: 20180129.DECKv1b_piControl.ne30_oEC.edison
+
+hrz_atm_map_path: /export/zender1/data/maps/map_ne30np4_to_cmip6_180x360_aave.20181001.nc
+
+native_out_dir: /p/user_pub/work/E3SM/cmip6_variables/piControl/atm/vrt_remapped_ne30_cwl
+regrid_out_dir: /p/user_pub/work/E3SM/cmip6_variables/piControl/atm/vrt_remapped_180x360_cwl
+
+tables_path: /export/baldwin32/projects/cmip6-cmor-tables/Tables/
+metadata_path: /export/baldwin32/projects/e3sm_to_cmip/e3sm_user_config_picontrol.json
+
+# cmor_var_list: [rldscs, rlut, rlutcs, rsdscs, rsdt, rlus, huss, pr]
+# std_var_list: [FLDS, FLNS, FLNSC, FSNTOA, FSNT, FLNT, FLUTC, FSDSC, SOLIN, QREFHT, PRECC, PRECL]
+
+#cmor_var_list: [pfull, phalf, tas, ts, psl, ps, sfcWind, huss, pr, prc, prsn, evspsbl, tauu, tauv, hfls, clt, rlds, rlus, rsds, rsus, hfss, cl, clw, cli, clivi, clwvi, prw, rldscs, rlut, rlutcs, rsdt, rsuscs, rsut, rsutcs, rtmt, abs550aer, od550aer, reffclwtop, rsdscs]
+#std_var_list: [hyam, hybm, hyai, hybi, TREFHT, TS, PSL, PS, U10, QREFHT, PRECC, PRECL, PRECSC, PRECSL, QFLX, TAUX, TAUY, LHFLX, CLDTOT, FLDS, FLNS, FSDS, FSNS, SHFLX, CLOUD, CLDICE, TGCLDIWP, CLDLIQ, TGCLDCWP, TMQ, FLNSC, FSNTOA, FSNT, FLNT, FLUTC, FSDSC, SOLIN, FSNSC, FSUTOA, FSUTOAC, AODABS, AODVIS, AREL]
+
+cmor_var_list: [rsds]
+std_var_list: [FSDS]
+
+logdir: /p/user_pub/work/E3SM/cmip6_variables/piControl/cwl

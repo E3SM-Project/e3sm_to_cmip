@@ -1,0 +1,22 @@
+atm_data_path: /p/user_pub/work/E3SM/1_0/piControl/1deg_atm_60-30km_ocean/atmos/native/
+start_year: '1'
+end_year: '5'
+frequency: '5'
+num_workers: '12'
+casename: 20180129.DECKv1b_piControl.ne30_oEC.edison
+
+vrtmap_path: /p/user_pub/work/E3SM/cmip6_variables/vrt_remap_plev19.nc
+hrz_atm_map_path: /export/zender1/data/maps/map_ne30np4_to_cmip6_180x360_aave.20181001.nc
+
+native_out_dir: /p/user_pub/work/E3SM/cmip6_variables/piControl/atm/vrt_remapped_ne30_cwl
+regrid_out_dir: /p/user_pub/work/E3SM/cmip6_variables/piControl/atm/vrt_remapped_180x360_cwl
+
+tables_path: /export/baldwin32/projects/cmip6-cmor-tables/Tables/
+metadata_path: /export/baldwin32/projects/e3sm_to_cmip/e3sm_user_config_picontrol.json
+cmor_output_path: /p/user_pub/work/E3SM/cmip6_variables/piControl/cmor_sample/
+
+cmor_var_list: [hus, o3, ta, ua, va, zg, hur,    wap]
+plev_var_list: [Q,   O3, T,  U,  V,  Z3, RELHUM, OMEGA]
+
+
+logdir: /p/user_pub/work/E3SM/cmip6_variables/piControl/cwl

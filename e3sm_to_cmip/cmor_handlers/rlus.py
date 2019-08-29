@@ -20,7 +20,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     cmor.write(
         varid,
-        data[RAW_VARIABLES[0]][index, :] + data[RAW_VARIABLES[1]][index, :],
+        data['FLDS'][index, :] + data['FLNS'][index, :],
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
@@ -48,5 +48,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
-        positive=POSITIVE)
+        positive=POSITIVE,
+        logdir=kwargs.get('logdir'))
 # ------------------------------------------------------------------

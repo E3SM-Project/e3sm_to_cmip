@@ -11,7 +11,7 @@ RAW_VARIABLES = [str('FLDS'), str('FLNS'), str('FLNSC')]
 VAR_NAME = str('rldscs')
 VAR_UNITS = str('W m-2')
 TABLE = str('CMIP6_Amon.json')
-POSITIVE = str('up')
+POSITIVE = str('down')
 
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
@@ -50,5 +50,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
-        positive=POSITIVE)
+        positive=POSITIVE,
+        logdir=kwargs.get('logdir'))
 # ------------------------------------------------------------------

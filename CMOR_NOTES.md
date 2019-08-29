@@ -36,7 +36,8 @@
 | rtmt       | YES     | no  | no      | no          |
 | abs550aer  | YES     | no  | no      | no          |
 | od550aer   | YES     | no  | no      | no          |
-| reffclwtop | YES     | no  | no      | no          |
+| rsdscs     | YES     |     |         |             |
+
 
 ## 3D model level
 
@@ -59,6 +60,7 @@
 | ua       | YES     | no  | no      | no          |
 | va       | YES     | no  | no      | no          |
 | zg       | YES     | no  | no      | no          |
+| wap      | YES     | no  | no      | no          |
 
 # CFmon handlers
 
@@ -72,6 +74,27 @@
 | cltcalipso  | YES     | no  | no      | no          |
 | cllcalipso  | YES     | no  | no      | no          |
 | clmcalipso  | YES     | no  | no      | no          |
+
+# Lmon handlers
+
+| variable    | handler | run | checked | sample_path |
+| --------    | ------- | --- | ------- | ----------- |
+| mrros       | YES     | no  | no      | no          |
+| mrro        | YES     | no  | no      | no          |
+| prveg       | YES     | no  | no      | no          |
+| evspsblveg  | YES     | no  | no      | no          |
+| evspsblsoi  | YES     | no  | no      | no          |
+| cProduct    | YES     | no  | no      | no          |
+| cSoil       | YES     | no  | no      | no          |
+| fFire       | YES     | no  | no      | no          |
+| fHarvest    | YES     | no  | no      | no          |
+| mrsos       | YES     | no  | no      | no          |
+| cVeg        | YES     | no  | no      | no          |
+| nbp         | YES     | no  | no      | no          |
+| gpp         | YES     | no  | no      | no          |
+| ra          | YES     | no  | no      | no          |
+| rh          | YES     | no  | no      | no          |
+
 
 
 # OCN variable handlers

@@ -10,7 +10,8 @@ import sys
 import logging
 import tempfile
 import shutil
-
+import threading
+import signal
 from pathos.multiprocessing import ProcessPool as Pool
 
 from e3sm_to_cmip import cmor_handlers
@@ -20,13 +21,17 @@ from e3sm_to_cmip.util import load_handlers
 from e3sm_to_cmip.util import add_metadata
 from e3sm_to_cmip.util import copy_user_metadata
 from e3sm_to_cmip.util import print_debug
-
+from e3sm_to_cmip.util import precheck
 from e3sm_to_cmip.lib import run_parallel
 from e3sm_to_cmip.lib import run_serial
 
-
 import numpy as np
 np.warnings.filterwarnings('ignore')
+
+
+def timeout_exit():
+    print_message("Hit timeout limit, exiting")
+    os.kill(os.getpid(), signal.SIGINT)
 
 
 def main():
@@ -34,23 +39,54 @@ def main():
     # parse the command line arguments
     _args = parse_argsuments().__dict__
 
-    var_list = [x.strip(',') for x in _args.get('var_list')]
+    if len(_args.get('var_list')) == 1 and " " in _args.get('var_list')[0]:
+        var_list = _args.get('var_list')[0].split()
+    else:
+        var_list = _args.get('var_list')
+    var_list = [x.strip(',') for x in var_list]
     input_path = _args.get('input_path')
     output_path = _args.get('output_path')
     tables_path = _args.get('tables_path')
     user_metadata = _args.get('user_metadata')
     no_metadata = _args['no_metadata'] if _args.get('no_metadata') else False
+    only_metadata = _args['only_metadata'] if _args.get('only_metadata') else False
     nproc = _args['num_proc'] if _args.get('num_proc') else 6
     serial = _args['serial'] if _args.get('serial') else False
     mode = _args['mode'] if _args.get('mode') else 'atm'
     debug = True if _args.get('debug') else False
     map_path = _args['map'] if _args.get('map') else None
+    cmor_log_dir = _args['logdir'] if _args.get('logdir') else None
+    timeout = int(_args['timeout']) if _args.get('timeout') else None
+    should_precheck = _args.get('precheck')
 
+    timer = None
+    if timeout:
+        timer = threading.Timer(timeout, timeout_exit)
+        timer.start()
+    
     if _args.get('handlers'):
         handlers_path = os.path.abspath(_args.get('handlers'))
     else:
         handlers_path, _ = os.path.split(
             os.path.abspath(cmor_handlers.__file__))
+    
+    if should_precheck:
+        new_var_list = precheck(input_path, output_path, var_list, mode)
+        if not new_var_list:
+            print("All variables previously computed")
+            if timer: timer.cancel()
+            return 0
+        else:
+            print("Setting up conversion for {}".format(" ".join(new_var_list)))
+            var_list = new_var_list
+    
+    # add additional optional metadata to the output files
+    if only_metadata:
+        print_message('Updating file metadata and exiting', 'ok')
+        add_metadata(
+            file_path=output_path,
+            var_list=var_list)
+        return 0
 
     new_metadata_path = os.path.join(
         output_path,
@@ -60,10 +96,13 @@ def main():
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    temp_path = '{}/tmp'.format(output_path)
-
-    if not os.path.exists(temp_path):
-        os.makedirs(temp_path)
+    # setup temp storage directory
+    temp_path = os.environ.get('TMPDIR')
+    if temp_path is None:
+     
+        temp_path = '{}/tmp'.format(output_path)
+        if not os.path.exists(temp_path):
+            os.makedirs(temp_path)
 
     tempfile.tempdir = temp_path
 
@@ -101,7 +140,11 @@ def main():
                 tables_path=tables_path,
                 metadata_path=new_metadata_path,
                 map_path=map_path,
-                mode=mode)
+                mode=mode,
+                logdir=cmor_log_dir)
+        except KeyboardInterrupt as error:
+            print_message(' -- keyboard interrupt -- ', 'error')
+            return 1
         except Exception as e:
             print_debug(e)
             return 1
@@ -116,7 +159,8 @@ def main():
                 tables_path=tables_path,
                 metadata_path=new_metadata_path,
                 map_path=map_path,
-                mode=mode)
+                mode=mode,
+                logdir=cmor_log_dir)
         except KeyboardInterrupt as error:
             print_message(' -- keyboard interrupt -- ', 'error')
             return 1
@@ -135,7 +179,11 @@ def main():
             file_path=output_path,
             var_list=var_list)
 
-    shutil.rmtree(temp_path)
+    if not _args['no_rm_tmpdir']:
+        shutil.rmtree(temp_path)
+
+    if timeout:
+        timer.cancel()
     return 0
 # ------------------------------------------------------------------
 

@@ -2,17 +2,15 @@
 
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [e3sm_to_cmip]
-
+baseCommand: [e3sm_to_cmip, -s, --no-metadata]
+requirements:
+  InlineJavascriptRequirement: {}
+  InitialWorkDirRequirement:
+    listing: 
+      - $(inputs.raw_file_list)
 inputs:
   input_path:
     type: string
-    inputBinding:
-      prefix: --input-path
-  output_path:
-    type: string
-    inputBinding:
-      prefix: --output-path
   tables_path:
     type: string
     inputBinding:
@@ -22,15 +20,28 @@ inputs:
     inputBinding:
       prefix: --user-metadata
   num_workers:
-    type: string
+    type: int
     inputBinding:
       prefix: --num-proc
   var_list:
+    type: string[]
+  raw_file_list:
+    type: File[]
+  logdir:
     type: string
     inputBinding:
-      prefix: --var-list
-  dummy1:
-    type: File[]
-  dummy2:
-    type: File[]
-outputs: []
+      prefix: --logdir
+
+arguments: 
+  - prefix: --output-path
+    valueFrom: $(runtime.outdir)
+  - prefix: --var-list
+    valueFrom: $(inputs.var_list.join(", "))
+  - prefix: --input-path
+    valueFrom: $(runtime.outdir)
+
+outputs:
+  cmip6_dir: 
+    type: Directory
+    outputBinding:
+      glob: "CMIP6"
