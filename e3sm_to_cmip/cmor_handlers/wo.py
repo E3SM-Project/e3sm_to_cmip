@@ -55,32 +55,25 @@ def handle(infiles, tables, user_input_path, **kwargs):
     ds = xarray.Dataset()
     with mpas.open_mfdataset(timeSeriesFiles, variableList) as dsIn:
         ds[VAR_NAME] = dsIn.timeMonthly_avg_vertVelocityTop
+        ds = mpas.avg_to_mid_level(ds)
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
-    ds = ds.rename({'nVertLevelsP1': 'olevhalf'})
-    nVertLevels = dsMesh.sizes['nVertLevels']
-    mask = cellMask3D.isel(nVertLevels=0)
-    maskSlices = [mask]
-    for zIndex in range(nVertLevels):
-        maskSlices.append(mask)
-    cellMask3D = xarray.concat(maskSlices, dim='olevhalf')
+    ds = ds.rename({'nVertLevelsP1': 'nVertLevels'})
     ds = mpas.add_mask(ds, cellMask3D)
-    ds = ds.transpose('time', 'olevhalf', 'nCells', 'nbnd')
+    ds = mpas.add_depth(ds, dsMesh)
     ds.compute()
 
     ds = mpas.remap(ds, mappingFileName)
-    ds = ds.transpose('time', 'olevhalf', 'lat', 'lon', 'nbnd')
-    depth_coord_half = numpy.zeros(nVertLevels+1)
-    depth_coord_half[1:] = dsMesh.refBottomDepth.values
 
     mpas.setup_cmor(VAR_NAME, tables, user_input_path, component='ocean')
 
     # create axes
     axes = [{'table_entry': 'time',
              'units': ds.time.units},
-            {'table_entry': 'depth_coord_half',
+            {'table_entry': 'depth_coord',
              'units': 'm',
-             'coord_vals': depth_coord_half},
+             'coord_vals': ds.depth.values,
+             'cell_bounds': ds.depth_bnds.values},
             {'table_entry': 'latitude',
              'units': 'degrees_north',
              'coord_vals': ds.lat.values,
