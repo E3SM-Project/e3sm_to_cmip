@@ -168,7 +168,7 @@ def main():
             print_debug(error)
             return 1
     if status != 0:
-        print_message("Error running handlers")
+        print_message("Error running handlers: {}".format(" ".join([x['name'] for x in handlers])))
         return 1
 
     # add additional optional metadata to the output files

@@ -1,7 +1,7 @@
-export VERSION="1.2.2"
+export VERSION="1.2.3"
 export BUILD_NAME="0"
 export CONDA_BLD_PATH=~/conda-bld
-PLATFORM="linux-64"
+PLATFORM="noarch"
 PKG="e3sm_to_cmip"
 
 if [ -d $CONDA_BLD_PATH ]; then

@@ -37,8 +37,7 @@ def remap(ds, mappingFileName, threshold=0.05):
     # set an environment variable to make sure we're not using czender's
     # local version of NCO instead of one we have intentionally loaded
     env = os.environ.copy()
-    env['NCO_PATH_OVERRIDE'] = 'Yes'
-
+    env['NCO_PATH_OVERRIDE'] = 'no'
 
     args = ['ncremap', '--d2f', '-7', '--dfl_lvl=1', '--no_stdin',
             '--no_cll_msr', '--no_frm_trm', '--no_stg_grd', '--msk_src=none',
@@ -50,7 +49,8 @@ def remap(ds, mappingFileName, threshold=0.05):
     (out, err) = proc.communicate()
     logging.info(out)
     if(proc.returncode):
-        print(err)
+        print("Error running ncremap command: {}".format(" ".join(args)))
+        print(err.decode('utf-8'))
         raise subprocess.CalledProcessError(
             'ncremap returned {}'.format(proc.returncode))
 
