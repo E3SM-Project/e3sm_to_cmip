@@ -12,7 +12,7 @@ setup(
                 "using the Climate Model Output Rewriter.",
     entry_points={'console_scripts':
                   ['e3sm_to_cmip = e3sm_to_cmip.__main__:main']},
-    packages=['e3sm_to_cmip'],
+    packages=['e3sm_to_cmip', 'e3sm_to_cmip.cmor_handlers'],
     package_dir={'e3sm_to_cmip': 'e3sm_to_cmip'},
     package_data={'e3sm_to_cmip': ['LICENSE', 'cmor_handlers/default_handler_info.yaml']},
     include_package_data=True)
