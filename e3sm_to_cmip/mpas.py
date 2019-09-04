@@ -39,7 +39,7 @@ def remap(ds, mappingFileName, threshold=0.05):
     env = os.environ.copy()
     env['NCO_PATH_OVERRIDE'] = 'no'
 
-    args = ['ncremap', '--d2f', '-7', '--dfl_lvl=1', '--no_stdin',
+    args = ['ncremap', '-7', '--dfl_lvl=1', '--no_stdin',
             '--no_cll_msr', '--no_frm_trm', '--no_stg_grd', '--msk_src=none',
             '--mask_dst=none', '--map={}'.format(mappingFileName), inFileName,
             outFileName]
