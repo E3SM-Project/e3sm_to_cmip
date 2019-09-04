@@ -344,12 +344,16 @@ def setup_cmor(varname, tables, user_input_path, component='ocean'):
         raise ValueError('Unable to load table from {}'.format(varname))
 
 
-def write_cmor(axes, ds, varname, varunits, **kwargs):
+def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
     '''Write a time series of a variable in the format expected by CMOR'''
     axis_ids = list()
     for axis in axes:
         axis_id = cmor.axis(**axis)
         axis_ids.append(axis_id)
+
+    if d2f and ds[varname].dtype == np.float64:
+        print('Converting {} to float32'.format(varname))
+        ds[varname] = ds[varname].astype(np.float32)
 
     fillValue = netCDF4.default_fillvals['f4']
     if numpy.any(numpy.isnan(ds[varname])):
