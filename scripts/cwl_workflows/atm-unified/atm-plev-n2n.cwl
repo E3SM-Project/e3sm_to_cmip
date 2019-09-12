@@ -18,14 +18,14 @@ inputs:
   end_year: int
 
   # vrt_remap
-  vrtmap_path: string
+  vrt_map_path: string
   num_workers: int
   casename: string
 
   # hrzremap
   plev_var_list: string[]
   hrz_atm_map_path: string
-  native_out_dir: string
+  # native_out_dir: string
   regrid_out_dir: string
 
   # cmor
@@ -70,13 +70,13 @@ steps:
       atm_data_path: atm_data_path
       start_year: step_segments/segments_start
       end_year: step_segments/segments_end
-      vrtmap_path: vrtmap_path
+      vrt_map_path: vrt_map_path
       num_workers: num_workers
       casename: casename
       plev_var_list: plev_var_list
       year_per_file: frequency
       hrz_atm_map_path: hrz_atm_map_path
-      native_out_dir: native_out_dir
+      # native_out_dir: native_out_dir
       regrid_out_dir: regrid_out_dir
       tables_path: tables_path
       metadata_path: metadata_path

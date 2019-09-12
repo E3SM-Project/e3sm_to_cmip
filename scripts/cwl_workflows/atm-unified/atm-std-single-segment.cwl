@@ -19,7 +19,7 @@ inputs:
   # hrzremap
   std_var_list: string[]
   hrz_atm_map_path: string
-  native_out_dir: string
+  # native_out_dir: string
   regrid_out_dir: string
 
   # cmor
@@ -58,7 +58,7 @@ steps:
       year_per_file: year_per_file
       map_path: hrz_atm_map_path
       input_files: step_discover_atm_files/atm_files
-      native_out_dir: native_out_dir
+      # native_out_dir: native_out_dir
     out:
       - time_series_files
   

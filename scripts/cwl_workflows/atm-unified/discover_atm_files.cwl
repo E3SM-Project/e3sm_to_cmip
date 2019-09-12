@@ -2,7 +2,7 @@
 
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [python, /export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/discover_atm_files.py]
+baseCommand: [python, /export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-unified/discover_atm_files.py]
 stdout: atm_files.txt
 inputs:
   input:

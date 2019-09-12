@@ -20,7 +20,9 @@ metadata_path: /export/baldwin32/projects/e3sm_to_cmip/e3sm_user_config_picontro
 #cmor_var_list: [pfull, phalf, tas, ts, psl, ps, sfcWind, huss, pr, prc, prsn, evspsbl, tauu, tauv, hfls, clt, rlds, rlus, rsds, rsus, hfss, cl, clw, cli, clivi, clwvi, prw, rldscs, rlut, rlutcs, rsdt, rsuscs, rsut, rsutcs, rtmt, abs550aer, od550aer, reffclwtop, rsdscs]
 #std_var_list: [hyam, hybm, hyai, hybi, TREFHT, TS, PSL, PS, U10, QREFHT, PRECC, PRECL, PRECSC, PRECSL, QFLX, TAUX, TAUY, LHFLX, CLDTOT, FLDS, FLNS, FSDS, FSNS, SHFLX, CLOUD, CLDICE, TGCLDIWP, CLDLIQ, TGCLDCWP, TMQ, FLNSC, FSNTOA, FSNT, FLNT, FLUTC, FSDSC, SOLIN, FSNSC, FSUTOA, FSUTOAC, AODABS, AODVIS, AREL]
 
-cmor_var_list: [rsds]
+cmor_var_std: [rsds]
+cmor_var_plev: []
 std_var_list: [FSDS]
+
 
 logdir: /p/user_pub/work/E3SM/cmip6_variables/piControl/cwl

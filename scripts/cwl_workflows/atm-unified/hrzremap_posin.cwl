@@ -34,12 +34,12 @@ inputs:
       position: 5
       prefix: --map=
       separate: false
-  native_out_dir:
-    type: string
-    inputBinding:
-      position: 6
-      prefix: --drc_out=
-      separate: false
+  # native_out_dir:
+  #   type: string
+  #   inputBinding:
+  #     position: 6
+  #     prefix: --drc_out=
+  #     separate: false
   casename:
     type: string
     inputBinding:
@@ -51,6 +51,8 @@ inputs:
 arguments:
   - prefix: "-O"
     valueFrom: $(runtime.outdir)
+  - prefix: "-o"
+    valueFrom: "./native"
   - position: 8
     valueFrom: $(inputs.input_array.map(function(el){return el.path}))
 

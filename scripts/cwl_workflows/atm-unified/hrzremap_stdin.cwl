@@ -34,12 +34,12 @@ inputs:
       position: 5
       prefix: --map=
       separate: false
-  native_out_dir:
-    type: string
-    inputBinding:
-      position: 6
-      prefix: --drc_out=
-      separate: false
+  # native_out_dir:
+  #   type: string
+  #   inputBinding:
+  #     position: 6
+  #     prefix: --drc_out=
+  #     separate: false
   casename:
     type: string
     inputBinding:
@@ -51,7 +51,7 @@ inputs:
 stdin:
   $(inputs.input_files.path)
 
-arguments: ["-O", $(runtime.outdir) ]
+arguments: ["-O", $(runtime.outdir),  "-o", "./native"]
 
 outputs:
   time_series_files:

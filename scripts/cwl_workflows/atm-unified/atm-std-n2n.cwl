@@ -23,7 +23,7 @@ inputs:
   # hrzremap
   std_var_list: string[]
   hrz_atm_map_path: string
-  native_out_dir: string
+  # native_out_dir: string
   regrid_out_dir: string
 
   # cmor
@@ -73,7 +73,7 @@ steps:
       std_var_list: std_var_list
       year_per_file: frequency
       hrz_atm_map_path: hrz_atm_map_path
-      native_out_dir: native_out_dir
+      # native_out_dir: native_out_dir
       regrid_out_dir: regrid_out_dir
       tables_path: tables_path
       metadata_path: metadata_path
@@ -100,7 +100,7 @@ steps:
             glob: "*.nc"
       arguments:
         - position: 1
-          valueFrom: $("/export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-std-single-segment.cwl")
+          valueFrom: $("/export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-unified/atm-std-single-segment.cwl")
         - position: 2
           valueFrom: $(inputs.cwl_input.path)
     in:

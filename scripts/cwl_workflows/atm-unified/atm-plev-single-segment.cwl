@@ -13,7 +13,7 @@ inputs:
   end_year: int
 
   # vrt_remap
-  vrtmap_path: string
+  vrt_map_path: string
   num_workers: int
   casename: string
 
@@ -21,7 +21,7 @@ inputs:
   plev_var_list: string[]
   year_per_file: int
   hrz_atm_map_path: string
-  native_out_dir: string
+  # native_out_dir: string
   regrid_out_dir: string
 
   # cmor
@@ -52,7 +52,7 @@ steps:
     run: vrtremap_new_method.cwl
     in:
       infile: step_discover_atm_files/atm_files
-      vrtmap: vrtmap_path
+      vrtmap: vrt_map_path
       casename: casename
       num_workers: num_workers
     out: 
@@ -70,7 +70,7 @@ steps:
       year_per_file: year_per_file
       mapfile: hrz_atm_map_path
       input_array: step_vrt_remap/vrt_remapped_file
-      native_out_dir: native_out_dir
+      # native_out_dir: native_out_dir
     out:
       - time_series_files
   

@@ -2,7 +2,7 @@
 
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [python, /export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-plev-setup-input-files.py]
+baseCommand: [python, /export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-unified/atm-plev-setup-input-files.py]
 stdout: cwl_input_files.yml
 requirements:
   - class: InlineJavascriptRequirement
@@ -20,7 +20,7 @@ inputs:
     type: int
     inputBinding:
         prefix: --end_year
-  vrtmap_path:
+  vrt_map_path:
     type: string
   num_workers:
     type: int
@@ -38,10 +38,10 @@ inputs:
         prefix: --year_per_file
   hrz_atm_map_path:
     type: string
-  native_out_dir:
-    type: string
-    inputBinding:
-        prefix: --native_out_dir
+  # native_out_dir:
+  #   type: string
+  #   inputBinding:
+  #       prefix: --native_out_dir
   regrid_out_dir:
     type: string
     inputBinding:
@@ -65,7 +65,7 @@ arguments:
   - prefix: --hrz_atm_mapfile
     valueFrom: $(inputs.hrz_atm_map_path)
   - prefix: --vrtmap
-    valueFrom: $(inputs.vrtmap_path)
+    valueFrom: $(inputs.vrt_map_path)
   - prefix: --plev_var_list
     valueFrom: $(inputs.plev_var_list.join(" "))
   - prefix: --cmor_var_list

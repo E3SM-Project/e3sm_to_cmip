@@ -2,7 +2,7 @@
 
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [python, /export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-std-setup-input-files.py]
+baseCommand: [python, /export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-unified/atm-std-setup-input-files.py]
 stdout: cwl_input_files.yml
 requirements:
   - class: InlineJavascriptRequirement
@@ -36,10 +36,10 @@ inputs:
         prefix: --year_per_file
   hrz_atm_map_path:
     type: string
-  native_out_dir:
-    type: string
-    inputBinding:
-        prefix: --native_out_dir
+  # native_out_dir:
+  #   type: string
+  #   inputBinding:
+  #       prefix: --native_out_dir
   regrid_out_dir:
     type: string
     inputBinding:
