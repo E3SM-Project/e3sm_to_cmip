@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [python, /export/baldwin32/projects/e3sm_to_cmip/scripts/mpassi_split.py]
+baseCommand: [python, /export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/mpassi/mpassi_split.py]
 requirements:
   - class: InlineJavascriptRequirement
 

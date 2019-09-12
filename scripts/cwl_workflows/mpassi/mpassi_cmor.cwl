@@ -2,7 +2,7 @@
 
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [srun, -A, e3sm, e3sm_to_cmip, --no-metadata]
+baseCommand: [srun, e3sm_to_cmip, -s, --no-metadata]
 requirements:
   - class: InlineJavascriptRequirement
 
@@ -22,7 +22,9 @@ inputs:
     inputBinding:
       prefix: --num-proc
   var_list:
-    type: string[]
+    type: string
+    inputBinding:
+      prefix: --var-list
   mapfile:
     type: string
     inputBinding:
@@ -37,8 +39,8 @@ inputs:
       prefix: --output-path
 
 arguments: 
-  - prefix: --var-list
-    valueFrom: $(inputs.var_list.join(", "))
+  # - prefix: --var-list
+  #   valueFrom: $(inputs.var_list.join(", "))
   - prefix: --input-path
     valueFrom: $(inputs.input_path.path)
   - prefix: --mode
