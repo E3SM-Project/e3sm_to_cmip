@@ -34,10 +34,13 @@
 | rsut       | YES     | no  | no      | no          |
 | rsutcs     | YES     | no  | no      | no          |
 | rtmt       | YES     | no  | no      | no          |
-| abs550aer  | YES     | no  | no      | no          |
-| od550aer   | YES     | no  | no      | no          |
 | rsdscs     | YES     |     |         |             |
 
+## AERmon
+| variable   | handler | run | checked | sample_path |
+| --------   | ------- | --- | ------- | ----------- |
+| abs550aer  | YES     | no  | no      | no          |
+| od550aer   | YES     | no  | no      | no          |
 
 ## 3D model level
 
@@ -74,6 +77,7 @@
 | cltcalipso  | YES     | no  | no      | no          |
 | cllcalipso  | YES     | no  | no      | no          |
 | clmcalipso  | YES     | no  | no      | no          |
+| clhcalipso  | YES     | no  | no      | no          |
 
 # Lmon handlers
 
