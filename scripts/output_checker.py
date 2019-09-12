@@ -83,6 +83,7 @@ def main():
                         default=['all'], help="Which variables to check for, default is all")
     parser.add_argument('-e', '--exclude-variables', nargs="+",
                         default=None, help="Which variables to exclude, default is none")
+    parser.add_argument('--ens', nargs="+", default=['all'], help="List of ensemble members to check")
     parser.add_argument('--debug', action="store_true")
     args = parser.parse_args(sys.argv[1:])
 
@@ -101,7 +102,7 @@ def main():
     for casedir in os.listdir(args.data_path):
         _, case = os.path.split(casedir)
         if casedir in args.cases or args.cases == ['all']:
-            ensembles = [x + 1 for x in range(case_spec['cases'][case]['ens'])]
+            ensembles = [x + 1 for x in range(case_spec['cases'][case]['ens'])] if 'all' in args.ens else args.ens
             for ens in ensembles:
                 print('Checking {} ens{}'.format(case, ens))
                 missing = check_case(
