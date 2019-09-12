@@ -23,7 +23,7 @@ requirements:
     - pip
     - setuptools
 
-  run:
+run:
     - python
     - nco
     - cmor >=3.5.0

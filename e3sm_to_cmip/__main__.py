@@ -14,6 +14,8 @@ import threading
 import signal
 from pathos.multiprocessing import ProcessPool as Pool
 
+os.environ['CDAT_ANONYMOUS_LOG'] = 'false'
+
 from e3sm_to_cmip import cmor_handlers
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.util import parse_argsuments
