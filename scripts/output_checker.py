@@ -18,51 +18,53 @@ def check_case(path, variables, exclude, spec, case, ens):
 
     missing = list()
 
-    num_vars = len(spec['variables']) if 'all' in variables else len(variables)
-    vars_expected = spec['variables'][:] if 'all' in variables else variables
+    for ex in exclude:
+        if ex in variables:
+            variables.remove(ex)
 
-    pbar = tqdm(total=num_vars)
-    for root, _, files in os.walk(path):
-        if not files:
-            continue
-        if 'r{}i1p1f1'.format(ens) not in root.split(os.sep):
-            continue
+    num_vars = len(spec['variables']) - len(exclude) if 'all' in variables else len(variables)
+    vars_expected = [x for x in spec['variables'][:] if x not in exclude] if 'all' in variables else variables
 
-        files = sorted(files)
-        var = files[0].split('_')[0]
+    with tqdm(total=num_vars, leave=False) as pbar:
+        for root, _, files in os.walk(path):
+            if not files:
+                continue
+            if 'r{}i1p1f1'.format(ens) not in root.split(os.sep):
+                continue
 
-        if var not in variables and 'all' not in variables:
-            continue
-        pbar.set_description('Checking {}'.format(var))
+            files = sorted(files)
+            var = files[0].split('_')[0]
 
-        try:
-            vars_expected.remove(var)
-        except ValueError:
-            if debug:
-                print("{} not in expected list, skipping".format(var))
+            if var not in variables and 'all' not in variables and var not in exclude:
+                continue
+            pbar.set_description('Checking {}'.format(var))
 
-        start, end = get_cmip_start_end(files[0])
-        freq = end - start + 1
-        spans = list(range(spec['cases'][case]['start'],
-                           spec['cases'][case]['end'], freq))
+            try:
+                vars_expected.remove(var)
+            except ValueError:
+                if debug:
+                    print("{} not in expected list, skipping".format(var))
 
-        for span in spans:
-            found_span = False
-            s_start = span
-            s_end = span + freq - 1
-            if s_end > spec['cases'][case]['end']:
-                s_end = spec['cases'][case]['end']
-            for f in files:
-                f_start, f_end = get_cmip_start_end(f)
-                if f_start == s_start and f_end == s_end:
-                    found_span = True
-                    break
-            if not found_span:
-                missing.append("{var}-{start:04d}-{end:04d}".format(
-                    var=var, start=s_start, end=s_end))
-        pbar.update(1)
-    pbar.clear()
-    pbar.close()
+            start, end = get_cmip_start_end(files[0])
+            freq = end - start + 1
+            spans = list(range(spec['cases'][case]['start'],
+                            spec['cases'][case]['end'], freq))
+
+            for span in spans:
+                found_span = False
+                s_start = span
+                s_end = span + freq - 1
+                if s_end > spec['cases'][case]['end']:
+                    s_end = spec['cases'][case]['end']
+                for f in files:
+                    f_start, f_end = get_cmip_start_end(f)
+                    if f_start == s_start and f_end == s_end:
+                        found_span = True
+                        break
+                if not found_span:
+                    missing.append("{var}-{start:04d}-{end:04d}".format(
+                        var=var, start=s_start, end=s_end))
+            pbar.update(1)
 
     for v in vars_expected:
         missing.append(
@@ -83,7 +85,7 @@ def main():
                         default=['all'], help="Which variables to check for, default is all")
     parser.add_argument('-e', '--exclude-variables', nargs="+",
                         default=None, help="Which variables to exclude, default is none")
-    parser.add_argument('--ens', nargs="+", default=['all'], help="List of ensemble members to check")
+    parser.add_argument('--ens', nargs="+", default=['all'], help="List of ensemble members to check, default all")
     parser.add_argument('--debug', action="store_true")
     args = parser.parse_args(sys.argv[1:])
 
