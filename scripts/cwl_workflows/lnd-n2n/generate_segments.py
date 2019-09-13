@@ -19,17 +19,25 @@ def main():
     start_outname = 'segments_start_{}_{}.txt'.format(start, end)
     end_outname = 'segments_end_{}_{}.txt'.format(start, end)
 
-    with open(start_outname, 'w') as segstart:
-        with open(end_outname, 'w') as segend:
+    segstart = open(start_outname, 'w')
+    segend = open(end_outname, 'w')
 
-            while seg_end < end:
-                segstart.write("{}\n".format(seg_start))
-                segend.write("{}\n".format(seg_end))
-                seg_start += freq
-                seg_end += freq
-            if seg_end == end:
-                segstart.write("{}".format(seg_start))
-                segend.write("{}".format(seg_end))
+    try:
+        while seg_end < end:
+            segstart.write("{}\n".format(seg_start))
+            segend.write("{}\n".format(seg_end))
+            seg_start += freq
+            seg_end += freq
+        if seg_end == end:
+            segstart.write("{}\n".format(seg_start))
+            segend.write("{}\n".format(seg_end))
+        if seg_end > end:
+            segstart.write("{}\n".format(seg_end - freq + 1))
+            segend.write("{}\n".format(end))
+    finally:
+        segstart.close()
+        segend.close()
+
 
     return 0
 
