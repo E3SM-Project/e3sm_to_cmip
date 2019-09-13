@@ -3,6 +3,7 @@ import os
 import yaml
 import argparse
 from tqdm import tqdm
+from pyesgf.search import SearchConnection
 
 debug = False
 
@@ -14,9 +15,12 @@ def get_cmip_start_end(filename):
         return int(filename[-16:-12]), int(filename[-9: -5])
 
 
-def check_case(path, variables, exclude, spec, case, ens):
+def check_case(path, variables, exclude, spec, case, ens, published):
 
     missing = list()
+
+    if not exclude:
+        exclude = []
 
     for ex in exclude:
         if ex in variables:
@@ -86,6 +90,7 @@ def main():
     parser.add_argument('-e', '--exclude-variables', nargs="+",
                         default=None, help="Which variables to exclude, default is none")
     parser.add_argument('--ens', nargs="+", default=['all'], help="List of ensemble members to check, default all")
+    parser.add_argument('--published', action="store_true", help="Check the LLNL ESGF node to see if the variables have been published, this can take a while")
     parser.add_argument('--debug', action="store_true")
     args = parser.parse_args(sys.argv[1:])
 
@@ -113,7 +118,8 @@ def main():
                     exclude=args.exclude_variables,
                     spec=case_spec,
                     case=case,
-                    ens=ens)
+                    ens=ens,
+                    published=args.published)
                 if missing:
                     _, case = os.path.split(casedir)
                     print(
