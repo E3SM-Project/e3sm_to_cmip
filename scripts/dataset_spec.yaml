@@ -44,10 +44,10 @@ tables:
     - va
     - wap
     - zg
-  CFmon:
+  AERmon:
     - abs550aer
     - od550aer
-  AERmon:
+  CFmon:
     - clisccp
     - cltisccp
     - albisccp
