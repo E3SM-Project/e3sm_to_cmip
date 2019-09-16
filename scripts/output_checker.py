@@ -245,46 +245,48 @@ def main():
     for casedir in os.listdir(data_path):
         _, case = os.path.split(casedir)
         if casedir in cases or cases == ['all']:
-            ensembles = [
-                x + 1 for x in range(case_spec['cases'][case]['ens'])] if 'all' in ens else ens
-            for ens in ensembles:
-                print('Checking disk for {} ens{}'.format(case, ens))
+            try:
+                ensembles = [x + 1 for x in range(case_spec['cases'][case]['ens'])] if 'all' in ens else ens
+            except:
+                import ipdb; ipdb.set_trace()
+            for ensemble in ensembles:
+                print('Checking disk for {} ens{}'.format(case, ensemble))
                 missing = check_case(
                     os.path.join(data_path, casedir),
                     variables=variables,
                     spec=case_spec,
                     case=case,
-                    ens=ens,
+                    ens=ensemble,
                     published=published)
 
                 _, case = os.path.split(casedir)
                 if missing:
                     print(
-                        "{case}-ens{ens} is missing the following variables from disk:".format(case=case, ens=ens))
+                        "{case}-ens{ens} is missing the following variables from disk:".format(case=case, ens=ensemble))
                     for m in missing:
                         print("\t {}".format(m))
                 else:
                     print(
-                        "{case}-ens{ens}: all variables found on disk".format(case=case, ens=ens))
+                        "{case}-ens{ens}: all variables found on disk".format(case=case, ens=ensemble))
 
                 esgf_missing = list()
                 if published:
-                    print('Checking ESGF for {} ens{}'.format(case, ens))
+                    print('Checking ESGF for {} ens{}'.format(case, ensemble))
                     esgf_missing = check_esgf(
                         variables=variables,
                         spec=case_spec,
                         case=case,
-                        ens=ens,
+                        ens=ensemble,
                         max_connections=max_connections)
 
                     if esgf_missing:
                         print(
-                            "{case}-ens{ens} is missing the following variables from ESGF:".format(case=case, ens=ens))
+                            "{case}-ens{ens} is missing the following variables from ESGF:".format(case=case, ens=ensemble))
                         for m in esgf_missing:
                             print("\t {}".format(m))
 
                 if not missing and not esgf_missing:
-                    print("Found all data for {}-ens{}".format(case, ens))
+                    print("Found all data for {}-ens{}".format(case, ensemble))
 
     return 0
 
