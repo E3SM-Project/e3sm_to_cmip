@@ -128,6 +128,7 @@ def check_case(path, variables, spec, case, ens, published):
 
     if 'all' in variables:
         num_vars = len(all_vars)
+        vars_expected = all_vars[:]
     else:
         for v in variables:
             if v in all_tables:
@@ -145,12 +146,11 @@ def check_case(path, variables, spec, case, ens, published):
             if 'r{}i1p1f1'.format(ens) not in root.split(os.sep):
                 continue
 
-  
             files = sorted(files)
             var = files[0].split('_')[0]
 
             root_base = os.path.split(root)[0]
-            if len(root_base) > 1:
+            if len(os.listdir(root_base)) > 1:
                 print("WARNING: multiple directories found for {case}-{ens}-{var}".format(
                     case=case, ens=ens, var=var))
 
