@@ -24,12 +24,15 @@ def check_esgf_for_variable(variable, spec, case, ens):
 
     connection = SearchConnection(
         'https://esgf-node.llnl.gov/esg-search', distrib=False)
-    
+
+    if debug:
+        print("Checking ESGF for {}".format(variable))
+
     error = False
     for i in range(5):
         try:
             res = connection.new_context(project="CMIP6", source_id="E3SM-1-0", experiment_id=case,
-                                    variant_label="r{}i1p1f1".format(ens), variable_id=variable).search()
+                                         variant_label="r{}i1p1f1".format(ens), variable_id=variable).search()
         except HTTPError as httperror:
             error = True
             print("HTTPerror on {}-{}-{}".format(case, ens, variable))
@@ -37,18 +40,24 @@ def check_esgf_for_variable(variable, spec, case, ens):
         else:
             error = False
             break
-    
+
     if error:
         print("Too many HTTPerrors for {}-{}-{}".format(case, ens, variable))
         return missing
 
-
     if not res:
-        missing.append("{} missing all files".format(variable))
+        missing.append(
+            "{}-{}-{} missing all files".format(case, ens, variable))
+        return missing
     else:
         filenames = list()
         for x in res:
             filenames.extend([f.filename for f in x.file_context().search()])
+
+        if not filenames:
+            missing.append(
+                "{}-{}-{} missing all files".format(case, ens, variable))
+            return missing
 
         start, end = get_cmip_start_end(filenames[0])
         freq = end - start + 1
@@ -73,9 +82,7 @@ def check_esgf_for_variable(variable, spec, case, ens):
     return missing
 
 
-def check_esgf(variables, spec, case, ens):
-
-    missing = list()
+def check_esgf(variables, spec, case, ens, max_connections):
 
     all_tables = [x for x in spec['tables']]
     all_vars = list()
@@ -97,7 +104,7 @@ def check_esgf(variables, spec, case, ens):
                 vars_expected.append(v)
 
     results = list()
-    pool = ThreadPool(2)
+    pool = ThreadPool(max_connections)
 
     for v in vars_expected:
         results.append(pool.apply_async(
@@ -108,10 +115,10 @@ def check_esgf(variables, spec, case, ens):
                 ens)))
 
     esgf_missing = list()
-    for m in tqdm(results):
+    for m in tqdm(results, leave=True):
         esgf_missing.extend(m.get(999999))
 
-    return missing
+    return esgf_missing
 
 
 def check_case(path, variables, spec, case, ens, published):
@@ -138,7 +145,7 @@ def check_case(path, variables, spec, case, ens, published):
                 num_vars += 1
                 vars_expected.append(v)
 
-    with tqdm(total=num_vars, leave=False) as pbar:
+    with tqdm(total=num_vars, leave=True) as pbar:
 
         for root, _, files in os.walk(path):
             if not files:
@@ -210,6 +217,8 @@ def main():
         '--ens', nargs="+", default=['all'], help="List of ensemble members to check, default all")
     parser.add_argument('--published', action="store_true",
                         help="Check the LLNL ESGF node to see if the variables have been published, this can take a while")
+    parser.add_argument('-m', '--max-connections', type=int, default=5,
+                        help="Maximum number of simultanious connections to ESGF node, more connections makes the ESGF search go faster but may also cause time-outs")
     parser.add_argument('--debug', action="store_true")
     args = parser.parse_args(sys.argv[1:])
 
@@ -219,6 +228,7 @@ def main():
     cases = args.cases
     ens = args.ens
     published = args.published
+    max_connections = args.max_connections
 
     if args.debug:
         print("Running in debug mode")
@@ -246,7 +256,7 @@ def main():
                     case=case,
                     ens=ens,
                     published=published)
-                
+
                 _, case = os.path.split(casedir)
                 if missing:
                     print(
@@ -261,10 +271,11 @@ def main():
                 if published:
                     print('Checking ESGF for {} ens{}'.format(case, ens))
                     esgf_missing = check_esgf(
-                        variables=variables, 
-                        spec=case_spec, 
-                        case=case, 
-                        ens=ens)
+                        variables=variables,
+                        spec=case_spec,
+                        case=case,
+                        ens=ens,
+                        max_connections=max_connections)
 
                     if esgf_missing:
                         print(
