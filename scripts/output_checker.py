@@ -145,6 +145,13 @@ def check_case(path, variables, spec, case, ens, published):
             if 'r{}i1p1f1'.format(ens) not in root.split(os.sep):
                 continue
 
+            root_base = os.path.split(root)[0]
+            num_folders = 0
+            for _,dirnames,filenames in os.walk(root_base):
+                num_folders += len(dirnames)
+                files += filenames
+            #print(num_folders)
+  
             files = sorted(files)
             var = files[0].split('_')[0]
 
