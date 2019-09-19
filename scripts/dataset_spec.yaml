@@ -109,6 +109,10 @@ tables:
     - sitemptop
     - siu
     - siv
+  fx:
+    - areacella
+    - sftlf
+    - orog
 
 cases:
   piControl:

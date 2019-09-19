@@ -31,7 +31,6 @@ def my_dynamic_message(self, progress, data):
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
-
     logger = logging.getLogger()
     msg = '{}: Starting'.format(VAR_NAME)
     logger.info(msg)
@@ -134,7 +133,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         ]
         progressbar.DynamicMessage.__call__ = my_dynamic_message
         pbar = progressbar.ProgressBar(
-            maxval=len(1), widgets=widgets)
+            maxval=1, widgets=widgets)
         pbar.start()
 
     g = 9.80616

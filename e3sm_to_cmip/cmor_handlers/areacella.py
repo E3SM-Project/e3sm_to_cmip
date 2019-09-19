@@ -12,8 +12,8 @@ from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('areacella')]
-VAR_NAME = str('area')
+RAW_VARIABLES = [str('area')]
+VAR_NAME = str('areacella')
 VAR_UNITS = str('m2')
 TABLE = str('CMIP6_fx.json')
 
@@ -134,7 +134,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         ]
         progressbar.DynamicMessage.__call__ = my_dynamic_message
         pbar = progressbar.ProgressBar(
-            maxval=len(1), widgets=widgets)
+            maxval=1, widgets=widgets)
         pbar.start()
 
     r = 6.37122e6

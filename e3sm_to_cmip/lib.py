@@ -142,6 +142,9 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
                 input_paths = {var: [os.path.join(input_path, x) for x in
                                      find_atm_files(var, input_path)]
                                for var in handler_variables}
+            elif mode == 'fx':
+                input_paths = {var: [x for x in os.listdir(input_path) if x[-3:] == '.nc']
+                               for var in handler_variables}
             else:
                 input_paths = {var: find_mpas_files(var, input_path,
                                                     map_path)

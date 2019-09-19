@@ -12,8 +12,8 @@ from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('sftlf')]
-VAR_NAME = str('LANDFRAC')
+RAW_VARIABLES = [str('LANDFRAC')]
+VAR_NAME = str('sftlf')
 VAR_UNITS = str('%')
 TABLE = str('CMIP6_fx.json')
 
@@ -31,7 +31,6 @@ def my_dynamic_message(self, progress, data):
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
-
     logger = logging.getLogger()
     msg = '{}: Starting'.format(VAR_NAME)
     logger.info(msg)
@@ -134,7 +133,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         ]
         progressbar.DynamicMessage.__call__ = my_dynamic_message
         pbar = progressbar.ProgressBar(
-            maxval=len(1), widgets=widgets)
+            maxval=1, widgets=widgets)
         pbar.start()
 
     outdata = data['LANDFRAC']
