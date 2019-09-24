@@ -410,7 +410,6 @@ def find_mpas_files(component, path, map_path=None):
         return sorted(results)
 
     if component == 'mpassi':
-
         patterns = [r'mpassi.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc', 
                     r'mpascice.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc']
         for pattern in patterns:

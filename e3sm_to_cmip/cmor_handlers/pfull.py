@@ -214,7 +214,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
         data['ips'] = ips
 
-        # import ipdb; ipdb.set_trace()
         varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids[:4])
 
         # write out the data
