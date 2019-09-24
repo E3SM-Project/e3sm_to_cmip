@@ -39,4 +39,4 @@ run:
 
 test:
   commands:
-    - export CDAT_ANONYMOUS_LOG=no; e3sm_to_cmip -h
+    - export CDAT_ANONYMOUS_LOG="no"; e3sm_to_cmip -h
