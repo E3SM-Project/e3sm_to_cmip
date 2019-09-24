@@ -38,7 +38,5 @@ run:
     - scipy
 
 test:
-  imports:
-    - e3sm_to_cmip
   commands:
     - export CDAT_ANONYMOUS_LOG=no; e3sm_to_cmip -h
