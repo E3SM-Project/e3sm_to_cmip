@@ -34,12 +34,6 @@ inputs:
       position: 5
       prefix: --map=
       separate: false
-  # native_out_dir:
-  #   type: string
-  #   inputBinding:
-  #     position: 6
-  #     prefix: --drc_out=
-  #     separate: false
   casename:
     type: string
     inputBinding:

@@ -27,18 +27,18 @@ inputs:
   lnd_var_list: string[]
   cmor_var_list: string[]
 
-outputs: []
+outputs: 
   # cmorized:
   #   type: Directory[]
   #   outputSource: run_single_segment/cmip6_dir
   #   linkMerge: merge_flattened
-  # remaped_time_series:
-  #   type:
-  #     type: array
-  #     items:
-  #       type: array
-  #       items: File
-  #   outputSource: time_series/remaped_time_series
+  remaped_time_series:
+    type:
+      type: array
+      items:
+        type: array
+        items: File
+    outputSource: time_series/remaped_time_series
 
 steps:
 

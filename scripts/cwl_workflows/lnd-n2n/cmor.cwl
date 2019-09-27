@@ -2,7 +2,7 @@
 
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [/export/baldwin32/anaconda2/envs/cwl/bin/e3sm_to_cmip, --no-metadata]
+baseCommand: [e3sm_to_cmip, --no-metadata]
 requirements:
   InlineJavascriptRequirement: {}
   InitialWorkDirRequirement:

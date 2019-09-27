@@ -28,63 +28,64 @@ def main():
     parser.add_argument('--data-path')
     _args = parser.parse_args(sys.argv[1:])
 
-    for root, dirs, files in tqdm(os.walk(_args.data_path)):
+    for root, _, files in tqdm(os.walk(_args.data_path)):
+        if not files:
+            continue
+    
+        case = get_casename(files[0])
+        if not case:
+            continue
+
+        missing = list()
+        start, _ = get_year(files[0])
+        end, _ = get_year(files[-1])
+        if start == 0 or end == 0:
+            raise Exception('Unable to find start or end year')
+        files = sorted(files)
+
+        if 'cam.h0' in files[0]:
+
+            for year in range(start, end + 1):
+                for month in range(1, 13):
+                    name = '{casename}.{year:04d}-{month:02d}.nc'.format(
+                        casename=case, year=year, month=month)
+                    if name not in files:
+                        missing.append(name)
+
+        elif 'clm2.h0' in files[0]:
+
+            for year in range(start, end + 1):
+                for month in range(1, 13):
+                    name = '{casename}.{year:04d}-{month:02d}.nc'.format(
+                        casename=case, year=year, month=month)
+                    if name not in files:
+                        missing.append(name)
+
+        elif 'mpascice' in files[0]:
+
+            for year in range(start, end + 1):
+                for month in range(1, 13):
+                    name = 'mpascice.hist.am.timeSeriesStatsMonthly.{year:04d}-{month:02d}-01.nc'.format(
+                        year=year, month=month)
+                    if name not in files:
+                        missing.append(name)
         
-        if files is not None and len(files) > 0:
-            case = get_casename(files[0])
-            if case is None:
-                continue
-            missing = list()
+        elif 'mpaso' in files[0]:
 
-            start, _ = get_year(files[0])
-            end, _ = get_year(files[-1])
-            if start == 0 or end == 0:
-                raise Exception('Unable to find start or end year')
-            files = sorted(files)
+            for year in range(start, end + 1):
+                for month in range(1, 13):
+                    name = 'mpaso.hist.am.timeSeriesStatsMonthly.{year:04d}-{month:02d}-01.nc'.format(
+                        year=year, month=month)
+                    if name not in files:
+                        missing.append(name)
 
-            if 'cam.h0' in files[0]:
-
-                for year in range(start, end + 1):
-                    for month in range(1, 13):
-                        name = '{casename}.{year:04d}-{month:02d}.nc'.format(
-                            casename=case, year=year, month=month)
-                        if name not in files:
-                            missing.append(name)
-
-            elif 'clm2.h0' in files[0]:
-
-                for year in range(start, end + 1):
-                    for month in range(1, 13):
-                        name = '{casename}.{year:04d}-{month:02d}.nc'.format(
-                            casename=case, year=year, month=month)
-                        if name not in files:
-                            missing.append(name)
-
-            elif 'mpascice' in files[0]:
-
-                for year in range(start, end + 1):
-                    for month in range(1, 13):
-                        name = 'mpascice.hist.am.timeSeriesStatsMonthly.{year:04d}-{month:02d}-01.nc'.format(
-                            year=year, month=month)
-                        if name not in files:
-                            missing.append(name)
-            
-            elif 'mpaso' in files[0]:
-
-                for year in range(start, end + 1):
-                    for month in range(1, 13):
-                        name = 'mpaso.hist.am.timeSeriesStatsMonthly.{year:04d}-{month:02d}-01.nc'.format(
-                            year=year, month=month)
-                        if name not in files:
-                            missing.append(name)
-
-            if len(missing) == 0:
-                print('\n----- Found all files for {} -----'.format(case))
-            else:
-                print(
-                    '\n\n-----------------------------\nThe following were missing from {}\n\n'.format(root))
-                for m in missing:
-                    print('\t {}'.format(m))
+        if len(missing) == 0:
+            print('\n----- Found all files for {} -----'.format(case))
+        else:
+            print(
+                '\n\n-----------------------------\nThe following were missing from {}\n\n'.format(root))
+            for m in missing:
+                print('\t {}'.format(m))
 
 
 if __name__ == "__main__":

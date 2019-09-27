@@ -30,6 +30,9 @@ def main():
             if seg_end == end:
                 segstart.write("{}".format(seg_start))
                 segend.write("{}".format(seg_end))
+            if seg_end > end:
+                segstart.write("{}\n".format(seg_end - freq + 1))
+                segend.write("{}\n".format(end))
 
     return 0
 

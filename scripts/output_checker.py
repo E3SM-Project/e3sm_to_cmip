@@ -174,6 +174,8 @@ def check_case(path, variables, spec, case, ens, published):
                 if debug:
                     print("{} not in expected list, skipping".format(var))
 
+            if "_fx_" in files[0]:
+                continue
             start, end = get_cmip_start_end(files[0])
             freq = end - start + 1
             spans = list(range(spec['cases'][case]['start'],

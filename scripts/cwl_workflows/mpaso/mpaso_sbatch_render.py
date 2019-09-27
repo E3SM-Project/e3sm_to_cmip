@@ -8,7 +8,7 @@ template_string = """#!/bin/bash
 RETURN=1
 until [ $RETURN -eq 0 ]; do
     
-    /qfs/people/bald158/anaconda2/envs/cwl/bin/e3sm_to_cmip \
+    e3sm_to_cmip \
         --no-metadata --mode mpaso --precheck --no-rm-tmpdir \
         -v {{ variables }} \
         --tables-path {{ tables }} \
@@ -44,7 +44,7 @@ def render_sbatch(values):
             outfile.write(script_contents)
         
         call(['chmod', '+x', script_path])
-        call(['srun', '-A', 'e3sm', '-t', '01:00:00', script_path])
+        call(['srun', script_path])
     except Exception as e:
         raise(e)
     else:

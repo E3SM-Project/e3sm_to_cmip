@@ -26,7 +26,6 @@ inputs:
   # hrzremap
   hrz_atm_map_path: string
   vrt_map_path: string
-  # native_out_dir: string
   regrid_out_dir: string
 
   # cmor
@@ -35,7 +34,7 @@ inputs:
   
   cmor_var_std: string[]
   cmor_var_plev: string[]
-  outpath: string
+  logdir: string
 
 outputs:
   cmorized:
@@ -64,7 +63,7 @@ steps:
       tables_path: tables_path
       metadata_path: metadata_path
       cmor_var_list: cmor_var_std
-      logdir: outpath
+      logdir: logdir
     out:
       - cmorized
   
@@ -85,6 +84,6 @@ steps:
       tables_path: tables_path
       metadata_path: metadata_path
       cmor_var_list: cmor_var_plev
-      logdir: outpath
+      logdir: logdir
     out:
       - cmorized

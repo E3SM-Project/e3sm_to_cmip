@@ -2,7 +2,7 @@
 
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [python, /qfs/people/bald158/projects/e3sm_to_cmip/scripts/cwl_workflows/mpaso/mpaso_sbatch_render.py]
+baseCommand: [python, /export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/mpaso/mpaso_sbatch_render.py]
 inputs:
   input_path:
     type: Directory

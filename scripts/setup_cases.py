@@ -8,7 +8,6 @@ var_list = ['masso', 'volo', 'thetaoga', 'tosga', 'soga', 'sosga', 'hfbasin', "p
 
 
 def main():
-    import ipdb; ipdb.set_trace()
     parser = argparse.ArgumentParser()
     parser.add_argument('--input')
     parser.add_argument('--output')
