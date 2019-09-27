@@ -1,0 +1,8 @@
+data_path: /p/user_pub/work/E3SM/cmip6_variables/bgc_cntl/output/CMIP6/CMIP/E3SM-Project/E3SM-1-1/piControl/r1i1p1f1/Lmon/fFire/gr/v20190919/
+chunk_size: 2
+hash_file:
+  class: File
+  path: hash.txt
+checker: 
+  class: File
+  path: /export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/util/integritycheck.py
