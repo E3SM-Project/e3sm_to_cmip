@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.1
 class: CommandLineTool
 baseCommand: [python, /export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/lnd-n2n/generate_segments.py]
 requirements:

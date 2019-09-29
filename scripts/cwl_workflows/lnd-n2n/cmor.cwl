@@ -1,5 +1,4 @@
 #!/usr/bin/env cwl-runner
-
 cwlVersion: v1.0
 class: CommandLineTool
 baseCommand: [e3sm_to_cmip, --no-metadata]

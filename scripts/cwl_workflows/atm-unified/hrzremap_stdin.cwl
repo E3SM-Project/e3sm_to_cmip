@@ -1,5 +1,4 @@
 #!/usr/bin/env cwl-runner
-
 cwlVersion: v1.0
 class: CommandLineTool
 baseCommand: [ncclimo, '-7', '--dfl_lvl=1', '--no_cll_msr', '-a', 'sdd']
