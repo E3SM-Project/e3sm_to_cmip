@@ -1,7 +1,7 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [srun]
+baseCommand: [srun, -A, e3sm, -t, 10:00:00]
 requirements:
   - class: InlineJavascriptRequirement
   - class: InitialWorkDirRequirement
