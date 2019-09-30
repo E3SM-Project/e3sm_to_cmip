@@ -16,6 +16,8 @@ arguments:
   - "python"
   - $(inputs.checker.path)
   - "--write-to-file"
+  - "--max-jobs"
+  - "1"
   - "--md5-path"
   - $(inputs.md5_path.path)
   - "--file-list"
