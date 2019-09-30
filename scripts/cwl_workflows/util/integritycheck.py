@@ -55,15 +55,15 @@ def main():
     parser.add_argument(
         '--max-jobs',
         help="max number of jobs to run at once, default is the number of CPUs on the machine",
-        default=multiprocessing.cpu_count())
+        default=5)
     parser.add_argument(
         '--file-list', 
         nargs="*",
         default=[],
         help="list of files to check for, used in place of the contents of the data_path directory")
     parser.add_argument(
-        '-w',
-        '--write-to-file')
+        '--write-to-file',
+        action="store_true")
 
     args = parser.parse_args()
     if args.data_path and not os.path.exists(args.data_path):
