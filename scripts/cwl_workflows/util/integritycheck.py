@@ -139,7 +139,7 @@ def main():
                 op.write(msg + '\n')
         finally:
             op.close()
-        return 1
+        return 0
 
 
 if __name__ == "__main__":

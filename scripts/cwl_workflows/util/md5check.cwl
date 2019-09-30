@@ -49,4 +49,3 @@ outputs:
   hash_status:
     type: File[]
     outputSource: step_run_integrity/hash_status
-
