@@ -3,6 +3,8 @@ import sys
 import argparse
 import hashlib
 import multiprocessing
+import random
+import string
 from pathos.multiprocessing import ProcessPool as Pool
 from tqdm import tqdm
 
@@ -59,6 +61,9 @@ def main():
         nargs="*",
         default=[],
         help="list of files to check for, used in place of the contents of the data_path directory")
+    parser.add_argument(
+        '-w',
+        '--write-to-file')
 
     args = parser.parse_args()
     if args.data_path and not os.path.exists(args.data_path):
@@ -115,9 +120,20 @@ def main():
         print("All file hashes match")
         return 0
     else:
-        print("The following did not match:")
-        for i in not_match:
-            print("\t{}".format(i))
+        if args.write_to_file:
+            outputname = 'hash_fails_' + ''.join([random.choice(string.ascii_lowercase) for x in range(5)])
+            op = open(outputname, 'r')
+        msg = "The following did not match:"
+        print(msg)
+        if args.write_to_file:
+            op.write(msg + '\n')
+        try:
+            for i in not_match:
+                msg = "\t{}".format(i)
+                print(msg)
+                op.write(msg + '\n')
+        finally:
+            op.close()
         return 1
 
 

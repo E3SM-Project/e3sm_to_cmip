@@ -19,4 +19,5 @@ arguments:
   - $(inputs.md5_path.path)
   - "--file-list"
   - $(inputs.file_list)
+  - "--write-to-file"
 outputs: []
