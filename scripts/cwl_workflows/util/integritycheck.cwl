@@ -20,4 +20,8 @@ arguments:
   - "--file-list"
   - $(inputs.file_list)
   - "--write-to-file"
-outputs: []
+outputs:
+  hash_status:
+    type: File
+    outputBinding:
+      glob: hash_*

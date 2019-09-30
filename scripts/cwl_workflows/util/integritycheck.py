@@ -117,12 +117,17 @@ def main():
 
     pbar.close()
     if all_match:
-        print("All file hashes match")
+        msg = "All file hashes match"
+        print(msg)
+        if args.write_to_file:
+            op = open('hash_passed.txt', 'w')
+            op.write(msg + '\n')
+            op.close()
         return 0
     else:
         if args.write_to_file:
             outputname = 'hash_fails_' + ''.join([random.choice(string.ascii_lowercase) for x in range(5)])
-            op = open(outputname, 'r')
+            op = open(outputname, 'w')
         msg = "The following did not match:"
         print(msg)
         if args.write_to_file:

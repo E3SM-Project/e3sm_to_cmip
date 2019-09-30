@@ -42,6 +42,11 @@ steps:
       checker: checker
     scatter:
       file_list
-    out: []
+    out:
+      - hash_status
 
-outputs: []
+outputs:
+  hash_status:
+    type: File[]
+    outputSource: step_run_integrity/hash_status
+
