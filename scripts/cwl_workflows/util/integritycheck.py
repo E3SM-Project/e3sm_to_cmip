@@ -55,7 +55,7 @@ def main():
     parser.add_argument(
         '--max-jobs',
         help="max number of jobs to run at once, default is the number of CPUs on the machine",
-        default=5)
+        default=1)
     parser.add_argument(
         '--file-list', 
         nargs="*",
