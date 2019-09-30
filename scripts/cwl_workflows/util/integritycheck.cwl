@@ -15,11 +15,11 @@ inputs:
 arguments:
   - "python"
   - $(inputs.checker.path)
+  - "--write-to-file"
   - "--md5-path"
   - $(inputs.md5_path.path)
   - "--file-list"
   - $(inputs.file_list)
-  - "--write-to-file"
 outputs:
   hash_status:
     type: File
