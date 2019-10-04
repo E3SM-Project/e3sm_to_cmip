@@ -5,11 +5,44 @@ import hashlib
 import multiprocessing
 import random
 import string
+from subprocess import Popen, PIPE
 from pathos.multiprocessing import ProcessPool as Pool
+from distributed import Client, as_completed, LocalCluster
 from tqdm import tqdm
 
-BLOCK_SIZE = 1024*1014
+# BLOCK_SIZE = 1024*1014
 
+
+# def hash_file(filepath, expected_hash):
+#     """
+#     Hash a the file at the given path, and compare that to the expected value
+
+#     Parameters
+#     ----------
+#     data_path (str): the path to the data directory
+#     filename (str): the name of the file to check the hashes for
+#     expected_hash (str): the expected hash of that file
+
+#     Returns
+#     -------
+#     Filename, and True if they match, or False otherwise
+#     """
+#     md5 = hashlib.md5()
+#     match = False
+#     with open(filepath, 'rb') as infile:
+#         while True:
+#             data = infile.read(BLOCK_SIZE)
+#             if data:
+#                 md5.update(data)
+#             else:
+#                 break
+
+#     actual_hash = str(md5.hexdigest())
+#     if actual_hash == expected_hash:
+#         match = True
+
+#     _, filename = os.path.split(filepath)
+#     return filename, match
 
 def hash_file(filepath, expected_hash):
     """
@@ -25,22 +58,22 @@ def hash_file(filepath, expected_hash):
     -------
     Filename, and True if they match, or False otherwise
     """
-    md5 = hashlib.md5()
-    match = False
-    with open(filepath, 'rb') as infile:
-        while True:
-            data = infile.read(BLOCK_SIZE)
-            if data:
-                md5.update(data)
-            else:
-                break
+    cmd = ['md5sum', filepath]
+    proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    out, err = proc.communicate()
+    
+    if err:
+        print('ERROR: {}'.format(err))
+        return filepath, False
 
-    actual_hash = str(md5.hexdigest())
-    if actual_hash == expected_hash:
-        match = True
-
+    hash, filepath = out.decode('utf-8').split('  ')
     _, filename = os.path.split(filepath)
-    return filename, match
+
+    if hash != expected_hash:
+        print("HASH MISSMATCH: {}: [{} - {}]".format(filepath, hash, expected_hash))
+        return filename, False
+
+    return filename, True
 
 
 def main():
@@ -73,12 +106,17 @@ def main():
         print("Given md5_hash file does not exist")
         return 1
 
-    pool = Pool(processes=int(args.max_jobs))
-    results = list()
+    print("setting up local cluster")
+    cluster = LocalCluster(
+        n_workers=args_.max_jobs,
+        threads_per_worker=4,
+        interface='lo')
+    client = Client(address=cluster.scheduler_address)
 
-    if args.file_list:
-        pbar = tqdm(total=len(args.file_list), desc="Checking files")
 
+    pbar = tqdm(total=len(args.file_list), desc="Checking files")
+    pool = Pool(2)
+    results = []
     with open(args.md5_path, 'r') as infile:
         for line in infile.readlines():
             if args.file_list:
@@ -88,34 +126,40 @@ def main():
                         continue
                     _, expected_hash = line.split('|')
                     results.append(
-                        pool.apipe(
+                        client.submit(
                             hash_file,
                             target_path,
                             expected_hash.strip()))
-                        
-            else:
-                old_path, expected_hash = line.split('|')
-                _, name = os.path.split(old_path)
-                
-                new_path = os.path.join(args.data_path, name)
-                if not os.path.exists(new_path):
-                    continue
-                results.append(
-                    pool.apipe(
-                        hash_file,
-                        new_path,
-                        expected_hash.strip()))
+
+                    # results.append(
+                    #     pool.apipe(
+                    #         hash_file,
+                    #         target_path,
+                    #         expected_hash.strip()))
+                    
 
     all_match = True
     not_match = list()
-    for _, res in tqdm(enumerate(results)):
-        name, match = res.get(9999999)
+    for future as_completed(results):
         pbar.update(1)
+        res = future.results()
+        name = res[0]
+        match = res[1]
+    # for _, res in enumerate(results):
+        # name, match = res
         if not match:
             all_match = False
             not_match.append(name)
-
+            print("ERROR: {}".format(name))
     pbar.close()
+
+    # for res in results:
+    #     name = res[0]
+    #     match = res[1]
+    #     if not match:
+    #         all_match = False
+    #         not_match.append(name)
+
     if all_match:
         msg = "All file hashes match"
         print(msg)
