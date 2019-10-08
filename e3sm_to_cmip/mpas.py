@@ -39,7 +39,7 @@ def remap(ds, mappingFileName, threshold=0.05):
     env = os.environ.copy()
     env['NCO_PATH_OVERRIDE'] = 'no'
 
-    args = ['ncremap', '--d2f', '-7', '--dfl_lvl=1', '--no_stdin',
+    args = ['ncremap', '-7', '--dfl_lvl=1', '--no_stdin',
             '--no_cll_msr', '--no_frm_trm', '--no_stg_grd', '--msk_src=none',
             '--mask_dst=none', '--map={}'.format(mappingFileName), inFileName,
             outFileName]
@@ -344,12 +344,16 @@ def setup_cmor(varname, tables, user_input_path, component='ocean'):
         raise ValueError('Unable to load table from {}'.format(varname))
 
 
-def write_cmor(axes, ds, varname, varunits, **kwargs):
+def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
     '''Write a time series of a variable in the format expected by CMOR'''
     axis_ids = list()
     for axis in axes:
         axis_id = cmor.axis(**axis)
         axis_ids.append(axis_id)
+
+    if d2f and ds[varname].dtype == np.float64:
+        print('Converting {} to float32'.format(varname))
+        ds[varname] = ds[varname].astype(np.float32)
 
     fillValue = netCDF4.default_fillvals['f4']
     if numpy.any(numpy.isnan(ds[varname])):
