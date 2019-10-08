@@ -6,43 +6,9 @@ import multiprocessing
 import random
 import string
 from subprocess import Popen, PIPE
-from pathos.multiprocessing import ProcessPool as Pool
 from distributed import Client, as_completed, LocalCluster
 from tqdm import tqdm
 
-# BLOCK_SIZE = 1024*1014
-
-
-# def hash_file(filepath, expected_hash):
-#     """
-#     Hash a the file at the given path, and compare that to the expected value
-
-#     Parameters
-#     ----------
-#     data_path (str): the path to the data directory
-#     filename (str): the name of the file to check the hashes for
-#     expected_hash (str): the expected hash of that file
-
-#     Returns
-#     -------
-#     Filename, and True if they match, or False otherwise
-#     """
-#     md5 = hashlib.md5()
-#     match = False
-#     with open(filepath, 'rb') as infile:
-#         while True:
-#             data = infile.read(BLOCK_SIZE)
-#             if data:
-#                 md5.update(data)
-#             else:
-#                 break
-
-#     actual_hash = str(md5.hexdigest())
-#     if actual_hash == expected_hash:
-#         match = True
-
-#     _, filename = os.path.split(filepath)
-#     return filename, match
 
 def hash_file(filepath, expected_hash):
     """
@@ -61,7 +27,7 @@ def hash_file(filepath, expected_hash):
     cmd = ['md5sum', filepath]
     proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
     out, err = proc.communicate()
-    
+
     if err:
         print('ERROR: {}'.format(err))
         return filepath, False
@@ -70,7 +36,8 @@ def hash_file(filepath, expected_hash):
     _, filename = os.path.split(filepath)
 
     if hash != expected_hash:
-        print("HASH MISSMATCH: {}: [{} - {}]".format(filepath, hash, expected_hash))
+        print(
+            "HASH MISSMATCH: {}: [{} - {}]".format(filepath, hash, expected_hash))
         return filename, False
 
     return filename, True
@@ -83,20 +50,22 @@ def main():
         '--data_path',
         help="Path to the raw data directory")
     parser.add_argument(
-        '--md5-path', 
+        '--md5-path',
         help="path to | delimited file containing filenames and md5sums")
     parser.add_argument(
         '--max-jobs',
         help="max number of jobs to run at once, default is the number of CPUs on the machine",
         default=1)
     parser.add_argument(
-        '--file-list', 
+        '--file-list',
         nargs="*",
-        default=[],
+        required=True,
         help="list of files to check for, used in place of the contents of the data_path directory")
     parser.add_argument(
         '--write-to-file',
         action="store_true")
+    parser.add_argument(
+        '--label', help="A label for the job, usefull if there are many running at once")
 
     args = parser.parse_args()
     if args.data_path and not os.path.exists(args.data_path):
@@ -108,69 +77,56 @@ def main():
 
     print("setting up local cluster")
     cluster = LocalCluster(
-        n_workers=args_.max_jobs,
+        n_workers=args.max_jobs,
         threads_per_worker=4,
         interface='lo')
     client = Client(address=cluster.scheduler_address)
 
-
     pbar = tqdm(total=len(args.file_list), desc="Checking files")
-    pool = Pool(2)
     results = []
     with open(args.md5_path, 'r') as infile:
         for line in infile.readlines():
-            if args.file_list:
-                for target_path in args.file_list:
-                    _, target_file_name = os.path.split(target_path)
-                    if target_file_name not in line:
-                        continue
-                    _, expected_hash = line.split('|')
-                    results.append(
-                        client.submit(
-                            hash_file,
-                            target_path,
-                            expected_hash.strip()))
-
-                    # results.append(
-                    #     pool.apipe(
-                    #         hash_file,
-                    #         target_path,
-                    #         expected_hash.strip()))
-                    
+            for target_path in args.file_list:
+                _, target_file_name = os.path.split(target_path)
+                if target_file_name not in line:
+                    continue
+                _, expected_hash = line.split('|')
+                results.append(
+                    client.submit(
+                        hash_file,
+                        target_path,
+                        expected_hash.strip()))
 
     all_match = True
     not_match = list()
-    for future as_completed(results):
+    for future, result in as_completed(results):
         pbar.update(1)
-        res = future.results()
-        name = res[0]
-        match = res[1]
-    # for _, res in enumerate(results):
-        # name, match = res
+        name, match = result
         if not match:
             all_match = False
             not_match.append(name)
             print("ERROR: {}".format(name))
     pbar.close()
 
-    # for res in results:
-    #     name = res[0]
-    #     match = res[1]
-    #     if not match:
-    #         all_match = False
-    #         not_match.append(name)
-
     if all_match:
-        msg = "All file hashes match"
+        if args.label:
+            msg = "All files match for {}".format(args.label)
+        else:
+            msg = "All file hashes match"
         print(msg)
         if args.write_to_file:
-            op = open('hash_passed.txt', 'w')
+            op = open('hash_passed_{}.txt'.format(args.label), 'w')
             op.write(msg + '\n')
             op.close()
         return 0
     else:
         if args.write_to_file:
-            outputname = 'hash_fails_' + ''.join([random.choice(string.ascii_lowercase) for x in range(5)])
+            if args.label:
+                outputname = 'hash_fails_{}'.format(args.label)
+            else:
+                outputname = 'hash_fails_' + \
+                    ''.join([random.choice(string.ascii_lowercase)
+                             for _ in range(5)])
             op = open(outputname, 'w')
         msg = "The following did not match:"
         print(msg)

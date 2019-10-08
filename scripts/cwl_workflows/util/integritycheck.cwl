@@ -20,6 +20,8 @@ arguments:
   - "1"
   - "--md5-path"
   - $(inputs.md5_path.path)
+  - "--label"
+  - $(inputs.file_list[0].split(/.*[\/|\\]/)[1])
   - "--file-list"
   - $(inputs.file_list)
 outputs:
