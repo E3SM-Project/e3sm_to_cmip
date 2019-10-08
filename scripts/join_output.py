@@ -5,15 +5,21 @@ import argparse
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('root', help="the root CMIP6 directory path")
-    parser.add_argument(
-        'source', help="the source CMIP6 directory name ex v20190622")
-    parser.add_argument(
-        'destination', help="the destination CMIP6 directory name ex v20190815")
-    parser.add_argument(
-        '--dryrun', help="Dryrun mode will print the file moves but not actually move anything",
-        action="store_true"
-    )
+    parser.add_argument('root', 
+                        help="the root CMIP6 directory path")
+    parser.add_argument('source', 
+                        help="the source CMIP6 directory name ex v20190622")
+    parser.add_argument('destination', 
+                        help="the destination CMIP6 directory name ex v20190815")
+    parser.add_argument('--dryrun', 
+                        action="store_true",
+                        help="Dryrun mode will print the file moves but not actually move anything",)
+    parser.add_argument('-o', '--over-write', 
+                        action="store_true", 
+                        help="Over write files at the destination")
+    parser.add_argument('-l', '--leave-source', 
+                        action="store_true",
+                        help="leave the source directory in place")
     args = parser.parse_args(sys.argv[1:])
 
     for root, dirs, _ in os.walk(args.root):
@@ -28,11 +34,14 @@ def main():
         for f in os.listdir(src_path):
             old_path = os.path.join(src_path, f)
             new_path = os.path.join(dst_path, f)
+            if os.path.exists(new_path) and not args.over_write:
+                print("Error: file at destination already exists")
+                continue
             print("Moving {} to {}".format(old_path, new_path))
             if not args.dryrun:
                 os.rename(old_path, new_path)
-        
-        if not args.dryrun:
+
+        if not args.dryrun and not args.leave_source:
             print("removing {}".format(src_path))
             os.rmdir(src_path)
 
