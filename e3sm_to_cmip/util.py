@@ -143,7 +143,7 @@ def parse_argsuments():
     parser.add_argument(
         '--mode',
         metavar='<mode>',
-        help="The component to analyze, atm, lnd, ocn or ice")
+        help="The component to analyze, atm, lnd, mpaso or mpassi")
     parser.add_argument(
         '--logdir',
         help="Where to put the logging output from CMOR")
