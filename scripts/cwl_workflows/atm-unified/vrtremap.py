@@ -18,10 +18,10 @@ def run_ncks():
     parser = argparse.ArgumentParser()
     parser.add_argument('--vrt_fl')
     parser.add_argument('--output')
-    parser.add_argument('--num_workers')
+    parser.add_argument('--num_workers', type=int)
     _args = parser.parse_args(sys.argv[1:])
 
-    pool = Pool(int(_args.num_workers))
+    pool = Pool(_args.num_workers)
     res = list()
 
     for inpath in sys.stdin.readlines():

@@ -20,7 +20,6 @@ inputs:
   plev_var_list: string[]
   year_per_file: int
   hrz_atm_map_path: string
-  regrid_out_dir: string
 
   # cmor
   tables_path: string
@@ -74,7 +73,6 @@ steps:
   step_cmor:
     run: cmor.cwl
     in:
-      input_path: regrid_out_dir
       tables_path: tables_path
       metadata_path: metadata_path
       num_workers: num_workers

@@ -52,11 +52,11 @@ steps:
       - var_list
     scatterMethod: 
       nested_crossproduct
-    out: []
-      # - cmorized
+    out:
+      - cmorized
 
 outputs: []
-  # cmorized:
-  #   type: 
-  #     Directory[]
-  #   outputSource: step_cmor/cmorized
+  cmorized:
+    type: 
+      Directory[]
+    outputSource: step_cmor/cmorized

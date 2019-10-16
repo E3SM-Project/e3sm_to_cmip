@@ -44,7 +44,11 @@ inputs:
 stdin:
   $(inputs.input_files.path)
 
-arguments: ["-O", $(runtime.outdir),  "-o", "./native"]
+arguments:
+  - -O
+  - $(runtime.outdir)
+  - -o
+  - ./native
 
 outputs:
   time_series_files:

@@ -8,8 +8,6 @@ requirements:
     listing: 
       - $(inputs.raw_file_list)
 inputs:
-  input_path:
-    type: string
   tables_path:
     type: string
     inputBinding:

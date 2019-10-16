@@ -22,8 +22,6 @@ inputs:
   # hrzremap
   std_var_list: string[]
   hrz_atm_map_path: string
-  # native_out_dir: string
-  regrid_out_dir: string
 
   # cmor
   tables_path: string
@@ -36,13 +34,6 @@ outputs:
     type: 
       Directory[]
     outputSource: step_run_segment/cmorized
-  # time_series:
-  #   type:
-  #     type: array
-  #     items:
-  #       type: array
-  #       items: File
-  #   outputSource: step_run_segment/ts_files
 
 steps:
 
@@ -72,8 +63,6 @@ steps:
       std_var_list: std_var_list
       year_per_file: frequency
       hrz_atm_map_path: hrz_atm_map_path
-      # native_out_dir: native_out_dir
-      regrid_out_dir: regrid_out_dir
       tables_path: tables_path
       metadata_path: metadata_path
       cmor_var_list: cmor_var_list
