@@ -6,11 +6,6 @@ requirements:
   - class: InlineJavascriptRequirement
 
 inputs:
-  variable_name:
-    type: string
-    inputBinding:
-      position: 1
-      prefix: -v
   start_year:
     type: int
     inputBinding:
@@ -45,6 +40,7 @@ stdin:
   $(inputs.input_files.path)
 
 arguments:
+  - -v PSL
   - -O
   - $(runtime.outdir)
   - -o
@@ -55,4 +51,4 @@ outputs:
     type: File
     outputBinding:
       glob: 
-        - $(inputs.variable_name + "_" + inputs.start_year.toString().padStart(4, "0") + "01_" + inputs.end_year.toString().padStart(4, "0") + "12.nc")
+        - $("PSL_" + inputs.start_year.toString().padStart(4, "0") + "01_" + inputs.end_year.toString().padStart(4, "0") + "12.nc")

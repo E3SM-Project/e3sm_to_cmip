@@ -7,9 +7,8 @@ template_string = """#!/bin/bash
 
 RETURN=1
 until [ $RETURN -eq 0 ]; do
-    
     e3sm_to_cmip \
-        --no-metadata --mode mpaso --precheck --no-rm-tmpdir \
+        --no-metadata -s --mode mpaso --precheck --no-rm-tmpdir \
         -v {{ variables }} \
         --tables-path {{ tables }} \
         --user-metadata {{ metadata }} \
@@ -28,7 +27,7 @@ done
 
 def render_sbatch(values):
     template = Template(template_string)
-    script_path = 'run_mpaso_sbatch.sh'
+    script_path = 'cmip6_convert_{}.sh'.format(values.variables)
     try:
         script_contents = template.render(
             variables=values.variables,
@@ -46,7 +45,7 @@ def render_sbatch(values):
         call(['chmod', '+x', script_path])
         call(['srun', script_path])
     except Exception as e:
-        raise(e)
+        raise e
     else:
         return 0
 

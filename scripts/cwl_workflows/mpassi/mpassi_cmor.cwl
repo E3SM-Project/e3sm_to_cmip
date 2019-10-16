@@ -38,15 +38,13 @@ inputs:
       prefix: --output-path
 
 arguments: 
-  # - prefix: --var-list
-  #   valueFrom: $(inputs.var_list.join(", "))
   - prefix: --input-path
     valueFrom: $(inputs.input_path.path)
   - prefix: --mode
     valueFrom: $("ice")
 
 outputs: []
-  # cmorized: 
-  #   type: Directory
-  #   outputBinding:
-  #     glob: "CMIP6"
+  cmorized: 
+    type: Directory
+    outputBinding:
+      glob: "CMIP6"

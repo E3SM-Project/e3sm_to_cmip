@@ -37,15 +37,6 @@ inputs:
         prefix: --year_per_file
   hrz_atm_map_path:
     type: string
-  # native_out_dir:
-  #   type: string
-  #   inputBinding:
-  #       prefix: --native_out_dir
-  regrid_out_dir:
-    type: string
-    inputBinding:
-        prefix: --regrid_out_dir
-
   tables_path: 
     type: string
     inputBinding:

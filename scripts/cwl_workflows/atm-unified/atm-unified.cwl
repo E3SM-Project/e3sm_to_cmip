@@ -25,9 +25,8 @@ inputs:
   # hrzremap
   hrz_atm_map_path: string
   vrt_map_path: string
-  regrid_out_dir: string
 
-  # cmor
+  # cmor 
   tables_path: string
   metadata_path: string
   
@@ -57,8 +56,6 @@ steps:
       casename: casename
       std_var_list: std_var_list
       hrz_atm_map_path: hrz_atm_map_path
-      # native_out_dir: native_out_dir
-      regrid_out_dir: regrid_out_dir
       tables_path: tables_path
       metadata_path: metadata_path
       cmor_var_list: cmor_var_std
@@ -78,8 +75,6 @@ steps:
       casename: casename
       plev_var_list: plev_var_list
       hrz_atm_map_path: hrz_atm_map_path
-      # native_out_dir: native_out_dir
-      regrid_out_dir: regrid_out_dir
       tables_path: tables_path
       metadata_path: metadata_path
       cmor_var_list: cmor_var_plev

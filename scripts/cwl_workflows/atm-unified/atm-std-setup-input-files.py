@@ -14,8 +14,6 @@ def main():
     parser.add_argument('--std_var_list')
     parser.add_argument('--year_per_file')
     parser.add_argument('--hrz_atm_mapfile')
-    # parser.add_argument('--native_out_dir')
-    parser.add_argument('--regrid_out_dir')
     parser.add_argument('--tables_path')
     parser.add_argument('--metadata_path')
     parser.add_argument('--cmor_var_list')
@@ -30,23 +28,11 @@ def main():
     print("std_var_list: [{}]".format(", ".join(_args.std_var_list.split())))
     print("year_per_file: {}".format(_args.year_per_file))
     print("hrz_atm_map_path: {}".format(_args.hrz_atm_mapfile))
-    # print("native_out_dir: {}_{}_{}".format(
-        # _args.native_out_dir, _args.start_year, _args.end_year))
-    print("regrid_out_dir: {}_{}_{}".format(
-        _args.regrid_out_dir, _args.start_year, _args.end_year))
     print("tables_path: {}".format(_args.tables_path))
     print("logdir: {}".format(_args.logdir))
     print("metadata_path: {}".format(_args.metadata_path))
     print("cmor_var_list: [{}]".format(", ".join(_args.cmor_var_list.split())))
 
-    # path = "{}_{}_{}".format(_args.native_out_dir,
-    #                          _args.start_year, _args.end_year)
-    # if not os.path.exists(path):
-    #     os.makedirs(path)
-    path = "{}_{}_{}".format(_args.regrid_out_dir,
-                             _args.start_year, _args.end_year)
-    if not os.path.exists(path):
-        os.makedirs(path)
 
     return 0
 

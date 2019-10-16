@@ -42,10 +42,10 @@ inputs:
     type: File[]
 
 arguments:
-  - prefix: "-O"
+  - prefix: -O
     valueFrom: $(runtime.outdir)
-  - prefix: "-o"
-    valueFrom: "./native"
+  - prefix: -o
+    valueFrom: ./native
   - position: 8
     valueFrom: $(inputs.input_array.map(function(el){return el.path}))
 
