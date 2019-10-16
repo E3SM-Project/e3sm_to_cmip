@@ -128,11 +128,19 @@ cases:
     start: 1
     end: 150
   historical:
-    ens: 5
+    ens: 
+      - r1i1p1f1
+      - r2i1p1f1
+      - r3i1p1f1
+      - r4i1p1f1
+      - r5i1p1f1
     start: 1850
     end: 2014
   amip:
-    ens: 3
+    ens: 
+      - r1i1p1f1
+      - r2i1p1f1
+      - r3i1p1f1
     start: 1870
     end: 2014
   
