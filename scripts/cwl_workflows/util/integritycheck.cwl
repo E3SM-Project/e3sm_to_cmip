@@ -1,7 +1,8 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [srun, -A, e3sm, -t, 10:00:00]
+# baseCommand: [srun, -A, e3sm, -t, 10:00:00]
+baseCommand: [python]
 requirements:
   - class: InlineJavascriptRequirement
   - class: InitialWorkDirRequirement
@@ -13,7 +14,7 @@ inputs:
   md5_path: File
   checker: File
 arguments:
-  - "python"
+  # - "python"
   - $(inputs.checker.path)
   - "--write-to-file"
   - "--max-jobs"
