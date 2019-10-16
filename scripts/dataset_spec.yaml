@@ -116,31 +116,34 @@ tables:
 
 cases:
   piControl:
-    ens: 1
     start: 1
     end: 500
+    ens:
+      - r1i1p1f1
   1pctCO2:
-    ens: 1
     start: 1
     end: 150
+    ens:
+      - r1i1p1f1
   abrupt-4xCO2:
-    ens: 1
     start: 1
     end: 150
+    ens:
+      - r1i1p1f1
+  amip:
+    start: 1870
+    end: 2014
+    ens: 
+      - r1i1p1f1
+      - r2i1p1f1
+      - r3i1p1f1
   historical:
+    start: 1850
+    end: 2014
     ens: 
       - r1i1p1f1
       - r2i1p1f1
       - r3i1p1f1
       - r4i1p1f1
       - r5i1p1f1
-    start: 1850
-    end: 2014
-  amip:
-    ens: 
-      - r1i1p1f1
-      - r2i1p1f1
-      - r3i1p1f1
-    start: 1870
-    end: 2014
   

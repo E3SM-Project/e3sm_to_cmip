@@ -4,6 +4,7 @@ import cdms2
 import os
 import sys
 import argparse
+import tqdm
 import yaml
 
 
@@ -27,11 +28,12 @@ def main():
     if not os.path.exists(args.data_path):
         raise ValueError("data path does not exist")
 
-    spec = yaml.load(args.data_spec)
+    with open(args.data_spec, 'r') as ip:
+        spec = yaml.load(ip, Loader=yaml.SafeLoader)
     for exp in spec['cases']:
-        for ens in spec[exp]['ens']:
+        for ens in spec['cases'][exp]['ens']:
             for root, _, files in os.walk(os.path.join(args.data_path, exp, ens)):
-                if not file:
+                if not files:
                     continue
 
                 comp = root.split('/')[10]
@@ -49,8 +51,8 @@ def main():
                     files_list.append(file_full)
 
                 # ,var+'_'+start+'_'+end+'.xml')
-                out_path = os.path.join(args.outpath, exp, ens)
-                out_file = os.path.join(args.outpath, exp, ens,
+                out_path = os.path.join(args.out_path, exp, ens)
+                out_file = os.path.join(args.out_path, exp, ens,
                                         "{}_{}_{}.xml".format(var, start, end))
 
                 # BUILD COMMAND FOR MAKING THE XML.
@@ -58,7 +60,7 @@ def main():
                 # ACTUALLY MAKE THE XML:
                 if not os.path.exists(out_path):
                     os.makedirs(out_path)
-                os.chdir(out_path)
+                # os.chdir(out_path)
                 os.popen(cmd).readlines()
     return 0
 
