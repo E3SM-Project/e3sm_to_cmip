@@ -55,6 +55,9 @@ steps:
 
 outputs:
   cmorized:
-    type: 
-      Directory[]
+    type:
+      type: array
+      items:
+        type: array
+        items: Directory
     outputSource: step_cmor/cmorized

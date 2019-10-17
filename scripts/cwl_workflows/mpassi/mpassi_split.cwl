@@ -33,15 +33,15 @@ requirements:
 
           def main():
               parser = argparse.ArgumentParser()
-              parser.add_argument('-i', '--input')
-              parser.add_argument('-o', '--output')
-              parser.add_argument('-f', '--frequency', type=int)
-              parser.add_argument('--start', type=int)
-              parser.add_argument('--end', type=int)
-              parser.add_argument('--map')
-              parser.add_argument('--region')
-              parser.add_argument('--namelist')
-              parser.add_argument('--restart')
+              parser.add_argument('-i', '--input', required=True)
+              parser.add_argument('-o', '--output', required=True)
+              parser.add_argument('-f', '--frequency', type=int, required=True)
+              parser.add_argument('--start', type=int, required=True)
+              parser.add_argument('--end', type=int, required=True)
+              parser.add_argument('--map', required=True)
+              parser.add_argument('--region', required=True)
+              parser.add_argument('--namelist', required=True)
+              parser.add_argument('--restart', required=True)
 
               _args = parser.parse_args(sys.argv[1:])
 
@@ -49,7 +49,7 @@ requirements:
               end = _args.end
               freq = _args.frequency
 
-              extras = [_args.map, _args.region, _args.namelist, _args.restart]
+              extras = [_args.map, _args.namelist, _args.restart]
 
               segments = []
               seg_start = start
