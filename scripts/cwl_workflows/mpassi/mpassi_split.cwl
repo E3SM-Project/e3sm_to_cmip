@@ -39,7 +39,6 @@ requirements:
               parser.add_argument('--start', type=int, required=True)
               parser.add_argument('--end', type=int, required=True)
               parser.add_argument('--map', required=True)
-              parser.add_argument('--region', required=True)
               parser.add_argument('--namelist', required=True)
               parser.add_argument('--restart', required=True)
 
