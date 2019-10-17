@@ -55,7 +55,7 @@ steps:
     out:
       - cmorized
 
-outputs: []
+outputs:
   cmorized:
     type: 
       Directory[]

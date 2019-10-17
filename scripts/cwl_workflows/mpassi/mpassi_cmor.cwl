@@ -2,8 +2,8 @@
 cwlVersion: v1.0
 class: CommandLineTool
 baseCommand: [srun, e3sm_to_cmip, -s, --no-metadata]
-requirements:
-  - class: InlineJavascriptRequirement
+# requirements:
+#   - class: InlineJavascriptRequirement
 
 inputs:
   input_path:
@@ -43,7 +43,7 @@ arguments:
   - prefix: --mode
     valueFrom: $("ice")
 
-outputs: []
+outputs:
   cmorized: 
     type: Directory
     outputBinding:
