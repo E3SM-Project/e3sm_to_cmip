@@ -19,7 +19,6 @@ inputs:
   cmor_var_list: string[]
   num_workers: int
   logdir: string
-  output_path: string
 
 steps:
 
@@ -46,7 +45,6 @@ steps:
       var_list: cmor_var_list
       mapfile: map_path
       logdir: logdir
-      output_path: output_path
     scatter:
       - input_path
       - var_list

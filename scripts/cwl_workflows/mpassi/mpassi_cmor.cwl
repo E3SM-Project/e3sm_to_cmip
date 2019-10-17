@@ -32,16 +32,14 @@ inputs:
     type: string
     inputBinding:
       prefix: --logdir
-  output_path: 
-    type: string
-    inputBinding:
-      prefix: --output-path
 
-arguments: 
+arguments:
+  - prefix: --output-path
+    valueFrom: $(runtime.outdir)
   - prefix: --input-path
     valueFrom: $(inputs.input_path.path)
   - prefix: --mode
-    valueFrom: $("ice")
+    valueFrom: mpassi
 
 outputs:
   cmorized: 

@@ -69,7 +69,7 @@ def main():
                 os.symlink(
                     os.path.join(_args.input, datafile),
                     os.path.join(_args.output, 'mpassi_segment_{:04d}_{:04d}'.format(start, end), datafile))
-
+                    
     return 0
 
 
