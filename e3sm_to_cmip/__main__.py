@@ -181,9 +181,6 @@ def main():
             file_path=output_path,
             var_list=var_list)
 
-    if not _args['no_rm_tmpdir']:
-        shutil.rmtree(temp_path)
-
     if timeout:
         timer.cancel()
     return 0
