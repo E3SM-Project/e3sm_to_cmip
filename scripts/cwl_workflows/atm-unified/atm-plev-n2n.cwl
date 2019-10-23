@@ -76,7 +76,7 @@ steps:
   step_run_segment:
     run:
       class: CommandLineTool
-      baseCommand: [cwltool, --parallel, --no-compute-checksum]
+      baseCommand: [cwltool, --debug, --no-compute-checksum]
       inputs:
         cwl_input:
           type: File
