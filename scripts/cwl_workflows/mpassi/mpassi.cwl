@@ -7,8 +7,6 @@ requirements:
 
 inputs:
   frequency: int
-  start_year: int
-  end_year: int
   data_path: string
   map_path: string
   namelist_path: string
@@ -22,11 +20,19 @@ inputs:
 
 steps:
 
+  step_get_start_end:
+    run: get_start_end.cwl
+    in:
+      data-path: data_path
+    out:
+      - start_year
+      - end_year
+
   step_segments:
     run: mpassi_split.cwl
     in:
-      start: start_year
-      end: end_year
+      start: step_get_start_end/start_year
+      end: step_get_start_end/end_year
       frequency: frequency
       input: data_path
       map: map_path

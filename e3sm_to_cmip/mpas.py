@@ -178,7 +178,7 @@ def add_mask(ds, mask):
 
 def add_si_mask(ds, mask, siconc, threshold=0.05):
     '''
-    Add a 2D mask to the data sets and apply the mask to all variabels
+    Add a 2D mask to the data sets and apply the mask to all variables
     '''
 
     mask = np.logical_and(
