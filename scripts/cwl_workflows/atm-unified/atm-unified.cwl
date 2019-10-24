@@ -8,27 +8,21 @@ requirements:
   - class: ScatterFeatureRequirement
 
 inputs:
-  # generate segments
-  frequency: int
 
-  # discover_atm_files
   atm_data_path: string
-  start_year: int
-  end_year: int
 
+  frequency: int
   num_workers: int
-  casename: string
 
   std_var_list: string[]
   plev_var_list: string[]
 
-  # hrzremap
   hrz_atm_map_path: string
   vrt_map_path: string
 
-  # cmor 
   tables_path: string
   metadata_path: string
+  scripts_path: string
   
   cmor_var_std: string[]
   cmor_var_plev: string[]
@@ -45,15 +39,31 @@ outputs:
 
 steps:
 
+  step_find_casename:
+    run: find_casename.cwl
+    in:
+      atm_data_path: atm_data_path
+    out:
+      - casename
+  
+  step_find_start_end:
+    run: find_start_end.cwl
+    in:
+      data_path: atm_data_path
+    out:
+      - start_year
+      - end_year
+
   step_atm_std:
     run: atm-std-n2n.cwl
     in:
+      scripts_path: scripts_path
       frequency: frequency
       atm_data_path: atm_data_path
-      start_year: start_year
-      end_year: end_year
+      start_year: step_find_start_end/start_year
+      end_year: step_find_start_end/end_year
       num_workers: num_workers
-      casename: casename
+      casename: step_find_casename/casename
       std_var_list: std_var_list
       hrz_atm_map_path: hrz_atm_map_path
       tables_path: tables_path
@@ -67,12 +77,13 @@ steps:
     run: atm-plev-n2n.cwl
     in:
       frequency: frequency
+      scripts_path: scripts_path
       atm_data_path: atm_data_path
-      start_year: start_year
-      end_year: end_year
+      start_year: step_find_start_end/start_year
+      end_year: step_find_start_end/end_year
       vrt_map_path: vrt_map_path
       num_workers: num_workers
-      casename: casename
+      casename: step_find_casename/casename
       plev_var_list: plev_var_list
       hrz_atm_map_path: hrz_atm_map_path
       tables_path: tables_path

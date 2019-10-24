@@ -48,7 +48,7 @@ arguments:
   - -O
   - $(runtime.outdir)
   - -o
-  - ./native
+  - $(runtime.outdir + "/native")
 
 outputs:
   time_series_files:
