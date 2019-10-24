@@ -31,9 +31,6 @@ outputs:
   cmorized:
     type: Directory
     outputSource: step_cmor/cmip6_dir
-  ts_files:
-    type: File[]
-    outputSource: step_hrz_remap/time_series_files
 
 steps:
   step_discover_atm_files:

@@ -28,6 +28,7 @@ inputs:
   # cmor
   tables_path: string
   metadata_path: string
+  scripts_path: string
   cmor_var_list: string[]
   logdir: string
 
@@ -76,28 +77,24 @@ steps:
   step_run_segment:
     run:
       class: CommandLineTool
-      baseCommand: [cwltool, --debug, --no-compute-checksum]
+      baseCommand: [cwltool, --parallel, --no-compute-checksum]
       inputs:
+        scripts_path:
+          type: string
         cwl_input:
           type: File
       outputs:
         cmorized:
           type: Directory
           outputBinding:
-            glob: "CMIP6"
-        ts_files:
-          type: File[]
-          outputBinding:
-            glob: "*.nc"
+            glob: CMIP6
       arguments:
-        - position: 1
-          valueFrom: $("/export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-unified/atm-plev-single-segment.cwl")
-        - position: 2
-          valueFrom: $(inputs.cwl_input.path)
+        - $(inputs.scripts_path + "/atm-plev-single-segment.cwl")
+        - $(inputs.cwl_input.path)
     in:
+      scripts_path: scripts_path
       cwl_input: step_setup_input_files/cwl_input_files
     out:
       - cmorized
-      - ts_files
     scatter:
       - cwl_input
