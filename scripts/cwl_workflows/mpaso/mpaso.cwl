@@ -32,7 +32,6 @@ steps:
       map: map_path
       namelist: namelist_path
       restart: restart_path
-      psl_path: psl_path
       region_path: region_path
     out:
       - segments
