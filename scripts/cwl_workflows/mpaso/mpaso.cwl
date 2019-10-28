@@ -12,15 +12,13 @@ inputs:
   data_path: string
   map_path: string
   namelist_path: string
+  region_path: string
   restart_path: string
-  psl_path: string
   tables_path: string
   metadata_path: string
   cmor_var_list: string[]
   num_workers: int
   logdir: string
-  output_path: string
-  region_path: string
   timeout: int
 
 steps:
@@ -50,7 +48,6 @@ steps:
       var_list: cmor_var_list
       mapfile: map_path
       logdir: logdir
-      output_path: output_path
       timeout: timeout
     scatter:
       - input_path
@@ -58,25 +55,10 @@ steps:
     scatterMethod: 
       flat_crossproduct
     out:
-      - sbatch_script
-      # - data_path 
-  
-  # step_slurm:
-  #   run: 
-  #     srun.cwl
-  #   in:
-  #     batch_script: step_render_cmor_template/sbatch_script
-  #     input_path: step_render_cmor_template/data_path
-  #   scatter:
-  #     - batch_script
-  #     - input_path
-  #   scatterMethod:
-  #     dotproduct
-  #   out: []
-      # - cmorized
+      - cmorized
 
-outputs: []
-  # cmorized:
-  #   type: 
-  #     Directory[]
-  #   outputSource: step_cmor/cmorized
+outputs: 
+  cmorized:
+    type: 
+      Directory[]
+    outputSource: step_render_cmor_template/cmorized

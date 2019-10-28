@@ -51,6 +51,8 @@ def main():
         seg_end += freq
     if seg_end == end:
         segments.append((seg_start, seg_end))
+    if seg_end > end:
+        segments.append((seg_end - freq + 1, end))
 
     for start, end in segments:
         path = os.path.join(_args.output, 'mpassi_segment_{:04d}_{:04d}'.format(start, end))
