@@ -6,16 +6,18 @@ requirements:
   - class: ScatterFeatureRequirement
 
 inputs:
-  frequency: int
+  allocation: string
+  partition: string
+  timeout: string
   data_path: string
   map_path: string
   namelist_path: string
   restart_path: string
-
-  tables_path: string
   metadata_path: string
+
+  frequency: int
+  tables_path: string
   cmor_var_list: string[]
-  num_workers: int
   logdir: string
 
 steps:
@@ -23,7 +25,7 @@ steps:
   step_get_start_end:
     run: get_start_end.cwl
     in:
-      data-path: data_path
+      data_path: data_path
     out:
       - start_year
       - end_year
@@ -44,10 +46,12 @@ steps:
   step_cmor:
     run: mpassi_cmor.cwl
     in:
+      allocation: allocation:
+      partition: partition
+      timeout: timout
       input_path: step_segments/segments
       tables_path: tables_path
       metadata_path: metadata_path
-      num_workers: num_workers
       var_list: cmor_var_list
       mapfile: map_path
       logdir: logdir

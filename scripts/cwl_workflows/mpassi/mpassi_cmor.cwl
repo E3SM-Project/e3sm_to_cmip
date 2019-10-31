@@ -5,7 +5,9 @@ baseCommand: [srun]
 
 inputs:
   input_path:
-    type: Directory
+    type: string
+    inputBinding:
+      prefix: --input-path
   allocation:
     type: string
   partition:
@@ -17,7 +19,7 @@ inputs:
     inputBinding:
       prefix: --tables-path
   metadata_path:
-    type: string
+    type: File
     inputBinding:
       prefix: --user-metadata
   var_list:
@@ -25,7 +27,7 @@ inputs:
     inputBinding:
       prefix: --var-list
   mapfile:
-    type: string
+    type: File
     inputBinding:
       prefix: --map
   logdir:
@@ -42,11 +44,8 @@ arguments:
   - $(inputs.timeout)
   - e3sm_to_cmip
   - -s
-  - --no-metadata
   - prefix: --output-path
     valueFrom: $(runtime.outdir)
-  - prefix: --input-path
-    valueFrom: $(inputs.input_path.path)
   - prefix: --mode
     valueFrom: mpassi
 

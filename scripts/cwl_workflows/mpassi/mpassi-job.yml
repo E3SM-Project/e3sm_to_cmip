@@ -1,15 +1,35 @@
-frequency: 25
-start_year: 151
-end_year: 500
-
-data_path: /p/user_pub/work/E3SM/1_0/piControl/1deg_atm_60-30km_ocean/sea-ice/native/model-output/mon/ens1/v1/
-
-namelist_path: /p/user_pub/e3sm/baldwin32/piControl/mpassi/mpas-cice_in
-restart_path: /p/user_pub/e3sm/baldwin32/piControl/mpassi/mpaso.rst.0005-01-01_00000.nc
-metadata_path: /export/baldwin32/projects/e3sm_to_cmip/e3sm_user_config_picontrol.json
-
-tables_path: /export/baldwin32/projects/cmip6-cmor-tables/Tables/
-
-map_path: /export/zender1/data/maps/map_oEC60to30v3_to_cmip6_180x360_aave.20181001.nc
-cmor_var_list: [sitimefrac, siconc, simass, sithick, sisnmass, sisnthick, sitemptop, siu, siv]
-logdir: /p/user_pub/e3sm/baldwin32/piControl/mpassi
+namelist_path:
+  class: File
+  path: mpas-cice_in
+restart_path:
+  class: File
+  path: mpaso.rst.1855-01-01_00000.nc
+map_path:
+  class: File
+  path: mpassi/metadata_pi.json
+metadata_path:
+  class: File
+  path: 
+tables_path:
+  class: Directory
+  path: ~/projects/cmip6--cmor-tables/Tables/
+data_path:
+  class: Directory
+  path: /p/user_pub/work/E3SM/1_0/piControl/1deg_atm_60-30km_ocean/sea-ice/native/model-output/mon/ens1/v1/
+log_dir:
+  class: Directory
+  path: /p/user_pub/e3sm/baldwin32/piControl/mpassi
+frequency: 5
+allocation: e3sm
+partition: slurm
+timeout: 2200
+cmor_var_list:
+  - sitimefrac
+  - siconc
+  - simass
+  - sithick
+  - sisnmass
+  - sisnthick
+  - sitemptop
+  - siu
+  - siv
