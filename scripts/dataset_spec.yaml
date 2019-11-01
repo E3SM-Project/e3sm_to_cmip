@@ -121,16 +121,34 @@ source:
       end: 500
       ens:
         - r1i1p1f1
+      tables:
+        - Amon
+        - AERmon
+        - CFmon
+        - SImon
+        - Omon
     1pctCO2:
       start: 1
       end: 150
       ens:
         - r1i1p1f1
+      tables:
+        - Amon
+        - AERmon
+        - CFmon
+        - SImon
+        - Omon
     abrupt-4xCO2:
       start: 1
       end: 150
       ens:
         - r1i1p1f1
+      tables:
+        - Amon
+        - AERmon
+        - CFmon
+        - SImon
+        - Omon
     amip:
       start: 1870
       end: 2014
@@ -138,6 +156,10 @@ source:
         - r1i1p1f1
         - r2i1p1f1
         - r3i1p1f1
+      tables:
+        - Amon
+        - AERmon
+        - CFmon
     historical:
       start: 1850
       end: 2014
@@ -147,37 +169,79 @@ source:
         - r3i1p1f1
         - r4i1p1f1
         - r5i1p1f1
+      tables:
+        - Amon
+        - AERmon
+        - CFmon
+        - SImon
+        - Omon
   E3SM-1-1:
     piControl:
       start: 1850
       end: 2014
       ens:
         - r1i1p1f1
+      tables:
+        - Amon
+        - AERmon
+        - CFmon
+        - SImon
+        - Omon
     historical:
       start: 1850
       end: 2014
       ens:
         - r1i1p1f1
+      tables:
+        - Amon
+        - AERmon
+        - CFmon
+        - SImon
+        - Omon
     hist-bgc:
       start: 1850
       end: 2014
       ens:
         - r1i1p1f1
+      tables:
+        - Amon
+        - AERmon
+        - CFmon
+        - SImon
+        - Omon
   E3SM-1-1-ECA:
     piControl:
       start: 1850
       end: 2014
       ens:
         - r1i1p1f1
+      tables:
+        - Amon
+        - AERmon
+        - CFmon
+        - SImon
+        - Omon
     historical:
       start: 1850
       end: 2014
       ens:
         - r1i1p1f1
+      tables:
+        - Amon
+        - AERmon
+        - CFmon
+        - SImon
+        - Omon
     hist-bgc:
       start: 1850
       end: 2014
       ens:
         - r1i1p1f1
+      tables:
+        - Amon
+        - AERmon
+        - CFmon
+        - SImon
+        - Omon
 
   
