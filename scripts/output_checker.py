@@ -18,7 +18,7 @@ def get_cmip_start_end(filename):
         return int(filename[-16:-12]), int(filename[-9: -5])
 
 
-def check_esgf_for_variable(variable, spec, case, ens):
+def check_esgf_for_variable(variable, spec, source, case, ens):
 
     missing = list()
 
@@ -61,15 +61,15 @@ def check_esgf_for_variable(variable, spec, case, ens):
 
         start, end = get_cmip_start_end(filenames[0])
         freq = end - start + 1
-        spans = list(range(spec['cases'][case]['start'],
-                           spec['cases'][case]['end'], freq))
+        spans = list(range(spec['source'][source][case]['start'],
+                           spec['source'][source][case]['end'], freq))
 
         for span in spans:
             found_span = False
             s_start = span
             s_end = span + freq - 1
-            if s_end > spec['cases'][case]['end']:
-                s_end = spec['cases'][case]['end']
+            if s_end > spec['source'][source][case]['end']:
+                s_end = spec['source'][source][case]['end']
             for f in filenames:
                 f_start, f_end = get_cmip_start_end(f)
                 if f_start == s_start and f_end == s_end:
@@ -121,11 +121,11 @@ def check_esgf(variables, spec, case, ens, max_connections):
     return esgf_missing
 
 
-def check_case(path, variables, spec, case, ens, published):
+def check_case(path, source, variables, spec, case, ens, published):
 
     missing = list()
-
-    all_tables = [x for x in spec['tables']]
+    
+    all_tables = spec['tables'].keys()
     all_vars = list()
     for table in all_tables:
         all_vars.extend(spec['tables'][table])
@@ -146,11 +146,10 @@ def check_case(path, variables, spec, case, ens, published):
                 vars_expected.append(v)
 
     with tqdm(total=num_vars, leave=True) as pbar:
-
         for root, _, files in os.walk(path):
             if not files:
                 continue
-            if 'r{}i1p1f1'.format(ens) not in root.split(os.sep):
+            if ens not in root.split(os.sep):
                 continue
 
             files = sorted(files)
@@ -178,15 +177,15 @@ def check_case(path, variables, spec, case, ens, published):
                 continue
             start, end = get_cmip_start_end(files[0])
             freq = end - start + 1
-            spans = list(range(spec['cases'][case]['start'],
-                               spec['cases'][case]['end'], freq))
+            spans = list(range(spec['source'][source][case]['start'],
+                               spec['source'][source][case]['end'], freq))
 
             for span in spans:
                 found_span = False
                 s_start = span
                 s_end = span + freq - 1
-                if s_end > spec['cases'][case]['end']:
-                    s_end = spec['cases'][case]['end']
+                if s_end > spec['source'][source][case]['end']:
+                    s_end = spec['source'][source][case]['end']
                 for f in files:
                     f_start, f_end = get_cmip_start_end(f)
                     if f_start == s_start and f_end == s_end:
@@ -207,21 +206,45 @@ def check_case(path, variables, spec, case, ens, published):
 def main():
     global debug
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d',
-                        '--data-path', help="path to the root data directory containing the cases")
-    parser.add_argument('-s',
-                        '--case-spec', help="path to yaml file containing the case spec")
-    parser.add_argument('-c', '--cases', nargs="+",
-                        default=['all'], help="Which case to check the data for, default is all")
-    parser.add_argument('-v', '--variables', nargs="+",
-                        default=['all'], help="Which variables to check for, default is all")
     parser.add_argument(
-        '--ens', nargs="+", default=['all'], help="List of ensemble members to check, default all")
-    parser.add_argument('--published', action="store_true",
-                        help="Check the LLNL ESGF node to see if the variables have been published, this can take a while")
-    parser.add_argument('-m', '--max-connections', type=int, default=5,
-                        help="Maximum number of simultanious connections to ESGF node, more connections makes the ESGF search go faster but may also cause time-outs")
-    parser.add_argument('--debug', action="store_true")
+        '-d', '--data-path', 
+        help="path to the root data directory containing the cases",
+        required=True)
+    parser.add_argument(
+        '-s', '--case-spec',
+        help="path to yaml file containing the case spec",
+        required=True)
+    parser.add_argument(
+        '-c', '--cases', 
+        nargs="+",
+        default=['all'], 
+        help="Which case to check the data for, default is all")
+    parser.add_argument(
+        '--source',
+        nargs="+",
+        default=['all'],
+        help="Which source provider to check output for, allowed values are E3SM-1-0, E3SM-1-1, and E3SM-1-1-ECA")
+    parser.add_argument(
+        '-v', '--variables', 
+        nargs="+",
+        default=['all'], 
+        help="Which variables to check for, default is all")
+    parser.add_argument(
+        '--ens', 
+        nargs="+", 
+        default=['all'], 
+        help="List of ensemble members to check, default all")
+    parser.add_argument(
+        '--published', 
+        action="store_true",
+        help="Check the LLNL ESGF node to see if the variables have been published, this can take a while")
+    parser.add_argument(
+        '-m', '--max-connections', 
+        type=int, default=5,
+        help="Maximum number of simultanious connections to ESGF node, more connections makes the ESGF search go faster but may also cause time-outs")
+    parser.add_argument(
+        '--debug',
+         action="store_true")
     args = parser.parse_args(sys.argv[1:])
 
     variables = args.variables
@@ -231,6 +254,7 @@ def main():
     ens = args.ens
     published = args.published
     max_connections = args.max_connections
+    source = args.source
 
     if args.debug:
         print("Running in debug mode")
@@ -244,17 +268,21 @@ def main():
     with open(spec_path, 'r') as ip:
         case_spec = yaml.load(ip, Loader=yaml.SafeLoader)
 
-    for casedir in os.listdir(data_path):
-        _, case = os.path.split(casedir)
-        if casedir in cases or cases == ['all']:
-            try:
-                ensembles = [x + 1 for x in range(case_spec['cases'][case]['ens'])] if 'all' in ens else ens
-            except:
-                import ipdb; ipdb.set_trace()
+    for data_source in os.listdir(data_path):
+        if 'all' not in source and data_source not in source:
+            continue
+        source_path = os.path.join(data_path, data_source)
+        for casedir in os.listdir(source_path):
+            _, case = os.path.split(casedir)
+            if casedir not in cases and 'all' not in cases:
+                continue
+            ensembles = case_spec['source'][data_source][case]['ens'] if 'all' in ens else ens
             for ensemble in ensembles:
-                print('Checking disk for {} ens{}'.format(case, ensemble))
+                print('Checking disk for {source}-{case}-{ens}'.format(
+                    source=data_source, case=case, ens=ensemble))
                 missing = check_case(
-                    os.path.join(data_path, casedir),
+                    os.path.join(data_path, data_source, casedir),
+                    source=data_source,
                     variables=variables,
                     spec=case_spec,
                     case=case,
@@ -264,12 +292,14 @@ def main():
                 _, case = os.path.split(casedir)
                 if missing:
                     print(
-                        "{case}-ens{ens} is missing the following variables from disk:".format(case=case, ens=ensemble))
+                        "{source}-{case}-{ens} is missing the following variables from disk:".format(
+                            source=data_source, case=case, ens=ensemble))
                     for m in missing:
                         print("\t {}".format(m))
                 else:
                     print(
-                        "{case}-ens{ens}: all variables found on disk".format(case=case, ens=ensemble))
+                        "{source}-{case}-{ens}: all variables found on disk".format(
+                            source=data_source, case=case, ens=ensemble))
 
                 esgf_missing = list()
                 if published:
