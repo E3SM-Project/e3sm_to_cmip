@@ -81,6 +81,10 @@ inputs:
     type: string
     inputBinding:
       prefix: --partition
+  account:
+    type: string
+    inputBinding:
+      prefix: --account
   tables_path:
     type: string
     inputBinding:

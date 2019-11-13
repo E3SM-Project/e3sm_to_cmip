@@ -20,6 +20,7 @@ inputs:
   num_workers: int
   timeout: int
   partition: string
+  account: string
 
 steps:
   step_segments:
@@ -48,6 +49,7 @@ steps:
       mapfile: map_path
       timeout: timeout
       partition: partition
+      account: account
     scatter:
       - input_path
       - var_list
