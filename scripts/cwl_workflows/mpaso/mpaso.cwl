@@ -18,7 +18,6 @@ inputs:
   metadata_path: string
   cmor_var_list: string[]
   num_workers: int
-  logdir: string
   timeout: int
 
 steps:
@@ -46,7 +45,6 @@ steps:
       num_workers: num_workers
       var_list: cmor_var_list
       mapfile: map_path
-      logdir: logdir
       timeout: timeout
     scatter:
       - input_path

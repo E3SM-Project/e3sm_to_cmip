@@ -12,4 +12,3 @@ metadata_path: /home/sbaldwin/projects/e3sm_to_cmip/e3sm_user_config_picontrol.j
 
 cmor_var_list: [msftmz, masso, volo, thetaoga, tosga, soga, sosga, zos, masscello, tos, tob, sos, sob, mlotst, fsitherm, wfo, sfdsi, hfds, tauuo, tauvo, thetao, so, uo, vo, wo, hfsifrazil, zhalfo]
 num_workers: 1
-logdir: /lcrc/group/acme/v1DECKoutput/cmip6/piControl/output
