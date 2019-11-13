@@ -19,6 +19,7 @@ inputs:
   cmor_var_list: string[]
   num_workers: int
   timeout: int
+  partition: string
 
 steps:
   step_segments:
@@ -46,6 +47,7 @@ steps:
       var_list: cmor_var_list
       mapfile: map_path
       timeout: timeout
+      partition: partition
     scatter:
       - input_path
       - var_list

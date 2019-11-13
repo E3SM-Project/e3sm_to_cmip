@@ -52,7 +52,7 @@ requirements:
                       outfile.write(script_contents)
                   
                   call(['chmod', '+x', script_path])
-                  call(['srun', script_path])
+                  call(['srun', '-P', values.partition, '-t', '2:00:00', script_path])
               except Exception as e:
                   raise e
               else:
@@ -69,6 +69,7 @@ requirements:
               parser.add_argument('--outdir')
               parser.add_argument('--input')
               parser.add_argument('--timeout')
+              parser.add_argument('--partition')
               exit(
                   render_sbatch(
                       parser.parse_args()))
@@ -76,6 +77,8 @@ requirements:
 inputs:
   input_path:
     type: Directory
+  partition:
+    type: string
   tables_path:
     type: string
     inputBinding:
