@@ -52,7 +52,7 @@ requirements:
                       outfile.write(script_contents)
                   
                   call(['chmod', '+x', script_path])
-                  call(['srun', '-P', values.partition, '-t', '2:00:00', script_path])
+                  call(['srun', '-A', values.account, '--partition', values.partition, '-t', '2:00:00', script_path])
               except Exception as e:
                   raise e
               else:
