@@ -60,16 +60,16 @@ requirements:
 
           if __name__ == "__main__":
               parser = argparse.ArgumentParser()
-              parser.add_argument('--variables')
-              parser.add_argument('--account')
-              parser.add_argument('--tables')
-              parser.add_argument('--metadata')
-              parser.add_argument('--num_proc')
-              parser.add_argument('--map')
-              parser.add_argument('--outdir')
-              parser.add_argument('--input')
-              parser.add_argument('--timeout')
-              parser.add_argument('--partition')
+              parser.add_argument('--variables', required=True)
+              parser.add_argument('--account', required=True)
+              parser.add_argument('--tables', required=True)
+              parser.add_argument('--metadata', required=True)
+              parser.add_argument('--num_proc', required=True)
+              parser.add_argument('--map', required=True)
+              parser.add_argument('--outdir', required=True)
+              parser.add_argument('--input', required=True)
+              parser.add_argument('--timeout', required=True)
+              parser.add_argument('--partition', required=True)
               exit(
                   render_sbatch(
                       parser.parse_args()))
@@ -79,6 +79,8 @@ inputs:
     type: Directory
   partition:
     type: string
+    inputBinding:
+      prefix: --partition
   tables_path:
     type: string
     inputBinding:
