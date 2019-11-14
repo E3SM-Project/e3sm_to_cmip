@@ -10,10 +10,11 @@ inputs:
   partition: string
   timeout: string
   data_path: string
-  map_path: string
   namelist_path: string
   restart_path: string
-  metadata_path: string
+  
+  mapfile: File
+  metadata: File
 
   frequency: int
   tables_path: string
@@ -49,11 +50,11 @@ steps:
       allocation: allocation
       partition: partition
       timeout: timeout
-      input_path: step_segments/segments
+      input_directoy: step_segments/segments
       tables_path: tables_path
-      metadata_path: metadata_path
       var_list: cmor_var_list
-      mapfile: map_path
+      metadata: metadata
+      mapfile: mapfile
       logdir: logdir
     scatter:
       - input_path

@@ -27,7 +27,7 @@ requirements:
               sys.exit(main())
 inputs:
   data_path:
-    type: Directory
+    type: string
     inputBinding:
       prefix: --data-path
 

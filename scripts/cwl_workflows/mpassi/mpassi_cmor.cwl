@@ -4,8 +4,8 @@ class: CommandLineTool
 baseCommand: [srun]
 
 inputs:
-  input_path:
-    type: string
+  input_directory:
+    type: Directory
     inputBinding:
       prefix: --input-path
   allocation:
