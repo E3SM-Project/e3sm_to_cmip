@@ -18,7 +18,7 @@ inputs:
     type: string
     inputBinding:
       prefix: --tables-path
-  metadata_path:
+  metadata:
     type: File
     inputBinding:
       prefix: --user-metadata
