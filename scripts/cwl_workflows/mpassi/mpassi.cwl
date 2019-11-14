@@ -49,14 +49,14 @@ steps:
       allocation: allocation
       partition: partition
       timeout: timeout
-      input_directoy: step_segments/segments
+      input_directory: step_segments/segments
       tables_path: tables_path
       var_list: cmor_var_list
       metadata: metadata
       mapfile: mapfile
       logdir: logdir
     scatter:
-      - input_directoy
+      - input_directory
       - var_list
     scatterMethod: 
       nested_crossproduct
