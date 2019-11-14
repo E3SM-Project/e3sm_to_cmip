@@ -10,10 +10,11 @@ inputs:
   partition: string
   timeout: string
   data_path: string
-  map_path: string
   namelist_path: string
   restart_path: string
-  metadata_path: string
+  
+  mapfile: File
+  metadata: File
 
   frequency: int
   tables_path: string
@@ -37,7 +38,6 @@ steps:
       end: step_get_start_end/end_year
       frequency: frequency
       input: data_path
-      map: map_path
       namelist: namelist_path
       restart: restart_path
     out:
@@ -49,14 +49,14 @@ steps:
       allocation: allocation
       partition: partition
       timeout: timeout
-      input_path: step_segments/segments
+      input_directory: step_segments/segments
       tables_path: tables_path
-      metadata_path: metadata_path
       var_list: cmor_var_list
-      mapfile: map_path
+      metadata: metadata
+      mapfile: mapfile
       logdir: logdir
     scatter:
-      - input_path
+      - input_directory
       - var_list
     scatterMethod: 
       nested_crossproduct

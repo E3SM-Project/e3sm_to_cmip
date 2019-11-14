@@ -4,8 +4,8 @@ class: CommandLineTool
 baseCommand: [srun]
 
 inputs:
-  input_path:
-    type: string
+  input_directory:
+    type: Directory
     inputBinding:
       prefix: --input-path
   allocation:
@@ -18,7 +18,7 @@ inputs:
     type: string
     inputBinding:
       prefix: --tables-path
-  metadata_path:
+  metadata:
     type: File
     inputBinding:
       prefix: --user-metadata
@@ -44,6 +44,7 @@ arguments:
   - $(inputs.timeout)
   - e3sm_to_cmip
   - -s
+  - --precheck
   - prefix: --output-path
     valueFrom: $(runtime.outdir)
   - prefix: --mode
