@@ -26,6 +26,7 @@ inputs:
   # cmor
   tables_path: string
   metadata_path: string
+  scripts_path: string
   cmor_var_list: string[]
   logdir: string
 
@@ -77,24 +78,20 @@ steps:
       inputs:
         cwl_input:
           type: File
+        scripts_path:
+          type: string
       outputs:
         cmorized:
           type: Directory
           outputBinding:
-            glob: "CMIP6"
-        ts_files:
-          type: File[]
-          outputBinding:
-            glob: "*.nc"
+            glob: CMIP6
       arguments:
-        - position: 1
-          valueFrom: $("/export/baldwin32/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-unified/atm-std-single-segment.cwl")
-        - position: 2
-          valueFrom: $(inputs.cwl_input.path)
+        - $(inputs.scripts_path + "/atm-std-single-segment.cwl")
+        - $(inputs.cwl_input.path)
     in:
       cwl_input: step_setup_input_files/cwl_input_files
+      scripts_path: scripts_path
     out:
       - cmorized
-      - ts_files
     scatter:
       - cwl_input

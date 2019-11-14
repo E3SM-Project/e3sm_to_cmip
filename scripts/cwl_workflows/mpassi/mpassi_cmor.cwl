@@ -1,50 +1,57 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [srun, e3sm_to_cmip, -s, --no-metadata]
-requirements:
-  - class: InlineJavascriptRequirement
+baseCommand: [srun]
 
 inputs:
-  input_path:
+  input_directory:
     type: Directory
+    inputBinding:
+      prefix: --input-path
+  allocation:
+    type: string
+  partition:
+    type: string
+  timeout:
+    type: string
   tables_path:
     type: string
     inputBinding:
       prefix: --tables-path
-  metadata_path:
-    type: string
+  metadata:
+    type: File
     inputBinding:
       prefix: --user-metadata
-  num_workers:
-    type: int
-    inputBinding:
-      prefix: --num-proc
   var_list:
     type: string
     inputBinding:
       prefix: --var-list
   mapfile:
-    type: string
+    type: File
     inputBinding:
       prefix: --map
   logdir:
     type: string
     inputBinding:
       prefix: --logdir
-  output_path: 
-    type: string
-    inputBinding:
-      prefix: --output-path
 
-arguments: 
-  - prefix: --input-path
-    valueFrom: $(inputs.input_path.path)
+arguments:
+  - -A
+  - $(inputs.allocation)
+  - -p
+  - $(inputs.partition)
+  - -t
+  - $(inputs.timeout)
+  - e3sm_to_cmip
+  - -s
+  - --precheck
+  - prefix: --output-path
+    valueFrom: $(runtime.outdir)
   - prefix: --mode
-    valueFrom: $("ice")
+    valueFrom: mpassi
 
-outputs: []
+outputs:
   cmorized: 
     type: Directory
     outputBinding:
-      glob: "CMIP6"
+      glob: CMIP6

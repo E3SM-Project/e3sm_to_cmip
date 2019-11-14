@@ -148,10 +148,6 @@ def parse_argsuments():
         '--logdir',
         help="Where to put the logging output from CMOR")
     parser.add_argument(
-        '--no-rm-tmpdir',
-        help='Dont remove the temp dir on exit',
-        action='store_true')
-    parser.add_argument(
         '--timeout',
         help='Exit with code -1 if execution time exceeds given time in seconds')
     parser.add_argument(

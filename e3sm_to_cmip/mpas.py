@@ -5,7 +5,7 @@ Utilities related to converting MPAS-Ocean and MPAS-Seaice files to CMOR
 from __future__ import absolute_import, division, print_function
 
 import re
-import numpy
+import numpy as np
 import netCDF4
 from datetime import datetime
 import sys
@@ -54,8 +54,7 @@ def remap(ds, mappingFileName, threshold=0.05):
         raise subprocess.CalledProcessError(
             'ncremap returned {}'.format(proc.returncode))
 
-    ds = xarray.open_dataset(outFileName, decode_times=False,
-                             mask_and_scale=False)
+    ds = xarray.open_dataset(outFileName, decode_times=False)
 
     if 'depth' in ds.dims:
         ds = ds.transpose('time', 'depth', 'lat', 'lon', 'nbnd')
@@ -116,7 +115,7 @@ def add_time(ds, dsIn, referenceDate='0001-01-01', offsetYears=0):
         _string_to_days_since_date(dateStrings=xtimeEnd,
                                    referenceDate=referenceDate)
 
-    time_bnds = numpy.zeros((len(daysStart), 2))
+    time_bnds = np.zeros((len(daysStart), 2))
     time_bnds[:, 0] = daysStart
     time_bnds[:, 1] = daysEnd
 
@@ -178,10 +177,10 @@ def add_mask(ds, mask):
 
 def add_si_mask(ds, mask, siconc, threshold=0.05):
     '''
-    Add a 2D mask to the data sets and apply the mask to all variabels
+    Add a 2D mask to the data sets and apply the mask to all variables
     '''
 
-    mask = numpy.logical_and(
+    mask = np.logical_and(
         mask, siconc > threshold)
 
     ds = ds.copy()
@@ -204,7 +203,7 @@ def get_cell_masks(dsMesh):
 
     vertIndex = \
         xarray.DataArray.from_dict({'dims': ('nVertLevels',),
-                                    'data': numpy.arange(nVertLevels)})
+                                    'data': np.arange(nVertLevels)})
 
     cellMask3D = vertIndex < dsMesh.maxLevelCell
 
@@ -223,7 +222,7 @@ def get_sea_floor_values(ds, dsMesh):
 
     vertIndex = \
         xarray.DataArray.from_dict({'dims': ('nVertLevels',),
-                                    'data': numpy.arange(nVertLevels)})
+                                    'data': np.arange(nVertLevels)})
 
     for varName in ds.data_vars:
         if 'nVertLevels' not in ds[varName].dims or \
@@ -280,11 +279,11 @@ def write_netcdf(ds, fileName, fillValues=netCDF4.default_fillvals):
     encodingDict = {}
     variableNames = list(ds.data_vars.keys()) + list(ds.coords.keys())
     for variableName in variableNames:
-        isNumeric = numpy.issubdtype(ds[variableName].dtype, numpy.number)
+        isNumeric = np.issubdtype(ds[variableName].dtype, np.number)
         if isNumeric:
             dtype = ds[variableName].dtype
             for fillType in fillValues:
-                if dtype == numpy.dtype(fillType):
+                if dtype == np.dtype(fillType):
                     encodingDict[variableName] = \
                         {'_FillValue': fillValues[fillType]}
                     break
@@ -356,8 +355,8 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
         ds[varname] = ds[varname].astype(np.float32)
 
     fillValue = netCDF4.default_fillvals['f4']
-    if numpy.any(numpy.isnan(ds[varname])):
-        mask = numpy.isfinite(ds[varname])
+    if np.any(np.isnan(ds[varname])):
+        mask = np.isfinite(ds[varname])
         ds[varname] = ds[varname].where(mask, fillValue)
 
     # create the cmor variable
@@ -484,15 +483,15 @@ def interp_vertex_to_cell(varOnVertices, dsMesh):
     verticesOnCell = dsMesh.verticesOnCell.values-1
     cellsOnVertex = dsMesh.cellsOnVertex.values-1
 
-    cellIndices = numpy.arange(nCells)
+    cellIndices = np.arange(nCells)
 
-    weights = numpy.zeros((nCells, maxEdges))
+    weights = np.zeros((nCells, maxEdges))
     for iVertex in range(maxEdges):
         vertices = verticesOnCell[:, iVertex]
         mask1 = vertices > 0
         for iCell in range(vertexDegree):
-            mask2 = numpy.equal(cellsOnVertex[vertices, iCell], cellIndices)
-            mask = numpy.logical_and(mask1, mask2)
+            mask2 = np.equal(cellsOnVertex[vertices, iCell], cellIndices)
+            mask = np.logical_and(mask1, mask2)
             weights[:, iVertex] += mask * kiteAreas[vertices, iCell]
 
     weights =  \
@@ -521,7 +520,7 @@ def _string_to_days_since_date(dateStrings, referenceDate='0001-01-01'):
     dates = [_string_to_datetime(string) for string in dateStrings]
     days = _datetime_to_days(dates, referenceDate=referenceDate)
 
-    days = numpy.array(days)
+    days = np.array(days)
     return days
 
 
@@ -614,7 +613,7 @@ def _compute_depth(refBottomDepth):
 
     refBottomDepth = refBottomDepth.values
 
-    depth_bnds = numpy.zeros((len(refBottomDepth), 2))
+    depth_bnds = np.zeros((len(refBottomDepth), 2))
 
     depth_bnds[0, 0] = 0.
     depth_bnds[1:, 0] = refBottomDepth[0:-1]
@@ -631,7 +630,7 @@ def _compute_moc_time_series(normalVelocity, vertVelocityTop,
 
     dvEdge = dsMesh.dvEdge
     areaCell = dsMesh.areaCell
-    latCell = numpy.rad2deg(dsMesh.latCell)
+    latCell = np.rad2deg(dsMesh.latCell)
     nTime = normalVelocity.sizes['Time']
     nCells = dsMesh.sizes['nCells']
     nVertLevels = dsMesh.sizes['nVertLevels']
@@ -643,8 +642,8 @@ def _compute_moc_time_series(normalVelocity, vertVelocityTop,
 
     latBinSize = 1.0
 
-    lat = numpy.arange(-90., 90. + latBinSize, latBinSize)
-    lat_bnds = numpy.zeros((len(lat)-1, 2))
+    lat = np.arange(-90., 90. + latBinSize, latBinSize)
+    lat_bnds = np.zeros((len(lat)-1, 2))
     lat_bnds[:, 0] = lat[0:-1]
     lat_bnds[:, 1] = lat[1:]
     lat = 0.5*(lat_bnds[:, 0] + lat_bnds[:, 1])
@@ -658,11 +657,11 @@ def _compute_moc_time_series(normalVelocity, vertVelocityTop,
     depth = xarray.DataArray(depth, dims=('depth',))
 
     transport = {}
-    transport['Global'] = xarray.DataArray(numpy.zeros((nTime, nVertLevels)),
+    transport['Global'] = xarray.DataArray(np.zeros((nTime, nVertLevels)),
                                            dims=('Time', 'nVertLevels',))
 
     cellMasks = {}
-    cellMasks['Global'] = xarray.DataArray(numpy.ones(nCells),
+    cellMasks['Global'] = xarray.DataArray(np.ones(nCells),
                                            dims=('nCells',))
 
     for regionIndex in range(1, nRegions):
@@ -688,7 +687,7 @@ def _compute_moc_time_series(normalVelocity, vertVelocityTop,
     mocs = {}
 
     for regionName in regionNames:
-        mocSlice = numpy.zeros((nTime, nVertLevels+1))
+        mocSlice = np.zeros((nTime, nVertLevels+1))
         mocSlice[:, 1:] = transport[regionName].cumsum(
             dim='nVertLevels').values
 
@@ -697,10 +696,10 @@ def _compute_moc_time_series(normalVelocity, vertVelocityTop,
         mocSlices = [mocSlice]
         binCounts = []
         for iLat in range(lat_bnds.sizes['lat']):
-            mask = numpy.logical_and(numpy.logical_and(
+            mask = np.logical_and(np.logical_and(
                 cellMasks[regionName] == 1, latCell >= lat_bnds[iLat, 0]),
                 latCell < lat_bnds[iLat, 1])
-            binCounts.append(numpy.count_nonzero(mask))
+            binCounts.append(np.count_nonzero(mask))
             mocTop = mocSlices[iLat] + (vertVelocityTop[:, mask, :] *
                                         areaCell[mask]).sum(dim='nCells')
             mocSlices.append(mocTop)
