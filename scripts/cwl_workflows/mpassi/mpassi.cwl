@@ -48,7 +48,7 @@ steps:
     in:
       allocation: allocation
       partition: partition
-      timeout: timout
+      timeout: timeout
       input_path: step_segments/segments
       tables_path: tables_path
       metadata_path: metadata_path
