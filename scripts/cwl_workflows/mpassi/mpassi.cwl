@@ -38,7 +38,6 @@ steps:
       end: step_get_start_end/end_year
       frequency: frequency
       input: data_path
-      map: map_path
       namelist: namelist_path
       restart: restart_path
     out:
@@ -57,7 +56,7 @@ steps:
       mapfile: mapfile
       logdir: logdir
     scatter:
-      - input_path
+      - input_directoy
       - var_list
     scatterMethod: 
       nested_crossproduct
