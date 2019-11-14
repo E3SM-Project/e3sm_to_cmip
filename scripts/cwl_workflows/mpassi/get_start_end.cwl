@@ -26,8 +26,8 @@ requirements:
           if __name__ == "__main__":
               sys.exit(main())
 inputs:
-  data-path:
-    type: string
+  data_path:
+    type: Directory
     inputBinding:
       prefix: --data-path
 

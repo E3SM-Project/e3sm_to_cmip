@@ -26,16 +26,11 @@ requirements:
               except Exception:
                   return 0
 
-          def get_psl_year(filepath):
-              pattern = r'PSL_\d{6}_\d{6}.nc'
-              idx = re.search(pattern, filepath)
-              return int(filepath[idx.start()+4: idx.start()+8])
-
           def main():
               parser = argparse.ArgumentParser()
-              parser.add_argument('-i', '--input', required=True)
-              parser.add_argument('-o', '--output', required=True)
-              parser.add_argument('-f', '--frequency', type=int, required=True)
+              parser.add_argument('--input', required=True)
+              parser.add_argument('--output', required=True)
+              parser.add_argument('--frequency', type=int, required=True)
               parser.add_argument('--start', type=int, required=True)
               parser.add_argument('--end', type=int, required=True)
               parser.add_argument('--map', required=True)
@@ -119,8 +114,8 @@ inputs:
       prefix: --frequency
 
 arguments:
-  - prefix: --output
-    valueFrom: $(runtime.outdir)
+  - --output
+  - $(runtime.outdir)
 
 outputs:
   segments:
