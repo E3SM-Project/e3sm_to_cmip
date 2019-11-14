@@ -46,7 +46,7 @@ steps:
   step_cmor:
     run: mpassi_cmor.cwl
     in:
-      allocation: allocation:
+      allocation: allocation
       partition: partition
       timeout: timout
       input_path: step_segments/segments
