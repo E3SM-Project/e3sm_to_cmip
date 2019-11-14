@@ -44,6 +44,7 @@ arguments:
   - $(inputs.timeout)
   - e3sm_to_cmip
   - -s
+  - --precheck
   - prefix: --output-path
     valueFrom: $(runtime.outdir)
   - prefix: --mode
