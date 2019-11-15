@@ -71,3 +71,7 @@ outputs:
     type: 
       Directory[]
     outputSource: step_render_cmor_template/cmorized
+  logs:
+    type:
+      Directory[]
+    outputSource: step_render_cmor_template/logs
