@@ -42,7 +42,6 @@ requirements:
                       account=values.account,
                       tables=values.tables,
                       metadata=values.metadata,
-                      num_proc=values.num_proc,
                       map=values.map,
                       outdir=values.outdir,
                       input=values.input,
