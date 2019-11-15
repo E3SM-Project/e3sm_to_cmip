@@ -31,14 +31,14 @@ steps:
     in:
       data_path: data_path
     out:
-      - start
-      - end
+      - start_year
+      - end_year
 
   step_segments:
     run: mpaso_split.cwl
     in:
-      start: step_get_start_end/start
-      end: step_get_start_end/end
+      start: step_get_start_end/start_year
+      end: step_get_start_end/end_year
       frequency: frequency
       input: data_path
       namelist: namelist_path
