@@ -1,14 +1,15 @@
 frequency: 1
-start_year: 1
-end_year: 5
 
 data_path: /lcrc/group/acme/v1DECKoutput/piControl/
-map_path: /home/zender/data/maps/map_oEC60to30v3_to_cmip6_180x360_aave.20181001.nc
+map: 
+  class: File
+  path: /home/zender/data/maps/map_oEC60to30v3_to_cmip6_180x360_aave.20181001.nc
+metadata:
+  class: File
+  path: /home/sbaldwin/projects/e3sm_to_cmip/e3sm_user_config_picontrol.json
 namelist_path: /lcrc/group/acme/v1DECKoutput/cmip6/piControl/input/mpas-o_in
 region_path: /lcrc/group/acme/v1DECKoutput/cmip6/piControl/input/oEC60to30v3_Atlantic_region_and_southern_transect.nc
 restart_path: /lcrc/group/acme/v1DECKoutput/cmip6/piControl/input/mpaso.rst.0005-01-01_00000.nc
 tables_path: /home/sbaldwin/projects/cmip6-cmor-tables/Tables/
-metadata_path: /home/sbaldwin/projects/e3sm_to_cmip/e3sm_user_config_picontrol.json
 
 cmor_var_list: [msftmz, masso, volo, thetaoga, tosga, soga, sosga, zos, masscello, tos, tob, sos, sob, mlotst, fsitherm, wfo, sfdsi, hfds, tauuo, tauvo, thetao, so, uo, vo, wo, hfsifrazil, zhalfo]
-num_workers: 1

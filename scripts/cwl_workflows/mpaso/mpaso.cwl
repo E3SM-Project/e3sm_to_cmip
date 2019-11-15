@@ -7,30 +7,40 @@ requirements:
 
 inputs:
   frequency: int
-  start_year: int
-  end_year: int
   data_path: string
-  map_path: string
+
+  mapfile: File
+  metadata: File
+
   namelist_path: string
   region_path: string
   restart_path: string
+
   tables_path: string
-  metadata_path: string
   cmor_var_list: string[]
   num_workers: int
+
   timeout: int
   partition: string
   account: string
 
 steps:
+
+  step_get_start_end:
+    run: get_start_end.cwl
+    in:
+      data_path: data_path
+    out:
+      - start
+      - end
+
   step_segments:
     run: mpaso_split.cwl
     in:
-      start: start_year
-      end: end_year
+      start: step_get_start_end/start
+      end: step_get_start_end/end
       frequency: frequency
       input: data_path
-      map: map_path
       namelist: namelist_path
       restart: restart_path
       region_path: region_path

@@ -21,7 +21,6 @@ requirements:
                   -v {{ variables }} \
                   --tables-path {{ tables }} \
                   --user-metadata {{ metadata }} \
-                  --num-proc {{ num_proc }} \
                   --map {{ map }} \
                   --logdir {{ outdir }} \
                   --output {{ outdir }} \
@@ -64,7 +63,6 @@ requirements:
               parser.add_argument('--account', required=True)
               parser.add_argument('--tables', required=True)
               parser.add_argument('--metadata', required=True)
-              parser.add_argument('--num_proc', required=True)
               parser.add_argument('--map', required=True)
               parser.add_argument('--outdir', required=True)
               parser.add_argument('--input', required=True)
@@ -77,6 +75,8 @@ requirements:
 inputs:
   input_path:
     type: Directory
+    inputBinding:
+      prefix: --input
   partition:
     type: string
     inputBinding:
@@ -89,20 +89,16 @@ inputs:
     type: string
     inputBinding:
       prefix: --tables
-  metadata_path:
-    type: string
+  metadata:
+    type: File
     inputBinding:
       prefix: --metadata
-  num_workers:
-    type: int
-    inputBinding:
-      prefix: --num_proc
   var_list:
     type: string
     inputBinding:
       prefix: --variables
   mapfile:
-    type: string
+    type: File
     inputBinding:
       prefix: --map
   timeout:
@@ -117,7 +113,5 @@ outputs:
       glob: CMIP6
 
 arguments:
-  - --input
-  - $(inputs.input_path.path)
   - --outdir
   - $(runtime.outdir)

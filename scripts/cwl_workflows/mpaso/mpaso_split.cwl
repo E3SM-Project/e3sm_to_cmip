@@ -29,7 +29,6 @@ requirements:
               parser.add_argument('-f', '--frequency', type=int)
               parser.add_argument('--start', type=int)
               parser.add_argument('--end', type=int)
-              parser.add_argument('--map')
               parser.add_argument('--region')
               parser.add_argument('--namelist')
               parser.add_argument('--restart')
@@ -40,8 +39,7 @@ requirements:
               end = _args.end
               freq = _args.frequency
 
-              extras = [_args.map, _args.region,
-                        _args.namelist, _args.restart]
+              extras = [_args.region, _args.namelist, _args.restart]
 
               segments = []
               seg_start = start
@@ -94,10 +92,6 @@ inputs:
     type: string
     inputBinding:
       prefix: --input
-  map:
-    type: string
-    inputBinding:
-      prefix: --map
   region_path:
     type: string
     inputBinding:
