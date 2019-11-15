@@ -53,7 +53,7 @@ steps:
     in:
       input_path: step_segments/segments
       tables_path: tables_path
-      metadata_path: metadata
+      metadata: metadata
       num_workers: num_workers
       var_list: cmor_var_list
       mapfile: mapfile
