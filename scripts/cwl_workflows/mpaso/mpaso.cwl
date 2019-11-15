@@ -18,7 +18,6 @@ inputs:
 
   tables_path: string
   cmor_var_list: string[]
-  num_workers: int
 
   timeout: int
   partition: string
