@@ -26,6 +26,9 @@ inputs:
   lnd_var_list: string[]
   cmor_var_list: string[]
 
+  account: string
+  partition: string
+
 outputs: 
   # cmorized:
   #   type: Directory[]
@@ -73,6 +76,8 @@ steps:
       destination_grid: lnd_destination_grid
       lnd_files: step_discover_lnd_files/lnd_files
       num_workers: num_workers
+      account: account
+      partition: partition
     scatter:
       - lnd_files
     out:
