@@ -18,7 +18,6 @@ inputs:
 
   metadata_path: string
   tables_path: string
-  output_path: string
 
   lnd_var_list: string[]
   cmor_var_list: string[]
@@ -29,7 +28,7 @@ inputs:
 outputs: 
   cmorized:
     type: Directory[]
-    outputSource: run_single_segment/cmip6_dir
+    outputSource: step_cmor/cmip6_dir
     linkMerge: merge_flattened
   remaped_time_series:
     type:
@@ -124,7 +123,6 @@ steps:
       num_workers: num_workers
       var_list: cmor_var_list
       raw_file_list: time_series/remaped_time_series
-      output_path: output_path
       account: account
       partition: partition
     scatter:

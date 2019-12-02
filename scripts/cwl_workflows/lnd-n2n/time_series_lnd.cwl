@@ -10,25 +10,12 @@ inputs:
     type: string[]
   start_year:
     type: int
-    inputBinding:
-      position: 2
-      prefix: -s
   end_year:
     type: int
-    inputBinding:
-      position: 3
-      prefix: -e
   year_per_file:
     type: int
-    inputBinding:
-      position: 4
-      prefix: --ypf=
-      separate: false
   casename:
     type: string
-    inputBinding:
-      prefix: -c
-      position: 7
   remapped_lnd_files:
     type: File[]
   account:
@@ -42,13 +29,20 @@ arguments:
   - --partition
   - $(inputs.partition)
   - ncclimo
-  - -7
+  - "-7"
   - --dfl_lvl=1
   - --no_cll_msr
   - -a
   - sdd
   - -v
   - $(inputs.variable_name.join(' ')) 
+  - -c
+  - $(inputs.casename)
+  - -s
+  - $(inputs.start_year)
+  - -e
+  - $(inputs.end_year)
+  - $('--ypf='+inputs.year_per_file)
   - --no_stdin
   - $(inputs.remapped_lnd_files.map(function(el){return el.path}))
 

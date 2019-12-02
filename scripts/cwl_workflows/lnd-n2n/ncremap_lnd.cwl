@@ -11,11 +11,14 @@ arguments:
   - ncremap
   - -p
   - bck
-  - --no_stdin
   - -P
   - sgs
   - -a
   - conserve
+  - -s
+  - $(inputs.source_grid)
+  - -g
+  - $(inputs.destination_grid)
 
 inputs:
   account:
@@ -24,20 +27,15 @@ inputs:
     type: string
   source_grid:
     type: string
-    inputBinding:
-      prefix: -s
   destination_grid:
     type: string
-    inputBinding:
-      prefix: -g
   num_workers:
     type: int
-    inputBinding:
-      prefix: -t
   lnd_files:
-    type: File[]
-    inputBinding:
-      position: 10000
+    type: File
+
+stdin: $(inputs.lnd_files.path)
+
 
 outputs:
   remaped_lnd_files:
