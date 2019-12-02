@@ -16,7 +16,7 @@ requirements:
               p = argparse.ArgumentParser()
               p.add_argument('--data-path')
               args = p.parse_args()
-              filename = os.listdir(args.atm_data_path)[0]
+              filename = os.listdir(args.data_path)[0]
               i = filename.index('.clm2.h0')
               if i == -1:
                   return -1

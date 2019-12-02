@@ -36,8 +36,8 @@ requirements:
               start = int(_args.start_year)
               end = int(_args.end_year)
 
-              atm_pattern = 'clm2.h0'
-              atm_files = list()
+              lnd_pattern = 'clm2.h0'
+              lnd_files = list()
 
               num_files_expected = 12 * (end - start + 1)
 
@@ -49,14 +49,14 @@ requirements:
                           if atm_pattern in f:
                               year = get_year(f)
                               if year >= start and year <= end:
-                                  atm_files.append(os.path.join(root, f))
-                                  if len(atm_files) >= num_files_expected:
+                                  lnd_files.append(os.path.join(root, f))
+                                  if len(lnd_files) >= num_files_expected:
                                       tobreak = True
                                       break
                       if tobreak:
                           break
 
-              for f in sorted(atm_files):
+              for f in sorted(lnd_files):
                   print(f)
               return 0
 
