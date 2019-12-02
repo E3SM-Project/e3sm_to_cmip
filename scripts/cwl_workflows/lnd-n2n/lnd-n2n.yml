@@ -1,18 +1,13 @@
 lnd_data_path: /p/user_pub/e3sm/baldwin32/bgc/CNTL/lnd/
-casename: 20181217.CNTL_CNPCTC1850_OIBGC.ne30_oECv3.edison
 metadata_path: /p/user_pub/work/E3SM/cmip6_variables/bgc_cntl/extras/metadata_cntl.json
 
 logdir: /p/user_pub/work/E3SM/cmip6_variables/bgc_cntl/output
-output_path: /p/user_pub/work/E3SM/cmip6_variables/bgc_cntl/output
 
 lnd_source_grid: /export/zender1/data/grids/ne30np4_pentagons.091226.nc
 lnd_destination_grid: /export/zender1/data/grids/cmip6_180x360_scrip.20181001.nc
 
-
 frequency: 25
 num_workers: 12
-start_year: 1850
-end_year: 1855
 tables_path: /export/baldwin32/projects/cmip6-cmor-tables/Tables/
 
 lnd_var_list:  [TOTLITC, CWDC, TOTPRODC, COL_FIRE_CLOSS, WOOD_HARVESTC, TOTVEGC, NBP, GPP, AR, HR]

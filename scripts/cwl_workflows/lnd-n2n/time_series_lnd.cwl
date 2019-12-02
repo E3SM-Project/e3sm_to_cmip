@@ -1,7 +1,7 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [ncclimo]
+baseCommand: [srun]
 requirements:
   - class: InlineJavascriptRequirement
 
@@ -31,19 +31,26 @@ inputs:
       position: 7
   remapped_lnd_files:
     type: File[]
+  account:
+    type: string
+  partition:
+    type: string
 
 arguments:
-  - '-7'
-  - '--dfl_lvl=1'
-  - '--no_cll_msr'
-  - '-a'
-  - 'sdd'
-  - prefix: -v
-    valueFrom: $(inputs.variable_name.join(' ')) 
-  - position: 8
-    valueFrom: --no_stdin
-  - position: 9
-    valueFrom: $(inputs.remapped_lnd_files.map(function(el){return el.path}))
+  - -A
+  - $(inputs.account)
+  - --partition
+  - $(inputs.partition)
+  - ncclimo
+  - -7
+  - --dfl_lvl=1
+  - --no_cll_msr
+  - -a
+  - sdd
+  - -v
+  - $(inputs.variable_name.join(' ')) 
+  - --no_stdin
+  - $(inputs.remapped_lnd_files.map(function(el){return el.path}))
 
 outputs:
   remaped_time_series:
