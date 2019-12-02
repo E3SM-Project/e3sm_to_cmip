@@ -22,12 +22,16 @@ inputs:
     type: string
   partition:
     type: string
+  timeout:
+    type: string
 
 arguments:
   - -A
   - $(inputs.account)
   - --partition
   - $(inputs.partition)
+  - -t
+  - $(inputs.timeout)
   - ncclimo
   - "-7"
   - --dfl_lvl=1

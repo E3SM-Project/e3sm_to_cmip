@@ -30,8 +30,16 @@ inputs:
     type: string
   partition:
     type: string
+  timeout:
+    type: string
 
 arguments:
+  - -A
+  - $(inputs.account)
+  - --partition
+  - $(inputs.partition)
+  - -t
+  - $(inputs.timeout)
   - e3sm_to_cmip
   - -s
   - --input-path

@@ -24,6 +24,7 @@ inputs:
 
   account: string
   partition: string
+  timeout: string
 
 outputs: 
   cmorized:
@@ -89,6 +90,7 @@ steps:
       num_workers: num_workers
       account: account
       partition: partition
+      timeout: timeout
     scatter:
       - lnd_files
     out:
@@ -106,6 +108,7 @@ steps:
       remapped_lnd_files: step_remap/remaped_lnd_files
       account: account
       partition: partition
+      timeout: timeout
     scatter:
       - remapped_lnd_files
       - start_year
@@ -125,6 +128,7 @@ steps:
       raw_file_list: time_series/remaped_time_series
       account: account
       partition: partition
+      timeout: timeout
     scatter:
       - raw_file_list
     out:

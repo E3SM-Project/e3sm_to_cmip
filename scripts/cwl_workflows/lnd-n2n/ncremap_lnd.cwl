@@ -8,6 +8,8 @@ arguments:
   - $(inputs.account)
   - --partition
   - $(inputs.partition)
+  - -t
+  - $(inputs.timeout)
   - ncremap
   - -p
   - bck
@@ -21,10 +23,6 @@ arguments:
   - $(inputs.destination_grid)
 
 inputs:
-  account:
-    type: string
-  partition:
-    type: string
   source_grid:
     type: string
   destination_grid:
@@ -33,6 +31,12 @@ inputs:
     type: int
   lnd_files:
     type: File
+  account:
+    type: string
+  partition:
+    type: string
+  timeout:
+    type: string
 
 stdin: $(inputs.lnd_files.path)
 

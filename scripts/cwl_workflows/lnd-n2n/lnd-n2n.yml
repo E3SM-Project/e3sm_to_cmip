@@ -12,6 +12,7 @@ tables_path: /export/baldwin32/projects/cmip6-cmor-tables/Tables/
 
 account: e3sm
 partition: short
+timeout: 2:00:00
 
 lnd_var_list:  [SOILWATER_10CM, SOILLIQ, SOILICE, QOVER, QRUNOFF, QINTR, QVEGE, QSOIL, QVEGT, TSOI, LAISHA, LAISUN, TOTLITC, CWDC, TOTPRODC, COL_FIRE_CLOSS, WOOD_HARVESTC, TOTVEGC, NBP, GPP, AR, HR]
 cmor_var_list: [mrsos, mrso, mrfso, mrros, mrro, prveg, evspsblveg, evspsblsoi, tran, tsl, lai, cLitter, cProduct, cSoil, fFire, fHarvest, cVeg, nbp, gpp, ra, rh]
