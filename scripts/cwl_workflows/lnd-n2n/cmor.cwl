@@ -26,10 +26,6 @@ inputs:
       prefix: -v
   raw_file_list:
     type: File[]
-  output_path:
-    type: string
-    inputBinding:
-      prefix: --output-path
   account:
     type: string
   partition:
@@ -39,7 +35,9 @@ arguments:
   - e3sm_to_cmip
   - -s
   - --input-path
-  - $(runtime.tmpdir)
+  - .
+  - --output-path
+  - $(runtime.outdir)
 
 outputs: 
   cmip6_dir: 
