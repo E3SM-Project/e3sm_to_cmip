@@ -46,7 +46,7 @@ requirements:
               for root, _, files in os.walk(inpath):
                   if files:
                       for f in files:
-                          if atm_pattern in f:
+                          if lnd_pattern in f:
                               year = get_year(f)
                               if year >= start and year <= end:
                                   lnd_files.append(os.path.join(root, f))
