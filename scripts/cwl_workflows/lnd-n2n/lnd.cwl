@@ -38,6 +38,9 @@ outputs:
         type: array
         items: File
     outputSource: time_series/remaped_time_series
+  cmor_logs:
+    type: Directory[]
+    outputSource: step_cmor/logs
 
 steps:
 
@@ -133,3 +136,4 @@ steps:
       - raw_file_list
     out:
       - cmip6_dir
+      - logs

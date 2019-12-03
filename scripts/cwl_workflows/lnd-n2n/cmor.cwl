@@ -51,4 +51,8 @@ outputs:
   cmip6_dir: 
     type: Directory
     outputBinding:
-      glob: "CMIP6"
+      glob: CMIP6
+  logs:
+    type: Directory
+    outputBinding:
+      glob: cmor_logs
