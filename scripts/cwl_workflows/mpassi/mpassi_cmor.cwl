@@ -4,8 +4,10 @@ class: CommandLineTool
 baseCommand: [srun]
 
 inputs:
-  input_path:
+  input_directory:
     type: Directory
+    inputBinding:
+      prefix: --input-path
   allocation:
     type: string
   partition:
@@ -16,8 +18,8 @@ inputs:
     type: string
     inputBinding:
       prefix: --tables-path
-  metadata_path:
-    type: string
+  metadata:
+    type: File
     inputBinding:
       prefix: --user-metadata
   var_list:
@@ -25,7 +27,7 @@ inputs:
     inputBinding:
       prefix: --var-list
   mapfile:
-    type: string
+    type: File
     inputBinding:
       prefix: --map
   logdir:
@@ -42,11 +44,9 @@ arguments:
   - $(inputs.timeout)
   - e3sm_to_cmip
   - -s
-  - --no-metadata
+  - --precheck
   - prefix: --output-path
     valueFrom: $(runtime.outdir)
-  - prefix: --input-path
-    valueFrom: $(inputs.input_path.path)
   - prefix: --mode
     valueFrom: mpassi
 

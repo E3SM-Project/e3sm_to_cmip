@@ -54,8 +54,7 @@ def remap(ds, mappingFileName, threshold=0.05):
         raise subprocess.CalledProcessError(
             'ncremap returned {}'.format(proc.returncode))
 
-    ds = xarray.open_dataset(outFileName, decode_times=False,
-                             mask_and_scale=False)
+    ds = xarray.open_dataset(outFileName, decode_times=False)
 
     if 'depth' in ds.dims:
         ds = ds.transpose('time', 'depth', 'lat', 'lon', 'nbnd')

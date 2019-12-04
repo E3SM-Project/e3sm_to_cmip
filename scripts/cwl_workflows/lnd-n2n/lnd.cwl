@@ -15,22 +15,22 @@ inputs:
 
   frequency: int
   num_workers: int
-  start_year: int
-  end_year: int
-  casename: string
 
   metadata_path: string
   tables_path: string
-  output_path: string
 
   lnd_var_list: string[]
   cmor_var_list: string[]
 
+  account: string
+  partition: string
+  timeout: string
+
 outputs: 
-  # cmorized:
-  #   type: Directory[]
-  #   outputSource: run_single_segment/cmip6_dir
-  #   linkMerge: merge_flattened
+  cmorized:
+    type: Directory[]
+    outputSource: step_cmor/cmip6_dir
+    linkMerge: merge_flattened
   remaped_time_series:
     type:
       type: array
@@ -38,14 +38,32 @@ outputs:
         type: array
         items: File
     outputSource: time_series/remaped_time_series
+  cmor_logs:
+    type: Directory[]
+    outputSource: step_cmor/logs
 
 steps:
+
+  step_get_casename:
+    run: find_casename.cwl
+    in:
+      data_path: lnd_data_path
+    out:
+      - casename
+  
+  step_get_start_end:
+    run: get_start_end.cwl
+    in:
+      data_path: lnd_data_path
+    out:
+      - start_year
+      - end_year
 
   step_segments:
     run: generate_segments.cwl
     in:
-      start: start_year
-      end: end_year
+      start: step_get_start_end/start_year
+      end: step_get_start_end/end_year
       frequency: frequency
     out:
       - segments_start
@@ -73,6 +91,9 @@ steps:
       destination_grid: lnd_destination_grid
       lnd_files: step_discover_lnd_files/lnd_files
       num_workers: num_workers
+      account: account
+      partition: partition
+      timeout: timeout
     scatter:
       - lnd_files
     out:
@@ -82,12 +103,15 @@ steps:
     run: 
       time_series_lnd.cwl
     in:
-      casename: casename
+      casename: step_get_casename/casename
       variable_name: lnd_var_list
       year_per_file: frequency
       start_year: step_segments/segments_start
       end_year: step_segments/segments_end
       remapped_lnd_files: step_remap/remaped_lnd_files
+      account: account
+      partition: partition
+      timeout: timeout
     scatter:
       - remapped_lnd_files
       - start_year
@@ -105,33 +129,11 @@ steps:
       num_workers: num_workers
       var_list: cmor_var_list
       raw_file_list: time_series/remaped_time_series
-      output_path: output_path
+      account: account
+      partition: partition
+      timeout: timeout
     scatter:
       - raw_file_list
-    out: []
-      # - cmip6_dir
-
-  # run_single_segment:
-  #   run:
-  #     cwltool_single_segment.cwl
-  #   scatter:
-  #     - start_year
-  #     - end_year
-  #   scatterMethod: dotproduct
-  #   in: 
-  #     lnd_var_list: lnd_var_list
-  #     lnd_data_path: lnd_data_path
-  #     lnd_source_grid: lnd_source_grid
-  #     lnd_destination_grid: lnd_destination_grid
-  #     frequency: frequency
-  #     num_workers: num_workers
-  #     casename: casename
-  #     start_year: step_segments/segments_start
-  #     end_year: step_segments/segments_end
-  #     metadata_path: metadata_path
-  #     tables_path: tables_path
-  #     cmor_var_list: cmor_var_list
-  #     output_path: output_path
-  #   out:
-  #     # - cmip6_dir
-  #     - remaped_time_series
+    out:
+      - cmip6_dir
+      - logs

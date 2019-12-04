@@ -11,8 +11,8 @@ requirements:
           import sys
           import os
           def get_year(filepath):
-              # Works for files matching the pattern: "mpaso.hist.am.timeSeriesStatsMonthly.1999-12-01.nc"
-              return filepath[-13:-9]
+              # Works for files matching the pattern: "CASENAME.clm2.h0.1999-12.nc"
+              return filepath[-10:-6]
           def main():
               parser = argparse.ArgumentParser()
               parser.add_argument('--data-path')
