@@ -1,7 +1,7 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [ncclimo, '-7', '--dfl_lvl=1', '--no_cll_msr', '-a', 'sdd']
+baseCommand: [srun]
 requirements:
   - class: InlineJavascriptRequirement
 
@@ -40,15 +40,34 @@ inputs:
       position: 7
   input_files:
     type: File
+  account: 
+    type: string
+  partition: 
+    type: string
+  timeout: 
+    type: string
 
 stdin:
   $(inputs.input_files.path)
 
 arguments:
+  - -A
+  - $(inputs.account)
+  - --partition
+  - $(inputs.partition)
+  - -t
+  - $(inputs.timeout)
+  - ncclimo
+  - '-7'
+  - --dfl_lvl=1
+  - --no_cll_msr
+  - --no_stdin
+  - -a
+  - sdd
   - -O
   - $(runtime.outdir)
   - -o
-  - $(runtime.outdir + "/native")
+  - ./native
 
 outputs:
   time_series_files:

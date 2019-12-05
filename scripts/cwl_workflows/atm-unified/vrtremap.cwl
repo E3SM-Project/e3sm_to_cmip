@@ -1,7 +1,7 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [python, vrtremap.py]
+baseCommand: [srun]
 requirements:
   - class: InlineJavascriptRequirement
   - class: InitialWorkDirRequirement
@@ -60,11 +60,27 @@ inputs:
       prefix: --num_workers
   casename:
     type: string
+  account: 
+    type: string
+  partition: 
+    type: string
+  timeout: 
+    type: string
 
 stdin:
   $(inputs.infile.path)
 
-arguments: ["--output", $(runtime.outdir)]
+arguments:
+  - -A
+  - $(inputs.account)
+  - --partition
+  - $(inputs.partition)
+  - -t
+  - $(inputs.timeout)
+  - python
+  - vrtremap.py
+  - "--output"
+  - $(runtime.outdir)]
 
 outputs:
   vrt_remapped_file:

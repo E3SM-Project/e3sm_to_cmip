@@ -1,7 +1,7 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [e3sm_to_cmip, -s, --no-metadata]
+baseCommand: [srun]
 requirements:
   InlineJavascriptRequirement: {}
   InitialWorkDirRequirement:
@@ -28,17 +28,30 @@ inputs:
     type: string
     inputBinding:
       prefix: --logdir
+  account: 
+    type: string
+  partition: 
+    type: string
+  timeout: 
+    type: string
 
-arguments: 
+arguments:
+  - -A
+  - $(inputs.account)
+  - --partition
+  - $(inputs.partition)
+  - -t
+  - $(inputs.timeout)
+  - e3sm_to_cmip
   - prefix: --output-path
     valueFrom: $(runtime.outdir)
   - prefix: --var-list
     valueFrom: $(inputs.var_list.join(", "))
   - prefix: --input-path
-    valueFrom: $(runtime.outdir)
+    valueFrom: "."
 
 outputs:
   cmip6_dir: 
     type: Directory
     outputBinding:
-      glob: "CMIP6"
+      glob: CMIP6

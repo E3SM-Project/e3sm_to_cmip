@@ -27,6 +27,9 @@ requirements:
               parser.add_argument('--metadata_path')
               parser.add_argument('--cmor_var_list')
               parser.add_argument('--logdir')
+              parser.add_argument('--account')
+              parser.add_argument('--partition')
+              parser.add_argument('--timeout')
               _args = parser.parse_args(sys.argv[1:])
 
               print("atm_data_path: {}".format(_args.atm_data_path))
@@ -42,6 +45,9 @@ requirements:
               print("metadata_path: {}".format(_args.metadata_path))
               print("cmor_var_list: [{}]".format(", ".join(_args.cmor_var_list.split())))
               print("logdir: {}".format(_args.logdir))
+              print("account: {}".format(_args.account))
+              print("partition: {}".format(_args.partition))
+              print("timeout: {}".format(_args.timeout))
               return 0
           if __name__ == "__main__":
               sys.exit(main())
@@ -90,6 +96,18 @@ inputs:
     type: string
     inputBinding:
       prefix: --logdir
+  account: 
+    type: string
+    inputBinding:
+      prefix: --account
+  partition:
+    type: string
+    inputBinding:
+      prefix: --partition
+  timeout:
+    type: string
+    inputBinding:
+      prefix: --timeout
 
 arguments:
   - prefix: --hrz_atm_mapfile

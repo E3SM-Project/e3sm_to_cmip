@@ -25,6 +25,10 @@ inputs:
   cmor_var_list: string[]
   logdir: string
 
+  account: string
+  partition: string
+  timeout: string
+
 outputs:
   cmorized:
     type: Directory
@@ -52,6 +56,9 @@ steps:
       year_per_file: year_per_file
       map_path: hrz_atm_map_path
       input_files: step_discover_atm_files/atm_files
+      account: account
+      partition: partition
+      timeout: timeout
     out:
       - time_series_files
   
@@ -64,5 +71,8 @@ steps:
       var_list: cmor_var_list
       raw_file_list: step_hrz_remap/time_series_files
       logdir: logdir
+      account: account
+      partition: partition
+      timeout: timeout
     out:
       - cmip6_dir
