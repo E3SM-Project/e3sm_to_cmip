@@ -44,8 +44,15 @@ steps:
     out:
       - atm_files
   
+  step_pull_paths:
+    run: file_to_string_list.cwl
+    in:
+      step_discover_atm_files/atm_files
+    out:
+      - list_of_strings
+
   step_hrz_remap:
-    run: hrzremap_posin.cwl
+    run: hrzremap_posin_paths.cwl
     scatter:
       - variable_name
     in:
@@ -55,7 +62,7 @@ steps:
       end_year: end_year
       year_per_file: year_per_file
       mapfile: hrz_atm_map_path
-      input_files: step_discover_atm_files/atm_files
+      input_files: step_pull_paths/list_of_strings
       account: account
       partition: partition
       timeout: timeout
