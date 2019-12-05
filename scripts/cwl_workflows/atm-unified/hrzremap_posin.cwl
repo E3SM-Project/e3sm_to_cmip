@@ -55,7 +55,7 @@ arguments:
   - $("--map=" + inputs.mapfile)
   - -c
   - $(inputs.casename)
-  - $(inputs.input_files.map(function(el){return el.path}))
+  - $(inputs.input_files)
 
 outputs:
   time_series_files:

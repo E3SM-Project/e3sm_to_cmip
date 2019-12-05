@@ -134,9 +134,9 @@ steps:
   step_vrt_remap:
     run: vrtremap.cwl
     scatter:
-      - infile
+      - infiles
     in:
-      infile: step_discover_atm_files/atm_files
+      infiles: step_pull_paths/list_of_strings
       vrtmap: vrt_map_path
       casename: step_find_casename/casename
       num_workers: num_workers
