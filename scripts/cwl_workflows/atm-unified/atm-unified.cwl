@@ -23,7 +23,7 @@ inputs:
   std_cmor_list: string[]
   
   plev_var_list: string[]
-  plev_cmor_plev: string[]
+  plev_cmor_list: string[]
 
   account: string
   partition: string
@@ -174,7 +174,7 @@ steps:
       tables_path: tables_path
       metadata_path: metadata_path
       num_workers: num_workers
-      var_list: plev_cmor_plev
+      var_list: plev_cmor_list
       raw_file_list: step_plev_hrz_remap/time_series_files
       account: account
       partition: partition
