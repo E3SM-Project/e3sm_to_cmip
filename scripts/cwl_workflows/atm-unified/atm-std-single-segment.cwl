@@ -47,7 +47,7 @@ steps:
   step_pull_paths:
     run: file_to_string_list.cwl
     in:
-      step_discover_atm_files/atm_files
+      a_File: step_discover_atm_files/atm_files
     out:
       - list_of_strings
 
