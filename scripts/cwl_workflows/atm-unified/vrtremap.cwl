@@ -82,6 +82,8 @@ arguments:
   - $(runtime.outdir)
   - --vrt_fl
   - $(inputs.vrtmap)
+  - --num_workers
+  - $(inputs.num_workers)
   - --infiles
   - $(inputs.infiles)
 
