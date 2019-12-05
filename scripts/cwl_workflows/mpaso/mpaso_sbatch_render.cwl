@@ -113,7 +113,7 @@ outputs:
   logs:
     type: Directory
     outputBinding:
-      glob: logs
+      glob: cmor_logs
 
 arguments:
   - --outdir
