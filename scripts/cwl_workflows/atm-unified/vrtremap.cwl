@@ -76,6 +76,8 @@ arguments:
   - $(inputs.partition)
   - -t
   - $(inputs.timeout)
+  - python
+  - vrtremap.py
   - --infiles
   - $(inputs.infiles)
 
