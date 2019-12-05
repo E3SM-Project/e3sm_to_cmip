@@ -28,6 +28,10 @@ inputs:
   cmor_var_plev: string[]
   logdir: string
 
+  account: string
+  partition: string
+  timeout: string
+
 outputs:
   cmorized:
     type: 
@@ -70,6 +74,9 @@ steps:
       metadata_path: metadata_path
       cmor_var_list: cmor_var_std
       logdir: logdir
+      account: account
+      partition: partition
+      timeout: timeout
     out:
       - cmorized
   
@@ -90,5 +97,8 @@ steps:
       metadata_path: metadata_path
       cmor_var_list: cmor_var_plev
       logdir: logdir
+      account: account
+      partition: partition
+      timeout: timeout
     out:
       - cmorized

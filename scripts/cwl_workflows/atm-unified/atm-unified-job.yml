@@ -1,10 +1,8 @@
 atm_data_path: /p/user_pub/work/E3SM/1_0/piControl/1deg_atm_60-30km_ocean/atmos/native/model-output/mon/ens1/v1/
-start_year: '1'
-end_year: '5'
-frequency: '5'
-year_per_file: '5'
-num_workers: '12'
-casename: 20180129.DECKv1b_piControl.ne30_oEC.edison
+
+frequency: 5
+year_per_file: 5
+num_workers: 12
 
 hrz_atm_map_path: /export/zender1/data/maps/map_ne30np4_to_cmip6_180x360_aave.20181001.nc
 vrt_map_path: /p/user_pub/work/E3SM/cmip6_variables/vrt_remap_plev19.nc

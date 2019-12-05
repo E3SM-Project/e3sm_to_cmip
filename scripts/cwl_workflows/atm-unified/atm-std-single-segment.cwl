@@ -25,6 +25,10 @@ inputs:
   cmor_var_list: string[]
   logdir: string
 
+  account: string
+  partition: string
+  timeout: string
+
 outputs:
   cmorized:
     type: Directory
@@ -40,8 +44,15 @@ steps:
     out:
       - atm_files
   
+  step_pull_paths:
+    run: file_to_string_list.cwl
+    in:
+      a_File: step_discover_atm_files/atm_files
+    out:
+      - list_of_strings
+
   step_hrz_remap:
-    run: hrzremap_stdin.cwl
+    run: hrzremap_posin_paths.cwl
     scatter:
       - variable_name
     in:
@@ -50,8 +61,11 @@ steps:
       start_year: start_year
       end_year: end_year
       year_per_file: year_per_file
-      map_path: hrz_atm_map_path
-      input_files: step_discover_atm_files/atm_files
+      mapfile: hrz_atm_map_path
+      input_files: step_pull_paths/list_of_strings
+      account: account
+      partition: partition
+      timeout: timeout
     out:
       - time_series_files
   
@@ -64,5 +78,8 @@ steps:
       var_list: cmor_var_list
       raw_file_list: step_hrz_remap/time_series_files
       logdir: logdir
+      account: account
+      partition: partition
+      timeout: timeout
     out:
       - cmip6_dir

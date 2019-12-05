@@ -19,7 +19,7 @@ inputs:
   casename:
     type: string
   input_files:
-    type: File[]
+    type: string[]
   account: 
     type: string
   partition: 
@@ -55,7 +55,7 @@ arguments:
   - $("--map=" + inputs.mapfile)
   - -c
   - $(inputs.casename)
-  - $(inputs.input_files.map(function(el){return el.path}))
+  - $(inputs.input_files.join(" "))
 
 outputs:
   time_series_files:
