@@ -29,18 +29,19 @@ requirements:
               parser = argparse.ArgumentParser()
               parser.add_argument('--vrt_fl')
               parser.add_argument('--output')
+              parser.add_argument('--infile')
               parser.add_argument('--num_workers', type=int)
               _args = parser.parse_args(sys.argv[1:])
 
               pool = Pool(_args.num_workers)
               res = list()
 
-              for inpath in sys.stdin.readlines():
-                  res.append(
-                      pool.apply_async(
-                          vrt_remap,
-                          args=(inpath.strip(), _args.output, _args.vrt_fl)))
-
+              with open(_args.infile, 'r') as infile:
+                  for inpath in infile:
+                      res.append(
+                          pool.apply_async(
+                              vrt_remap,
+                              args=(inpath.strip(), _args.output, _args.vrt_fl)))
               for r in res:
                   r.get(999999)
 
@@ -54,6 +55,8 @@ inputs:
       prefix: --vrt_fl
   infile:
     type: File
+    inputBinding:
+      prefix: --infile
   num_workers:
     type: int
     inputBinding:
@@ -66,9 +69,6 @@ inputs:
     type: string
   timeout: 
     type: string
-
-stdin:
-  $(inputs.infile.path)
 
 arguments:
   - -A

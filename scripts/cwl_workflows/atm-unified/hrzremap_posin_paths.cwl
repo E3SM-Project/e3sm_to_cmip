@@ -46,7 +46,7 @@ arguments:
   - -o
   - ./native
   - -v
-  - $(inputs.variables)
+  - $(inputs.variables.join(" "))
   - -s
   - $(inputs.start_year)
   - -e
@@ -55,11 +55,11 @@ arguments:
   - $("--map=" + inputs.mapfile)
   - -c
   - $(inputs.casename)
-  - $(inputs.input_files.join(" "))
+  - $(inputs.input_files)
 
 outputs:
   time_series_files:
     type: File
     outputBinding:
       glob: 
-        - $("_" + inputs.start_year.toString().padStart(4, "0") + "01_" + inputs.end_year.toString().padStart(4, "0") + "12.nc")
+        - $("*_" + inputs.start_year.toString().padStart(4, "0") + "01_" + inputs.end_year.toString().padStart(4, "0") + "12.nc")
