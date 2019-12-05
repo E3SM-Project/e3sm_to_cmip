@@ -53,6 +53,9 @@ steps:
       vrtmap: vrt_map_path
       casename: casename
       num_workers: num_workers
+      account: account
+      partition: partition
+      timeout: timeout
     out: 
       - vrt_remapped_file
   
