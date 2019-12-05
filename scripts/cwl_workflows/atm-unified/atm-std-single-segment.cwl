@@ -54,7 +54,7 @@ steps:
       start_year: start_year
       end_year: end_year
       year_per_file: year_per_file
-      map_path: hrz_atm_map_path
+      mapfile: hrz_atm_map_path
       input_files: step_discover_atm_files/atm_files
       account: account
       partition: partition

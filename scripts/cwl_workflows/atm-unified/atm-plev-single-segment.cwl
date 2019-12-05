@@ -70,7 +70,7 @@ steps:
       end_year: end_year
       year_per_file: year_per_file
       mapfile: hrz_atm_map_path
-      input_array: step_vrt_remap/vrt_remapped_file
+      input_files: step_vrt_remap/vrt_remapped_file
       account: account
       partition: partition
       timeout: timeout
