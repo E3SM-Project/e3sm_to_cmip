@@ -30,7 +30,7 @@ requirements:
               parser.add_argument('--vrt_fl')
               parser.add_argument('--output')
               parser.add_argument('--num_workers', type=int)
-              parser.add_argument('--infiles')
+              parser.add_argument('--infiles', nargs="*")
               _args = parser.parse_args(sys.argv[1:])
 
               pool = Pool(_args.num_workers)
@@ -78,6 +78,10 @@ arguments:
   - $(inputs.timeout)
   - python
   - vrtremap.py
+  - --output
+  - $(runtime.outdir)
+  - --vrt_fl
+  - $(inputs.vrtmap)
   - --infiles
   - $(inputs.infiles)
 
