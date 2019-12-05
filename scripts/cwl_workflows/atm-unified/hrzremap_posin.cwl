@@ -18,7 +18,7 @@ inputs:
     type: string
   casename:
     type: string
-  input_array:
+  input_files:
     type: File[]
   account: 
     type: string
@@ -55,7 +55,7 @@ arguments:
   - $("--map=" + inputs.mapfile)
   - -c
   - $(inputs.casename)
-  - $(inputs.input_array.map(function(el){return el.path}))
+  - $(inputs.input_files.map(function(el){return el.path}))
 
 outputs:
   time_series_files:

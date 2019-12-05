@@ -45,7 +45,7 @@ steps:
       - atm_files
   
   step_hrz_remap:
-    run: hrzremap_stdin.cwl
+    run: hrzremap_posin.cwl
     scatter:
       - variable_name
     in:
