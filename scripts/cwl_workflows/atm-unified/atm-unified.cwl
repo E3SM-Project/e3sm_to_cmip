@@ -33,8 +33,8 @@ outputs:
   cmorized:
     type: Directory[]
     outputSource: 
-      - step_std_cmor/cmorized
-      - step_plev_cmor/cmorized
+      - step_std_cmor/cmip6_dir
+      - step_plev_cmor/cmip6_dir
     linkMerge: merge_flattened
   logs:
     type: Directory[]
@@ -72,7 +72,7 @@ steps:
   step_discover_atm_files:
     run: discover_atm_files.cwl
     in:
-      input: atm_data_path
+      input: data_path
       start: step_segments/segments_start
       end: step_segments/segments_end
     scatter:
@@ -85,25 +85,27 @@ steps:
   
   step_pull_paths:
     run: file_to_string_list.cwl
+    scatter:
+      a_File
     in:
       a_File: step_discover_atm_files/atm_files
     out:
       - list_of_strings
 
-  step_hrz_remap:
+  step_std_hrz_remap:
     run: hrzremap_posin_paths.cwl
     scatter:
-      - variable_name
+      - input_files
       - start_year
       - end_year
     scatterMethod: 
       dotproduct
     in:
       casename: step_find_casename/casename
-      variable_name: std_var_list
+      variables: std_var_list
       start_year: step_segments/segments_start
       end_year: step_segments/segments_end
-      year_per_file: year_per_file
+      year_per_file: frequency
       mapfile: hrz_atm_map_path
       input_files: step_pull_paths/list_of_strings
       account: account
@@ -119,7 +121,7 @@ steps:
       metadata_path: metadata_path
       num_workers: num_workers
       var_list: std_cmor_list
-      raw_file_list: step_hrz_remap/time_series_files
+      raw_file_list: step_std_hrz_remap/time_series_files
       account: account
       partition: partition
       timeout: timeout
@@ -142,7 +144,7 @@ steps:
     out: 
       - vrt_remapped_file
   
-  step_hrz_remap:
+  step_plev_hrz_remap:
     run: hrzremap_posin.cwl
     scatter:
       - input_files
@@ -153,9 +155,9 @@ steps:
     in:
       casename: step_find_casename/casename
       variables: plev_var_list
-      start_year: step_segments/start_year
-      end_year: end_year
-      year_per_file: year_per_file
+      start_year: step_segments/segments_start
+      end_year: step_segments/segments_end
+      year_per_file: frequency
       mapfile: hrz_atm_map_path
       input_files: step_vrt_remap/vrt_remapped_file
       account: account
@@ -173,7 +175,7 @@ steps:
       metadata_path: metadata_path
       num_workers: num_workers
       var_list: plev_cmor_plev
-      raw_file_list: step_hrz_remap/time_series_files
+      raw_file_list: step_plev_hrz_remap/time_series_files
       account: account
       partition: partition
       timeout: timeout

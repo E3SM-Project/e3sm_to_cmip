@@ -6,8 +6,8 @@ requirements:
   - class: InlineJavascriptRequirement
 
 inputs:
-  variable_name:
-    type: string
+  variables:
+    type: string[]
   start_year:
     type: int
   end_year:
@@ -46,7 +46,7 @@ arguments:
   - -o
   - ./native
   - -v
-  - $(inputs.variable_name)
+  - $(inputs.variables)
   - -s
   - $(inputs.start_year)
   - -e
@@ -62,4 +62,4 @@ outputs:
     type: File
     outputBinding:
       glob: 
-        - $(inputs.variable_name + "_" + inputs.start_year.toString().padStart(4, "0") + "01_" + inputs.end_year.toString().padStart(4, "0") + "12.nc")
+        - $("_" + inputs.start_year.toString().padStart(4, "0") + "01_" + inputs.end_year.toString().padStart(4, "0") + "12.nc")

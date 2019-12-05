@@ -24,10 +24,6 @@ inputs:
     type: string[]
   raw_file_list:
     type: File[]
-  logdir:
-    type: string
-    inputBinding:
-      prefix: --logdir
   account: 
     type: string
   partition: 
