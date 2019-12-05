@@ -116,6 +116,8 @@ steps:
   
   step_std_cmor:
     run: cmor.cwl
+    scatter:
+      - raw_file_list
     in:
       tables_path: tables_path
       metadata_path: metadata_path

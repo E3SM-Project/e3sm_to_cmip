@@ -62,4 +62,4 @@ outputs:
     type: File[]
     outputBinding:
       glob: 
-        - $("*_" + inputs.start_year.toString().padStart(4, "0") + "01_" + inputs.end_year.toString().padStart(4, "0") + "12.nc")
+        - "*.nc"
