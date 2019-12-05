@@ -20,6 +20,8 @@ inputs:
     type: string
   input_files:
     type: string[]
+    inputBinding:
+      position: 9999
   account: 
     type: string
   partition: 
@@ -55,7 +57,6 @@ arguments:
   - $("--map=" + inputs.mapfile)
   - -c
   - $(inputs.casename)
-  - $(inputs.input_files.join(" "))
 
 outputs:
   time_series_files:
