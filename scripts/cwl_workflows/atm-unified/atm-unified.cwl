@@ -9,24 +9,21 @@ requirements:
 
 inputs:
 
-  atm_data_path: string
+  data_path: string
+  metadata_path: string
 
   frequency: int
   num_workers: int
-
-  std_var_list: string[]
-  plev_var_list: string[]
+  tables_path: string
 
   hrz_atm_map_path: string
   vrt_map_path: string
-
-  tables_path: string
-  metadata_path: string
-  scripts_path: string
   
-  cmor_var_std: string[]
-  cmor_var_plev: string[]
-  logdir: string
+  std_var_list: string[]
+  std_cmor_list: string[]
+  
+  plev_var_list: string[]
+  plev_cmor_list: string[]
 
   account: string
   partition: string
@@ -34,71 +31,156 @@ inputs:
 
 outputs:
   cmorized:
-    type: 
-      Directory[]
+    type: Directory[]
     outputSource: 
-      - step_atm_std/cmorized
-      - step_atm_plev/cmorized
+      - step_std_cmor/cmip6_dir
+      - step_plev_cmor/cmip6_dir
+    linkMerge: merge_flattened
+  logs:
+    type: Directory[]
+    outputSource:
+      - step_std_cmor/cmor_logs
+      - step_plev_cmor/cmor_logs
     linkMerge: merge_flattened
 
 steps:
-
   step_find_casename:
     run: find_casename.cwl
     in:
-      atm_data_path: atm_data_path
+      atm_data_path: data_path
     out:
       - casename
   
   step_find_start_end:
     run: find_start_end.cwl
     in:
-      data_path: atm_data_path
+      data_path: data_path
     out:
       - start_year
       - end_year
-
-  step_atm_std:
-    run: atm-std-n2n.cwl
-    in:
-      scripts_path: scripts_path
-      frequency: frequency
-      atm_data_path: atm_data_path
-      start_year: step_find_start_end/start_year
-      end_year: step_find_start_end/end_year
-      num_workers: num_workers
-      casename: step_find_casename/casename
-      std_var_list: std_var_list
-      hrz_atm_map_path: hrz_atm_map_path
-      tables_path: tables_path
-      metadata_path: metadata_path
-      cmor_var_list: cmor_var_std
-      logdir: logdir
-      account: account
-      partition: partition
-      timeout: timeout
-    out:
-      - cmorized
   
-  step_atm_plev:
-    run: atm-plev-n2n.cwl
+  step_segments:
+    run: generate_segments.cwl
     in:
+      start: step_find_start_end/start_year
+      end: step_find_start_end/end_year
       frequency: frequency
-      scripts_path: scripts_path
-      atm_data_path: atm_data_path
-      start_year: step_find_start_end/start_year
-      end_year: step_find_start_end/end_year
-      vrt_map_path: vrt_map_path
-      num_workers: num_workers
+    out:
+      - segments_start
+      - segments_end
+
+  step_discover_atm_files:
+    run: discover_atm_files.cwl
+    in:
+      input: data_path
+      start: step_segments/segments_start
+      end: step_segments/segments_end
+    scatter:
+      - start
+      - end
+    scatterMethod: 
+      dotproduct
+    out:
+      - atm_files
+  
+  step_pull_paths:
+    run: file_to_string_list.cwl
+    scatter:
+      a_File
+    in:
+      a_File: step_discover_atm_files/atm_files
+    out:
+      - list_of_strings
+
+  step_std_hrz_remap:
+    run: hrzremap_posin_paths.cwl
+    scatter:
+      - input_files
+      - start_year
+      - end_year
+    scatterMethod: 
+      dotproduct
+    in:
       casename: step_find_casename/casename
-      plev_var_list: plev_var_list
-      hrz_atm_map_path: hrz_atm_map_path
-      tables_path: tables_path
-      metadata_path: metadata_path
-      cmor_var_list: cmor_var_plev
-      logdir: logdir
+      variables: std_var_list
+      start_year: step_segments/segments_start
+      end_year: step_segments/segments_end
+      year_per_file: frequency
+      mapfile: hrz_atm_map_path
+      input_files: step_pull_paths/list_of_strings
       account: account
       partition: partition
       timeout: timeout
     out:
-      - cmorized
+      - time_series_files
+  
+  step_std_cmor:
+    run: cmor.cwl
+    scatter:
+      - raw_file_list
+    in:
+      tables_path: tables_path
+      metadata_path: metadata_path
+      num_workers: num_workers
+      var_list: std_cmor_list
+      raw_file_list: step_std_hrz_remap/time_series_files
+      account: account
+      partition: partition
+      timeout: timeout
+    out:
+      - cmip6_dir
+      - cmor_logs
+
+  step_vrt_remap:
+    run: vrtremap.cwl
+    scatter:
+      - infiles
+    in:
+      infiles: step_pull_paths/list_of_strings
+      vrtmap: vrt_map_path
+      casename: step_find_casename/casename
+      num_workers: num_workers
+      account: account
+      partition: partition
+      timeout: timeout
+    out: 
+      - vrt_remapped_file
+  
+  step_plev_hrz_remap:
+    run: hrzremap_posin.cwl
+    scatter:
+      - input_files
+      - start_year
+      - end_year
+    scatterMethod:
+      dotproduct
+    in:
+      casename: step_find_casename/casename
+      variables: plev_var_list
+      start_year: step_segments/segments_start
+      end_year: step_segments/segments_end
+      year_per_file: frequency
+      mapfile: hrz_atm_map_path
+      input_files: step_vrt_remap/vrt_remapped_file
+      account: account
+      partition: partition
+      timeout: timeout
+    out:
+      - time_series_files
+  
+  step_plev_cmor:
+    run: cmor.cwl
+    scatter:
+      - raw_file_list
+    in:
+      tables_path: tables_path
+      metadata_path: metadata_path
+      num_workers: num_workers
+      var_list: plev_cmor_list
+      raw_file_list: step_plev_hrz_remap/time_series_files
+      account: account
+      partition: partition
+      timeout: timeout
+    out:
+      - cmip6_dir
+      - cmor_logs

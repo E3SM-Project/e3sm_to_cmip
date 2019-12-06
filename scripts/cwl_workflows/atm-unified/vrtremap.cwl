@@ -30,19 +30,25 @@ requirements:
               parser.add_argument('--vrt_fl')
               parser.add_argument('--output')
               parser.add_argument('--num_workers', type=int)
+              parser.add_argument('--infiles', nargs="*")
               _args = parser.parse_args(sys.argv[1:])
 
               pool = Pool(_args.num_workers)
               res = list()
 
-              for inpath in sys.stdin.readlines():
-                  res.append(
-                      pool.apply_async(
-                          vrt_remap,
-                          args=(inpath.strip(), _args.output, _args.vrt_fl)))
+              for inpath in _args.infiles:
+                  if not os.path.exists(inpath):
+                      print("Error: {} does not exist".format(inpath))
+                      return 1
+                  else:
+                    res.append(
+                        pool.apply_async(
+                            vrt_remap,
+                            args=(inpath.strip(), _args.output, _args.vrt_fl)))
 
               for r in res:
                   r.get(999999)
+              return 0
 
           if __name__ == "__main__":
               sys.exit(run_ncks())
@@ -50,14 +56,10 @@ requirements:
 inputs:
   vrtmap:
     type: string
-    inputBinding:
-      prefix: --vrt_fl
-  infile:
-    type: File
+  infiles:
+    type: string[]
   num_workers:
     type: int
-    inputBinding:
-      prefix: --num_workers
   casename:
     type: string
   account: 
@@ -66,9 +68,6 @@ inputs:
     type: string
   timeout: 
     type: string
-
-stdin:
-  $(inputs.infile.path)
 
 arguments:
   - -A
@@ -79,8 +78,14 @@ arguments:
   - $(inputs.timeout)
   - python
   - vrtremap.py
-  - "--output"
-  - $(runtime.outdir)]
+  - --output
+  - $(runtime.outdir)
+  - --vrt_fl
+  - $(inputs.vrtmap)
+  - --num_workers
+  - $(inputs.num_workers)
+  - --infiles
+  - $(inputs.infiles)
 
 outputs:
   vrt_remapped_file:

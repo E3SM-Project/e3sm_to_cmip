@@ -24,10 +24,6 @@ inputs:
     type: string[]
   raw_file_list:
     type: File[]
-  logdir:
-    type: string
-    inputBinding:
-      prefix: --logdir
   account: 
     type: string
   partition: 
@@ -55,3 +51,7 @@ outputs:
     type: Directory
     outputBinding:
       glob: CMIP6
+  cmor_logs:
+    type: Directory
+    outputBinding:
+      glob: cmor_logs
