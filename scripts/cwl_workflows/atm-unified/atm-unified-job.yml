@@ -1,19 +1,18 @@
-atm_data_path: /p/user_pub/work/E3SM/1_0/piControl/1deg_atm_60-30km_ocean/atmos/native/model-output/mon/ens1/v1/
+data_path: /compyfs/v1BGCoutput/bdrc_ctc/test
 
-frequency: 5
-year_per_file: 5
+frequency: 1
 num_workers: 12
+account: e3sm
+partition: short
+timeout: 2:00:00
 
-hrz_atm_map_path: /export/zender1/data/maps/map_ne30np4_to_cmip6_180x360_aave.20181001.nc
-vrt_map_path: /p/user_pub/work/E3SM/cmip6_variables/vrt_remap_plev19.nc
-tables_path: /export/baldwin32/projects/cmip6-cmor-tables/Tables/
-metadata_path: /export/baldwin32/projects/e3sm_to_cmip/e3sm_user_config_picontrol.json
+hrz_atm_map_path: /qfs/people/zender/data/maps/map_ne30np4_to_cmip6_180x360_aave.20181001.nc
+vrt_map_path: /compyfs/v1BGCoutput/resources/vrt_remap_plev19.nc
+tables_path: /qfs/people/bald158/projects/cmip6-cmor-tables/Tables/
+metadata_path: /compyfs/v1BGCoutput/bdrc_ctc/resources/metadata_bdrc_ctc.json
 
 std_var_list: [hyam, hybm, hyai, hybi, TREFHT, TS, PSL, PS, U10, QREFHT, PRECC, PRECL, PRECSC, PRECSL, QFLX, TAUX, TAUY, LHFLX, CLDTOT, FLDS, FLNS, FSDS, FSNS, SHFLX, CLOUD, CLDICE, TGCLDIWP, CLDLIQ, TGCLDCWP, TMQ, FLNSC, FSNTOA, FSNT, FLNT, FLUTC, FSDSC, SOLIN, FSNSC, FSUTOA, FSUTOAC, AODABS, AODVIS, AREL]
 cmor_var_std: [pfull, phalf, tas, ts, psl, ps, sfcWind, huss, pr, prc, prsn, evspsbl, tauu, tauv, hfls, clt, rlds, rlus, rsds, rsus, hfss, cl, clw, cli, clivi, clwvi, prw, rldscs, rlut, rlutcs, rsdt, rsuscs, rsut, rsutcs, rtmt, abs550aer, od550aer, reffclwtop, rsdscs]
 
 plev_var_list: [Q,   O3, T,  U,  V,  Z3, RELHUM, OMEGA]
 cmor_var_plev: [hus, o3, ta, ua, va, zg, hur,    wap]
-
-
-logdir: /p/user_pub/work/E3SM/cmip6_variables/piControl/cwl

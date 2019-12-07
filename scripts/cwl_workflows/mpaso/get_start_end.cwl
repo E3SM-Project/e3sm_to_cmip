@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.1
 class: CommandLineTool
 baseCommand: [python, get_start_end.py]
 requirements:
@@ -11,8 +11,8 @@ requirements:
           import sys
           import os
           def get_year(filepath):
-              # Works for files matching the pattern: "somelongcasename.cam.h0.1850-12.nc"
-              return filepath[-10:-6]
+              # Works for files matching the pattern: "mpaso.hist.am.timeSeriesStatsMonthly.1999-12-01.nc"
+              return filepath[-13:-9]
           def main():
               parser = argparse.ArgumentParser()
               parser.add_argument('--data-path')

@@ -6,8 +6,8 @@ requirements:
   - class: InlineJavascriptRequirement
 
 inputs:
-  variable_name:
-    type: string
+  variables:
+    type: string[]
   start_year:
     type: int
   end_year:
@@ -48,7 +48,7 @@ arguments:
   - -o
   - ./native
   - -v
-  - $(inputs.variable_name)
+  - $(inputs.variables.join(" "))
   - -s
   - $(inputs.start_year)
   - -e
@@ -57,10 +57,11 @@ arguments:
   - $("--map=" + inputs.mapfile)
   - -c
   - $(inputs.casename)
+  - $(inputs.input_files)
 
 outputs:
   time_series_files:
-    type: File
+    type: File[]
     outputBinding:
       glob: 
-        - $(inputs.variable_name + "_" + inputs.start_year.toString().padStart(4, "0") + "01_" + inputs.end_year.toString().padStart(4, "0") + "12.nc")
+        - "*.nc"
