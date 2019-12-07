@@ -9,6 +9,7 @@ inputs:
   allocation: string
   partition: string
   timeout: string
+  
   data_path: string
   namelist_path: string
   restart_path: string
@@ -19,7 +20,6 @@ inputs:
   frequency: int
   tables_path: string
   cmor_var_list: string[]
-  logdir: string
 
 steps:
 
@@ -62,6 +62,7 @@ steps:
       nested_crossproduct
     out:
       - cmorized
+      - cmor_logs
 
 outputs:
   cmorized:
@@ -71,3 +72,11 @@ outputs:
         type: array
         items: Directory
     outputSource: step_cmor/cmorized
+  logs:
+    type:
+      type: array
+      items:
+        type: array
+        items: Directory
+    outputSource:
+      step_cmor/cmor_logs
