@@ -54,7 +54,6 @@ steps:
       var_list: cmor_var_list
       metadata: metadata
       mapfile: mapfile
-      logdir: logdir
     scatter:
       - input_directory
       - var_list

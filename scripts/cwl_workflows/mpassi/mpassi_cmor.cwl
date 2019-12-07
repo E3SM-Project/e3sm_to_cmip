@@ -30,10 +30,6 @@ inputs:
     type: File
     inputBinding:
       prefix: --map
-  logdir:
-    type: string
-    inputBinding:
-      prefix: --logdir
 
 arguments:
   - -A
@@ -45,10 +41,10 @@ arguments:
   - e3sm_to_cmip
   - -s
   - --precheck
-  - prefix: --output-path
-    valueFrom: $(runtime.outdir)
-  - prefix: --mode
-    valueFrom: mpassi
+  - --output-path
+  - $(runtime.outdir)
+  - --mode
+  - mpassi
 
 outputs:
   cmorized: 
