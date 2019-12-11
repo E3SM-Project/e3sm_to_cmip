@@ -322,7 +322,7 @@ def convert_namelist_to_dict(fileName):
 
 def setup_cmor(varname, tables, user_input_path, component='ocean'):
     '''Set up CMOR for MPAS-Ocean or MPAS-Seaice'''
-    logfile = os.path.join(os.getcwd(), 'logs')
+    logfile = os.path.join(os.getcwd(), 'cmor_logs')
     if not os.path.exists(logfile):
         os.makedirs(logfile)
     logfile = os.path.join(logfile, varname + '.log')
