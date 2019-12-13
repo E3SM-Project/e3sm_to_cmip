@@ -102,7 +102,7 @@ steps:
     run: 
       hrzremap.cwl
     scatter:
-      - input_files
+      - input_paths
       - start_year
       - end_year
     scatterMethod:
