@@ -33,17 +33,14 @@ inputs:
     inputBinding:
       prefix: -c
       position: 7
-  input_files:
-    type: File
+  input_paths:
+    type: string[]
   account: 
     type: string
   partition: 
     type: string
   timeout: 
     type: string
-
-stdin:
-  $(inputs.input_files.path)
 
 arguments:
   - -A
@@ -58,11 +55,13 @@ arguments:
   - --no_cll_msr
   - -a
   - sdd
-  - -v PSL
+  - -v 
+  - PSL
   - -O
   - $(runtime.outdir)
   - -o
   - ./native
+  - $(inputs.input_paths)
 
 outputs:
   time_series_files:

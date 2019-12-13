@@ -88,9 +88,19 @@ steps:
     out:
       - atm_files
   
+  step_extract_paths:
+    run:
+      file_to_string_list.cwl
+    in:
+      a_File: step_discover_atm_files/atm_files
+    scatter:
+      a_File
+    out:
+      - list_of_strings
+
   step_hrz_remap:
     run: 
-      hrzremap_stdin.cwl
+      hrzremap.cwl
     scatter:
       - input_files
       - start_year
@@ -106,7 +116,7 @@ steps:
       start_year: step_segments/segments_start
       end_year: step_segments/segments_end
       map_path: hrz_atm_map_path
-      input_files: step_discover_atm_files/atm_files
+      input_files: step_extract_paths/list_of_strings
     out:
       - time_series_files
   
