@@ -12,21 +12,21 @@ inputs:
   # discover_atm_files
   atm_data_path: File
 
-  num_workers: int
-
   std_var_list: string[]
+  cmor_var_list: string[]
   map_path: string
 
   # cmor
   tables_path: string
   metadata_path: string
-  cmor_var_list: string[]
-  logdir: string
 
 outputs:
   cmorized:
     type: Directory
     outputSource: step_cmor/cmip6_dir
+  cmor_logs:
+    type: Directory
+    outputSource: step_cmor/cmor_logs
 
 steps:
   
@@ -46,6 +46,6 @@ steps:
       metadata_path: metadata_path
       var_list: cmor_var_list
       raw_file: step_hrzmap/remapped_fx
-      logdir: logdir
     out:
       - cmip6_dir 
+      - cmor_logs

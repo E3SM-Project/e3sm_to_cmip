@@ -20,10 +20,6 @@ inputs:
     type: string[]
   raw_file:
     type: File
-  logdir:
-    type: string
-    inputBinding:
-      prefix: --logdir
 
 arguments:
   - "-s"
@@ -40,4 +36,8 @@ outputs:
   cmip6_dir: 
     type: Directory
     outputBinding:
-      glob: "CMIP6"
+      glob: CMIP6
+  cmor_logs:
+    type: Directory
+    outputBinding:
+      glob: cmor_logs

@@ -20,8 +20,6 @@ inputs:
     type: string
   input_files:
     type: string[]
-    inputBinding:
-      position: 9999
   account: 
     type: string
   partition: 

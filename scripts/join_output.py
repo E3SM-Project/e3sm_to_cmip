@@ -20,6 +20,9 @@ def main():
     parser.add_argument('-l', '--leave-source', 
                         action="store_true",
                         help="leave the source directory in place")
+    parser.add_argument('-s', '--sym-link', 
+                        action="store_true",
+                        help="create symlinks instead of moving the files")
     args = parser.parse_args(sys.argv[1:])
 
     for root, dirs, _ in os.walk(args.root):
@@ -37,11 +40,15 @@ def main():
             if os.path.exists(new_path) and not args.over_write:
                 print("Error: file at destination already exists")
                 continue
-            print("Moving {} to {}".format(old_path, new_path))
             if not args.dryrun:
-                os.rename(old_path, new_path)
+                if args.sym_link:
+                    print("Creating link {} -> {}".format(old_path, new_path))
+                    os.symlink(old_path, new_path)
+                else:
+                    print("Moving {} -> {}".format(old_path, new_path))
+                    os.rename(old_path, new_path)
 
-        if not args.dryrun and not args.leave_source:
+        if not args.dryrun and not args.leave_source and not args.sym_link:
             print("removing {}".format(src_path))
             os.rmdir(src_path)
 
