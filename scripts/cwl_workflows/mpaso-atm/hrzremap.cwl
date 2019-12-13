@@ -8,31 +8,14 @@ requirements:
 inputs:
   start_year:
     type: int
-    inputBinding:
-      position: 2
-      prefix: -s
   end_year:
     type: int
-    inputBinding:
-      position: 3
-      prefix: -e
   year_per_file:
     type: int
-    inputBinding:
-      position: 4
-      prefix: --ypf=
-      separate: false
   map_path:
     type: string
-    inputBinding:
-      position: 5
-      prefix: --map=
-      separate: false
   casename:
     type: string
-    inputBinding:
-      prefix: -c
-      position: 7
   input_paths:
     type: string[]
   account: 
@@ -57,6 +40,14 @@ arguments:
   - sdd
   - -v 
   - PSL
+  - $("--map="+inputs.map_path)
+  - $("--ypf="+inputs.year_per_file)
+  - -s
+  - $(inputs.start_year)
+  - -e
+  - $(inputs.end_year)
+  - -c
+  - $(inputs.casename)
   - -O
   - $(runtime.outdir)
   - -o
