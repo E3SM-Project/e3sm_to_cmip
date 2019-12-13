@@ -1,7 +1,7 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [e3sm_to_cmip]
+baseCommand: [srun]
 inputs:
   input_path:
     type: Directory
@@ -21,12 +21,21 @@ inputs:
     type: string
     inputBinding:
       prefix: --map
-  timeout:
-    type: int
-    inputBinding:
-      prefix: --timeout
+  account: 
+    type: string
+  partition: 
+    type: string
+  timeout: 
+    type: string
 
 arguments:
+  - -A
+  - $(inputs.account)
+  - --partition
+  - $(inputs.partition)
+  - -t
+  - $(inputs.timeout)
+  - e3sm_to_cmip
   - --input-path
   - $(inputs.input_path.path)
   - -s 
@@ -37,7 +46,10 @@ arguments:
 
 outputs:
   cmorized:
-    type: 
-      Directory
+    type: Directory
     outputBinding:
       glob: CMIP6
+  cmor_logs:
+    type: Directory
+    outputBinding:
+      glob: cmor_logs

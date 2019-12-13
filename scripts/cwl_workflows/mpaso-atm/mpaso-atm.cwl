@@ -10,9 +10,9 @@ requirements:
 inputs:
 
   frequency: int
-  start_year: int
-  end_year: int
-  timeout: int
+  timeout: string
+  account: string
+  partition: string
 
   atm_data_path: string
   std_var_list: string[]
@@ -21,7 +21,6 @@ inputs:
   mpas_var_list: string[]
 
   num_workers: int
-  casename: string
 
   hrz_atm_map_path: string
   mpas_map_path: string 
@@ -39,15 +38,36 @@ outputs:
       Directory[]
     outputSource: 
       step_run_mpaso/cmorized
+  cmor_logs:
+    type:
+      Directory[]
+    outputSource:
+      step_run_mpaso/cmor_logs
 
 steps:
+  step_find_casename:
+    run:
+      find_casename.cwl
+    in:
+      atm_data_path: atm_data_path
+    out:
+      - casename
+  
+  step_find_start_end:
+    run:
+      find_start_end.cwl
+    in:
+      data_path: atm_data_path
+    out:
+      - start_year
+      - end_year
 
   step_segments:
     run: 
       generate_segments.cwl
     in:
-      start: start_year
-      end: end_year
+      start: step_find_start_end/start_year
+      end: step_find_start_end/end_year
       frequency: frequency
     out:
       - segments_start
@@ -78,8 +98,11 @@ steps:
     scatterMethod:
       dotproduct
     in:
+      account: account
+      partition: partition
+      timeout: timeout
       year_per_file: frequency
-      casename: casename
+      casename: step_find_casename/casename
       start_year: step_segments/segments_start
       end_year: step_segments/segments_end
       map_path: hrz_atm_map_path
@@ -92,8 +115,8 @@ steps:
       mpaso.cwl
     in:
       frequency: frequency
-      start_year: start_year
-      end_year: end_year
+      start_year: step_find_start_end/start_year
+      end_year: step_find_start_end/end_year
       data_path: mpas_data_path
       map_path: mpas_map_path
       namelist_path: mpas_namelist_path
@@ -105,5 +128,8 @@ steps:
       cmor_var_list: mpas_var_list
       num_workers: num_workers
       timeout: timeout
+      account: account
+      partition: partition
     out:
       - cmorized
+      - cmor_logs

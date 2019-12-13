@@ -1,9 +1,12 @@
 frequency: 5
-start_year: 81
-end_year: 100
+
 num_workers: 12
 timeout: 1800
-casename: 20180129.DECKv1b_piControl.ne30_oEC.edison
+account: e3sm
+partition: short
+slurm_timeout: 02:00:00
+
+
 atm_data_path: /p/user_pub/work/E3SM/1_0/piControl/1deg_atm_60-30km_ocean/atmos/native/model-output/mon/ens1/v1/
 std_var_list: 
   - PSL
