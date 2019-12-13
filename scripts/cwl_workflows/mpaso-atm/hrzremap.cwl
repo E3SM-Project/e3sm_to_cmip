@@ -32,7 +32,7 @@ arguments:
   - $(inputs.partition)
   - -t
   - $(inputs.timeout)
-  - ncclimo, 
+  - ncclimo
   - '-7'
   - '--dfl_lvl=1'
   - --no_cll_msr
