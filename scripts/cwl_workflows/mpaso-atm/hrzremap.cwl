@@ -34,6 +34,7 @@ arguments:
   - $(inputs.timeout)
   - ncclimo
   - '-7'
+  - --no_stdin
   - '--dfl_lvl=1'
   - --no_cll_msr
   - -a
