@@ -1,0 +1,11 @@
+atm_data_path: /p/test/
+cmor_var_list: 
+  - sftlf
+  - orog
+  - areacella
+std_var_list:
+  - LANDFRAC
+  - PHIS
+  - area
+map_path: /p/maps
+metadata_path: /p/metadata`
