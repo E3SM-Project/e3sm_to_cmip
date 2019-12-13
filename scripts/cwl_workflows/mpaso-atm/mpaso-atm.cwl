@@ -116,7 +116,7 @@ steps:
       start_year: step_segments/segments_start
       end_year: step_segments/segments_end
       map_path: hrz_atm_map_path
-      input_files: step_extract_paths/list_of_strings
+      input_paths: step_extract_paths/list_of_strings
     out:
       - time_series_files
   
