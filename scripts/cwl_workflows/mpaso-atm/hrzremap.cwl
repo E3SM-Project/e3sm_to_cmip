@@ -1,50 +1,59 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [ncclimo, '-7', '--dfl_lvl=1', '--no_cll_msr', '-a', 'sdd']
+baseCommand: [srun]
 requirements:
   - class: InlineJavascriptRequirement
 
 inputs:
   start_year:
     type: int
-    inputBinding:
-      position: 2
-      prefix: -s
   end_year:
     type: int
-    inputBinding:
-      position: 3
-      prefix: -e
   year_per_file:
     type: int
-    inputBinding:
-      position: 4
-      prefix: --ypf=
-      separate: false
   map_path:
     type: string
-    inputBinding:
-      position: 5
-      prefix: --map=
-      separate: false
   casename:
     type: string
-    inputBinding:
-      prefix: -c
-      position: 7
-  input_files:
-    type: File
-
-stdin:
-  $(inputs.input_files.path)
+  input_paths:
+    type: string[]
+  account: 
+    type: string
+  partition: 
+    type: string
+  timeout: 
+    type: string
 
 arguments:
-  - -v PSL
+  - -A
+  - $(inputs.account)
+  - --partition
+  - $(inputs.partition)
+  - -t
+  - $(inputs.timeout)
+  - ncclimo
+  - '-7'
+  - --no_stdin
+  - '--dfl_lvl=1'
+  - --no_cll_msr
+  - -a
+  - sdd
+  - -v 
+  - PSL
+  - $("--map="+inputs.map_path)
+  - $("--ypf="+inputs.year_per_file)
+  - -s
+  - $(inputs.start_year)
+  - -e
+  - $(inputs.end_year)
+  - -c
+  - $(inputs.casename)
   - -O
   - $(runtime.outdir)
   - -o
   - ./native
+  - $(inputs.input_paths)
 
 outputs:
   time_series_files:

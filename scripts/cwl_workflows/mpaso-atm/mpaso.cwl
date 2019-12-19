@@ -21,7 +21,10 @@ inputs:
   metadata_path: string
   cmor_var_list: string[]
   num_workers: int
-  timeout: int
+
+  timeout: string
+  account: string
+  partition: string
 
 steps:
   step_segments:
@@ -40,7 +43,7 @@ steps:
     out:
       - segments
   
-  step_render_cmor_template:
+  step_cmor:
     run:
       cmor.cwl
     in:
@@ -49,6 +52,8 @@ steps:
       metadata_path: metadata_path
       var_list: cmor_var_list
       mapfile: map_path
+      account: account
+      partition: partition
       timeout: timeout
     scatter:
       - input_path
@@ -57,8 +62,12 @@ steps:
       flat_crossproduct
     out:
       - cmorized
+      - cmor_logs
 
 outputs:
   cmorized:
     type: Directory[]
-    outputSource: step_render_cmor_template/cmorized
+    outputSource: step_cmor/cmorized
+  cmor_logs:
+    type: Directory[]
+    outputSource: step_cmor/cmor_logs
