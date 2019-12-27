@@ -1,0 +1,15 @@
+data_path: /compyfs/v1BGCoutput/bdrc_ctc/test
+
+frequency: 25
+num_workers: 12
+account: e3sm
+partition: short
+timeout: 2:00:00
+
+hrz_atm_map_path: /qfs/people/zender/data/maps/map_ne30np4_to_cmip6_180x360_aave.20181001.nc
+vrt_map_path: /compyfs/v1BGCoutput/resources/vrt_remap_plev19.nc
+tables_path: /qfs/people/bald158/projects/cmip6-cmor-tables/Tables/
+metadata_path: /compyfs/v1BGCoutput/bdrc_ctc/resources/metadata_bdrc_ctc.json
+
+plev_var_list: [Q,   O3, T,  U,  V,  Z3, RELHUM, OMEGA]
+plev_cmor_list: [hus, o3, ta, ua, va, zg, hur,    wap]
