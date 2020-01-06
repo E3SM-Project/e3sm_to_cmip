@@ -1,6 +1,6 @@
 # e3sm_to_cmip
 
-The `stage.py` script stage files from a zstash archive that match a list of components or file patterns, and transfers the staged in files to a Globus endpoint for further processing.
+The `stage.py` script stages files from a zstash archive that match a list of components or file patterns, and transfers the staged in files to a Globus endpoint for further processing.
 
 The script depends on [zstash][zstash] and [Globus SDK][globussdk] Python packages. All messages are written to a logger. By default, the logging level is set to `INFO`, and can be changed by setting the `LOGLEVEL` environment variable.  
 
