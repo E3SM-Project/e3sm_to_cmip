@@ -7,6 +7,7 @@ import json
 import socket
 import webbrowser
 import globus_sdk
+from fair_research_login.client import NativeClient
 from zstash.hpss import hpss_get
 from zstash.extract import multiprocess_extract, extractFiles
 from zstash.settings import config, DB_FILENAME, logger
@@ -37,82 +38,18 @@ patterns = {
 
 
 client_id = "41808cb4-f058-48ed-8974-841d1350bd98"
-redirect_uri = "https://auth.globus.org/v2/web/auth-code"
 scopes = ("openid email profile "
           "urn:globus:auth:scope:transfer.api.globus.org:all")
 
 
-get_input = getattr(__builtins__, "raw_input", input)
-
-
-def load_tokens_from_file(filepath):
-    """Load a set of saved tokens."""
-    with open(filepath, "r") as f:
-        tokens = json.load(f)
-    return tokens
-
-
-def save_tokens_to_file(filepath, tokens):
-    """Save a set of tokens for later use."""
-    with open(filepath, "w") as f:
-        json.dump(tokens, f)
-
-
-def is_remote_session():
-    return os.environ.get("SSH_TTY", os.environ.get("SSH_CONNECTION"))
-
-
-def do_native_app_authentication(client_id, redirect_uri,
-                                 requested_scopes=None):
-    """
-    Does a Native App authentication flow and returns a
-    dict of tokens keyed by service name.
-    """
-    client = globus_sdk.NativeAppAuthClient(client_id=client_id)
-    client.oauth2_start_flow(
-            requested_scopes=requested_scopes,
-            redirect_uri=redirect_uri,
-            refresh_tokens=True)
-    url = client.oauth2_get_authorize_url()
-    print("Native App Authorization URL: \n{}".format(url))
-    if not is_remote_session():
-        webbrowser.open(url, new=1)
-    auth_code = get_input("Enter the auth code: ").strip()
-    token_response = client.oauth2_exchange_code_for_tokens(auth_code)
-    # return a set of tokens, organized by resource server name
-    return token_response.by_resource_server
-
-
-def get_native_app_authorizer(client_id):
-    tokens_path = os.path.join(os.path.expanduser("~"), ".globus-tokens.json")
-    tokens = None
-    try:
-        tokens = load_tokens_from_file(tokens_path)
-    except:
-        pass
-
-    if not tokens:
-        tokens = do_native_app_authentication(
-                client_id=client_id,
-                redirect_uri=redirect_uri,
-                requested_scopes=scopes)
-        try:
-            save_tokens_to_file(tokens_path, tokens)
-        except:
-            pass
-
-    transfer_tokens = tokens["transfer.api.globus.org"]
-
-    auth_client = globus_sdk.NativeAppAuthClient(client_id=client_id)
-
-    return globus_sdk.RefreshTokenAuthorizer(
-            transfer_tokens["refresh_token"],
-            auth_client,
-            access_token=transfer_tokens["access_token"],
-            expires_at=transfer_tokens["expires_at_seconds"])
-
-
 def main(args):
+
+    # Obtain Globus tokens
+    cli = NativeClient(client_id=client_id, app_name="Data Stager")
+    cli.login(no_local_server=True, requested_scopes=scopes, refresh_tokens=True, force=args.login)
+    authorizers = cli.get_authorizers()
+    if args.login:
+        sys.exit(0)
 
     # Determine source and destination Globus endpoints and directories
     source_endpoint = args.source
@@ -137,11 +74,8 @@ def main(args):
             destination_endpoint = ep
             break
 
-    # Obtain Globus tokens and store them in ~/.globus-tokens.json
-    authorizer = get_native_app_authorizer(client_id=client_id)
-    tc = globus_sdk.TransferClient(authorizer=authorizer)
-
     # Try to activate source and destination Globus endpoints
+    tc = globus_sdk.TransferClient(authorizer=authorizers["transfer.api.globus.org"])
     resp = tc.endpoint_autoactivate(source_endpoint, if_expires_in=36000)
     if resp["code"] == "AutoActivationFailed":
         logger.error("The source endpoint is not active. Please go to https://app.globus.org/file-manager/collections/{} to activate the endpoint."
@@ -291,33 +225,13 @@ def main(args):
         sys.exit(1)
 
     # Create a manifest file
-    manifest = {
-        "restart_file": {},
-        "namelist_file": {},
-        "data_files": []
-    }
+    manifest = []
     for m in matches:
-        name = m[1]
-        size = m[2]
-        tstamp = m[3]
-        md5 = m[4]
-        if restart_matches and name == restart_matches[0][1]:
-            manifest["restart_file"]["name"] = name
-            manifest["restart_file"]["size"] = size
-            manifest["restart_file"]["timestamp"] = str(tstamp)
-            manifest["restart_file"]["md5"] = md5
-        elif namelist_matches and name == namelist_matches[0][1]:
-            manifest["namelist_file"]["name"] = name
-            manifest["namelist_file"]["size"] = size
-            manifest["namelist_file"]["timestamp"] = str(tstamp)
-            manifest["namelist_file"]["md5"] = md5
-        else:
-            manifest["data_files"].append({
-                "name": name,
-                "size": size,
-                "timestamp": str(tstamp),
-                "md5": md5
-            })
+        manifest.append({
+                "filename": m[1],
+                "length": m[2],
+                "md5": m[4]
+        })
     with open("manifest.json", "w+") as f:
         f.write(json.dumps(manifest))
 
@@ -382,12 +296,14 @@ if __name__ == "__main__":
                         level=loglevel)
 
     parser = argparse.ArgumentParser(description="Stage in data files from a zstash archive")
-    parser.add_argument("-d", "--destination", required=True,
+    parser.add_argument("-l", "--login", action="store_true",
+                        help="Get Globus Auth tokens only and store them in ~/.globus--native-apps.cfg for future use")
+    parser.add_argument("-d", "--destination",
                         help="destination Globus endpoint and path, <endpoint>:<path>. Endpoint can be a Globus endpoint UUUID or a short name."
                         " Currently recognized short names are: {}.".format(", ".join(name_endpoint.keys())))
     parser.add_argument("-s", "--source",
                         help="source Globus endpoint. If it is not provided, the script tries to determine the source endpoint based on the local hostname.")
-    parser.add_argument("-z", "--zstash", required=True,
+    parser.add_argument("-z", "--zstash",
                         help="zstash archive path")
     parser.add_argument("-c", "--component",
                         help="comma separated components to download (atm, lnd, ice, river, ocean)")
@@ -398,5 +314,10 @@ if __name__ == "__main__":
     parser.add_argument("files", nargs="*",
                         help="List of files to be staged in (standards wildcards supported)")
     args = parser.parse_args()
+
+    if not (args.login or (args.destination and args.zstash)):
+        parser.print_usage()
+        logger.error("arguments -l/--login, or -d/--destination and -z/--zstash are required")
+        sys.exit(1)
 
     main(args)
