@@ -5,13 +5,12 @@ The `data_stager.py` script stages files from a zstash archive that match a list
 The script depends on [zstash][zstash], [Globus SDK][globussdk], and [FAIR Native Login][fairnativelogin] Python packages. For example, to set up an environment on NERSC/Cori, you can run:
 ```
 cori01:~> module load python/2.7-anaconda-4.4
-cori01:~> conda create -n zstash_env -c e3sm -c conda-forge zstash
-cori01:~> source activate zstash_env
-(zstash_env) cori02:~> pip install globus-sdk fair-native-login
+cori01:~> conda create -n data_stager_env -c e3sm -c conda-forge zstash fair-research-login
+cori01:~> conda activate data_stager_env
 ```
 All messages are written to a logger. By default, the logging level is set to `WARNING`, and can be changed by setting the `LOGLEVEL` environment variable.
 ```
-usage: data_stager.py [-h] [-l] [-d DESTINATION] [-s SOURCE] [-z ZSTASH]
+usage: data_stager.py [-h] [-l] [-d DESTINATION] [-s SOURCE] [-b] [-z ZSTASH]
                       [-c COMPONENT] [-f PATTERN_FILE] [-w WORKERS]
                       [files [files ...]]
 
@@ -23,8 +22,8 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -l, --login           Get Globus Auth tokens only and store them in a file
-                        for future use
+  -l, --login           Get Globus Auth tokens only and store them in
+                        ~/.globus--native-apps.cfg for future use
   -d DESTINATION, --destination DESTINATION
                         destination Globus endpoint and path,
                         <endpoint>:<path>. Endpoint can be a Globus endpoint
@@ -34,6 +33,9 @@ optional arguments:
                         source Globus endpoint. If it is not provided, the
                         script tries to determine the source endpoint based on
                         the local hostname.
+  -b, --block           Wait until Globus transfer completes. If the option is
+                        not specified, the script exits immediately after the
+                        transfer submission.
   -z ZSTASH, --zstash ZSTASH
                         zstash archive path
   -c COMPONENT, --component COMPONENT
