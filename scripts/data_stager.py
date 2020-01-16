@@ -53,8 +53,8 @@ def main(args):
 
     # Determine source and destination Globus endpoints and directories
     source_endpoint = args.source
+    hostname = socket.gethostname()
     if not source_endpoint:
-        hostname = socket.gethostname()
         source_endpoint = None
         for h, ep in hostname_endpoint.items():
             if hostname.startswith(h):
@@ -236,7 +236,8 @@ def main(args):
         f.write(json.dumps(manifest))
 
     # Transfer the files downloaded from the zstash archive
-    td = globus_sdk.TransferData(tc, source_endpoint, destination_endpoint)
+    label = "E3SM Data Stager on {}".format(hostname)
+    td = globus_sdk.TransferData(tc, source_endpoint, destination_endpoint, label=label)
 
     cwd = os.getcwd()
     source_path = os.path.join(cwd, "manifest.json")
@@ -254,6 +255,10 @@ def main(args):
     except Exception as e:
         logger.error("Globus transfer failed due to error: {}".format(e))
         sys.exit(1)
+
+    if not args.block:
+        logger.info("You can monitor the status of the transfer at https://app.globus.org/activity/{}".format(task_id))
+        sys.exit(0)
 
     """
     A Globus transfer job (task) can be in one of the three states: ACTIVE, SUCCEEDED, FAILED.
@@ -303,6 +308,8 @@ if __name__ == "__main__":
                         " Currently recognized short names are: {}.".format(", ".join(name_endpoint.keys())))
     parser.add_argument("-s", "--source",
                         help="source Globus endpoint. If it is not provided, the script tries to determine the source endpoint based on the local hostname.")
+    parser.add_argument("-b", "--block", action="store_true",
+                        help="Wait until Globus transfer completes. If the option is not specified, the script exits immediately after the transfer submission.")
     parser.add_argument("-z", "--zstash",
                         help="zstash archive path")
     parser.add_argument("-c", "--component",
