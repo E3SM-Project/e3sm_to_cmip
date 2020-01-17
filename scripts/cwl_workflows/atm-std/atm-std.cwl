@@ -17,7 +17,6 @@ inputs:
   tables_path: string
 
   hrz_atm_map_path: string
-  vrt_map_path: string
   
   std_var_list: string[]
   std_cmor_list: string[]
