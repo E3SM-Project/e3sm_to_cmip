@@ -22,15 +22,13 @@ inputs:
       prefix: --num-proc
   var_list:
     type: string[]
-    inputBinding:
-      prefix: -v
   raw_file_list:
     type: File[]
-  account:
+  account: 
     type: string
-  partition:
+  partition: 
     type: string
-  timeout:
+  timeout: 
     type: string
 
 arguments:
@@ -41,20 +39,19 @@ arguments:
   - -t
   - $(inputs.timeout)
   - e3sm_to_cmip
-  - -s
-  - --input-path
-  - .
-  - --output-path
-  - $(runtime.outdir)
-  - --logdir
-  - $(runtime.outdir)
+  - prefix: --output-path
+    valueFrom: $(runtime.outdir)
+  - prefix: --var-list
+    valueFrom: $(inputs.var_list.join(", "))
+  - prefix: --input-path
+    valueFrom: "."
 
-outputs: 
+outputs:
   cmip6_dir: 
     type: Directory
     outputBinding:
       glob: CMIP6
-  logs:
+  cmor_logs:
     type: Directory
     outputBinding:
       glob: cmor_logs
