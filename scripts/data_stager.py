@@ -262,18 +262,18 @@ def main(args):
 
     """
     A Globus transfer job (task) can be in one of the three states: ACTIVE, SUCCEEDED, FAILED.
-    Parsl every 15 seconds polls a status of the transfer job (task) from the Globus Transfer service,
-    with 60 second timeout limit. If the task is ACTIVE after time runs out 'task_wait' returns False,
-    and True otherwise.
+    The Data Stager polls a status of the transfer job (task) from the Globus Transfer service
+    every 15 seconds with 60 second timeout limit. If the task is ACTIVE after time runs out,
+    'tc.task_wait()' returns False, and True otherwise.
     """
     last_event_time = None
     while not tc.task_wait(task_id, 60, 15):
         task = tc.get_task(task_id)
         # Get the last error Globus event
         events = tc.task_event_list(task_id, num_results=1, filter="is_error:1")
-        if not events.data:
+        event = next(events)
+        if not event:
             continue
-        event = events.data[0]
         # Log the error event if it was not yet logged
         if event["time"] != last_event_time:
             last_event_time = event["time"]
@@ -290,7 +290,7 @@ def main(args):
     else:
         logger.error("Globus Transfer task: {}".format(task_id))
         events = tc.task_event_list(task_id, num_results=1, filter="is_error:1")
-        event = events.data[0]
+        event = next(events)
         logger.error("Globus transfer {} failed due to error: {}".format(task_id, event["details"]))
         sys.exit(1)
 
