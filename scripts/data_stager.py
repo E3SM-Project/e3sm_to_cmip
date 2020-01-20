@@ -271,8 +271,9 @@ def main(args):
         task = tc.get_task(task_id)
         # Get the last error Globus event
         events = tc.task_event_list(task_id, num_results=1, filter="is_error:1")
-        event = next(events)
-        if not event:
+        try:
+            event = next(events)
+        except StopIteration:
             continue
         # Log the error event if it was not yet logged
         if event["time"] != last_event_time:
