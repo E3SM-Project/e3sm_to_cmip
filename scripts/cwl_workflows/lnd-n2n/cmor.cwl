@@ -46,8 +46,6 @@ arguments:
   - .
   - --output-path
   - $(runtime.outdir)
-  - --logdir
-  - $(runtime.outdir)
 
 outputs: 
   cmip6_dir: 

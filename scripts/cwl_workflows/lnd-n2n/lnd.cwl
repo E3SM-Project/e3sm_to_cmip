@@ -31,13 +31,13 @@ outputs:
     type: Directory[]
     outputSource: step_cmor/cmip6_dir
     linkMerge: merge_flattened
-  remaped_time_series:
-    type:
-      type: array
-      items:
-        type: array
-        items: File
-    outputSource: time_series/remaped_time_series
+  # remaped_time_series:
+  #   type:
+  #     type: array
+  #     items:
+  #       type: array
+  #       items: File
+  #   outputSource: time_series/remaped_time_series
   cmor_logs:
     type: Directory[]
     outputSource: step_cmor/logs
