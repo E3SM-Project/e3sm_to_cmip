@@ -18,7 +18,7 @@ requirements:
           until [ $RETURN -eq 0 ]; do
               e3sm_to_cmip \
                   -s \
-                  --mode mpass \
+                  --mode mpassi \
                   --precheck {{ workflow_output }} \
                   -v {{ variables }} \
                   --tables-path {{ tables }} \
