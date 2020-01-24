@@ -152,8 +152,8 @@ def parse_argsuments():
         help='Exit with code -1 if execution time exceeds given time in seconds')
     parser.add_argument(
         '--precheck',
-        help="Check for each variable if its already in the output CMIP6 directory, only run variables that dont have CMIP6 output",
-        action="store_true")
+        type=str,
+        help="Check for each variable if its already in the output CMIP6 directory, only run variables that dont have CMIP6 output")
     parser.add_argument(
         '--version',
         help='print the version number and exit',
@@ -543,7 +543,7 @@ def get_year_from_cmip(filename):
     return start, end
 
 
-def precheck(inpath, outpath, variables, mode):
+def precheck(inpath, precheck_path, variables, mode):
     """
     Check if the data has already been produced and skip
 
@@ -555,22 +555,22 @@ def precheck(inpath, outpath, variables, mode):
     var_map = [{'found': False, 'name': var} for var in variables]
 
     # then check the output tree for files with the correct variables for those years
-    if mode in ['mpaso', 'mpassi']:
-        for val in var_map:
-            for _, _, files in os.walk(outpath, topdown=False):
-                if files:
-                    prefix = val['name'] + "_"
-                    if files[0][:len(prefix)] != prefix:
-                        continue
-                    files = [x for x in sorted(files) if x.endswith('.nc')]
-                    for f in files:
-                        cmip_start, cmip_end = get_year_from_cmip(f)
-                        if cmip_start == start and cmip_end == end:
-                            val['found'] = True
-                            break
-                    if val['found'] == True:
+    for val in var_map:
+        for _, _, files in os.walk(precheck_path, topdown=False):
+            if files:
+                prefix = val['name'] + "_"
+                if files[0][:len(prefix)] != prefix:
+                    # this directory doesnt have the variable we're looking for
+                    continue
+                
+                files = [x for x in sorted(files) if x.endswith('.nc')]
+                for f in files:
+                    cmip_start, cmip_end = get_year_from_cmip(f)
+                    if cmip_start == start and cmip_end == end:
+                        val['found'] = True
                         break
-        
-        return [x['name'] for x in var_map if not x['found']]
-    else:
-        raise ValueError("still working on it")
+                if val['found'] == True:
+                    break
+    
+    return [x['name'] for x in var_map if not x['found']]
+
