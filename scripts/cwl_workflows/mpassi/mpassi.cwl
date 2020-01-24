@@ -10,10 +10,9 @@ inputs:
   metadata: File
   workflow_output: string
 
-  allocation: string
   partition: string
   account: string
-  timeout: string
+  timeout: int
   
   namelist_path: string
   restart_path: string  
@@ -48,7 +47,6 @@ steps:
   step_cmor:
     run: mpassi_srun_render_cmor.cwl
     in:
-      allocation: allocation
       account: account
       partition: partition
       timeout: timeout
