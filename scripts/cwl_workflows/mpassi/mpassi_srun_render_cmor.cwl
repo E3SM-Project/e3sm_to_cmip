@@ -48,7 +48,7 @@ requirements:
                       outdir=values.outdir,
                       input=values.input,
                       timeout=values.timeout,
-                      workflow_output=values.workflow-output)
+                      workflow_output=values.workflow_output)
                   with open(script_path, 'w') as outfile:
                       outfile.write(script_contents)
                   
