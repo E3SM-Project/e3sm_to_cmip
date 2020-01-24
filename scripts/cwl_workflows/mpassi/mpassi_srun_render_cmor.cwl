@@ -68,7 +68,7 @@ requirements:
               parser.add_argument('--input', required=True)
               parser.add_argument('--timeout', required=True)
               parser.add_argument('--partition', required=True)
-              parser.add_argument('--workflow-output', required=True)
+              parser.add_argument('--workflow_output', required=True)
               exit(
                   render_sbatch(
                       parser.parse_args()))
@@ -109,7 +109,7 @@ inputs:
   workflow_output:
     type: string
     inputBinding:
-      prefix: --workflow-output
+      prefix: --workflow_output
 
 outputs:
   cmorized:
