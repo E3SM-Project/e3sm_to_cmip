@@ -6,16 +6,17 @@ requirements:
   - class: ScatterFeatureRequirement
 
 inputs:
+  data_path: string
+  metadata: File
+  workflow_output: string
+
   allocation: string
   partition: string
   timeout: string
   
-  data_path: string
   namelist_path: string
-  restart_path: string
-  
+  restart_path: string  
   mapfile: File
-  metadata: File
 
   frequency: int
   tables_path: string
@@ -44,7 +45,7 @@ steps:
       - segments
   
   step_cmor:
-    run: mpassi_cmor.cwl
+    run: mpassi_srun_render_cmor.cwl
     in:
       allocation: allocation
       partition: partition
@@ -54,6 +55,7 @@ steps:
       var_list: cmor_var_list
       metadata: metadata
       mapfile: mapfile
+      workflow_output: workflow_output
     scatter:
       - input_directory
       - var_list
