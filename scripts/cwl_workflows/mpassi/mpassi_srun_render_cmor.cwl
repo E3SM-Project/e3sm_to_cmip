@@ -116,7 +116,7 @@ outputs:
     type: Directory
     outputBinding:
       glob: CMIP6
-  logs:
+  cmor_logs:
     type: Directory
     outputBinding:
       glob: cmor_logs
