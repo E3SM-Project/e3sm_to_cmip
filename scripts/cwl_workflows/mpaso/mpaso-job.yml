@@ -1,12 +1,15 @@
-frequency: 1
-
 data_path: /lcrc/group/acme/v1DECKoutput/piControl/
-map: 
-  class: File
-  path: /home/zender/data/maps/map_oEC60to30v3_to_cmip6_180x360_aave.20181001.nc
+workflow_output: /lcrc/group/acme/v1DECKoutput/piControl/output
 metadata:
   class: File
   path: /home/sbaldwin/projects/e3sm_to_cmip/e3sm_user_config_picontrol.json
+
+
+
+map: 
+  class: File
+  path: /home/zender/data/maps/map_oEC60to30v3_to_cmip6_180x360_aave.20181001.nc
+frequency: 1
 namelist_path: /lcrc/group/acme/v1DECKoutput/cmip6/piControl/input/mpas-o_in
 region_path: /lcrc/group/acme/v1DECKoutput/cmip6/piControl/input/oEC60to30v3_Atlantic_region_and_southern_transect.nc
 restart_path: /lcrc/group/acme/v1DECKoutput/cmip6/piControl/input/mpaso.rst.0005-01-01_00000.nc

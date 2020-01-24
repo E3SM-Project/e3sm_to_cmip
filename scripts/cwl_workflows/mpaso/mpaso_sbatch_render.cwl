@@ -17,7 +17,9 @@ requirements:
           RETURN=1
           until [ $RETURN -eq 0 ]; do
               e3sm_to_cmip \
-                  -s --mode mpaso --precheck \
+                  -s \
+                  --mode mpaso \
+                  --precheck {{ workflow_output }} \
                   -v {{ variables }} \
                   --tables-path {{ tables }} \
                   --user-metadata {{ metadata }} \
@@ -45,7 +47,8 @@ requirements:
                       map=values.map,
                       outdir=values.outdir,
                       input=values.input,
-                      timeout=values.timeout)
+                      timeout=values.timeout,
+                      workflow_output=values.workflow_output)
                   with open(script_path, 'w') as outfile:
                       outfile.write(script_contents)
                   
@@ -67,6 +70,7 @@ requirements:
               parser.add_argument('--input', required=True)
               parser.add_argument('--timeout', required=True)
               parser.add_argument('--partition', required=True)
+              parser.add_argument('--workflow_output', required=True)
               exit(
                   render_sbatch(
                       parser.parse_args()))
@@ -104,6 +108,10 @@ inputs:
     type: int
     inputBinding:
       prefix: --timeout
+  workflow_output:
+    type: string
+    inputBinding:
+      prefix: --workflow_output
 
 outputs:
   cmorized:
