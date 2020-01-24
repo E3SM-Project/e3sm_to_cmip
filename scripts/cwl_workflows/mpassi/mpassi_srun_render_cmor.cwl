@@ -74,7 +74,7 @@ requirements:
                       parser.parse_args()))
 
 inputs:
-  input_path:
+  input_directory:
     type: Directory
     inputBinding:
       prefix: --input

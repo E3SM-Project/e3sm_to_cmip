@@ -21,7 +21,6 @@ LEVELS = {
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
-    cl = CLOUD * 100.0
     """
     outdata = data['CLDICE'][index, :]
     cmor.write(

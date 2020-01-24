@@ -12,6 +12,7 @@ inputs:
 
   allocation: string
   partition: string
+  account: string
   timeout: string
   
   namelist_path: string
@@ -48,6 +49,7 @@ steps:
     run: mpassi_srun_render_cmor.cwl
     in:
       allocation: allocation
+      account: account
       partition: partition
       timeout: timeout
       input_directory: step_segments/segments
