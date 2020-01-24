@@ -14,25 +14,25 @@ requirements:
 
           template_string = """#!/bin/bash
 
-RETURN=1
-until [ $RETURN -eq 0 ]; do
-    e3sm_to_cmip \
-        -s \
-        --mode mpass \
-        --precheck {{ workflow_output }} \
-        -v {{ variables }} \
-        --tables-path {{ tables }} \
-        --user-metadata {{ metadata }} \
-        --map {{ map }} \
-        --logdir {{ outdir }} \
-        --output {{ outdir }} \
-        --input {{ input }} \
-        --timeout {{ timeout }}
-    RETURN=$?
-    if [ $RETURN != 0 ]; then
-        echo "Restarting"
-    fi
-done"""
+          RETURN=1
+          until [ $RETURN -eq 0 ]; do
+              e3sm_to_cmip \
+                  -s \
+                  --mode mpass \
+                  --precheck {{ workflow_output }} \
+                  -v {{ variables }} \
+                  --tables-path {{ tables }} \
+                  --user-metadata {{ metadata }} \
+                  --map {{ map }} \
+                  --logdir {{ outdir }} \
+                  --output {{ outdir }} \
+                  --input {{ input }} \
+                  --timeout {{ timeout }}
+              RETURN=$?
+              if [ $RETURN != 0 ]; then
+                  echo "Restarting"
+              fi
+          done"""
 
           def render_sbatch(values):
               template = Template(template_string)
