@@ -61,6 +61,9 @@ def main():
     timeout = int(_args['timeout']) if _args.get('timeout') else None
     should_precheck = _args.get('precheck')
 
+    print(output_path)
+    return 1
+
     timer = None
     if timeout:
         timer = threading.Timer(timeout, timeout_exit)
