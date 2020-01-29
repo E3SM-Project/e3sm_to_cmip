@@ -4,6 +4,7 @@ from tqdm import tqdm
 import datetime
 from shutil import copyfile
 import cdms2
+from cdms2.cdscan import addAttrs
 from distributed import Client, as_completed, LocalCluster, get_worker
 import argparse
 
@@ -135,10 +136,13 @@ def get_year_from_file(filename):
     end = start + 4
     return filename[start: end]
 
-def fix_mask(good_file_path, variable, data_path, new_version_path, id_map, dataset_id, verbose=False):
+def fix_mask(good_file_path, variable, data_path, new_version_path, dataset_id, id_map=None, verbose=False):
 
-    addr = get_worker().address
-    position = id_map[addr] + 1
+    if id_map:
+        addr = get_worker().address
+        position = id_map[addr] + 1
+    else:
+        position = 0
 
     good_data = cdms2.open(good_file_path)[variable]
     mask = np.ma.getmask(good_data[:])
@@ -164,9 +168,13 @@ def fix_mask(good_file_path, variable, data_path, new_version_path, id_map, data
 
         # create the output pointer in write mode
         op = cdms2.open(dest, 'w')
+
+        for k, v in ip.attributes.items():
+            setattr(op, k, v)
+
+        # write out the new dataset
         op.write(data_copy)
 
-        # close both file pointers
         op.close()
         ip.close()
 
@@ -184,18 +192,20 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', dest='num_proc', default=10, type=int, help="number of processes")
     parser.add_argument('-v', dest='verbose', action="store_true", help="Verbose mode")
+    parser.add_argument('-s', dest='serial', action='store_true')
     args = parser.parse_args()
 
-    num_workers = args.num_proc
-    cluster = LocalCluster(
-        n_workers=num_workers,
-        threads_per_worker=1,
-        interface='lo')
-    client = Client(address=cluster.scheduler_address)
-    futures = []
+    if not args.serial:
+        num_workers = args.num_proc
+        cluster = LocalCluster(
+            n_workers=num_workers,
+            threads_per_worker=1,
+            interface='lo')
+        client = Client(address=cluster.scheduler_address)
+        futures = []
 
-    worker_map = cluster.scheduler.identity().get('workers')                                                                                                                                                                                                                          
-    id_map = {x: worker_map[x].get('id') for x in worker_map } 
+        worker_map = cluster.scheduler.identity().get('workers')                                                                                                                                                                                                                          
+        id_map = {x: worker_map[x].get('id') for x in worker_map } 
 
     d = datetime.datetime.today()
     new_version  = 'v{:04d}{:02d}{:02d}'.format(d.year, d.month, d.day)
@@ -209,9 +219,11 @@ def main():
             continue
         if 'gr' in dirs:
             continue
-        if 'gr' in root:
+        if 'gr' in root or 'dask-worker-space' in root:
             continue
         for variable in dirs:
+            if variable == 'dask-worker-space':
+                continue
             version = sorted(os.listdir(os.path.join(root, variable, 'gr')))[0]
             data_path = os.path.join(root, variable, 'gr', version)
             dataset_id = get_dataset_id(data_path)
@@ -229,24 +241,36 @@ def main():
                 good_file_name = os.listdir(good_path)[0]
                 good_file_path = os.path.join(good_path, good_file_name)
 
-                futures.append(
-                    client.submit(
-                        fix_mask,
+                if args.serial:
+                    fix_mask(
                         good_file_path,
                         variable,
                         data_path,
                         new_version_path,
-                        id_map,
                         dataset_id,
-                        args.verbose))
+                        verbose=args.verbose)
+                else:
+                    futures.append(
+                        client.submit(
+                            fix_mask,
+                            good_file_path,
+                            variable,
+                            data_path,
+                            new_version_path,
+                            dataset_id,
+                            id_map=id_map,
+                            verbose=args.verbose))
 
-    pbar = tqdm(total=len(futures), position=0)
-    for f in as_completed(futures):
-        pbar.update(1)
-    pbar.close()
+    if not args.serial:
+        pbar = tqdm(total=len(futures), position=0)
+        for f in as_completed(futures):
+            pbar.update(1)
+        pbar.close()
 
-    client.close()
-    cluster.close()
+        client.close()
+        cluster.close()
+    else:
+        print("All done")
 
 
 if __name__ == "__main__":
