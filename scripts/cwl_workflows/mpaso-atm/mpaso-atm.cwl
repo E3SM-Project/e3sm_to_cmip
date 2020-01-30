@@ -25,7 +25,7 @@ inputs:
 
   hrz_atm_map_path: string
   
-  mpas_map_file: File 
+  mpas_map_path: string
   mpas_restart_path: string
   mpas_region_path: string
   mpas_namelist_path: string
@@ -129,7 +129,7 @@ steps:
       start_year: step_find_start_end/start_year
       end_year: step_find_start_end/end_year
       data_path: mpas_data_path
-      mapfile: mpas_map_file
+      map_path: mpas_map_path
       namelist_path: mpas_namelist_path
       restart_path: mpas_restart_path
       psl_files: step_hrz_remap/time_series_files

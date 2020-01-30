@@ -13,7 +13,7 @@ inputs:
   start_year: int
   end_year: int
 
-  mapfile: File
+  map_path: string
 
   namelist_path: string
   restart_path: string
@@ -41,7 +41,7 @@ steps:
       end: end_year
       frequency: frequency
       input: data_path
-      mapfile: mapfile
+      map_path: map_path
       namelist: namelist_path
       restart: restart_path
       psl_files: psl_files
@@ -57,7 +57,7 @@ steps:
       tables_path: tables_path
       metadata: metadata
       var_list: cmor_var_list
-      mapfile: mapfile
+      map_path: map_path
       timeout: timeout
       partition: partition
       account: account

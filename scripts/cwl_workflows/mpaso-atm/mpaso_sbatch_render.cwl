@@ -100,8 +100,8 @@ inputs:
     type: string
     inputBinding:
       prefix: --variables
-  mapfile:
-    type: File
+  map_path:
+    type: string
     inputBinding:
       prefix: --map
   timeout:
