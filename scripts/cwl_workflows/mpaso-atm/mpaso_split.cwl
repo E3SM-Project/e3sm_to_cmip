@@ -5,7 +5,6 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: InitialWorkDirRequirement
     listing:
-      - $(inputs.raw_file_list)
       - entryname: mpaso_split.py
         entry: |
           import argparse
