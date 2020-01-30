@@ -10,9 +10,10 @@ requirements:
 inputs:
 
   frequency: int
-  timeout: string
+  timeout: int
   account: string
   partition: string
+  workflow_output: string
 
   atm_data_path: string
   std_var_list: string[]
@@ -23,13 +24,14 @@ inputs:
   num_workers: int
 
   hrz_atm_map_path: string
-  mpas_map_path: string 
+  
+  mpas_map_path: string
   mpas_restart_path: string
   mpas_region_path: string
   mpas_namelist_path: string
 
   tables_path: string
-  metadata_path: string
+  metadata: File
   
 
 outputs:
@@ -55,7 +57,7 @@ steps:
   
   step_find_start_end:
     run:
-      find_start_end.cwl
+      atm_find_start_end.cwl
     in:
       data_path: atm_data_path
     out:
@@ -76,15 +78,15 @@ steps:
   step_discover_atm_files:
     run: 
       discover_atm_files.cwl
+    in:
+      input: atm_data_path
+      start: step_segments/segments_start
+      end: step_segments/segments_end
     scatter:
       - start
       - end
     scatterMethod:
       dotproduct
-    in:
-      input: atm_data_path
-      start: step_segments/segments_start
-      end: step_segments/segments_end
     out:
       - atm_files
   
@@ -101,22 +103,21 @@ steps:
   step_hrz_remap:
     run: 
       hrzremap.cwl
-    scatter:
-      - input_paths
-      - start_year
-      - end_year
-    scatterMethod:
-      dotproduct
     in:
       account: account
       partition: partition
-      timeout: timeout
       year_per_file: frequency
       casename: step_find_casename/casename
       start_year: step_segments/segments_start
       end_year: step_segments/segments_end
       map_path: hrz_atm_map_path
       input_paths: step_extract_paths/list_of_strings
+    scatter:
+      - input_paths
+      - start_year
+      - end_year
+    scatterMethod:
+      dotproduct
     out:
       - time_series_files
   
@@ -134,12 +135,13 @@ steps:
       psl_files: step_hrz_remap/time_series_files
       region_path: mpas_region_path
       tables_path: tables_path
-      metadata_path: metadata_path
+      metadata: metadata
       cmor_var_list: mpas_var_list
       num_workers: num_workers
       timeout: timeout
       account: account
       partition: partition
+      workflow_output: workflow_output
     out:
       - cmorized
       - cmor_logs

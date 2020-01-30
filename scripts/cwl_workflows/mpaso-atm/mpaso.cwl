@@ -7,26 +7,32 @@ requirements:
 
 inputs:
   frequency: int
+
+  data_path: string
+  workflow_output: string
   start_year: int
   end_year: int
 
-  data_path: string
   map_path: string
+
   namelist_path: string
   restart_path: string
-  psl_files: File[]
   region_path: string
 
+  psl_files: File[]
+
   tables_path: string
-  metadata_path: string
+  metadata: File
+
   cmor_var_list: string[]
   num_workers: int
 
-  timeout: string
+  timeout: int
   account: string
   partition: string
 
 steps:
+
   step_segments:
     run: 
       mpaso_split.cwl
@@ -35,7 +41,7 @@ steps:
       end: end_year
       frequency: frequency
       input: data_path
-      map: map_path
+      map_path: map_path
       namelist: namelist_path
       restart: restart_path
       psl_files: psl_files
@@ -43,18 +49,19 @@ steps:
     out:
       - segments
   
-  step_cmor:
+  step_render_cmor_template:
     run:
-      cmor.cwl
+      mpaso_sbatch_render.cwl
     in:
       input_path: step_segments/segments
       tables_path: tables_path
-      metadata_path: metadata_path
+      metadata: metadata
       var_list: cmor_var_list
-      mapfile: map_path
-      account: account
-      partition: partition
+      map_path: map_path
       timeout: timeout
+      partition: partition
+      account: account
+      workflow_output: workflow_output
     scatter:
       - input_path
       - var_list
@@ -67,7 +74,7 @@ steps:
 outputs:
   cmorized:
     type: Directory[]
-    outputSource: step_cmor/cmorized
+    outputSource: step_render_cmor_template/cmorized
   cmor_logs:
     type: Directory[]
-    outputSource: step_cmor/cmor_logs
+    outputSource: step_render_cmor_template/cmor_logs

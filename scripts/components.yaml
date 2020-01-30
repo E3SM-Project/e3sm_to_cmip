@@ -1,0 +1,16 @@
+-
+  name: atm
+  glob: "*cam.h0*"
+  yearexp: "\d{4}-\d{2}"
+-
+  name: lnd
+  glob: "*clm2.h0*"
+  yearexp: "\d{4}-\d{2}"
+-
+  name: ocn
+  glob: "*mpaso.hist.am.timeSeriesStatsMonthly.*"
+  yearexp: "\d{4}-\d{2}"
+-
+  name: ice
+  glob: "*mpascice.hist.am.timeSeriesStatsMonthly.*"
+  yearexp: "\d{4}-\d{2}"

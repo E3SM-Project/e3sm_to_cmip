@@ -1,11 +1,11 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [python, mpaso_sbatch_render.py]
+baseCommand: [python, mpassi_sbatch_cmor.py]
 requirements:
   - class: InitialWorkDirRequirement
     listing:
-      - entryname: mpaso_sbatch_render.py
+      - entryname: mpassi_sbatch_cmor.py
         entry: |
           from sys import exit, argv
           from subprocess import call
@@ -18,7 +18,7 @@ requirements:
           until [ $RETURN -eq 0 ]; do
               e3sm_to_cmip \
                   -s \
-                  --mode mpaso \
+                  --mode mpassi \
                   --precheck {{ workflow_output }} \
                   -v {{ variables }} \
                   --tables-path {{ tables }} \
@@ -32,8 +32,7 @@ requirements:
               if [ $RETURN != 0 ]; then
                   echo "Restarting"
               fi
-          done
-          """
+          done"""
 
           def render_sbatch(values):
               template = Template(template_string)
@@ -42,6 +41,7 @@ requirements:
                   script_contents = template.render(
                       variables=values.variables,
                       account=values.account,
+                      partition=values.partition,
                       tables=values.tables,
                       metadata=values.metadata,
                       map=values.map,
@@ -53,11 +53,9 @@ requirements:
                       outfile.write(script_contents)
                   
                   call(['chmod', '+x', script_path])
-                  call(['srun', '-A', values.account, '--partition', values.partition, '-t', '2:00:00', script_path])
+                  return call(['srun', '-A', values.account, '--partition', values.partition, '-t', '2:00:00', script_path])
               except Exception as e:
                   raise e
-              else:
-                  return 0
 
           if __name__ == "__main__":
               parser = argparse.ArgumentParser()
@@ -76,7 +74,7 @@ requirements:
                       parser.parse_args()))
 
 inputs:
-  input_path:
+  input_directory:
     type: Directory
     inputBinding:
       prefix: --input
@@ -118,7 +116,7 @@ outputs:
     type: Directory
     outputBinding:
       glob: CMIP6
-  logs:
+  cmor_logs:
     type: Directory
     outputBinding:
       glob: cmor_logs

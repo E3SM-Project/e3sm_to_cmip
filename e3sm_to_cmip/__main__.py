@@ -59,7 +59,7 @@ def main():
     map_path = _args['map'] if _args.get('map') else None
     cmor_log_dir = _args['logdir'] if _args.get('logdir') else None
     timeout = int(_args['timeout']) if _args.get('timeout') else None
-    should_precheck = _args.get('precheck')
+    precheck_path = _args.get('precheck')
 
     timer = None
     if timeout:
@@ -72,8 +72,8 @@ def main():
         handlers_path, _ = os.path.split(
             os.path.abspath(cmor_handlers.__file__))
     
-    if should_precheck:
-        new_var_list = precheck(input_path, output_path, var_list, mode)
+    if precheck_path:
+        new_var_list = precheck(input_path, precheck_path, var_list, mode)
         if not new_var_list:
             print("All variables previously computed")
             if timer: timer.cancel()

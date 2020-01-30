@@ -110,7 +110,7 @@ inputs:
     type: string
     inputBinding:
       prefix: --input
-  map:
+  map_path:
     type: string
     inputBinding:
       prefix: --map

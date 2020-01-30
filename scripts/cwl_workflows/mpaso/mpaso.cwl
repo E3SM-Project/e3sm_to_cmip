@@ -6,11 +6,12 @@ requirements:
   - class: ScatterFeatureRequirement
 
 inputs:
-  frequency: int
   data_path: string
+  metadata: File
+  workflow_output: string
 
   mapfile: File
-  metadata: File
+  frequency: int
 
   namelist_path: string
   region_path: string
@@ -58,6 +59,7 @@ steps:
       timeout: timeout
       partition: partition
       account: account
+      workflow_output: workflow_output
     scatter:
       - input_path
       - var_list
