@@ -22,8 +22,6 @@ inputs:
     type: string
   partition: 
     type: string
-  timeout: 
-    type: string
 
 arguments:
   - -A
@@ -31,7 +29,7 @@ arguments:
   - --partition
   - $(inputs.partition)
   - -t
-  - $(inputs.timeout)
+  - "02:00:00"
   - ncclimo
   - '-7'
   - --no_stdin

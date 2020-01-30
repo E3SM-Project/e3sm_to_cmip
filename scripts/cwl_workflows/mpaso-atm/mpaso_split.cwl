@@ -110,8 +110,8 @@ inputs:
     type: string
     inputBinding:
       prefix: --input
-  map:
-    type: string
+  mapfile:
+    type: File
     inputBinding:
       prefix: --map
   region_path:

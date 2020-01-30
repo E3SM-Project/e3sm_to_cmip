@@ -6,6 +6,7 @@ inputs:
   a_File: File
 
 baseCommand: python
+
 arguments:
  - prefix: -c
    valueFrom: |
