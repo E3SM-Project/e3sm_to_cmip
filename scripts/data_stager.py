@@ -206,7 +206,7 @@ def main(args):
     # Retrieve from tapes
     if args.workers > 1:
         logger.debug("Running zstash with multiprocessing")
-        failures = multiprocess_extract(args.workers, matches, True, True)
+        failures = multiprocess_extract(args.workers, matches, True)
     else:
         failures = extractFiles(matches, True)
 

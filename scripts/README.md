@@ -5,7 +5,7 @@ The `data_stager.py` script stages files from a zstash archive that match a list
 The script depends on [zstash][zstash], [Globus SDK][globussdk], and [FAIR Native Login][fairnativelogin] Python packages. For example, to set up an environment on NERSC/Cori, you can run:
 ```
 cori01:~> module load python/2.7-anaconda-4.4
-cori01:~> conda create -n data_stager_env -c e3sm -c conda-forge zstash fair-research-login
+cori01:~> conda create -n data_stager_env -c e3sm -c conda-forge zstash=0.3.0 fair-research-login=0.1.5
 cori01:~> conda activate data_stager_env
 ```
 All messages are written to a logger. By default, the logging level is set to `WARNING`, and can be changed by setting the `LOGLEVEL` environment variable.
