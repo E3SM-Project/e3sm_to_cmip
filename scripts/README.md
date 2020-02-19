@@ -10,8 +10,9 @@ cori01:~> conda activate data_stager_env
 ```
 All messages are written to a logger. By default, the logging level is set to `WARNING`, and can be changed by setting the `LOGLEVEL` environment variable.
 ```
-usage: data_stager.py [-h] [-l] [-d DESTINATION] [-s SOURCE] [-b] [-z ZSTASH]
-                      [-c COMPONENT] [-f PATTERN_FILE] [-w WORKERS]
+usage: data_stager.py [-h] [-l] [-d DESTINATION] [-s SOURCE] [-b] [-t T]
+                      [-m M] [-z ZSTASH] [-c COMPONENT] [-f PATTERN_FILE] [-e]
+                      [-w WORKERS]
                       [files [files ...]]
 
 Stage in data files from a zstash archive
@@ -23,12 +24,12 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -l, --login           Get Globus Auth tokens only and store them in
-                        ~/.globus--native-apps.cfg for future use
+                        ~/.globus-native-apps.cfg for future use
   -d DESTINATION, --destination DESTINATION
                         destination Globus endpoint and path,
                         <endpoint>:<path>. Endpoint can be a Globus endpoint
-                        UUUID or a short name. Currently recognized short
-                        names are: anvil, blues, cori, compy.
+                        UUID or a short name. Currently recognized short names
+                        are: anvil, blues, cori, compy.
   -s SOURCE, --source SOURCE
                         source Globus endpoint. If it is not provided, the
                         script tries to determine the source endpoint based on
@@ -36,6 +37,9 @@ optional arguments:
   -b, --block           Wait until Globus transfer completes. If the option is
                         not specified, the script exits immediately after the
                         transfer submission.
+  -t T                  Globus transfer task label
+  -m M                  transfer manifest file prefix. When specified, a
+                        manifest file will be named <prefix>-manifest.json.
   -z ZSTASH, --zstash ZSTASH
                         zstash archive path
   -c COMPONENT, --component COMPONENT
@@ -49,6 +53,9 @@ optional arguments:
                         "*.cam.h0.*", "lnd": "*.clm2.h0.*", "river":
                         "*mosart.h0*", "restart": "*mpaso.rst.*", "namelist":
                         ["*mpas-o_in", "*mpaso_in"]}
+  -e                    Remove all files downloaded from HPSS and extracted,
+                        after a Globus transfer succeeded. The option requires
+                        -b.
   -w WORKERS, --workers WORKERS
                         Number of workers untarring zstash files
 ```

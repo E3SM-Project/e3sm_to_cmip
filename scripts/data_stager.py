@@ -2,6 +2,8 @@ import os
 import sys
 import argparse
 import logging
+import shutil
+import tempfile
 import sqlite3
 import json
 import socket
@@ -129,6 +131,10 @@ def main(args):
         namelist_patterns = p
     logger.debug("Namelist file patterns: {}".format(namelist_patterns))
 
+    # Create temporary directory for all zstash files, etc.
+    tmp_directory = tempfile.mkdtemp(prefix="stager-", dir=".")
+    os.chdir(tmp_directory)
+
     # Download and open database
     logger.info('Opening index database')
     config.hpss = args.zstash
@@ -232,16 +238,22 @@ def main(args):
                 "length": m[2],
                 "md5": m[4]
         })
-    with open("manifest.json", "w+") as f:
+    if args.m:
+        manifest_name = args.m + "-"
+    manifest_name += "manifest.json"
+    with open(manifest_name, "w+") as f:
         f.write(json.dumps(manifest))
 
     # Transfer the files downloaded from the zstash archive
-    label = "E3SM Data Stager on {}".format(hostname)
+    if args.t:
+        label = args.t
+    else:
+        label = "E3SM Data Stager on {}".format(hostname)
     td = globus_sdk.TransferData(tc, source_endpoint, destination_endpoint, label=label)
 
     cwd = os.getcwd()
-    source_path = os.path.join(cwd, "manifest.json")
-    destination_path = os.path.join(destination_dir, "manifest.json")
+    source_path = os.path.join(cwd, manifest_name)
+    destination_path = os.path.join(destination_dir, manifest_name)
     td.add_item(source_path, destination_path)
     for m in matches:
         source_path = os.path.join(cwd, m[1])
@@ -295,6 +307,11 @@ def main(args):
         logger.error("Globus transfer {} failed due to error: {}".format(task_id, event["details"]))
         sys.exit(1)
 
+    if args.e:
+        logger.info("Deleting downloaded zstash archives and extracted files")
+        os.chdir("..")
+        shutil.rmtree(tmp_directory)
+
 
 if __name__ == "__main__":
     loglevel = os.environ.get("LOGLEVEL", "WARNING").upper()
@@ -311,12 +328,18 @@ if __name__ == "__main__":
                         help="source Globus endpoint. If it is not provided, the script tries to determine the source endpoint based on the local hostname.")
     parser.add_argument("-b", "--block", action="store_true",
                         help="Wait until Globus transfer completes. If the option is not specified, the script exits immediately after the transfer submission.")
+    parser.add_argument("-t",
+                        help="Globus transfer task label")
+    parser.add_argument("-m",
+                        help="transfer manifest file prefix. When specified, a manifest file will be named <prefix>-manifest.json.")
     parser.add_argument("-z", "--zstash",
                         help="zstash archive path")
     parser.add_argument("-c", "--component",
                         help="comma separated components to download (atm, lnd, ice, river, ocean)")
     parser.add_argument("-f", "--pattern-file",
                         help="Pattern file. By default, the patterns are: " + json.dumps(patterns))
+    parser.add_argument("-e", action="store_true",
+                        help="Remove all files downloaded from HPSS and extracted, after a Globus transfer succeeded. The option requires -b.")
     parser.add_argument("-w", "--workers", type=int, default=1,
                         help="Number of workers untarring zstash files")
     parser.add_argument("files", nargs="*",
