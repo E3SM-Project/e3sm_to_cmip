@@ -86,7 +86,7 @@ def main(args):
     resp = tc.endpoint_autoactivate(destination_endpoint, if_expires_in=36000)
     if resp["code"] == "AutoActivationFailed":
         logger.error("The destination endpoint is not active. Please go to https://app.globus.org/file-manager/collections/{} to activate the endpoint."
-                     .format(source_endpoint))
+                     .format(destination_endpoint))
         sys.exit(1)
     logger.info("The destination Globus endpoint has been activated")
 
@@ -303,9 +303,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Stage in data files from a zstash archive")
     parser.add_argument("-l", "--login", action="store_true",
-                        help="Get Globus Auth tokens only and store them in ~/.globus--native-apps.cfg for future use")
+                        help="Get Globus Auth tokens only and store them in ~/.globus-native-apps.cfg for future use")
     parser.add_argument("-d", "--destination",
-                        help="destination Globus endpoint and path, <endpoint>:<path>. Endpoint can be a Globus endpoint UUUID or a short name."
+                        help="destination Globus endpoint and path, <endpoint>:<path>. Endpoint can be a Globus endpoint UUID or a short name."
                         " Currently recognized short names are: {}.".format(", ".join(name_endpoint.keys())))
     parser.add_argument("-s", "--source",
                         help="source Globus endpoint. If it is not provided, the script tries to determine the source endpoint based on the local hostname.")
