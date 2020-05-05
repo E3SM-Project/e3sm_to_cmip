@@ -31,7 +31,7 @@ inputs:
   mpas_namelist_path: string
 
   tables_path: string
-  metadata: File
+  metadata_path: File
   
 
 outputs:
@@ -135,7 +135,7 @@ steps:
       psl_files: step_hrz_remap/time_series_files
       region_path: mpas_region_path
       tables_path: tables_path
-      metadata: metadata
+      metadata: metadata_path
       cmor_var_list: mpas_var_list
       num_workers: num_workers
       timeout: timeout

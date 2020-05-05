@@ -4,8 +4,6 @@ metadata:
   class: File
   path: /home/sbaldwin/projects/e3sm_to_cmip/e3sm_user_config_picontrol.json
 
-
-
 map: 
   class: File
   path: /home/zender/data/maps/map_oEC60to30v3_to_cmip6_180x360_aave.20181001.nc
