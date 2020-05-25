@@ -23,17 +23,17 @@ requirements:
     - pip
     - setuptools
 
-run:
-    - python
-    - nco
-    - cmor >=3.5.0
-    - cdutil
-    - cdms2 >=3.1
-    - tqdm
-    - pathos
-    - pyyaml
-    - xarray
-    - netcdf4
-    - dask
-    - scipy
+  run:
+      - python
+      - nco
+      - cmor >=3.5.0
+      - cdutil
+      - cdms2 >=3.1
+      - tqdm
+      - pathos
+      - pyyaml
+      - xarray
+      - netcdf4
+      - dask
+      - scipy
 
