@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from e3sm_to_cmip.util import setup_cmor
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.lib import my_dynamic_message
-import progressbar
+from tqdm import tqdm
 
 import cmor
 import cdms2
@@ -163,22 +163,11 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
         serial = kwargs.get('serial')
         if serial:
-            myMessage = progressbar.DynamicMessage('running')
-            myMessage.__call__ = my_dynamic_message
-            widgets = [
-                progressbar.DynamicMessage('running'), ' [',
-                progressbar.Timer(), '] ',
-                progressbar.Bar(),
-                ' (', progressbar.ETA(), ') '
-            ]
-            progressbar.DynamicMessage.__call__ = my_dynamic_message
-            pbar = progressbar.ProgressBar(
-                maxval=len(data['time']), widgets=widgets)
-            pbar.start()
+            pbar = tqdm(total=len(data['time']))
 
         for index, val in enumerate(data['time']):
             if serial:
-                pbar.update(index, running=msg)
+                pbar.update(1)
             write_data(
                 varid=varid,
                 data=data,
@@ -186,7 +175,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
                 timebnds=[data['time_bnds'][index, :]],
                 index=index)
             if serial:
-                pbar.finish()
+                pbar.close()
 
     msg = '{}: write complete, closing'.format(VAR_NAME)
     logger.info(msg)

@@ -10,7 +10,7 @@ import imp
 import yaml
 import cdms2
 
-from progressbar import ProgressBar
+from tqdm import tqdm
 from e3sm_to_cmip.version import __version__
 
 
@@ -333,10 +333,9 @@ def add_metadata(file_path, var_list):
             if index != -1 and name[:index] in var_list or 'all' in var_list:
                 filepaths.append(os.path.join(root, name))
 
-    pbar = ProgressBar(maxval=len(filepaths))
-    pbar.start()
+    pbar = tqdm(total=len(filepaths))
 
-    for idx, filepath in enumerate(filepaths):
+    for _, filepath in enumerate(filepaths):
 
         datafile = cdms2.open(filepath, 'r+')
         datafile.e3sm_source_code_doi = str('10.11578/E3SM/dc.20180418.36')
@@ -356,9 +355,9 @@ def add_metadata(file_path, var_list):
         # datafile.base_year = str("1850")
 
         datafile.close()
-        pbar.update(idx)
+        pbar.update(1)
 
-    pbar.finish()
+    pbar.close()
 # ------------------------------------------------------------------
 
 

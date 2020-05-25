@@ -7,7 +7,7 @@ import os
 import cmor
 import cdms2
 import logging
-import progressbar
+from tqdm import tqdm
 logger = logging.getLogger()
 
 from e3sm_to_cmip.util import print_message, setup_cmor, get_levgrnd_bnds
@@ -23,17 +23,6 @@ LEVELS = {
     'units': 'm',
     'e3sm_axis_name': 'levgrnd'
 }
-
-def my_dynamic_message(self, progress, data):
-    """
-    Make the progressbar not crash, and also give a nice custom message
-    """
-    val = data['dynamic_messages'].get('running')
-    if val:
-        return 'Running: {0: <16}'.format(data['dynamic_messages'].get('running'))
-    else:
-        return 'Running: ' + 16 * '-'
-# ------------------------------------------------------------------
 
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
@@ -165,36 +154,20 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
         serial = kwargs.get('serial')
         if serial:
-            myMessage = progressbar.DynamicMessage('running')
-            myMessage.__call__ = my_dynamic_message
-            widgets = [
-                progressbar.DynamicMessage('running'), ' [',
-                progressbar.Timer(), '] ',
-                progressbar.Bar(),
-                ' (', progressbar.ETA(), ') '
-            ]
-            progressbar.DynamicMessage.__call__ = my_dynamic_message
-            pbar = progressbar.ProgressBar(
-                maxval=len(data['time']), widgets=widgets)
-            pbar.start()
+            pbar = tqdm(total=len(data['time']))
 
         
         for index, val in enumerate(data['time']):
             if serial:
-                pbar.update(index, running=msg)
-            # write_data(
-            #     varid=varid,
-            #     data=data,
-            #     timeval=val,
-            #     timebnds=[data['time_bnds'][index, :]],
-            #     index=index)
+                pbar.update(1)
+
             cmor.write(
                 varid,
                 data['TSOI'][index, :],
                 time_vals=val,
                 time_bnds=[data['time_bnds'][index, :]])
             if serial:
-                pbar.finish()
+                pbar.close()
 
     msg = '{}: write complete, closing'.format(VAR_NAME)
     logger.info(msg)

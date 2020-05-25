@@ -7,7 +7,6 @@ import cmor
 import os
 import logging
 import cdms2
-import progressbar
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.lib import handle_variables
 
@@ -18,16 +17,6 @@ VAR_UNITS = str('m')
 TABLE = str('CMIP6_fx.json')
 
 
-def my_dynamic_message(self, progress, data):
-    """
-    Make the progressbar not crash, and also give a nice custom message
-    """
-    val = data['dynamic_messages'].get('running')
-    if val:
-        return 'Running: {0: <16}'.format(data['dynamic_messages'].get('running'))
-    else:
-        return 'Running: ' + 16 * '-'
-# ------------------------------------------------------------------
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
@@ -122,30 +111,12 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids)
 
-    if serial:
-        myMessage = progressbar.DynamicMessage('running')
-        myMessage.__call__ = my_dynamic_message
-        widgets = [
-            progressbar.DynamicMessage('running'), ' [',
-            progressbar.Timer(), '] ',
-            progressbar.Bar(),
-            ' (', progressbar.ETA(), ') '
-        ]
-        progressbar.DynamicMessage.__call__ = my_dynamic_message
-        pbar = progressbar.ProgressBar(
-            maxval=1, widgets=widgets)
-        pbar.start()
-
     g = 9.80616
 
     outdata = data['PHIS'] / g
     cmor.write(
         varid,
         outdata)
-
-    if serial:
-        pbar.update(1, running=msg)
-        pbar.finish()
 
     msg = '{}: write complete, closing'.format(VAR_NAME)
     logger.debug(msg)

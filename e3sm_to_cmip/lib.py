@@ -3,7 +3,7 @@ from e3sm_to_cmip.util import print_debug
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.util import find_mpas_files
 from e3sm_to_cmip.util import find_atm_files
-import progressbar
+from tqdm import tqdm
 import os
 import cmor
 import cdms2
@@ -62,8 +62,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
                 **_kwargs))
 
     # wait for each result to complete
-    pbar = progressbar.ProgressBar(maxval=len(pool_res))
-    pbar.start()
+    pbar = tqdm(total=len(pool_res))
     num_success = 0
     num_handlers = len(handlers)
 
@@ -81,12 +80,12 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
                 print_message(msg, 'error')
 
             logger.info(msg)
-            pbar.update(idx)
+            pbar.update(1)
         except Exception as e:
             print_debug(e)
             return 1
 
-    pbar.finish()
+    pbar.close()
     terminate(pool)
     print_message("{} of {} handlers complete".format(
         num_success, num_handlers), 'ok')
@@ -128,8 +127,7 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
         num_success = 0
 
         if mode != 'atm':
-            pbar = progressbar.ProgressBar(maxval=len(handlers))
-            pbar.start()
+            pbar = tqdm(total=len(handlers))
 
         for idx, handler in enumerate(handlers):
 
@@ -174,9 +172,9 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
             logger.info(msg)
 
             if mode != 'atm':
-                pbar.update(idx)
+                pbar.update(1)
         if mode != 'atm':
-            pbar.finish()
+            pbar.close()
 
     except Exception as error:
         print_debug(error)
@@ -283,22 +281,12 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
         logger.info(msg)
 
         if serial:
-            myMessage = progressbar.DynamicMessage('running')
-            myMessage.__call__ = my_dynamic_message
-            widgets = [
-                progressbar.DynamicMessage('running'), ' [',
-                progressbar.Timer(), '] ',
-                progressbar.Bar(),
-                ' (', progressbar.ETA(), ') '
-            ]
-            progressbar.DynamicMessage.__call__ = my_dynamic_message
-            pbar = progressbar.ProgressBar(
-                maxval=len(data['time']), widgets=widgets)
-            pbar.start()
+            pbar = tqdm(total=len(data['time']))
 
         for index, val in enumerate(data['time']):
             if serial:
-                pbar.update(index, running=msg)
+                pbar.update(1)
+                pbar.set_description(msg)
             write_data(
                 varid=varid,
                 data=data,
@@ -307,7 +295,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
                 index=index,
                 raw_variables=raw_variables)
         if serial:
-            pbar.finish()
+            pbar.close()
 
     msg = '{}: write complete, closing'.format(outvar_name)
     logger.debug(msg)

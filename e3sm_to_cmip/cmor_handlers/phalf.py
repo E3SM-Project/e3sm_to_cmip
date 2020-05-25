@@ -7,8 +7,7 @@ import cmor
 import cdms2
 import logging
 import os
-import progressbar
-from e3sm_to_cmip.util import print_message
+from tqmd import tqdmfrom e3sm_to_cmip.util import print_message
 from cdutil.vertical import reconstructPressureFromHybrid
 
 # list of raw variable names needed
@@ -234,22 +233,11 @@ def handle(infiles, tables, user_input_path, **kwargs):
         logger.info(msg)
 
         if serial:
-            myMessage = progressbar.DynamicMessage('running')
-            myMessage.__call__ = my_dynamic_message
-            widgets = [
-                progressbar.DynamicMessage('running'), ' [',
-                progressbar.Timer(), '] ',
-                progressbar.Bar(),
-                ' (', progressbar.ETA(), ') '
-            ]
-            progressbar.DynamicMessage.__call__ = my_dynamic_message
-            pbar = progressbar.ProgressBar(
-                maxval=len(data['time2']), widgets=widgets)
-            pbar.start()
+            pbar = tqdm(total=len(data['time2']))
 
         for index, val in enumerate(data['time2']):
             if serial:
-                pbar.update(index, running=msg)
+                pbar.update(1)
             write_data(
                 varid=varid,
                 data=data,
@@ -258,7 +246,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
                 index=index,
                 RAW_VARIABLES=RAW_VARIABLES)
         if serial:
-            pbar.finish()
+            pbar.close()
 
     msg = '{}: write complete, closing'.format(VAR_NAME)
     logger.debug(msg)
