@@ -9,7 +9,6 @@ import os
 import sys
 import logging
 import tempfile
-import shutil
 import threading
 import signal
 from pathos.multiprocessing import ProcessPool as Pool
