@@ -17,8 +17,6 @@ VAR_UNITS = str('m')
 TABLE = str('CMIP6_fx.json')
 
 
-
-
 def handle(infiles, tables, user_input_path, **kwargs):
     logger = logging.getLogger()
     msg = '{}: Starting'.format(VAR_NAME)

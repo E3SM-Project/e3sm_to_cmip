@@ -7,7 +7,8 @@ import cmor
 import cdms2
 import logging
 import os
-from tqmd import tqdmfrom e3sm_to_cmip.util import print_message
+from tqmd import tqdm
+from e3sm_to_cmip.util import print_message
 from cdutil.vertical import reconstructPressureFromHybrid
 
 # list of raw variable names needed
@@ -22,17 +23,6 @@ LEVELS = {
     'e3sm_axis_bnds': 'ilev',
     'time_name': 'time2'
 }
-
-def my_dynamic_message(self, progress, data):
-    """
-    Make the progressbar not crash, and also give a nice custom message
-    """
-    val = data['dynamic_messages'].get('running')
-    if val:
-        return 'Running: {0: <16}'.format(data['dynamic_messages'].get('running'))
-    else:
-        return 'Running: ' + 16 * '-'
-# ------------------------------------------------------------------
 
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
