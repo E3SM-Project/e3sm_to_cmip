@@ -238,6 +238,9 @@ def load_handlers(handlers_path, var_list, debug=None):
 
         module_name, _ = handler.rsplit('.', 1)
 
+        if module_name not in var_list and 'all' not in var_list:
+            continue
+
         dup = False
         for h in handlers:
             if h['name'] == module_name:
@@ -254,7 +257,7 @@ def load_handlers(handlers_path, var_list, debug=None):
         # pull the table name out from the format CMIP6_Amon.json
         table = module.TABLE.split('.')[0].split('_')[-1]
 
-        if module_name in var_list or 'all' in var_list or table in load_tables:
+        if table in load_tables:
 
             handlers.append({
                 'name': module_name,
