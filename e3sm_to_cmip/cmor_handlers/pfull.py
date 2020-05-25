@@ -7,7 +7,7 @@ import cmor
 import cdms2
 import logging
 import os
-from tqmd import tqdm
+from tqdm import tqdm
 from e3sm_to_cmip.util import print_message
 from cdutil.vertical import reconstructPressureFromHybrid
 
