@@ -172,58 +172,58 @@
   units: 'kg m-2 s-1'
   table: CMIP6_Lmon.json
 
-- cmip_name: cProduct
-  e3sm_name: TOTPRODC
-  units: "kg m-2"
-  table: CMIP6_Lmon.json
+# - cmip_name: cProduct
+#   e3sm_name: TOTPRODC
+#   units: "kg m-2"
+#   table: CMIP6_Lmon.json
 
 # - cmip_name: cSoil
 #   e3sm_name: TOTSOMC
 #   units: "kg m-2"
 #   table: CMIP6_Lmon.json
 
-- cmip_name: fFire
-  e3sm_name: COL_FIRE_CLOSS
-  units: "kg m-2 s-1"
-  table: CMIP6_Lmon.json
-  positive: up
+# - cmip_name: fFire
+#   e3sm_name: COL_FIRE_CLOSS
+#   units: "kg m-2 s-1"
+#   table: CMIP6_Lmon.json
+#   positive: up
 
-- cmip_name: fHarvest
-  e3sm_name: WOOD_HARVESTC
-  units: "kg m-2 s-1"
-  table: CMIP6_Lmon.json
-  positive: up
+# - cmip_name: fHarvest
+#   e3sm_name: WOOD_HARVESTC
+#   units: "kg m-2 s-1"
+#   table: CMIP6_Lmon.json
+#   positive: up
 
 - cmip_name: mrsos
   e3sm_name: SOILWATER_10CM
   units: "kg m-2"
   table: CMIP6_Lmon.json
 
-- cmip_name: cVeg
-  e3sm_name: TOTVEGC
-  units: "kg m-2"
-  table: CMIP6_Lmon.json
+# - cmip_name: cVeg
+#   e3sm_name: TOTVEGC
+#   units: "kg m-2"
+#   table: CMIP6_Lmon.json
 
-- cmip_name: nbp
-  e3sm_name: NBP
-  units: "kg m-2 s-1"
-  table: CMIP6_Lmon.json
-  positive: down
+# - cmip_name: nbp
+#   e3sm_name: NBP
+#   units: "kg m-2 s-1"
+#   table: CMIP6_Lmon.json
+#   positive: down
 
-- cmip_name: gpp
-  e3sm_name: GPP
-  units: "kg m-2 s-1"
-  table: CMIP6_Lmon.json
-  positive: down
+# - cmip_name: gpp
+#   e3sm_name: GPP
+#   units: "kg m-2 s-1"
+#   table: CMIP6_Lmon.json
+#   positive: down
 
-- cmip_name: ra
-  e3sm_name: AR
-  units: "kg m-2 s-1"
-  table: CMIP6_Lmon.json
-  positive: up
+# - cmip_name: ra
+#   e3sm_name: AR
+#   units: "kg m-2 s-1"
+#   table: CMIP6_Lmon.json
+#   positive: up
 
-- cmip_name: rh
-  e3sm_name: HR
-  units: "kg m-2 s-1"
-  table: CMIP6_Lmon.json
-  positive: up
+# - cmip_name: rh
+#   e3sm_name: HR
+#   units: "kg m-2 s-1"
+#   table: CMIP6_Lmon.json
+#   positive: up
