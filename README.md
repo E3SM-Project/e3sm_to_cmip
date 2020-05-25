@@ -2,9 +2,34 @@
 
 A cli utility to transform E3SM model output into CMIP compatible data.
 
-## e3sm_to_cmip
 
-Transform e3sm time series variables into cmip compatible data. Each variable needs its own handler script, implemented in the cmor_handlers directory (see directory for current handlers). In addition, you will need to clone [the cmor repo](https://github.com/PCMDI/cmor) to access the Test and Tables directories. Test holds the common_user_input.json file which can be used as a placeholder for the user supplied metadata, and Tables holds all the CMIP6 variable tables.
+
+## Installation
+
+
+You can install the `e3sm_to_cmip` conda package directly from the `e3sm` channel:
+```
+conda create -n e2c -c conda-forge -c e3sm e3sm_to_cmip
+```
+
+Get a copy of the CMIP6 Controlled Vocabulary tables
+```
+git clone https://github.com/PCMDI/cmip6-cmor-tables.git
+```
+
+### NOTE
+
+Due to a bug in the latest version of CMOR, you will need to either copy or symlink the json table files into the directory which you will be running e3sm_to_cmip from.
+
+If you're not converting a production run, and dont have a defined metadata file for your experiment, you can use the default metadata from the DECK piControl experiment. This will work for converting any E3SM data, but the global attributes will contain some incorrect information.
+```
+wget https://raw.githubusercontent.com/E3SM-Project/e3sm_to_cmip/master/e3sm_user_config_picontrol.json
+```
+
+
+## Usage
+
+Transform e3sm time series variables into cmip compatible data. Each variable needs its own handler script, implemented in the cmor_handlers directory (see directory for current handlers). The input directory should contain regridded time-series files in the format produced by ncclimo (VARNAME_STARTYEAR_ENDYEAR.nc).
 
 
 ```
@@ -34,16 +59,17 @@ optional arguments:
   --debug               Set output level to debug
 ```
 
-## conda environment
+### Example
 
-To create a conda environment with the required dependencies, run:
-```
-conda create -n e3sm_to_cmip -c conda-forge nco cmor cdutil cdms2 progressbar2 pyyaml xarray \
-    netcdf4 dask scipy
-```
+Here's an example of the tool usage, with the variables tas, prc, and rlut. The time-series files containing the regridded output are in a directory named input_path, and a directory named output_path will be used to hold the CMIP6 output.
 
-You can also install the `e3sm_to_cmip` conda package directly from the `e3sm` channel:
 ```
-conda create -n e3sm_to_cmip -c conda-forge -c e3sm e3sm_to_cmip
+e3sm_to_cmip -v tas, prc, rlut --input ./input_path/ --output ./output_path/ -t ~/cmip6-cmor-tables -u e3sm_user_config_picontrol.json
 ```
 
+This will produce a directory tree named CMIP6 below the output_path, with the CMIP6 directory tree based on the metadata json file. 
+
+
+### Debugging
+
+If anything goes wrong, the first thing to try is to envoke the same command, but with the --serial flag turned on. This gives much nicer exception log output. The second thing to look for, is under the output directory is a directory named cmor_logs, inside of which will be detailed per-variable logging output from CMOR.
