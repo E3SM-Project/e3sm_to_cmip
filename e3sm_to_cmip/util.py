@@ -92,7 +92,7 @@ def parse_argsuments():
     parser.add_argument(
         '-i', '--input-path',
         metavar='',
-        required=False,
+        required=True,
         help='path to directory containing e3sm time series data files. Additionally namelist, restart, and mappings files if handling MPAS data.')
     parser.add_argument(
         '-o', '--output-path',
@@ -101,12 +101,12 @@ def parse_argsuments():
         help='where to store cmorized output')
     parser.add_argument(
         '-u', '--user-metadata',
-        required=False,
+        required=True,
         metavar='<user_input_json_path>',
         help='path to user json file for CMIP6 metadata')
     parser.add_argument(
         '-t', '--tables-path',
-        required=False,
+        required=True,
         metavar='<tables-path>',
         help="Path to directory containing CMOR Tables directory")
     parser.add_argument(
@@ -257,7 +257,7 @@ def load_handlers(handlers_path, var_list, debug=None):
         # pull the table name out from the format CMIP6_Amon.json
         table = module.TABLE.split('.')[0].split('_')[-1]
 
-        if table in load_tables:
+        if table in load_tables or module_name in var_list:
 
             handlers.append({
                 'name': module_name,
