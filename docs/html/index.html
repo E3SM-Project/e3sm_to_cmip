@@ -1,0 +1,261 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>e3sm_to_cmip’s documentation &mdash; e3sm_to_cmip 1.4.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Usage" href="usage.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home"> e3sm_to_cmip
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_atm.html">Variable Map Atmos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_lnd.html">Variable Map Land</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_ocn.html">Variable Map Ocean</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_ice.html">Variable Map Sea-Ice</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">e3sm_to_cmip</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>e3sm_to_cmip’s documentation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="e3sm-to-cmip-s-documentation">
+<h1>e3sm_to_cmip’s documentation<a class="headerlink" href="#e3sm-to-cmip-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="welcome-to-e3sm-to-cmip-s-documentation">
+<h2>Welcome to e3sm_to_cmip’s documentation!<a class="headerlink" href="#welcome-to-e3sm-to-cmip-s-documentation" title="Permalink to this headline">¶</a></h2>
+<p>The e3sm_to_cmip tool converts E3SM model output variables to the CMIP standard format.
+The tool works for atmospheric, land, MPAS-Ocean, and MPAS-Sea-Ice variables. The handling of each component is slightly different, so care
+must be made when dealing with the various data types.</p>
+<p>Along with the e3sm_to_cmip command-line tool, there is also a set of workflow scripts for each component,
+which break the input files up into managable segment size and perform all the required input processing needed before
+invoking the e3sm_to_cmip tool itself. These scripts have been designed to run on a SLURM cluster in parallel and will
+process an arbitraraly large set of simulation data in whatever chunk size required.</p>
+<p><strong>INSTALLATION</strong></p>
+<p>conda:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -n e2c -c conda-forge -c e3sm <span class="nv">e3sm_to_cmip</span><span class="o">==</span><span class="m">1</span>.4.1<span class="o">=</span><span class="m">1</span> <span class="nv">libcdms</span><span class="o">==</span><span class="m">4</span>.7.4
+</pre></div>
+</div>
+<p>source:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/E3SM-Project/e3sm_to_cmip.git
+<span class="nb">cd</span> e3sm_to_cmip
+python setup.py install
+</pre></div>
+</div>
+<p>If installing from source, the tool will require and environment with the following packages:
+- python &gt;=3
+- nco
+- cmor &gt;=3.5.0
+- libcdms &gt;=4.7.4
+- cdutil
+- cdms2 &gt;=3.1
+- tqdm
+- pathos
+- pyyaml
+- xarray
+- netcdf4
+- dask
+- scipy</p>
+<p><strong>ATMOSHERE</strong></p>
+<p>Atmospheric data must be regridding time-series files, in the one-variable-per-file format produced by ncclimo. Each CMIP6 variable requires
+one or more E3SM variable to function, see the table of CMIP6 to E3SM variable mappings. Use the flag –mode atm</p>
+<p><strong>LAND</strong></p>
+<p>Land data must be regridded time-series file, in the ncclimo format. Make sure to use subgrid scale options when generating the time-series files.
+Use the flag –mode lnd</p>
+<p><strong>OCEAN</strong></p>
+<p>The ocean variables require as input the mpaso.hist.am.timeSeriesStatsMonthly files, along with a single MPASO restart file (which contains
+important mesh information), and a mapping file to convert the mpas mesh data to a regular lon lat grid. Use –mode ocn</p>
+<p><strong>SEA-ICE</strong></p>
+<p>The ocean variables require as input the mpassi.hist.am.timeSeriesStatsMonthly files, along with a single MPASO restart file (which contains
+important mesh information), and a mapping file to convert the mpas mesh data to a regular lon lat grid. Use –mode ice</p>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_atm.html">Variable Map Atmos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_lnd.html">Variable Map Land</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_ocn.html">Variable Map Ocean</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_ice.html">Variable Map Sea-Ice</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="usage.html" class="btn btn-neutral float-right" title="Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Sterling Baldwin
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

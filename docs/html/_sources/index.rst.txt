@@ -1,0 +1,87 @@
+.. e3sm_to_cmip documentation master file, created by
+   sphinx-quickstart on Thu May 28 14:08:09 2020.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+****************************
+e3sm_to_cmip's documentation
+****************************
+
+Welcome to e3sm_to_cmip's documentation!
+========================================
+
+The e3sm_to_cmip tool converts E3SM model output variables to the CMIP standard format. 
+The tool works for atmospheric, land, MPAS-Ocean, and MPAS-Sea-Ice variables. The handling of each component is slightly different, so care
+must be made when dealing with the various data types. 
+
+Along with the e3sm_to_cmip command-line tool, there is also a set of workflow scripts for each component, 
+which break the input files up into managable segment size and perform all the required input processing needed before
+invoking the e3sm_to_cmip tool itself. These scripts have been designed to run on a SLURM cluster in parallel and will 
+process an arbitraraly large set of simulation data in whatever chunk size required.
+
+
+**INSTALLATION**
+
+conda:
+
+.. code-block:: bash
+
+   conda create -n e2c -c conda-forge -c e3sm e3sm_to_cmip==1.4.1=1 libcdms==4.7.4
+
+
+source:
+
+.. code-block:: bash
+
+   git clone https://github.com/E3SM-Project/e3sm_to_cmip.git
+   cd e3sm_to_cmip
+   python setup.py install
+
+
+If installing from source, the tool will require and environment with the following packages:
+- python >=3
+- nco
+- cmor >=3.5.0
+- libcdms >=4.7.4
+- cdutil
+- cdms2 >=3.1
+- tqdm
+- pathos
+- pyyaml
+- xarray
+- netcdf4
+- dask
+- scipy
+
+
+**ATMOSHERE**
+
+Atmospheric data must be regridding time-series files, in the one-variable-per-file format produced by ncclimo. Each CMIP6 variable requires
+one or more E3SM variable to function, see the table of CMIP6 to E3SM variable mappings. Use the flag --mode atm
+
+**LAND**
+
+Land data must be regridded time-series file, in the ncclimo format. Make sure to use subgrid scale options when generating the time-series files.
+Use the flag --mode lnd
+
+**OCEAN**
+
+The ocean variables require as input the mpaso.hist.am.timeSeriesStatsMonthly files, along with a single MPASO restart file (which contains
+important mesh information), and a mapping file to convert the mpas mesh data to a regular lon lat grid. Use --mode ocn
+
+**SEA-ICE**
+
+The ocean variables require as input the mpassi.hist.am.timeSeriesStatsMonthly files, along with a single MPASO restart file (which contains
+important mesh information), and a mapping file to convert the mpas mesh data to a regular lon lat grid. Use --mode ice
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   usage
+   var_map_atm
+   var_map_lnd
+   var_map_ocn
+   var_map_ice
+
