@@ -10,9 +10,8 @@ requirements:
 inputs:
 
   lnd_data_path: string
-  lnd_source_grid: string
   lnd_destination_grid: string
-
+  lnd_source_grid: string
   frequency: int
   num_workers: int
 
@@ -26,18 +25,13 @@ inputs:
   partition: string
   timeout: string
 
+  one_land_file: string
+
 outputs: 
   cmorized:
     type: Directory[]
     outputSource: step_cmor/cmip6_dir
     linkMerge: merge_flattened
-  # remaped_time_series:
-  #   type:
-  #     type: array
-  #     items:
-  #       type: array
-  #       items: File
-  #   outputSource: time_series/remaped_time_series
   cmor_logs:
     type: Directory[]
     outputSource: step_cmor/logs
@@ -87,13 +81,14 @@ steps:
     run:
       ncremap_lnd.cwl
     in:
-      source_grid: lnd_source_grid
       destination_grid: lnd_destination_grid
+      source_grid: lnd_source_grid
       lnd_files: step_discover_lnd_files/lnd_files
-      num_workers: num_workers
       account: account
       partition: partition
       timeout: timeout
+      var_list: lnd_var_list
+      one_land_file: one_land_file
     scatter:
       - lnd_files
     out:

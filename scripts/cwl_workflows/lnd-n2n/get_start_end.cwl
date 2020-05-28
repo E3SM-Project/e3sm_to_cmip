@@ -17,11 +17,11 @@ requirements:
               parser = argparse.ArgumentParser()
               parser.add_argument('--data-path')
 
-              files = sorted([get_year(x) for x in os.listdir(parser.parse_args().data_path)])
+              years = sorted([get_year(x) for x in os.listdir(parser.parse_args().data_path) if get_year(x)])
               with open('start.txt', 'w') as start_out, open('end.txt', 'w') as end_out:
-                start_out.write(files[0])
-                end_out.write(files[-1])
-                print("Data files found from years {} to {} ".format(files[0], files[-1]))
+                start_out.write(years[0])
+                end_out.write(years[-1])
+                print(f"Data files found from years {years[0]} to {years[-1]}")
               return 0
           if __name__ == "__main__":
               sys.exit(main())
@@ -44,4 +44,5 @@ outputs:
     outputBinding:
       glob: end.txt
       loadContents: true
-      outputEval: $( parseInt(self[0].contents) )
+      outputEval: |
+        $( parseInt(self[0].contents) )

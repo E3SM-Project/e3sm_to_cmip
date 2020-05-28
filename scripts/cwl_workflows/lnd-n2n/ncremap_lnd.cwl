@@ -1,6 +1,8 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
 class: CommandLineTool
+requirements:
+  - class: InlineJavascriptRequirement
 baseCommand: [srun]
 
 arguments:
@@ -11,24 +13,19 @@ arguments:
   - -t
   - $(inputs.timeout)
   - ncremap
-  - -p
-  - bck
-  - -P
-  - sgs
-  - -a
-  - conserve
   - -s
   - $(inputs.source_grid)
+  - --sgs_frc=$(inputs.one_land_file)/landfrac
   - -g
   - $(inputs.destination_grid)
+  - -v
+  - $(inputs.var_list.join(','))
 
 inputs:
   source_grid:
     type: string
   destination_grid:
     type: string
-  num_workers:
-    type: int
   lnd_files:
     type: File
   account:
@@ -36,6 +33,10 @@ inputs:
   partition:
     type: string
   timeout:
+    type: string
+  var_list:
+    type: string[]
+  one_land_file:
     type: string
 
 stdin: $(inputs.lnd_files.path)
