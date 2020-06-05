@@ -86,33 +86,37 @@ def parse_argsuments():
     parser.add_argument(
         '-v', '--var-list',
         nargs='+',
-        required=True,
+        required=True, 
         metavar='',
-        help='space seperated list of variables to convert from e3sm to cmip. Use \'all\' to convert all variables or the name of a CMIP6 table to run all handlers from that table')
+        help='Space separated list of variables to convert from e3sm to cmip. Use \'all\' to convert all variables or the name of a CMIP6 table to run all handlers from that table')
     parser.add_argument(
         '-i', '--input-path',
         metavar='',
         required=True,
-        help='path to directory containing e3sm time series data files. Additionally namelist, restart, and mappings files if handling MPAS data.')
+        help='Path to directory containing e3sm time series data files. Additionally namelist, restart, and mappings files if handling MPAS data.')
     parser.add_argument(
         '-o', '--output-path',
         metavar='',
         required=True,
-        help='where to store cmorized output')
+        help='Where to store cmorized output')
+    parser.add_argument(
+        '--simple',
+        help='Perform a simple translation of the E3SM output to CMIP format, but without the CMIP6 metadata checks',
+        action='store_true')
     parser.add_argument(
         '-u', '--user-metadata',
-        required=True,
+        required=False,
         metavar='<user_input_json_path>',
-        help='path to user json file for CMIP6 metadata')
+        help='Path to user json file for CMIP6 metadata, required unless the --simple flag is used')
     parser.add_argument(
         '-t', '--tables-path',
-        required=True,
+        required=False,
         metavar='<tables-path>',
-        help="Path to directory containing CMOR Tables directory")
+        help="Path to directory containing CMOR Tables directory, required unless the --simple flag is used")
     parser.add_argument(
         '--map',
         metavar='<map_mpas_to_std_grid>',
-        help="The path to an mpas remapping file. Must be used when using the --mpaso or --mpassi options")
+        help="The path to an mpas remapping file. Required if mode is mpaso or mpassi")
     parser.add_argument(
         '-n', '--num-proc',
         metavar='<nproc>',
@@ -123,7 +127,7 @@ def parse_argsuments():
         '-H', '--handlers',
         metavar='<handler_path>',
         default=None,
-        help='path to cmor handlers directory, default = e3sm_to_cmip/cmor_handlers')
+        help='Path to cmor handlers directory, default = e3sm_to_cmip/cmor_handlers')
     parser.add_argument(
         '--no-metadata',
         help='Do not add E3SM metadata to the output',
@@ -167,9 +171,14 @@ def parse_argsuments():
     else:
         _args = parser.parse_args(_args)
         if _args.mode == 'mpaso' and not _args.map:
-            print("MPAS ocean handling requires a map file")
+            raise ValueError("MPAS ocean handling requires a map file")
         if _args.mode == 'mpassi' and not _args.map:
-            print("MPAS sea-ice handling requires a map file")
+            raise ValueError("MPAS sea-ice handling requires a map file")
+        if not _args.simple and not _args.tables_path:
+            raise ValueError("Running without the --simple flag requires CMIP6 tables path")
+        if not _args.simple and not _args.user_metadata:
+            raise ValueError("Running without the --simple flag requires CMIP6 metadata json file")
+
     return _args
 # ------------------------------------------------------------------
 
@@ -216,14 +225,15 @@ def load_handlers(handlers_path, var_list, debug=None):
 
             table = default.get('table').split('.')[0].split('_')[-1]
             if default.get('cmip_name') in var_list or 'all' in var_list or table in load_tables:
-
+                
                 handlers.append({
                     'name': default.get('cmip_name'),
                     'method': default_handler,
                     'raw_variables': [default.get('e3sm_name')],
                     'units': default.get('units'),
                     'table': default.get('table'),
-                    'positive': default.get('positive')
+                    'positive': default.get('positive'),
+                    'unit_conversion': default.get('unit_conversion')
                 })
             elif debug:
                 print_message("{} not loaded".format(default.get('cmip_name')))

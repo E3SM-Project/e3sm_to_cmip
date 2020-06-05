@@ -8,6 +8,8 @@ import os
 import cmor
 import cdms2
 import logging
+import xarray as xr
+import numpy as np
 logger = logging.getLogger()
 
 
@@ -106,7 +108,7 @@ def my_dynamic_message(self, progress, data):
 
 
 def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
-               mode='atm', logdir=None):
+               mode='atm', logdir=None, simple=False, outpath=None):
     """
     Run each of the handlers one at a time on the main process
 
@@ -129,10 +131,12 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
         if mode != 'atm':
             pbar = tqdm(total=len(handlers))
 
-        for idx, handler in enumerate(handlers):
+        for _, handler in enumerate(handlers):
 
             handler_method = handler['method']
             handler_variables = handler['raw_variables']
+            unit_conversion = handler.get('unit_conversion')
+
 
             # find the input files this handler needs
             if mode in ['atm', 'lnd']:
@@ -158,7 +162,10 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
                 table=handler.get('table'),
                 positive=handler.get('positive'),
                 serial=True,
-                logdir=logdir)
+                logdir=logdir,
+                simple=simple,
+                outpath=outpath,
+                unit_conversion=unit_conversion)
 
             if name is not None:
                 num_success += 1
@@ -186,20 +193,18 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
 # ------------------------------------------------------------------
 
 
-def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None, levels=None, axis=None, logdir=None):
+def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None, levels=None, axis=None, logdir=None, simple=False, outpath=None):
 
     from e3sm_to_cmip.util import print_message
     logger = logging.getLogger()
 
-    msg = '{}: Starting'.format(outvar_name)
-    logger.info(msg)
+    logger.info(f'{outvar_name}: Starting')
 
     # check that we have some input files for every variable
     zerofiles = False
     for variable in raw_variables:
         if len(infiles[variable]) == 0:
-            msg = '{}: Unable to find input files for {}'.format(
-                outvar_name, variable)
+            msg = f'{outvar_name}: Unable to find input files for {variable}'
             print_message(msg)
             logging.error(msg)
             zerofiles = True
@@ -216,16 +221,17 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
 
     logfile = os.path.join(logpath, outvar_name + '.log')
 
-    cmor.setup(
-        inpath=tables,
-        netcdf_file_action=cmor.CMOR_REPLACE,
-        logfile=logfile)
+    if not simple:
+        cmor.setup(
+            inpath=tables,
+            netcdf_file_action=cmor.CMOR_REPLACE,
+            logfile=logfile)
 
-    cmor.dataset_json(str(metadata_path))
-    cmor.load_table(str(table))
+        cmor.dataset_json(str(metadata_path))
+        cmor.load_table(str(table))
 
-    msg = '{}: CMOR setup complete'.format(outvar_name)
-    logging.info(msg)
+        msg = f'{outvar_name}: CMOR setup complete'
+        logging.info(msg)
 
     data = {}
 
@@ -242,13 +248,12 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
         get_dims = True
 
         # load data for each variable
+        if simple:
+            loaded_one = False
         for var_name in raw_variables:
 
             # extract data from the input file
-            msg = '{name}: loading {variable}'.format(
-                name=outvar_name,
-                variable=var_name)
-            logger.info(msg)
+            logger.info(f'{outvar_name}: loading {var_name}')
 
             new_data = get_dimension_data(
                 filename=infiles[var_name][index],
@@ -257,50 +262,77 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
                 get_dims=get_dims)
             data.update(new_data)
             get_dims = False
+            if simple and not loaded_one:
+                loaded_one = True
 
-        msg = '{name}: loading axes'.format(name=outvar_name)
-        logger.info(msg)
+                # new data set
+                ds = xr.Dataset()
+                # dims = tuple(x for x in new_data.keys() of x != var_name and x != 'time2' and 'bnds' not in x)
+                dims = ('time', 'lat', 'lon')
+                if 'lev' in new_data.keys():
+                    dims = ('time', 'lev', 'lat', 'lon')
+                ds[outvar_name] = (dims, new_data[var_name])
+                for d in dims:
+                    ds.coords[d] = new_data[d][:]
+                # ds.coords['time'] = new_data['time'][:]
+                # ds.coords['lat'] = new_data['lat'][:]
+                # ds.coords['lon'] = new_data['lon'][:]
 
-        # create the cmor variable and axis
-        axis_ids, ips = load_axis(data=data, levels=levels)
+        if not simple:
+            logger.info(f'{outvar_name}: loading axes')
 
-        if ips:
-            data['ips'] = ips
+            # create the cmor variable and axis
+            axis_ids, ips = load_axis(data=data, levels=levels)
 
-        if positive:
-            varid = cmor.variable(outvar_name, outvar_units,
-                                  axis_ids, positive=positive)
+            if ips:
+                data['ips'] = ips
+
+            if positive:
+                varid = cmor.variable(outvar_name, outvar_units,
+                                    axis_ids, positive=positive)
+            else:
+                varid = cmor.variable(outvar_name, outvar_units, axis_ids)
         else:
-            varid = cmor.variable(outvar_name, outvar_units, axis_ids)
+            varid = 0
 
         # write out the data
-        msg = "{}: time {:1.1f} - {:1.1f}".format(
-            outvar_name,
-            data['time_bnds'][0][0],
-            data['time_bnds'][-1][-1])
+        msg = f"{outvar_name}: time {data['time_bnds'][0][0]:1.1f} - {data['time_bnds'][-1][-1]:1.1f}"
         logger.info(msg)
 
         if serial:
             pbar = tqdm(total=len(data['time']))
 
+        # import ipdb; ipdb.set_trace()
         for index, val in enumerate(data['time']):
-            if serial:
-                pbar.update(1)
-                pbar.set_description(msg)
-            write_data(
+            outdata = write_data(
                 varid=varid,
                 data=data,
                 timeval=val,
                 timebnds=[data['time_bnds'][index, :]],
                 index=index,
-                raw_variables=raw_variables)
+                raw_variables=raw_variables,
+                simple=simple)
+            if simple:
+                # pnds = nds.sel(time=val)
+                # pnds[outvar_name] = (('lat', 'lon'), outdata)
+                # ds = xr.concat([ds, pnds], dim='time')
+                ds[outvar_name][index] = outdata
+            if serial:
+                pbar.update(1)
+                pbar.set_description(msg)
         if serial:
             pbar.close()
 
-    msg = '{}: write complete, closing'.format(outvar_name)
-    logger.debug(msg)
+    if simple:
+        output_file_path = os.path.join(outpath, f'{outvar_name}.nc')
+        msg = f'writing out variable to file {output_file_path}'
+        print_message(msg,'ok')
+        ds.to_netcdf(path=output_file_path)
+    else:
+        msg = '{}: write complete, closing'.format(outvar_name)
+        logger.debug(msg)
 
-    cmor.close()
+        cmor.close()
 
     msg = '{}: file close complete'.format(outvar_name)
     logger.debug(msg)
@@ -342,10 +374,10 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     if not os.path.exists(filename):
         raise IOError("File not found: {}".format(filename))
 
-    f = cdms2.open(filename)
+    fp = cdms2.open(filename)
 
     # load the data for each variable
-    variable_data = f(variable)
+    variable_data = fp(variable)
 
     # load
     data.update({
@@ -353,7 +385,7 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     })
 
     # atm uses "time_bnds" but the lnd component uses "time_bounds"
-    time_bounds_name = 'time_bnds' if 'time_bnds' in f.variables.keys() else 'time_bounds'
+    time_bounds_name = 'time_bnds' if 'time_bnds' in fp.variables.keys() else 'time_bounds'
 
     # load the lon and lat info & bounds
     # load time & time bounds
@@ -361,11 +393,11 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
         data.update({
             'lat': variable_data.getLatitude(),
             'lon': variable_data.getLongitude(),
-            'lat_bnds': f('lat_bnds'),
-            'lon_bnds': f('lon_bnds'),
+            'lat_bnds': fp('lat_bnds'),
+            'lon_bnds': fp('lon_bnds'),
             'time': variable_data.getTime(),
             'time2': variable_data.getTime(),
-            'time_bnds': f(time_bounds_name)
+            'time_bnds': fp(time_bounds_name)
         })
 
         try:
@@ -381,28 +413,28 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
         if levels is not None:
             if levels.get('name') == 'standard_hybrid_sigma' or levels.get('name') == 'standard_hybrid_sigma_half':
                 data.update({
-                    'lev': f.getAxis('lev')[:]/1000,
-                    'ilev': f.getAxis('ilev')[:]/1000,
-                    'ps': f('PS'),
-                    'p0': f('P0'),
-                    'hyam': f('hyam'),
-                    'hyai': f('hyai'),
-                    'hybm': f('hybm'),
-                    'hybi': f('hybi'),
+                    'lev': fp.getAxis('lev')[:]/1000,
+                    'ilev': fp.getAxis('ilev')[:]/1000,
+                    'ps': fp('PS'),
+                    'p0': fp('P0'),
+                    'hyam': fp('hyam'),
+                    'hyai': fp('hyai'),
+                    'hybm': fp('hybm'),
+                    'hybi': fp('hybi'),
                 })
             else:
                 name = levels.get('e3sm_axis_name')
-                if name in f.listdimension():
-                    data[name] = f.getAxis(name)[:]
+                if name in fp.listdimension():
+                    data[name] = fp.getAxis(name)[:]
                 else:
                     raise IOError("Unable to find e3sm_axis_name")
 
                 bnds = levels.get('e3sm_axis_bnds')
                 if bnds:
-                    if bnds in f.listdimension():
-                        data[bnds] = f.getAxis(bnds)[:]
-                    elif bnds in f.variables.keys():
-                        data[bnds] = f(bnds)[:]
+                    if bnds in fp.listdimension():
+                        data[bnds] = fp.getAxis(bnds)[:]
+                    elif bnds in fp.variables.keys():
+                        data[bnds] = fp(bnds)[:]
                     else:
                         raise IOError("Unable to find e3sm_axis_bnds")
     return data
@@ -436,22 +468,6 @@ def load_axis(data, levels=None):
         str('coord_vals'): data['lon'][:],
         str('cell_bounds'): data['lon_bnds'][:]
     })
-
-    # axes = [{
-    #     str('table_entry'): str('time'),
-    #     str('units'): data['time'].units
-    # }, {
-    #     str('table_entry'): str('latitude'),
-    #     str('units'): data['lat'].units,
-    #     str('coord_vals'): data['lat'][:],
-    #     str('cell_bounds'): data['lat_bnds'][:]
-    # }, {
-    #     str('table_entry'): str('longitude'),
-    #     str('units'): data['lon'].units,
-    #     str('coord_vals'): data['lon'][:],
-    #     str('cell_bounds'): data['lon_bnds'][:]
-    # }]
-
 
     if levels:
         lev_axis = {

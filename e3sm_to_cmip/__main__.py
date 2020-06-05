@@ -58,6 +58,7 @@ def main():
     map_path = _args['map'] if _args.get('map') else None
     cmor_log_dir = _args['logdir'] if _args.get('logdir') else None
     timeout = int(_args['timeout']) if _args.get('timeout') else None
+    simple = _args.get('simple') if _args.get('simple') else False
     precheck_path = _args.get('precheck')
 
     timer = None
@@ -78,7 +79,7 @@ def main():
             if timer: timer.cancel()
             return 0
         else:
-            print("Setting up conversion for {}".format(" ".join(new_var_list)))
+            print_message(f"Setting up conversion for {' '.join(new_var_list)}", 'ok')
             var_list = new_var_list
     
     # add additional optional metadata to the output files
@@ -101,14 +102,14 @@ def main():
     temp_path = os.environ.get('TMPDIR')
     if temp_path is None:
      
-        temp_path = '{}/tmp'.format(output_path)
+        temp_path = f'{output_path}/tmp'
         if not os.path.exists(temp_path):
             os.makedirs(temp_path)
 
     tempfile.tempdir = temp_path
 
     logging_path = os.path.join(output_path, 'converter.log')
-    print_message("Writing log output to: {}".format(logging_path), 'debug')
+    print_message(f"Writing log output to: {logging_path}", 'debug')
 
     # setup logging
     logging.basicConfig(
@@ -119,8 +120,9 @@ def main():
         level=logging.INFO)
 
     # copy the users metadata json file with the updated output directory
-    copy_user_metadata(
-        user_metadata, output_path)
+    if not simple:
+        copy_user_metadata(
+            user_metadata, output_path)
 
     # load variable handlers
     handlers = load_handlers(
@@ -142,7 +144,9 @@ def main():
                 metadata_path=new_metadata_path,
                 map_path=map_path,
                 mode=mode,
-                logdir=cmor_log_dir)
+                logdir=cmor_log_dir,
+                simple=simple,
+                outpath=output_path)
         except KeyboardInterrupt as error:
             print_message(' -- keyboard interrupt -- ', 'error')
             return 1
