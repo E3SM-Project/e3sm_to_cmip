@@ -20,12 +20,15 @@ TABLE = str('CMIP6_fx.json')
 
 def handle(infiles, tables, user_input_path, **kwargs):
 
+    if kwargs.get('simple'):
+        print_message(f'Simple CMOR output not supported for {VAR_NAME}', 'error')
+        return None
+
     logger = logging.getLogger()
     msg = '{}: Starting'.format(VAR_NAME)
     logger.info(msg)
 
     logdir = kwargs.get('logdir')
-    serial = kwargs.get('serial')
 
     # check that we have some input files for every variable
     zerofiles = False

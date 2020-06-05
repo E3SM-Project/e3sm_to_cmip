@@ -46,9 +46,11 @@ def handle(infiles, tables, user_input_path, **kwargs):
     -------
         var name (str): the name of the processed variable after processing is complete
     """
-
-    msg = '{}: Starting'.format(VAR_NAME)
-    logger.info(msg)
+    if kwargs.get('simple'):
+        print_message(f'Simple CMOR output not supported for {VAR_NAME}', 'error')
+        return None
+    
+    logging.info(f'Starting {VAR_NAME}')
 
     nonzero = False
     for variable in RAW_VARIABLES:

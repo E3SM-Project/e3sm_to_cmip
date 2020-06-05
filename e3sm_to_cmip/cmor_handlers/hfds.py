@@ -8,6 +8,7 @@ import xarray
 import logging
 
 from e3sm_to_cmip import mpas
+from e3sm_to_cmip.util import print_message
 
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ['MPASO', 'MPAS_map']
@@ -41,8 +42,11 @@ def handle(infiles, tables, user_input_path, **kwargs):
     varname : str
         the name of the processed variable after processing is complete
     """
-    msg = 'Starting {name}'.format(name=__name__)
-    logging.info(msg)
+    if kwargs.get('simple'):
+        print_message(f'Simple CMOR output not supported for {VAR_NAME}', 'error')
+        return None
+
+    logging.info(f'Starting {VAR_NAME}')
 
     mappingFileName = infiles['MPAS_map']
     timeSeriesFiles = infiles['MPASO']

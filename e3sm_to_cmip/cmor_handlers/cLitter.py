@@ -13,12 +13,19 @@ VAR_UNITS = str('kg m-2')
 TABLE = str('CMIP6_Lmon.json')
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
+    """
+    cLitter = (TOTLITC + CWDC)/1000.0
+    """
     outdata = (data['TOTLITC'][index, :] + data['CWDC'][index, :])/1000.0
+    if kwargs.get('simple'):
+        return outdata
     cmor.write(
         varid,
         outdata,
         time_vals=timeval,
         time_bnds=timebnds)
+    return outdata
+# ------------------------------------------------------------------
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
@@ -33,5 +40,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
-        logdir=kwargs.get('logdir'))
+        logdir=kwargs.get('logdir'),
+        simple=kwargs.get('simple'),
+        outpath=kwargs.get('outpath'))
 # ------------------------------------------------------------------
