@@ -137,7 +137,6 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
             handler_variables = handler['raw_variables']
             unit_conversion = handler.get('unit_conversion')
 
-
             # find the input files this handler needs
             if mode in ['atm', 'lnd']:
 
@@ -289,7 +288,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
 
             if positive:
                 varid = cmor.variable(outvar_name, outvar_units,
-                                    axis_ids, positive=positive)
+                                      axis_ids, positive=positive)
             else:
                 varid = cmor.variable(outvar_name, outvar_units, axis_ids)
         else:
@@ -326,7 +325,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
     if simple:
         output_file_path = os.path.join(outpath, f'{outvar_name}.nc')
         msg = f'writing out variable to file {output_file_path}'
-        print_message(msg,'ok')
+        print_message(msg, 'ok')
         ds.to_netcdf(path=output_file_path)
     else:
         msg = '{}: write complete, closing'.format(outvar_name)
@@ -442,75 +441,71 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
 
 
 def load_axis(data, levels=None):
+    # add lon/lat
+    lat = cmor.axis('latitude',
+                    units=data['lat'].units,
+                    coord_vals=data['lat'][:],
+                    cell_bounds=data['lat_bnds'][:])
 
-    # create axes
-    axes = []
+    lon = cmor.axis('longitude',
+                    units=data['lon'].units,
+                    coord_vals=data['lon'][:],
+                    cell_bounds=data['lon_bnds'][:])
+
+    # use the special name for time if it exists
     if levels and levels.get('time_name'):
-        axes.append({
-            str('table_entry'): levels.get('time_name'),
-            str('units'): data[levels.get('time_name')].units
-        })
+        name = levels.get('time_name')
+        units = data[levels.get('time_name')].units
+        time = cmor.axis(name, units=units)
+    # else add the normal time name
     else:
-        axes.append({
-            str('table_entry'): str('time'),
-            str('units'): data['time'].units
-        })
+        time = cmor.axis('time', units=data['time'].units)
 
-    axes.append({
-        str('table_entry'): str('latitude'),
-        str('units'): data['lat'].units,
-        str('coord_vals'): data['lat'][:],
-        str('cell_bounds'): data['lat_bnds'][:]
-    })
-    axes.append({
-        str('table_entry'): str('longitude'),
-        str('units'): data['lon'].units,
-        str('coord_vals'): data['lon'][:],
-        str('cell_bounds'): data['lon_bnds'][:]
-    })
-
+    # use whatever level name this handler requires
     if levels:
-        lev_axis = {
-            str('table_entry'): str(levels.get('name')),
-            str('units'): str(levels.get('units')),
-            str('coord_vals'): data[levels.get('e3sm_axis_name')][:]
-        }
+        name = levels.get('name')
+        units = levels.get('units')
+        coord_vals = data[levels.get('e3sm_axis_name')][:]
+
         axis_bnds = levels.get('e3sm_axis_bnds')
         if axis_bnds:
-            lev_axis['cell_bounds'] = data[axis_bnds][:]
-        axes.insert(1, lev_axis)
-
-    axis_ids = list()
-    for axis in axes:
-        axis_id = cmor.axis(**axis)
-        axis_ids.append(axis_id)
+            lev = cmor.axis(name,
+                            units=units,
+                            cell_bounds=data[axis_bnds][:],
+                            coord_vals=coord_vals)
+        else:
+            lev = cmor.axis(name,
+                            units=units,
+                            coord_vals=coord_vals)
+        axes = [time, lev, lat, lon]
+    else:
+        axes = [time, lat, lon]
 
     ips = None
-
     # add hybrid level formula terms
     if levels and levels.get('name') in ['standard_hybrid_sigma', 'standard_hybrid_sigma_half']:
         cmor.zfactor(
-            zaxis_id=axis_ids[1],
-            zfactor_name=str('a'),
-            axis_ids=[axis_ids[1], ],
+            zaxis_id=lev,
+            zfactor_name='a',
+            axis_ids=[lev, ],
             zfactor_values=data['hyam'][:],
             zfactor_bounds=data['hyai'][:])
         cmor.zfactor(
-            zaxis_id=axis_ids[1],
-            zfactor_name=str('b'),
-            axis_ids=[axis_ids[1], ],
+            zaxis_id=lev,
+            zfactor_name='b',
+            axis_ids=[lev, ],
             zfactor_values=data['hybm'][:],
             zfactor_bounds=data['hybi'][:])
         cmor.zfactor(
-            zaxis_id=axis_ids[1],
-            zfactor_name=str('p0'),
-            units=str('Pa'),
+            zaxis_id=lev,
+            zfactor_name='p0',
+            units='Pa',
             zfactor_values=data['p0'])
         ips = cmor.zfactor(
-            zaxis_id=axis_ids[1],
-            zfactor_name=str('ps'),
-            axis_ids=[axis_ids[0], axis_ids[2], axis_ids[3]],
-            units=str('Pa'))
+            zaxis_id=lev,
+            zfactor_name='ps',
+            axis_ids=[time, lat, lon],
+            units='Pa')
 
-    return axis_ids, ips
+    return axes, ips
 # ------------------------------------------------------------------
