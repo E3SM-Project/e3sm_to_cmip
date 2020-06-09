@@ -441,17 +441,6 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
 
 
 def load_axis(data, levels=None):
-    # add lon/lat
-    lat = cmor.axis('latitude',
-                    units=data['lat'].units,
-                    coord_vals=data['lat'][:],
-                    cell_bounds=data['lat_bnds'][:])
-
-    lon = cmor.axis('longitude',
-                    units=data['lon'].units,
-                    coord_vals=data['lon'][:],
-                    cell_bounds=data['lon_bnds'][:])
-
     # use the special name for time if it exists
     if levels and levels.get('time_name'):
         name = levels.get('time_name')
@@ -460,7 +449,7 @@ def load_axis(data, levels=None):
     # else add the normal time name
     else:
         time = cmor.axis('time', units=data['time'].units)
-
+    
     # use whatever level name this handler requires
     if levels:
         name = levels.get('name')
@@ -477,6 +466,19 @@ def load_axis(data, levels=None):
             lev = cmor.axis(name,
                             units=units,
                             coord_vals=coord_vals)
+    
+    # add lon/lat
+    lat = cmor.axis('latitude',
+                    units=data['lat'].units,
+                    coord_vals=data['lat'][:],
+                    cell_bounds=data['lat_bnds'][:])
+
+    lon = cmor.axis('longitude',
+                    units=data['lon'].units,
+                    coord_vals=data['lon'][:],
+                    cell_bounds=data['lon_bnds'][:])
+
+    if levels:
         axes = [time, lev, lat, lon]
     else:
         axes = [time, lat, lon]
