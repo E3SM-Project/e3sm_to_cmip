@@ -2,30 +2,31 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from e3sm_to_cmip.lib import handle_variables
 import cmor
 
-def unit_convert(data, conversion):
-    if conversion == 'g-to-kg':
-        return data / 1000.0
-    elif conversion == '1-to-%':
-        return data * 100.0
-    elif conversion == 'm/s-to-kg/ms':
-        return data * 1000.0
-    elif conversion == '-1':
-        return data * -1
-    else:
-        raise ValueError(f"{conversion} isnt a supported unit conversion for default variables")
-
 def default_handler(infiles, tables, user_input_path, **kwargs):
+    
     RAW_VARIABLES = kwargs['raw_variables']
     unit_conversion = kwargs.get('unit_conversion')
     
     def write_data(varid, data, timeval, timebnds, index, **kwargs):
-        if unit_conversion:
-            outdata = unit_convert(data[RAW_VARIABLES[0] ][index, :], unit_conversion)
+        
+        if unit_conversion is not None:
+            # outdata = unit_convert(data[RAW_VARIABLES[0] ][index, :], unit_conversion)
+            if unit_conversion == 'g-to-kg':
+                outdata =  data[RAW_VARIABLES[0] ][index, :] / 1000.0
+            elif unit_conversion == '1-to-%':
+                outdata =  data[RAW_VARIABLES[0] ][index, :] * 100.0
+            elif unit_conversion == 'm/s-to-kg/ms':
+                outdata = data[RAW_VARIABLES[0] ][index, :] * 1000
+            elif unit_conversion == '-1':
+                outdata =  data[RAW_VARIABLES[0] ][index, :] * -1
+            else:
+                raise ValueError(f"{unit_conversion} isnt a supported unit conversion for default variables")
         else:
             outdata = data[ RAW_VARIABLES[0] ][index, :]
 
         if kwargs.get('simple'):
             return outdata
+
         cmor.write(
             varid,
             outdata,

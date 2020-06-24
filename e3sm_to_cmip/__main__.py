@@ -165,7 +165,9 @@ def main():
                 metadata_path=new_metadata_path,
                 map_path=map_path,
                 mode=mode,
-                logdir=cmor_log_dir)
+                logdir=cmor_log_dir,
+                simple=simple,
+                outpath=output_path)
         except KeyboardInterrupt as error:
             print_message(' -- keyboard interrupt -- ', 'error')
             return 1

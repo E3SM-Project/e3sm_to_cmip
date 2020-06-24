@@ -52,7 +52,10 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
             'units': handler.get('units'),
             'positive': handler.get('positive'),
             'name': handler.get('name'),
-            'logdir': kwargs.get('logdir')
+            'logdir': kwargs.get('logdir'),
+            'unit_conversion': handler.get('unit_conversion'),
+            'simple': kwargs.get('simple'),
+            'outpath': kwargs.get('outpath')
         }
 
         pool_res.append(
@@ -266,16 +269,14 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
 
                 # new data set
                 ds = xr.Dataset()
-                # dims = tuple(x for x in new_data.keys() of x != var_name and x != 'time2' and 'bnds' not in x)
                 dims = ('time', 'lat', 'lon')
                 if 'lev' in new_data.keys():
                     dims = ('time', 'lev', 'lat', 'lon')
+                elif 'plev' in new_data.keys():
+                    dims = ('time', 'plev', 'lat', 'lon')
                 ds[outvar_name] = (dims, new_data[var_name])
                 for d in dims:
                     ds.coords[d] = new_data[d][:]
-                # ds.coords['time'] = new_data['time'][:]
-                # ds.coords['lat'] = new_data['lat'][:]
-                # ds.coords['lon'] = new_data['lon'][:]
 
         if not simple:
             logger.info(f'{outvar_name}: loading axes')
@@ -312,9 +313,6 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
                 raw_variables=raw_variables,
                 simple=simple)
             if simple:
-                # pnds = nds.sel(time=val)
-                # pnds[outvar_name] = (('lat', 'lon'), outdata)
-                # ds = xr.concat([ds, pnds], dim='time')
                 ds[outvar_name][index] = outdata
             if serial:
                 pbar.update(1)
@@ -323,6 +321,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             pbar.close()
 
     if simple:
+        ds[outvar_name].attrs['units'] = outvar_units
         output_file_path = os.path.join(outpath, f'{outvar_name}.nc')
         msg = f'writing out variable to file {output_file_path}'
         print_message(msg, 'ok')
