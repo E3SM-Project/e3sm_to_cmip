@@ -202,8 +202,7 @@ def load_handlers(handlers_path, var_list, debug=None):
     handlers = list()
 
     if debug:
-        print_message(
-            "looking for handlers for: {}".format(" ".join(var_list)))
+        print_message(f"looking for handlers for: {' '.join(var_list)}")
 
     if 'all' not in var_list:
         table_names = ['CFmon', 'Amon', 'Lmon',
@@ -236,7 +235,7 @@ def load_handlers(handlers_path, var_list, debug=None):
                     'unit_conversion': default.get('unit_conversion')
                 })
             elif debug:
-                print_message("{} not loaded".format(default.get('cmip_name')))
+                print_message(f"{default.get('cmip_name')} not loaded")
 
     # load the more complex handlers
     for handler in os.listdir(handlers_path):
@@ -278,11 +277,11 @@ def load_handlers(handlers_path, var_list, debug=None):
                 'positive': module.POSITIVE if hasattr(module, 'POSITIVE') else None
             })
         elif debug:
-            print_message("{} not loaded".format(module_name))
+            print_message(f"{module_name} not loaded")
 
     if debug:
         for handler in handlers:
-            msg = 'Loaded {}'.format(handler['name'])
+            msg = f'Loaded {handler["name"]}'
             print_message(msg, 'debug')
 
     return handlers
@@ -312,8 +311,7 @@ def copy_user_metadata(input_path, output_path):
     try:
         for line in fin:
             if 'outpath' in line:
-                fout.write('\t"outpath": "{}",\n'.format(
-                    output_path))
+                fout.write(f'\t"outpath": "{output_path}",\n')
             else:
                 fout.write(line)
     except IOError as error:
@@ -477,8 +475,7 @@ def find_mpas_files(component, path, map_path=None):
             files = [os.path.join(path, name) for name in files]
             return files
         else:
-            raise ValueError("Unrecognized component {}, unable to find input "
-                             "files".format(component))
+            raise ValueError(f"Unrecognized component {component}, unable to find input files")
 
 # ------------------------------------------------------------------
 

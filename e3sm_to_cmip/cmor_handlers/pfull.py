@@ -43,18 +43,6 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
 # ------------------------------------------------------------------
 
 
-def my_dynamic_message(self, progress, data):
-    """
-    Make the progressbar not crash, and also give a nice custom message
-    """
-    val = data['dynamic_messages'].get('running')
-    if val:
-        return 'Running: {0: <16}'.format(data['dynamic_messages'].get('running'))
-    else:
-        return 'Running: ' + 16 * '-'
-# ------------------------------------------------------------------
-
-
 def handle(infiles, tables, user_input_path, **kwargs):
 
     logger = logging.getLogger()

@@ -4,7 +4,6 @@ FISCCP1_COSP to clisccp converter
 from __future__ import absolute_import, division, print_function, unicode_literals
 from e3sm_to_cmip.util import setup_cmor
 from e3sm_to_cmip.util import print_message
-from e3sm_to_cmip.lib import my_dynamic_message
 from tqdm import tqdm
 
 import cmor
@@ -55,17 +54,14 @@ def handle(infiles, tables, user_input_path, **kwargs):
     nonzero = False
     for variable in RAW_VARIABLES:
         if len(infiles[variable]) == 0:
-            msg = '{}: Unable to find input files for {}'.format(
-                VAR_NAME, variable)
+            msg = f'{variable}: Unable to find input files for {}'
             print_message(msg)
             logging.error(msg)
             nonzero = True
     if nonzero:
         return None
 
-    msg = '{}: running with input files: {}'.format(
-        VAR_NAME,
-        infiles)
+    msg = f'{VAR_NAME}: running with input files: {infiles}'
     logger.debug(msg)
 
     # setup cmor    
@@ -85,7 +81,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     cmor.dataset_json(user_input_path)
     cmor.load_table(TABLE)
 
-    msg = '{}: CMOR setup complete'.format(VAR_NAME)
+    msg = f'{VAR_NAME}: CMOR setup complete'
     logger.info(msg)
 
     data = {}
@@ -179,11 +175,11 @@ def handle(infiles, tables, user_input_path, **kwargs):
             if serial:
                 pbar.close()
 
-    msg = '{}: write complete, closing'.format(VAR_NAME)
+    msg = f'{VAR_NAME}: write complete, closing'
     logger.info(msg)
 
     cmor.close()
-    msg = '{}: file close complete'.format(VAR_NAME)
+    msg = f'{VAR_NAME}: file close complete'
     logger.info(msg)
 
     return VAR_NAME

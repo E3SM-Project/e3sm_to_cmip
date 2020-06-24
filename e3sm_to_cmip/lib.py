@@ -76,12 +76,9 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
             out = res.get(9999999)
             if out:
                 num_success += 1
-                msg = 'Finished {handler}, {done}/{total} jobs complete'.format(
-                    handler=out,
-                    done=idx + 1,
-                    total=num_handlers)
+                msg = f'Finished {out}, {idx + 1}/{num_handlers} jobs complete'
             else:
-                msg = 'Error running handler {}'.format(handlers[idx]['name'])
+                msg = f'Error running handler {handlers[idx]["name"]}'
                 print_message(msg, 'error')
 
             logger.info(msg)
@@ -92,21 +89,8 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
 
     pbar.close()
     terminate(pool)
-    print_message("{} of {} handlers complete".format(
-        num_success, num_handlers), 'ok')
+    print_message(f"{num_success} of {num_handlers} handlers complete", 'ok')
     return 0
-# ------------------------------------------------------------------
-
-
-def my_dynamic_message(self, progress, data):
-    """
-    Make the progressbar not crash, and also give a nice custom message
-    """
-    val = data['dynamic_messages'].get('running')
-    if val:
-        return 'Running: {0: <16}'.format(data['dynamic_messages'].get('running'))
-    else:
-        return 'Running: ' + 16 * '-'
 # ------------------------------------------------------------------
 
 
@@ -171,12 +155,9 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
 
             if name is not None:
                 num_success += 1
-                msg = 'Finished {handler}, {done}/{total} jobs complete'.format(
-                    handler=name,
-                    done=num_success,
-                    total=num_handlers)
+                msg = f'Finished {name}, {num_success}/{num_handlers} jobs complete'
             else:
-                msg = 'Error running handler {}'.format(handler['name'])
+                msg = f'Error running handler {handler["name"]}'
                 print_message(msg, 'error')
             logger.info(msg)
 
@@ -189,8 +170,7 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
         print_debug(error)
         return 1
     else:
-        print_message("{} of {} handlers complete".format(
-            num_success, num_handlers), 'ok')
+        print_message(f"{num_success} of {num_handlers} handlers complete", 'ok')
         return 0
 # ------------------------------------------------------------------
 
@@ -226,7 +206,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
     if not simple:
         cmor.setup(
             inpath=tables,
-            netcdf_file_action=cmor.CMOR_REPLACE,
+            netcdf_file_action=cmor.CMOR_REPLACE, #noqa
             logfile=logfile)
 
         cmor.dataset_json(str(metadata_path))
@@ -327,12 +307,12 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
         print_message(msg, 'ok')
         ds.to_netcdf(path=output_file_path)
     else:
-        msg = '{}: write complete, closing'.format(outvar_name)
+        msg = f'{outvar_name}: write complete, closing'
         logger.debug(msg)
 
         cmor.close()
 
-    msg = '{}: file close complete'.format(outvar_name)
+    msg = f'{outvar_name}: file close complete'
     logger.debug(msg)
 
     return outvar_name
@@ -370,7 +350,7 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     data = dict()
 
     if not os.path.exists(filename):
-        raise IOError("File not found: {}".format(filename))
+        raise IOError(f"File not found: {filename}")
 
     fp = cdms2.open(filename)
 

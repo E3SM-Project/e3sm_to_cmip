@@ -49,17 +49,17 @@ def main():
     output_path = _args.get('output_path')
     tables_path = _args.get('tables_path')
     user_metadata = _args.get('user_metadata')
-    no_metadata = _args['no_metadata'] if _args.get('no_metadata') else False
-    only_metadata = _args['only_metadata'] if _args.get('only_metadata') else False
-    nproc = _args['num_proc'] if _args.get('num_proc') else 6
-    serial = _args['serial'] if _args.get('serial') else False
-    mode = _args['mode'] if _args.get('mode') else 'atm'
+    no_metadata = _args.get('no_metadata', False)
+    only_metadata = _args.get('only_metadata', False)
+    nproc = _args.get('num_proc', 6)
+    serial = _args.get('serial', False)
+    mode = _args.get('mode', 'atm')
     debug = True if _args.get('debug') else False
-    map_path = _args['map'] if _args.get('map') else None
-    cmor_log_dir = _args['logdir'] if _args.get('logdir') else None
-    timeout = int(_args['timeout']) if _args.get('timeout') else None
-    simple = _args.get('simple') if _args.get('simple') else False
-    precheck_path = _args.get('precheck')
+    map_path = _args.get('map')
+    cmor_log_dir = _args.get('logdir')
+    timeout = int(_args.get('timeout', 0))
+    simple = _args.get('simple', False)
+    precheck_path = _args.get('precheck', False)
 
     timer = None
     if timeout:
@@ -175,7 +175,7 @@ def main():
             print_debug(error)
             return 1
     if status != 0:
-        print_message("Error running handlers: {}".format(" ".join([x['name'] for x in handlers])))
+        print_message(f"Error running handlers: { ' '.join([x['name'] for x in handlers]) }")
         return 1
 
     # add additional optional metadata to the output files
