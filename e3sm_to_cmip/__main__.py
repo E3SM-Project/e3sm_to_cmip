@@ -57,7 +57,7 @@ def main():
     debug = True if _args.get('debug') else False
     map_path = _args.get('map')
     cmor_log_dir = _args.get('logdir')
-    timeout = int(_args.get('timeout', 0))
+    timeout = int(_args.get('timeout')) if _args.get('timeout') else False
     simple = _args.get('simple', False)
     precheck_path = _args.get('precheck', False)
 

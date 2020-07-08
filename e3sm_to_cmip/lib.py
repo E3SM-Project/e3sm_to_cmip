@@ -206,7 +206,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
     if not simple:
         cmor.setup(
             inpath=tables,
-            netcdf_file_action=cmor.CMOR_REPLACE, #noqa
+            netcdf_file_action=cmor.CMOR_REPLACE,
             logfile=logfile)
 
         cmor.dataset_json(str(metadata_path))
@@ -258,7 +258,9 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
                 for d in dims:
                     ds.coords[d] = new_data[d][:]
 
-        if not simple:
+        if simple:
+            varid = 0
+        else:
             logger.info(f'{outvar_name}: loading axes')
 
             # create the cmor variable and axis
@@ -272,8 +274,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
                                       axis_ids, positive=positive)
             else:
                 varid = cmor.variable(outvar_name, outvar_units, axis_ids)
-        else:
-            varid = 0
+            
 
         # write out the data
         msg = f"{outvar_name}: time {data['time_bnds'][0][0]:1.1f} - {data['time_bnds'][-1][-1]:1.1f}"
@@ -282,7 +283,6 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
         if serial:
             pbar = tqdm(total=len(data['time']))
 
-        # import ipdb; ipdb.set_trace()
         for index, val in enumerate(data['time']):
             outdata = write_data(
                 varid=varid,
@@ -309,7 +309,6 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
     else:
         msg = f'{outvar_name}: write complete, closing'
         logger.debug(msg)
-
         cmor.close()
 
     msg = f'{outvar_name}: file close complete'
