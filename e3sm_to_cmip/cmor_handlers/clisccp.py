@@ -54,7 +54,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     nonzero = False
     for variable in RAW_VARIABLES:
         if len(infiles[variable]) == 0:
-            msg = f'{variable}: Unable to find input files for {}'
+            msg = f'{variable}: Unable to find input files for {RAW_VARIABLES}'
             print_message(msg)
             logging.error(msg)
             nonzero = True
