@@ -237,7 +237,7 @@
 
 - cmip_name: fFire
   e3sm_name: COL_FIRE_CLOSS
-  units: "kg m-2"
+  units: "kg m-2 s-1"
   table: CMIP6_Lmon.json
   unit_conversion: g-to-kg
   positive: up
