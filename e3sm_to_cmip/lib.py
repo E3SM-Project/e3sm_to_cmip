@@ -282,6 +282,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
 
         if serial:
             pbar = tqdm(total=len(data['time']))
+            pbar.set_description(msg)
 
         for index, val in enumerate(data['time']):
             outdata = write_data(
@@ -296,7 +297,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
                 ds[outvar_name][index] = outdata
             if serial:
                 pbar.update(1)
-                pbar.set_description(msg)
+                
         if serial:
             pbar.close()
 

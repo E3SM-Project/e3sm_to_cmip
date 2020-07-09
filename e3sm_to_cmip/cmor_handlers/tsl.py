@@ -47,34 +47,31 @@ def handle(infiles, tables, user_input_path, **kwargs):
     -------
         var name (str): the name of the processed variable after processing is complete
     """
-    msg = '{}: Starting'.format(VAR_NAME)
+    msg = f'{VAR_NAME}: Starting'
     logger.info(msg)
 
     nonzero = False
     for variable in RAW_VARIABLES:
         if len(infiles[variable]) == 0:
-            msg = '{}: Unable to find input files for {}'.format(
-                VAR_NAME, variable)
+            msg = f'{VAR_NAME}: Unable to find input files for {variable}'
             print_message(msg)
             logging.error(msg)
             nonzero = True
     if nonzero:
         return None
 
-    msg = '{}: running with input files: {}'.format(
-        VAR_NAME,
-        infiles)
+    msg = f'{VAR_NAME}: running with input files: {infiles}'
     logger.debug(msg)
 
     # setup cmor
     logdir = kwargs.get('logdir')
     if logdir:
-        logfile = logfile = os.path.join(logdir, VAR_NAME + '.log')
+        logfile = logfile = os.path.join(logdir, f"{VAR_NAME}.log")
     else:
         logfile = os.path.join(os.getcwd(), 'logs')
         if not os.path.exists(logfile):
             os.makedirs(logfile)
-        logfile = os.path.join(logfile, VAR_NAME + '.log')
+        logfile = os.path.join(logfile, f"{VAR_NAME}.log")
 
     cmor.setup(
         inpath=tables,
@@ -83,7 +80,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     cmor.dataset_json(user_input_path)
     cmor.load_table(TABLE)
 
-    msg = '{}: CMOR setup complete'.format(VAR_NAME)
+    msg = f'{VAR_NAME}: CMOR setup complete'
     logger.info(msg)
 
     data = {}
@@ -146,34 +143,30 @@ def handle(infiles, tables, user_input_path, **kwargs):
         varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids)
 
         # write out the data
-        msg = "{}: writing {} - {}".format(
-            VAR_NAME,
-            data['time_bnds'][0][0],
-            data['time_bnds'][-1][-1])
+        msg = f"{VAR_NAME}: writing {data['time_bnds'][0][0]} - {data['time_bnds'][-1][-1]}"
         logger.info(msg)
 
         serial = kwargs.get('serial')
         if serial:
             pbar = tqdm(total=len(data['time']))
-
+            pbar.set_description(msg)
         
         for index, val in enumerate(data['time']):
-            if serial:
-                pbar.update(1)
-
             cmor.write(
                 varid,
                 data['TSOI'][index, :],
                 time_vals=val,
                 time_bnds=[data['time_bnds'][index, :]])
             if serial:
-                pbar.close()
+                pbar.update(1)
+        if serial:
+            pbar.close()
 
-    msg = '{}: write complete, closing'.format(VAR_NAME)
+    msg = f'{VAR_NAME}: write complete, closing'
     logger.info(msg)
 
     cmor.close()
-    msg = '{}: file close complete'.format(VAR_NAME)
+    msg = f'{VAR_NAME}: file close complete'
     logger.info(msg)
 
     return VAR_NAME
