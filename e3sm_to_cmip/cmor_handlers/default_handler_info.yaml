@@ -200,11 +200,6 @@
   table: CMIP6_Lmon.json
   positive: up
 
-- cmip_name: cProduct
-  e3sm_name: TOTPRODC
-  units: "kg m-2"
-  table: CMIP6_Lmon.json
-
 - cmip_name: cSoilFast
   e3sm_name: SOIL1C
   units: "kg m-2"
