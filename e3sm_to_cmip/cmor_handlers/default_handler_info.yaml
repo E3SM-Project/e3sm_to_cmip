@@ -192,11 +192,13 @@
   e3sm_name: QVEGE
   units: "kg m-2 s-1"
   table: CMIP6_Lmon.json
+  positive: up
 
 - cmip_name: evspsblsoi
   e3sm_name: QSOIL
   units: 'kg m-2 s-1'
   table: CMIP6_Lmon.json
+  positive: up
 
 - cmip_name: cProduct
   e3sm_name: TOTPRODC
@@ -238,12 +240,14 @@
   units: "kg m-2"
   table: CMIP6_Lmon.json
   unit_conversion: g-to-kg
+  positive: up
 
 - cmip_name: fHarvest
   e3sm_name: WOOD_HARVESTC
   units: "kg m-2 s-1"
   table: CMIP6_Lmon.json
   unit_conversion: g-to-kg
+  positive: up
 
 - cmip_name: mrsos
   e3sm_name: SOILWATER_10CM
