@@ -18,9 +18,12 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     rsus = FSDS - FSNS
     """
+    outdata = data['FSDS'][index, :] - data['FSNS'][index, :]
+    if kwargs.get('simple'):
+        return outdata
     cmor.write(
         varid,
-        data['FSDS'][index, :] - data['FSNS'][index, :],
+        outdata,
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
@@ -39,5 +42,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
         positive=POSITIVE,
-        logdir=kwargs.get('logdir'))
+        logdir=kwargs.get('logdir'),
+        simple=kwargs.get('simple'),
+        outpath=kwargs.get('outpath'))
 # ------------------------------------------------------------------

@@ -28,7 +28,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     outdata = np.sum(
         data['SOILICE'][index, :],
         axis=0)
-    
+
     # replace all values greater then 5k with 5k
     capped = np.where(
         np.greater(outdata, 5000.0),
@@ -38,6 +38,8 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
         mask,
         capped,
         outdata)
+    if kwargs.get('simple'):
+        return outdata
     cmor.write(
         varid,
         outdata,
@@ -56,5 +58,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
-        logdir=kwargs.get('logdir'))
+        logdir=kwargs.get('logdir'),
+        simple=kwargs.get('simple'),
+        outpath=kwargs.get('outpath'))
 # ------------------------------------------------------------------

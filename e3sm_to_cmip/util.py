@@ -11,6 +11,7 @@ import yaml
 import cdms2
 
 from tqdm import tqdm
+from e3sm_to_cmip import resources
 from e3sm_to_cmip.version import __version__
 
 
@@ -86,7 +87,7 @@ def parse_argsuments():
     parser.add_argument(
         '-v', '--var-list',
         nargs='+',
-        required=True, 
+        required=True,
         metavar='',
         help='Space separated list of variables to convert from e3sm to cmip. Use \'all\' to convert all variables or the name of a CMIP6 table to run all handlers from that table')
     parser.add_argument(
@@ -105,12 +106,10 @@ def parse_argsuments():
         action='store_true')
     parser.add_argument(
         '-u', '--user-metadata',
-        required=False,
         metavar='<user_input_json_path>',
         help='Path to user json file for CMIP6 metadata, required unless the --simple flag is used')
     parser.add_argument(
         '-t', '--tables-path',
-        required=False,
         metavar='<tables-path>',
         help="Path to directory containing CMOR Tables directory, required unless the --simple flag is used")
     parser.add_argument(
@@ -147,9 +146,11 @@ def parse_argsuments():
     parser.add_argument(
         '--mode',
         metavar='<mode>',
+        default='atm',
         help="The component to analyze, atm, lnd, mpaso or mpassi")
     parser.add_argument(
         '--logdir',
+        default='./cmor_logs',
         help="Where to put the logging output from CMOR")
     parser.add_argument(
         '--timeout',
@@ -175,9 +176,11 @@ def parse_argsuments():
         if _args.mode == 'mpassi' and not _args.map:
             raise ValueError("MPAS sea-ice handling requires a map file")
         if not _args.simple and not _args.tables_path:
-            raise ValueError("Running without the --simple flag requires CMIP6 tables path")
+            raise ValueError(
+                "Running without the --simple flag requires CMIP6 tables path")
         if not _args.simple and not _args.user_metadata:
-            raise ValueError("Running without the --simple flag requires CMIP6 metadata json file")
+            raise ValueError(
+                "Running without the --simple flag requires CMIP6 metadata json file")
 
     return _args
 # ------------------------------------------------------------------
@@ -213,8 +216,9 @@ def load_handlers(handlers_path, var_list, debug=None):
                 load_tables.append(variable)
 
     # load default handlers if they're in the variable list
+    resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
     defaults_path = os.path.join(
-        handlers_path,
+        resource_path,
         'default_handler_info.yaml')
     with open(defaults_path, 'r') as infile:
 
@@ -224,7 +228,7 @@ def load_handlers(handlers_path, var_list, debug=None):
 
             table = default.get('table').split('.')[0].split('_')[-1]
             if default.get('cmip_name') in var_list or 'all' in var_list or table in load_tables:
-                
+
                 handlers.append({
                     'name': default.get('cmip_name'),
                     'method': default_handler,
@@ -386,9 +390,9 @@ def find_atm_files(var, path):
     """
     contents = os.listdir(path)
     files = list()
-    pattern = '{}'.format(var) + r'\_\d{6}\_\d{6}.nc'
+    pattern = var + r'\_\d{6}\_\d{6}'
     for item in contents:
-        if re.match(pattern=pattern, string=item):
+        if re.search(pattern=pattern, string=item):
             files.append(item)
     return files
 # ------------------------------------------------------------------
@@ -416,7 +420,7 @@ def find_mpas_files(component, path, map_path=None):
         return sorted(results)
 
     if component == 'mpassi':
-        patterns = [r'mpassi.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc', 
+        patterns = [r'mpassi.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc',
                     r'mpascice.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc']
         for pattern in patterns:
             results = [os.path.join(path, x) for x in contents if re.match(
@@ -475,7 +479,8 @@ def find_mpas_files(component, path, map_path=None):
             files = [os.path.join(path, name) for name in files]
             return files
         else:
-            raise ValueError(f"Unrecognized component {component}, unable to find input files")
+            raise ValueError(
+                f"Unrecognized component {component}, unable to find input files")
 
 # ------------------------------------------------------------------
 
@@ -517,22 +522,22 @@ def get_years_from_raw(path, mode, var):
     end = 0
     if mode in ['atm', 'lnd']:
         contents = sorted([f for f in os.listdir(path)
-                           if f.endswith("nc") and 
+                           if f.endswith("nc") and
                            var in f])
         p = var + r'\d{6}_\d{6}.nc'
         s = re.match(pattern=p, string=contents[0])
-        start = int(contents[0][ s.start(): s.start()+4 ])
+        start = int(contents[0][s.start(): s.start()+4])
         s = re.search(pattern=p, string=contents[-1])
-        end = int(contents[-1][ s.start(): s.start()+4 ])
+        end = int(contents[-1][s.start(): s.start()+4])
     elif mode in ['mpassi', 'mpaso']:
-        
+
         files = sorted(find_mpas_files(mode, path))
         p = r'\d{4}-\d{2}-\d{2}.nc'
         s = re.search(pattern=p, string=files[0])
         start = int(files[0][s.start(): s.start() + 4])
         s = re.search(pattern=p, string=files[1])
         end = int(files[-1][s.start(): s.start() + 4])
-        
+
     else:
         raise ValueError("Invalid mode")
     return start, end
@@ -571,7 +576,7 @@ def precheck(inpath, precheck_path, variables, mode):
                 if files[0][:len(prefix)] != prefix:
                     # this directory doesnt have the variable we're looking for
                     continue
-                
+
                 files = [x for x in sorted(files) if x.endswith('.nc')]
                 for f in files:
                     cmip_start, cmip_end = get_year_from_cmip(f)
@@ -580,6 +585,5 @@ def precheck(inpath, precheck_path, variables, mode):
                         break
                 if val['found'] == True:
                     break
-    
-    return [x['name'] for x in var_map if not x['found']]
 
+    return [x['name'] for x in var_map if not x['found']]

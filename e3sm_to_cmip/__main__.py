@@ -4,6 +4,18 @@ A python command line tool to turn E3SM model output into CMIP6 compatable data
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
+import numpy as np
+from e3sm_to_cmip.lib import run_serial
+from e3sm_to_cmip.lib import run_parallel
+from e3sm_to_cmip.util import precheck
+from e3sm_to_cmip.util import print_debug
+from e3sm_to_cmip.util import copy_user_metadata
+from e3sm_to_cmip.util import add_metadata
+from e3sm_to_cmip.util import load_handlers
+from e3sm_to_cmip.util import parse_argsuments
+from e3sm_to_cmip.util import print_message
+from e3sm_to_cmip import resources
+from e3sm_to_cmip import cmor_handlers
 
 import os
 import sys
@@ -15,18 +27,7 @@ from pathos.multiprocessing import ProcessPool as Pool
 
 os.environ['CDAT_ANONYMOUS_LOG'] = 'false'
 
-from e3sm_to_cmip import cmor_handlers
-from e3sm_to_cmip.util import print_message
-from e3sm_to_cmip.util import parse_argsuments
-from e3sm_to_cmip.util import load_handlers
-from e3sm_to_cmip.util import add_metadata
-from e3sm_to_cmip.util import copy_user_metadata
-from e3sm_to_cmip.util import print_debug
-from e3sm_to_cmip.util import precheck
-from e3sm_to_cmip.lib import run_parallel
-from e3sm_to_cmip.lib import run_serial
 
-import numpy as np
 np.warnings.filterwarnings('ignore')
 
 
@@ -49,11 +50,11 @@ def main():
     output_path = _args.get('output_path')
     tables_path = _args.get('tables_path')
     user_metadata = _args.get('user_metadata')
-    no_metadata = _args.get('no_metadata', False)
-    only_metadata = _args.get('only_metadata', False)
-    nproc = _args.get('num_proc', 6)
-    serial = _args.get('serial', False)
-    mode = _args.get('mode', 'atm')
+    no_metadata = _args.get('no_metadata')
+    only_metadata = _args.get('only_metadata')
+    nproc = _args.get('num_proc')
+    serial = _args.get('serial')
+    mode = _args.get('mode')
     debug = True if _args.get('debug') else False
     map_path = _args.get('map')
     cmor_log_dir = _args.get('logdir')
@@ -61,27 +62,32 @@ def main():
     simple = _args.get('simple', False)
     precheck_path = _args.get('precheck', False)
 
+    if simple:
+        no_metadata = True
+
     timer = None
     if timeout:
         timer = threading.Timer(timeout, timeout_exit)
         timer.start()
-    
+
     if _args.get('handlers'):
         handlers_path = os.path.abspath(_args.get('handlers'))
     else:
         handlers_path, _ = os.path.split(
             os.path.abspath(cmor_handlers.__file__))
-    
+
     if precheck_path:
         new_var_list = precheck(input_path, precheck_path, var_list, mode)
         if not new_var_list:
             print("All variables previously computed")
-            if timer: timer.cancel()
+            if timer:
+                timer.cancel()
             return 0
         else:
-            print_message(f"Setting up conversion for {' '.join(new_var_list)}", 'ok')
+            print_message(
+                f"Setting up conversion for {' '.join(new_var_list)}", 'ok')
             var_list = new_var_list
-    
+
     # add additional optional metadata to the output files
     if only_metadata:
         print_message('Updating file metadata and exiting', 'ok')
@@ -101,7 +107,7 @@ def main():
     # setup temp storage directory
     temp_path = os.environ.get('TMPDIR')
     if temp_path is None:
-     
+
         temp_path = f'{output_path}/tmp'
         if not os.path.exists(temp_path):
             os.makedirs(temp_path)
@@ -175,7 +181,8 @@ def main():
             print_debug(error)
             return 1
     if status != 0:
-        print_message(f"Error running handlers: { ' '.join([x['name'] for x in handlers]) }")
+        print_message(
+            f"Error running handlers: { ' '.join([x['name'] for x in handlers]) }")
         return 1
 
     # add additional optional metadata to the output files

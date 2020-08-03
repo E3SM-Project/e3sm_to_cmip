@@ -1,6 +1,5 @@
 import sys
 import os
-import yaml
 import xarray as xr
 import numpy as np
 import argparse
@@ -98,7 +97,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--control', '-c',
                         help="path to root of CMIP6 control data")
-    parser.add_argument('--keep', '-k', 
+    parser.add_argument('--keep', '-k',
                         help="keep the CMIP6 output produced, otherwise it will be removed")
     args = parser.parse_args()
     sys.exit(main(args.control))

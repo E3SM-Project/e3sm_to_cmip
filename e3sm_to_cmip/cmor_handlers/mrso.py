@@ -37,6 +37,8 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
         total_mask,
         capped,
         outdata)
+    if kwargs.get('simple'):
+        return outdata
     cmor.write(
         varid,
         outdata,

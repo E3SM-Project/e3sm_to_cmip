@@ -62,6 +62,10 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     serial = kwargs.get('serial')
     logdir = kwargs.get('logdir')
+    if kwargs.get('simple'):
+        msg = f"{VAR_NAME} is not supported for simple conversion"
+        print_message(msg)
+        return
 
     # check that we have some input files for every variable
     zerofiles = False

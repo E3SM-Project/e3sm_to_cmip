@@ -7,6 +7,9 @@ import cmor
 import os
 import logging
 import cdms2
+import json
+import xarray as xr
+from e3sm_to_cmip import resources
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.lib import handle_variables
 
@@ -18,12 +21,14 @@ TABLE = str('CMIP6_fx.json')
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
+
+    simple = kwargs.get('simple')
     logger = logging.getLogger()
     msg = '{}: Starting'.format(VAR_NAME)
     logger.info(msg)
 
     logdir = kwargs.get('logdir')
-    serial = kwargs.get('serial')
+    g = 9.80616
 
     # check that we have some input files for every variable
     zerofiles = False
@@ -36,6 +41,32 @@ def handle(infiles, tables, user_input_path, **kwargs):
             zerofiles = True
     if zerofiles:
         return None
+    
+    if simple:
+        resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
+        table_path = os.path.join(resource_path, TABLE)
+        with open(table_path, 'r') as ip:
+            table_data = json.load(ip)
+        
+        ds = xr.Dataset()
+        outname = f'{VAR_NAME}.nc'
+        with xr.open_dataset(infiles[RAW_VARIABLES[0]][0]) as inputds:
+
+            ds['lat'] = inputds['lat']
+            ds['lat_bnds'] = inputds['lat_bnds']
+            ds['lon'] = inputds['lon']
+            ds['lon_bnds'] = inputds['lon_bnds']
+            outdata = inputds['PHIS'] / g
+        
+            for attr, val in inputds.attrs.items():
+                ds.attrs[attr] = val
+
+        ds[VAR_NAME] = outdata
+        for attr in ['standard_name', 'cell_methods', 'long_name', 'comment', 'units']:
+            ds[VAR_NAME].attrs[attr] = table_data["variable_entry"][VAR_NAME][attr]
+
+        ds.to_netcdf(outname)
+        return VAR_NAME
 
     # Create the logging directory and setup cmor
     if logdir:
@@ -108,8 +139,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
         axis_ids.append(axis_id)
 
     varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids)
-
-    g = 9.80616
 
     outdata = data['PHIS'] / g
     cmor.write(

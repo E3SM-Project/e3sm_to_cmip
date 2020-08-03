@@ -7,7 +7,10 @@ import cmor
 import os
 import logging
 import cdms2
+import json
 from tqdm import tqdm
+import xarray as xr
+from e3sm_to_cmip import resources
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.lib import handle_variables
 
@@ -20,9 +23,8 @@ TABLE = str('CMIP6_fx.json')
 
 def handle(infiles, tables, user_input_path, **kwargs):
 
-    if kwargs.get('simple'):
-        print_message(f'Simple CMOR output not supported for {VAR_NAME}', 'error')
-        return None
+    simple = kwargs.get('simple')
+    r = 6.37122e6
 
     logger = logging.getLogger()
     msg = '{}: Starting'.format(VAR_NAME)
@@ -41,6 +43,32 @@ def handle(infiles, tables, user_input_path, **kwargs):
             zerofiles = True
     if zerofiles:
         return None
+
+    if simple:
+        resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
+        table_path = os.path.join(resource_path, TABLE)
+        with open(table_path, 'r') as ip:
+            table_data = json.load(ip)
+
+        ds = xr.Dataset()
+        outname = f'{VAR_NAME}.nc'
+        with xr.open_dataset(infiles[RAW_VARIABLES[0]][0]) as inputds:
+
+            ds['lat'] = inputds['lat']
+            ds['lat_bnds'] = inputds['lat_bnds']
+            ds['lon'] = inputds['lon']
+            ds['lon_bnds'] = inputds['lon_bnds']
+            outdata = inputds['area'] * pow(r, 2)
+
+            for attr, val in inputds.attrs.items():
+                ds.attrs[attr] = val
+
+        ds[VAR_NAME] = outdata
+        for attr in ['standard_name', 'cell_methods', 'long_name', 'comment', 'units']:
+            ds[VAR_NAME].attrs[attr] = table_data["variable_entry"][VAR_NAME][attr]
+
+        ds.to_netcdf(outname)
+        return VAR_NAME
 
     # Create the logging directory and setup cmor
     if logdir:
@@ -113,8 +141,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
         axis_ids.append(axis_id)
 
     varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids)
-
-    r = 6.37122e6
 
     outdata = data['area'] * pow(r, 2)
     cmor.write(

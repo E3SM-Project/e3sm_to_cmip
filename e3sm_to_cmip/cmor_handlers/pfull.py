@@ -51,6 +51,10 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     serial = kwargs.get('serial')
     logdir = kwargs.get('logdir')
+    if kwargs.get('simple'):
+        msg = f"{VAR_NAME} is not supported for simple conversion"
+        print_message(msg)
+        return
 
     # check that we have some input files for every variable
     zerofiles = False
@@ -95,6 +99,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     for var_name in RAW_VARIABLES:
         infiles[var_name].sort()
 
+    loaded = False
     for index in range(num_files_per_variable):
 
         # load data for each variable
@@ -145,10 +150,11 @@ def handle(infiles, tables, user_input_path, **kwargs):
                 })
             new_data = {i: f(i) for i in [
                 'hyam', 'hybm', 'hyai', 'hybi'] if i in f.variables}
+            
 
             data.update(new_data)
 
-        msg = '{name}: loading axes'.format(name=VAR_NAME)
+        msg = f'{VAR_NAME}: loading axes'
         logger.info(msg)
 
         axes = [{

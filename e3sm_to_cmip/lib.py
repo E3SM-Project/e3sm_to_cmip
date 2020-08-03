@@ -3,6 +3,8 @@ from e3sm_to_cmip.util import print_debug
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip.util import find_mpas_files
 from e3sm_to_cmip.util import find_atm_files
+from e3sm_to_cmip.mpas import write_netcdf
+from e3sm_to_cmip import resources
 from tqdm import tqdm
 import os
 import cmor
@@ -10,6 +12,7 @@ import cdms2
 import logging
 import xarray as xr
 import numpy as np
+import json
 logger = logging.getLogger()
 
 
@@ -170,12 +173,157 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
         print_debug(error)
         return 1
     else:
-        print_message(f"{num_success} of {num_handlers} handlers complete", 'ok')
+        print_message(
+            f"{num_success} of {num_handlers} handlers complete", 'ok')
         return 0
 # ------------------------------------------------------------------
 
 
+def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units, serial=None, positive=None, levels=None, axis=None, logdir=None, outpath=None, table='Amon'):
+    from e3sm_to_cmip.util import print_message
+    logger = logging.getLogger()
+
+    logger.info(f'{outvar_name}: Starting')
+
+    # check that we have some input files for every variable
+    zerofiles = False
+    for variable in raw_variables:
+        if len(infiles[variable]) == 0:
+            msg = f'{outvar_name}: Unable to find input files for {variable}'
+            print_message(msg)
+            logging.error(msg)
+            zerofiles = True
+    if zerofiles:
+        return None
+
+    # Create the logging directory and setup cmor
+    if logdir:
+        logpath = logdir
+    else:
+        outpath, _ = os.path.split(logger.__dict__['handlers'][0].baseFilename)
+        logpath = os.path.join(outpath, 'cmor_logs')
+    os.makedirs(logpath, exist_ok=True)
+
+    _, inputfile = os.path.split(sorted(infiles[raw_variables[0]])[0])
+    # counting from the end, since the variable names might have a _ in them
+    start_year = inputfile[len(raw_variables[0]) + 1:].split('_')[0]
+    end_year = inputfile[len(raw_variables[0]) + 1:].split('_')[1]
+
+    data = {}
+
+    # assuming all year ranges are the same for every variable
+    num_files_per_variable = len(infiles[raw_variables[0]])
+
+    # sort the input files for each variable
+    for var_name in raw_variables:
+        infiles[var_name].sort()
+
+    for index in range(num_files_per_variable):
+        loaded = False
+
+        # reload the dimensions for each time slice
+        get_dims = True
+
+        # load data for each variables
+        for var_name in raw_variables:
+
+            # extract data from the input file
+            logger.info(f'{outvar_name}: loading {var_name}')
+
+            new_data = get_dimension_data(
+                filename=infiles[var_name][index],
+                variable=var_name,
+                levels=levels,
+                get_dims=get_dims)
+            data.update(new_data)
+            get_dims = False
+            if not loaded:
+                loaded = True
+
+                # new data set
+                ds = xr.Dataset()
+                dims = ('time', 'lat', 'lon')
+                if 'lev' in new_data.keys():
+                    dims = ('time', 'lev', 'lat', 'lon')
+                elif 'plev' in new_data.keys():
+                    dims = ('time', 'plev', 'lat', 'lon')
+                ds[outvar_name] = (dims, new_data[var_name])
+                for d in dims:
+                    ds.coords[d] = new_data[d][:]
+
+        # write out the data
+        msg = f"{outvar_name}: time {data['time_bnds'][0][0]:1.1f} - {data['time_bnds'][-1][-1]:1.1f}"
+        logger.info(msg)
+
+        if serial:
+            pbar = tqdm(total=len(data['time']))
+            pbar.set_description(msg)
+
+        for index, val in enumerate(data['time']):
+            outdata = write_data(
+                varid=0,
+                data=data,
+                timeval=val,
+                timebnds=[data['time_bnds'][index, :]],
+                index=index,
+                raw_variables=raw_variables,
+                simple=True)
+            ds[outvar_name][index] = outdata
+            if serial:
+                pbar.update(1)
+
+        if serial:
+            pbar.close()
+
+    with xr.open_dataset(infiles[raw_variables[0]][0], decode_cf=False, decode_times=False) as inputds:
+        for attr, val in inputds.attrs.items():
+            ds.attrs[attr] = val
+
+        ds['lat_bnds'] = inputds['lat_bnds']
+        ds['lon_bnds'] = inputds['lon_bnds']
+        ds['time_bnds'] = inputds['time_bnds']
+        ds['time'] = inputds['time']
+
+    resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
+    table_path = os.path.join(resource_path, table)
+    with open(table_path, 'r') as ip:
+        table_data = json.load(ip)
+
+    variable_attrs = ['standard_name', 'long_name',
+                      'comment', 'cell_methods', 'cell_measures', 'units']
+    for attr in variable_attrs:
+        ds[outvar_name].attrs[attr] = table_data['variable_entry'][outvar_name][attr]
+
+    output_file_path = os.path.join(
+        outpath, f'{outvar_name}_{start_year}_{end_year}.nc')
+    msg = f'writing out variable to file {output_file_path}'
+    print_message(msg, 'ok')
+    write_netcdf(ds, output_file_path, unlimited=['time'])
+
+    msg = f'{outvar_name}: file close complete'
+    logger.debug(msg)
+
+    return outvar_name
+
+# ------------------------------------------------------------------
+
+
 def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None, levels=None, axis=None, logdir=None, simple=False, outpath=None):
+
+    if simple:
+        return handle_simple(
+            infiles,
+            raw_variables,
+            write_data,
+            outvar_name,
+            outvar_units,
+            serial=serial,
+            table=table,
+            positive=positive,
+            levels=levels,
+            axis=axis,
+            logdir=logdir,
+            outpath=outpath)
 
     from e3sm_to_cmip.util import print_message
     logger = logging.getLogger()
@@ -203,17 +351,16 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
 
     logfile = os.path.join(logpath, outvar_name + '.log')
 
-    if not simple:
-        cmor.setup(
-            inpath=tables,
-            netcdf_file_action=cmor.CMOR_REPLACE,
-            logfile=logfile)
+    cmor.setup(
+        inpath=tables,
+        netcdf_file_action=cmor.CMOR_REPLACE,
+        logfile=logfile)
 
-        cmor.dataset_json(str(metadata_path))
-        cmor.load_table(str(table))
+    cmor.dataset_json(str(metadata_path))
+    cmor.load_table(str(table))
 
-        msg = f'{outvar_name}: CMOR setup complete'
-        logging.info(msg)
+    msg = f'{outvar_name}: CMOR setup complete'
+    logging.info(msg)
 
     data = {}
 
@@ -230,8 +377,6 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
         get_dims = True
 
         # load data for each variable
-        if simple:
-            loaded_one = False
         for var_name in raw_variables:
 
             # extract data from the input file
@@ -258,23 +403,19 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
                 for d in dims:
                     ds.coords[d] = new_data[d][:]
 
-        if simple:
-            varid = 0
+        logger.info(f'{outvar_name}: loading axes')
+
+        # create the cmor variable and axis
+        axis_ids, ips = load_axis(data=data, levels=levels)
+
+        if ips:
+            data['ips'] = ips
+
+        if positive:
+            varid = cmor.variable(outvar_name, outvar_units,
+                                  axis_ids, positive=positive)
         else:
-            logger.info(f'{outvar_name}: loading axes')
-
-            # create the cmor variable and axis
-            axis_ids, ips = load_axis(data=data, levels=levels)
-
-            if ips:
-                data['ips'] = ips
-
-            if positive:
-                varid = cmor.variable(outvar_name, outvar_units,
-                                      axis_ids, positive=positive)
-            else:
-                varid = cmor.variable(outvar_name, outvar_units, axis_ids)
-            
+            varid = cmor.variable(outvar_name, outvar_units, axis_ids)
 
         # write out the data
         msg = f"{outvar_name}: time {data['time_bnds'][0][0]:1.1f} - {data['time_bnds'][-1][-1]:1.1f}"
@@ -285,32 +426,22 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             pbar.set_description(msg)
 
         for index, val in enumerate(data['time']):
-            outdata = write_data(
+            write_data(
                 varid=varid,
                 data=data,
                 timeval=val,
                 timebnds=[data['time_bnds'][index, :]],
                 index=index,
                 raw_variables=raw_variables,
-                simple=simple)
-            if simple:
-                ds[outvar_name][index] = outdata
+                simple=False)
             if serial:
                 pbar.update(1)
-                
         if serial:
             pbar.close()
 
-    if simple:
-        ds[outvar_name].attrs['units'] = outvar_units
-        output_file_path = os.path.join(outpath, f'{outvar_name}.nc')
-        msg = f'writing out variable to file {output_file_path}'
-        print_message(msg, 'ok')
-        ds.to_netcdf(path=output_file_path)
-    else:
-        msg = f'{outvar_name}: write complete, closing'
-        logger.debug(msg)
-        cmor.close()
+    msg = f'{outvar_name}: write complete, closing'
+    logger.debug(msg)
+    cmor.close()
 
     msg = f'{outvar_name}: file close complete'
     logger.debug(msg)
@@ -428,7 +559,7 @@ def load_axis(data, levels=None):
     # else add the normal time name
     else:
         time = cmor.axis('time', units=data['time'].units)
-    
+
     # use whatever level name this handler requires
     if levels:
         name = levels.get('name')
@@ -445,7 +576,7 @@ def load_axis(data, levels=None):
             lev = cmor.axis(name,
                             units=units,
                             coord_vals=coord_vals)
-    
+
     # add lon/lat
     lat = cmor.axis('latitude',
                     units=data['lat'].units,
