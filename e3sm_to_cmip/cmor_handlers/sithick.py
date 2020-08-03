@@ -40,6 +40,11 @@ def handle(infiles, tables, user_input_path, **kwargs):
     varname : str
         the name of the processed variable after processing is complete
     """
+    if kwargs.get('simple'):
+        msg = f"{VAR_NAME} is not supported for simple conversion"
+        print_message(msg)
+        return
+        
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
 
