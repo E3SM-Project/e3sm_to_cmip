@@ -242,12 +242,13 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
 
                 # new data set
                 ds = xr.Dataset()
-                dims = ('time', 'lat', 'lon')
-                if 'lev' in new_data.keys():
-                    dims = ('time', 'lev', 'lat', 'lon')
-                elif 'plev' in new_data.keys():
-                    dims = ('time', 'plev', 'lat', 'lon')
-                ds[outvar_name] = (dims, new_data[var_name])
+                dims = ['time', 'lat', 'lon']
+
+                for depth_dim in ['lev', 'plev', 'levgrnd']:
+                    if depth_dim in new_data.keys():
+                        dims.insert(1, depth_dim)
+
+                ds[outvar_name] = (tuple(dims), new_data[var_name])
                 for d in dims:
                     ds.coords[d] = new_data[d][:]
 
@@ -281,7 +282,11 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
 
         ds['lat_bnds'] = inputds['lat_bnds']
         ds['lon_bnds'] = inputds['lon_bnds']
-        ds['time_bnds'] = inputds['time_bnds']
+
+        # check for and change the bounds name for lnd files since "time_bounds" is different
+        # from every other bounds name in the entire E3SM project
+        time_bounds_name = 'time_bnds' if 'time_bnds' in inputds.data_vars else 'time_bounds'
+        ds['time_bnds'] = inputds[time_bounds_name]
         ds['time'] = inputds['time']
 
     resource_path, _ = os.path.split(os.path.abspath(resources.__file__))

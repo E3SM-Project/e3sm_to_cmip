@@ -18,6 +18,8 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     tran = QSOIL + QVEGT
     """
     outdata = data['QVEGT'][index, :] + data['QSOIL'][index, :]
+    if kwargs.get('simple'):
+        return outdata
     cmor.write(
         varid,
         outdata,
@@ -37,5 +39,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
         positive=POSITIVE,
-        logdir=kwargs.get('logdir'))
+        logdir=kwargs.get('logdir'),
+        simple=kwargs.get('simple'),
+        outpath=kwargs.get('outpath'))
 # ------------------------------------------------------------------

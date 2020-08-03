@@ -7,16 +7,20 @@ import os
 import cmor
 import cdms2
 import logging
+import xarray as xr
+import json
 from tqdm import tqdm
+from e3sm_to_cmip import resources
+from e3sm_to_cmip.mpas import write_netcdf
 logger = logging.getLogger()
 
 from e3sm_to_cmip.util import print_message, setup_cmor, get_levgrnd_bnds
 
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('TSOI')]
-VAR_NAME = str('tsl')
-VAR_UNITS = str('K')
+RAW_VARIABLES = ['TSOI']
+VAR_NAME = 'tsl'
+VAR_UNITS = 'K'
 TABLE = 'CMIP6_Lmon.json'
 LEVELS = {
     'name': 'sdepth',
@@ -75,6 +79,58 @@ def handle(infiles, tables, user_input_path, **kwargs):
         if not os.path.exists(logfile):
             os.makedirs(logfile)
         logfile = os.path.join(logfile, f"{VAR_NAME}.log")
+    
+    simple = kwargs.get('simple')
+    if simple:
+        outpath = kwargs['outpath']
+        _, inputfile = os.path.split(sorted(infiles[RAW_VARIABLES[0]])[0])
+        start_year = inputfile[len(RAW_VARIABLES[0]) + 1:].split('_')[0]
+        end_year = inputfile[len(RAW_VARIABLES[0]) + 1:].split('_')[1]
+        outds = xr.Dataset()
+        with xr.open_mfdataset(infiles[RAW_VARIABLES[0]], decode_times=False) as inputds:
+            for dim in inputds.coords:
+                if dim == 'levgrnd':
+                    outds['levgrnd'] = inputds[dim]
+                    outds['levgrnd_bnds'] = get_levgrnd_bnds()
+                else:
+                    outds[dim] = inputds[dim]
+
+            for var in inputds.data_vars:
+                if var == RAW_VARIABLES[0]:
+                    outds[VAR_NAME] = inputds[RAW_VARIABLES[0]]
+                elif var == 'time_bounds':
+                    outds['time_bnds'] = inputds['time_bounds']
+                else:
+                    outds[var] = inputds[var]
+            
+            for attr, val in inputds.attrs.items():
+                outds.attrs[attr] = val
+        
+        outds = outds.rename_dims({
+            'levgrnd': 'depth',
+            'levgrnd_bnds': 'depth_bnds'
+        })
+        outds = outds.rename_vars({
+            'levgrnd': 'depth',
+            'levgrnd_bnds': 'depth_bnds'
+        })
+
+        resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
+        table_path = os.path.join(resource_path, 'CMIP6_Lmon.json')
+        with open(table_path, 'r') as ip:
+            table_data = json.load(ip)
+
+        variable_attrs = ['standard_name', 'long_name',
+                        'comment', 'cell_methods', 'cell_measures', 'units']
+        for attr in variable_attrs:
+            outds[VAR_NAME].attrs[attr] = table_data['variable_entry'][VAR_NAME][attr]
+        
+        output_file_path = os.path.join(
+            outpath, f'{VAR_NAME}_{start_year}_{end_year}.nc')
+        msg = f'writing out variable to file {output_file_path}'
+        print_message(msg, 'ok')
+        write_netcdf(outds, output_file_path, unlimited=['time'])
+        return RAW_VARIABLES[0]
 
     cmor.setup(
         inpath=tables,
