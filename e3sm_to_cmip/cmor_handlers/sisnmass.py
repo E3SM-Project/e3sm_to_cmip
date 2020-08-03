@@ -9,7 +9,7 @@ import xarray
 import logging
 
 from e3sm_to_cmip import mpas
-
+from e3sm_to_cmip.util import print_message
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ['MPASSI', 'MPAS_mesh', 'MPAS_map']
 
