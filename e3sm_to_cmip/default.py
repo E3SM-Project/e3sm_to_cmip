@@ -10,7 +10,6 @@ def default_handler(infiles, tables, user_input_path, **kwargs):
     def write_data(varid, data, timeval, timebnds, index, **kwargs):
         
         if unit_conversion is not None:
-            # outdata = unit_convert(data[RAW_VARIABLES[0] ][index, :], unit_conversion)
             if unit_conversion == 'g-to-kg':
                 outdata =  data[RAW_VARIABLES[0] ][index, :] / 1000.0
             elif unit_conversion == '1-to-%':
