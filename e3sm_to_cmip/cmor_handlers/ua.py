@@ -19,28 +19,19 @@ LEVELS = {
 
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
-    """
-    ua = U
-    """
+    outdata = data[RAW_VARIABLES[0] ][index, :]
+    if kwargs.get('simple'):
+        return outdata
     cmor.write(
         varid,
-        data['U'][index, :],
+        outdata,
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
-    """
-    Parameters
-    ----------
-        infiles (List): a list of strings of file names for the raw input data
-        tables (str): path to CMOR tables
-        user_input_path (str): path to user input json file
-    Returns
-    -------
-        var name (str): the name of the processed variable after processing is complete
-    """
+
     return handle_variables(
         metadata_path=user_input_path,
         tables=tables,
@@ -52,5 +43,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
         levels=LEVELS,
-        logdir=kwargs.get('logdir'))
+        logdir=kwargs.get('logdir'),
+        simple=kwargs.get('simple'),
+        outpath=kwargs.get('outpath'))
 # ------------------------------------------------------------------

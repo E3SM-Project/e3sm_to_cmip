@@ -12,11 +12,14 @@ VAR_NAME = str('lai')
 VAR_UNITS = str('1')
 TABLE = str('CMIP6_Lmon.json')
 
+
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     lai = LAISHA + LAISUN
     """
     outdata = data['LAISHA'][index, :] + data['LAISUN'][index, :]
+    if kwargs.get('simple'):
+        return outdata
     cmor.write(
         varid,
         outdata,
@@ -36,5 +39,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
-        logdir=kwargs.get('logdir'))
+        logdir=kwargs.get('logdir'),
+        simple=kwargs.get('simple'),
+        outpath=kwargs.get('outpath'))
 # ------------------------------------------------------------------

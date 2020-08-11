@@ -11,6 +11,7 @@ import yaml
 import cdms2
 
 from tqdm import tqdm
+from e3sm_to_cmip import resources
 from e3sm_to_cmip.version import __version__
 
 
@@ -88,31 +89,33 @@ def parse_argsuments():
         nargs='+',
         required=True,
         metavar='',
-        help='space seperated list of variables to convert from e3sm to cmip. Use \'all\' to convert all variables or the name of a CMIP6 table to run all handlers from that table')
+        help='Space separated list of variables to convert from e3sm to cmip. Use \'all\' to convert all variables or the name of a CMIP6 table to run all handlers from that table')
     parser.add_argument(
         '-i', '--input-path',
         metavar='',
         required=True,
-        help='path to directory containing e3sm time series data files. Additionally namelist, restart, and mappings files if handling MPAS data.')
+        help='Path to directory containing e3sm time series data files. Additionally namelist, restart, and mappings files if handling MPAS data.')
     parser.add_argument(
         '-o', '--output-path',
         metavar='',
         required=True,
-        help='where to store cmorized output')
+        help='Where to store cmorized output')
+    parser.add_argument(
+        '--simple',
+        help='Perform a simple translation of the E3SM output to CMIP format, but without the CMIP6 metadata checks',
+        action='store_true')
     parser.add_argument(
         '-u', '--user-metadata',
-        required=True,
         metavar='<user_input_json_path>',
-        help='path to user json file for CMIP6 metadata')
+        help='Path to user json file for CMIP6 metadata, required unless the --simple flag is used')
     parser.add_argument(
         '-t', '--tables-path',
-        required=True,
         metavar='<tables-path>',
-        help="Path to directory containing CMOR Tables directory")
+        help="Path to directory containing CMOR Tables directory, required unless the --simple flag is used")
     parser.add_argument(
         '--map',
         metavar='<map_mpas_to_std_grid>',
-        help="The path to an mpas remapping file. Must be used when using the --mpaso or --mpassi options")
+        help="The path to an mpas remapping file. Required if mode is mpaso or mpassi")
     parser.add_argument(
         '-n', '--num-proc',
         metavar='<nproc>',
@@ -123,7 +126,7 @@ def parse_argsuments():
         '-H', '--handlers',
         metavar='<handler_path>',
         default=None,
-        help='path to cmor handlers directory, default = e3sm_to_cmip/cmor_handlers')
+        help='Path to cmor handlers directory, default = e3sm_to_cmip/cmor_handlers')
     parser.add_argument(
         '--no-metadata',
         help='Do not add E3SM metadata to the output',
@@ -143,9 +146,11 @@ def parse_argsuments():
     parser.add_argument(
         '--mode',
         metavar='<mode>',
+        default='atm',
         help="The component to analyze, atm, lnd, mpaso or mpassi")
     parser.add_argument(
         '--logdir',
+        default='./cmor_logs',
         help="Where to put the logging output from CMOR")
     parser.add_argument(
         '--timeout',
@@ -167,9 +172,16 @@ def parse_argsuments():
     else:
         _args = parser.parse_args(_args)
         if _args.mode == 'mpaso' and not _args.map:
-            print("MPAS ocean handling requires a map file")
+            raise ValueError("MPAS ocean handling requires a map file")
         if _args.mode == 'mpassi' and not _args.map:
-            print("MPAS sea-ice handling requires a map file")
+            raise ValueError("MPAS sea-ice handling requires a map file")
+        if not _args.simple and not _args.tables_path:
+            raise ValueError(
+                "Running without the --simple flag requires CMIP6 tables path")
+        if not _args.simple and not _args.user_metadata:
+            raise ValueError(
+                "Running without the --simple flag requires CMIP6 metadata json file")
+
     return _args
 # ------------------------------------------------------------------
 
@@ -193,8 +205,7 @@ def load_handlers(handlers_path, var_list, debug=None):
     handlers = list()
 
     if debug:
-        print_message(
-            "looking for handlers for: {}".format(" ".join(var_list)))
+        print_message(f"looking for handlers for: {' '.join(var_list)}")
 
     if 'all' not in var_list:
         table_names = ['CFmon', 'Amon', 'Lmon',
@@ -205,8 +216,9 @@ def load_handlers(handlers_path, var_list, debug=None):
                 load_tables.append(variable)
 
     # load default handlers if they're in the variable list
+    resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
     defaults_path = os.path.join(
-        handlers_path,
+        resource_path,
         'default_handler_info.yaml')
     with open(defaults_path, 'r') as infile:
 
@@ -223,10 +235,11 @@ def load_handlers(handlers_path, var_list, debug=None):
                     'raw_variables': [default.get('e3sm_name')],
                     'units': default.get('units'),
                     'table': default.get('table'),
-                    'positive': default.get('positive')
+                    'positive': default.get('positive'),
+                    'unit_conversion': default.get('unit_conversion')
                 })
             elif debug:
-                print_message("{} not loaded".format(default.get('cmip_name')))
+                print_message(f"{default.get('cmip_name')} not loaded")
 
     # load the more complex handlers
     for handler in os.listdir(handlers_path):
@@ -268,11 +281,11 @@ def load_handlers(handlers_path, var_list, debug=None):
                 'positive': module.POSITIVE if hasattr(module, 'POSITIVE') else None
             })
         elif debug:
-            print_message("{} not loaded".format(module_name))
+            print_message(f"{module_name} not loaded")
 
     if debug:
         for handler in handlers:
-            msg = 'Loaded {}'.format(handler['name'])
+            msg = f'Loaded {handler["name"]}'
             print_message(msg, 'debug')
 
     return handlers
@@ -302,8 +315,7 @@ def copy_user_metadata(input_path, output_path):
     try:
         for line in fin:
             if 'outpath' in line:
-                fout.write('\t"outpath": "{}",\n'.format(
-                    output_path))
+                fout.write(f'\t"outpath": "{output_path}",\n')
             else:
                 fout.write(line)
     except IOError as error:
@@ -378,9 +390,9 @@ def find_atm_files(var, path):
     """
     contents = os.listdir(path)
     files = list()
-    pattern = '{}'.format(var) + r'\_\d{6}\_\d{6}.nc'
+    pattern = var + r'\_\d{6}\_\d{6}'
     for item in contents:
-        if re.match(pattern=pattern, string=item):
+        if re.search(pattern=pattern, string=item):
             files.append(item)
     return files
 # ------------------------------------------------------------------
@@ -408,7 +420,7 @@ def find_mpas_files(component, path, map_path=None):
         return sorted(results)
 
     if component == 'mpassi':
-        patterns = [r'mpassi.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc', 
+        patterns = [r'mpassi.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc',
                     r'mpascice.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc']
         for pattern in patterns:
             results = [os.path.join(path, x) for x in contents if re.match(
@@ -467,8 +479,8 @@ def find_mpas_files(component, path, map_path=None):
             files = [os.path.join(path, name) for name in files]
             return files
         else:
-            raise ValueError("Unrecognized component {}, unable to find input "
-                             "files".format(component))
+            raise ValueError(
+                f"Unrecognized component {component}, unable to find input files")
 
 # ------------------------------------------------------------------
 
@@ -510,22 +522,22 @@ def get_years_from_raw(path, mode, var):
     end = 0
     if mode in ['atm', 'lnd']:
         contents = sorted([f for f in os.listdir(path)
-                           if f.endswith("nc") and 
+                           if f.endswith("nc") and
                            var in f])
         p = var + r'\d{6}_\d{6}.nc'
         s = re.match(pattern=p, string=contents[0])
-        start = int(contents[0][ s.start(): s.start()+4 ])
+        start = int(contents[0][s.start(): s.start()+4])
         s = re.search(pattern=p, string=contents[-1])
-        end = int(contents[-1][ s.start(): s.start()+4 ])
+        end = int(contents[-1][s.start(): s.start()+4])
     elif mode in ['mpassi', 'mpaso']:
-        
+
         files = sorted(find_mpas_files(mode, path))
         p = r'\d{4}-\d{2}-\d{2}.nc'
         s = re.search(pattern=p, string=files[0])
         start = int(files[0][s.start(): s.start() + 4])
         s = re.search(pattern=p, string=files[1])
         end = int(files[-1][s.start(): s.start() + 4])
-        
+
     else:
         raise ValueError("Invalid mode")
     return start, end
@@ -564,7 +576,7 @@ def precheck(inpath, precheck_path, variables, mode):
                 if files[0][:len(prefix)] != prefix:
                     # this directory doesnt have the variable we're looking for
                     continue
-                
+
                 files = [x for x in sorted(files) if x.endswith('.nc')]
                 for f in files:
                     cmip_start, cmip_end = get_year_from_cmip(f)
@@ -573,6 +585,5 @@ def precheck(inpath, precheck_path, variables, mode):
                         break
                 if val['found'] == True:
                     break
-    
-    return [x['name'] for x in var_map if not x['found']]
 
+    return [x['name'] for x in var_map if not x['found']]

@@ -53,6 +53,12 @@
   units: "kg m-2"
   table: CMIP6_Amon.json
 
+- cmip_name: clt
+  e3sm_name: CLDTOT
+  units: '%'
+  table: CMIP6_Amon.json
+  unit_conversion: '1-to-%'
+
 - cmip_name: evspsbl
   e3sm_name: QFLX
   units: 'kg m-2 s-1'
@@ -147,6 +153,26 @@
   units: 'K'
   table: CMIP6_Amon.json
 
+- cmip_name: prc
+  e3sm_name: PRECC
+  units: 'kg m-2 s-1'
+  table: CMIP6_Amon.json
+  unit_conversion: 'm/s-to-kg/ms'
+
+- cmip_name: tauu
+  e3sm_name: TAUX
+  units: 'Pa'
+  positive: 'down'
+  table: CMIP6_Amon.json
+  unit_conversion: '-1'
+
+- cmip_name: tauv
+  e3sm_name: TAUY
+  units: 'Pa'
+  positive: 'down'
+  table: CMIP6_Amon.json
+  unit_conversion: '-1'
+
 - cmip_name: mrros
   e3sm_name: QOVER
   units: "kg m-2 s-1"
@@ -166,64 +192,87 @@
   e3sm_name: QVEGE
   units: "kg m-2 s-1"
   table: CMIP6_Lmon.json
+  positive: up
 
 - cmip_name: evspsblsoi
   e3sm_name: QSOIL
   units: 'kg m-2 s-1'
   table: CMIP6_Lmon.json
+  positive: up
 
-# - cmip_name: cProduct
-#   e3sm_name: TOTPRODC
-#   units: "kg m-2"
-#   table: CMIP6_Lmon.json
+- cmip_name: cSoilFast
+  e3sm_name: SOIL1C
+  units: "kg m-2"
+  table: CMIP6_Lmon.json
+  unit_conversion: g-to-kg
 
-# - cmip_name: cSoil
-#   e3sm_name: TOTSOMC
-#   units: "kg m-2"
-#   table: CMIP6_Lmon.json
+- cmip_name: cSoilMedium
+  e3sm_name: SOIL2C
+  units: "kg m-2"
+  table: CMIP6_Lmon.json
+  unit_conversion: g-to-kg
 
-# - cmip_name: fFire
-#   e3sm_name: COL_FIRE_CLOSS
-#   units: "kg m-2 s-1"
-#   table: CMIP6_Lmon.json
-#   positive: up
+- cmip_name: cSoilSlow
+  e3sm_name: SOIL2C
+  units: "kg m-2"
+  table: CMIP6_Lmon.json
+  unit_conversion: g-to-kg
 
-# - cmip_name: fHarvest
-#   e3sm_name: WOOD_HARVESTC
-#   units: "kg m-2 s-1"
-#   table: CMIP6_Lmon.json
-#   positive: up
+- cmip_name: cProduct
+  e3sm_name: TOTPRODC
+  units: "kg m-2"
+  table: CMIP6_Lmon.json
+  unit_conversion: g-to-kg
+
+- cmip_name: cVeg
+  e3sm_name: TOTVEGC
+  units: "kg m-2"
+  table: CMIP6_Lmon.json
+  unit_conversion: g-to-kg
+
+- cmip_name: fFire
+  e3sm_name: COL_FIRE_CLOSS
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
+  unit_conversion: g-to-kg
+  positive: up
+
+- cmip_name: fHarvest
+  e3sm_name: WOOD_HARVESTC
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
+  unit_conversion: g-to-kg
+  positive: up
 
 - cmip_name: mrsos
   e3sm_name: SOILWATER_10CM
   units: "kg m-2"
   table: CMIP6_Lmon.json
 
-# - cmip_name: cVeg
-#   e3sm_name: TOTVEGC
-#   units: "kg m-2"
-#   table: CMIP6_Lmon.json
+- cmip_name: nbp
+  e3sm_name: NBP
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
+  positive: down
+  unit_conversion: g-to-kg
 
-# - cmip_name: nbp
-#   e3sm_name: NBP
-#   units: "kg m-2 s-1"
-#   table: CMIP6_Lmon.json
-#   positive: down
+- cmip_name: gpp
+  e3sm_name: GPP
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
+  positive: down
+  unit_conversion: g-to-kg
 
-# - cmip_name: gpp
-#   e3sm_name: GPP
-#   units: "kg m-2 s-1"
-#   table: CMIP6_Lmon.json
-#   positive: down
+- cmip_name: ra
+  e3sm_name: AR
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
+  positive: up
+  unit_conversion: g-to-kg
 
-# - cmip_name: ra
-#   e3sm_name: AR
-#   units: "kg m-2 s-1"
-#   table: CMIP6_Lmon.json
-#   positive: up
-
-# - cmip_name: rh
-#   e3sm_name: HR
-#   units: "kg m-2 s-1"
-#   table: CMIP6_Lmon.json
-#   positive: up
+- cmip_name: rh
+  e3sm_name: HR
+  units: "kg m-2 s-1"
+  table: CMIP6_Lmon.json
+  positive: up
+  unit_conversion: g-to-kg

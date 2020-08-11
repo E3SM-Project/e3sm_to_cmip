@@ -17,10 +17,12 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     prsn = (PRECSC  + PRECSL) * 1000.0
     """
-    out_data = (data['PRECSC'][index, :] + data['PRECSL'][index, :]) * 1000.0
+    outdata = (data['PRECSC'][index, :] + data['PRECSL'][index, :]) * 1000.0
+    if kwargs.get('simple'):
+        return outdata
     cmor.write(
         varid,
-        out_data,
+        outdata,
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
@@ -50,5 +52,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
-        logdir=kwargs.get('logdir'))
+        logdir=kwargs.get('logdir'),
+        simple=kwargs.get('simple'),
+        outpath=kwargs.get('outpath'))
 # ------------------------------------------------------------------

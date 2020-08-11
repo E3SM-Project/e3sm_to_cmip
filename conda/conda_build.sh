@@ -1,5 +1,5 @@
-export VERSION="1.4.1"
-export BUILD_NAME="1"
+export VERSION="1.5.0"
+export BUILD_NAME="0"
 export CONDA_BLD_PATH=~/conda-bld
 PLATFORM="linux-64"
 PKG="e3sm_to_cmip"
@@ -18,7 +18,7 @@ else
 fi
 echo "Building" $VERSION"-"$BUILD_NAME "for label:" $TAG
 
-conda build -c PCMDI/label/nightly -c conda-forge .
+conda build -c conda-forge .
 
 if [ $? -eq 1 ]; then
     echo "conda build failed"

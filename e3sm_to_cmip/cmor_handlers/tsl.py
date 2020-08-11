@@ -7,16 +7,20 @@ import os
 import cmor
 import cdms2
 import logging
+import xarray as xr
+import json
 from tqdm import tqdm
+from e3sm_to_cmip import resources
+from e3sm_to_cmip.mpas import write_netcdf
 logger = logging.getLogger()
 
 from e3sm_to_cmip.util import print_message, setup_cmor, get_levgrnd_bnds
 
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('TSOI')]
-VAR_NAME = str('tsl')
-VAR_UNITS = str('K')
+RAW_VARIABLES = ['TSOI']
+VAR_NAME = 'tsl'
+VAR_UNITS = 'K'
 TABLE = 'CMIP6_Lmon.json'
 LEVELS = {
     'name': 'sdepth',
@@ -26,9 +30,12 @@ LEVELS = {
 
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
+    outdata = data['TSOI'][index, :]
+    if kwargs.get('simple'):
+        return outdata
     cmor.write(
         varid,
-        data['TSOI'][index, :],
+        outdata,
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
@@ -47,34 +54,83 @@ def handle(infiles, tables, user_input_path, **kwargs):
     -------
         var name (str): the name of the processed variable after processing is complete
     """
-    msg = '{}: Starting'.format(VAR_NAME)
+    msg = f'{VAR_NAME}: Starting'
     logger.info(msg)
 
     nonzero = False
     for variable in RAW_VARIABLES:
         if len(infiles[variable]) == 0:
-            msg = '{}: Unable to find input files for {}'.format(
-                VAR_NAME, variable)
+            msg = f'{VAR_NAME}: Unable to find input files for {variable}'
             print_message(msg)
             logging.error(msg)
             nonzero = True
     if nonzero:
         return None
 
-    msg = '{}: running with input files: {}'.format(
-        VAR_NAME,
-        infiles)
+    msg = f'{VAR_NAME}: running with input files: {infiles}'
     logger.debug(msg)
 
     # setup cmor
     logdir = kwargs.get('logdir')
     if logdir:
-        logfile = logfile = os.path.join(logdir, VAR_NAME + '.log')
+        logfile = logfile = os.path.join(logdir, f"{VAR_NAME}.log")
     else:
         logfile = os.path.join(os.getcwd(), 'logs')
         if not os.path.exists(logfile):
             os.makedirs(logfile)
-        logfile = os.path.join(logfile, VAR_NAME + '.log')
+        logfile = os.path.join(logfile, f"{VAR_NAME}.log")
+    
+    simple = kwargs.get('simple')
+    if simple:
+        outpath = kwargs['outpath']
+        _, inputfile = os.path.split(sorted(infiles[RAW_VARIABLES[0]])[0])
+        start_year = inputfile[len(RAW_VARIABLES[0]) + 1:].split('_')[0]
+        end_year = inputfile[len(RAW_VARIABLES[0]) + 1:].split('_')[1]
+        outds = xr.Dataset()
+        with xr.open_mfdataset(infiles[RAW_VARIABLES[0]], decode_times=False) as inputds:
+            for dim in inputds.coords:
+                if dim == 'levgrnd':
+                    outds['levgrnd'] = inputds[dim]
+                    outds['levgrnd_bnds'] = get_levgrnd_bnds()
+                else:
+                    outds[dim] = inputds[dim]
+
+            for var in inputds.data_vars:
+                if var == RAW_VARIABLES[0]:
+                    outds[VAR_NAME] = inputds[RAW_VARIABLES[0]]
+                elif var == 'time_bounds':
+                    outds['time_bnds'] = inputds['time_bounds']
+                else:
+                    outds[var] = inputds[var]
+            
+            for attr, val in inputds.attrs.items():
+                outds.attrs[attr] = val
+        
+        outds = outds.rename_dims({
+            'levgrnd': 'depth',
+            'levgrnd_bnds': 'depth_bnds'
+        })
+        outds = outds.rename_vars({
+            'levgrnd': 'depth',
+            'levgrnd_bnds': 'depth_bnds'
+        })
+
+        resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
+        table_path = os.path.join(resource_path, 'CMIP6_Lmon.json')
+        with open(table_path, 'r') as ip:
+            table_data = json.load(ip)
+
+        variable_attrs = ['standard_name', 'long_name',
+                        'comment', 'cell_methods', 'cell_measures', 'units']
+        for attr in variable_attrs:
+            outds[VAR_NAME].attrs[attr] = table_data['variable_entry'][VAR_NAME][attr]
+        
+        output_file_path = os.path.join(
+            outpath, f'{VAR_NAME}_{start_year}_{end_year}.nc')
+        msg = f'writing out variable to file {output_file_path}'
+        print_message(msg, 'ok')
+        write_netcdf(outds, output_file_path, unlimited=['time'])
+        return RAW_VARIABLES[0]
 
     cmor.setup(
         inpath=tables,
@@ -83,7 +139,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     cmor.dataset_json(user_input_path)
     cmor.load_table(TABLE)
 
-    msg = '{}: CMOR setup complete'.format(VAR_NAME)
+    msg = f'{VAR_NAME}: CMOR setup complete'
     logger.info(msg)
 
     data = {}
@@ -146,34 +202,30 @@ def handle(infiles, tables, user_input_path, **kwargs):
         varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids)
 
         # write out the data
-        msg = "{}: writing {} - {}".format(
-            VAR_NAME,
-            data['time_bnds'][0][0],
-            data['time_bnds'][-1][-1])
+        msg = f"{VAR_NAME}: writing {data['time_bnds'][0][0]} - {data['time_bnds'][-1][-1]}"
         logger.info(msg)
 
         serial = kwargs.get('serial')
         if serial:
             pbar = tqdm(total=len(data['time']))
-
+            pbar.set_description(msg)
         
         for index, val in enumerate(data['time']):
-            if serial:
-                pbar.update(1)
-
             cmor.write(
                 varid,
                 data['TSOI'][index, :],
                 time_vals=val,
                 time_bnds=[data['time_bnds'][index, :]])
             if serial:
-                pbar.close()
+                pbar.update(1)
+        if serial:
+            pbar.close()
 
-    msg = '{}: write complete, closing'.format(VAR_NAME)
+    msg = f'{VAR_NAME}: write complete, closing'
     logger.info(msg)
 
     cmor.close()
-    msg = '{}: file close complete'.format(VAR_NAME)
+    msg = f'{VAR_NAME}: file close complete'
     logger.info(msg)
 
     return VAR_NAME
