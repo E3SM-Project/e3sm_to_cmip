@@ -1,18 +1,32 @@
+# path to raw clm2 data
 lnd_data_path: /p/user_pub/e3sm/baldwin32/bgc/CNTL/lnd/
+
+# path to CMOR case metadata
 metadata_path: /p/user_pub/work/E3SM/cmip6_variables/bgc_cntl/extras/metadata_cntl.json
 
-logdir: /p/user_pub/work/E3SM/cmip6_variables/bgc_cntl/output
-
+# path to grid file matching the input data
 lnd_source_grid: /export/zender1/data/grids/ne30np4_pentagons.091226.nc
+
+# path to grid file for the output data
 lnd_destination_grid: /export/zender1/data/grids/cmip6_180x360_scrip.20181001.nc
 
+# number of years to put in each output file
 frequency: 25
+
+# number of ncremap workers
 num_workers: 12
+
+# path to CMIP6 tables directory
 tables_path: /export/baldwin32/projects/cmip6-cmor-tables/Tables/
 
+# slurm account info
 account: e3sm
 partition: short
 timeout: 2:00:00
 
+# list of E3SM land variable names
 lnd_var_list:  [SOILWATER_10CM, SOILLIQ, SOILICE, QOVER, QRUNOFF, QINTR, QVEGE, QSOIL, QVEGT, TSOI, LAISHA, LAISUN, TOTLITC, CWDC, TOTPRODC, COL_FIRE_CLOSS, WOOD_HARVESTC, TOTVEGC, NBP, GPP, AR, HR]
+
+# list of CMIP6 variable names
 cmor_var_list: [mrsos, mrso, mrfso, mrros, mrro, prveg, evspsblveg, evspsblsoi, tran, tsl, lai, cLitter, cProduct, cSoil, fFire, fHarvest, cVeg, nbp, gpp, ra, rh]
+
