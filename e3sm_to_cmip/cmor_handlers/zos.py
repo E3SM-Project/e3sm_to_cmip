@@ -8,6 +8,7 @@ import xarray
 import logging
 
 from e3sm_to_cmip import mpas
+from e3sm_to_cmip.util import print_message
 
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ['MPASO', 'MPAS_mesh', 'MPAS_map']
@@ -38,6 +39,11 @@ def handle(infiles, tables, user_input_path, **kwargs):
     varname : str
         the name of the processed variable after processing is complete
     """
+    if kwargs.get('simple'):
+        msg = f"{VAR_NAME} is not supported for simple conversion"
+        print_message(msg)
+        return
+        
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
 

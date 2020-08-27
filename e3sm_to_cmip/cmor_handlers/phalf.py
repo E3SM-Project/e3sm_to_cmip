@@ -62,6 +62,10 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     serial = kwargs.get('serial')
     logdir = kwargs.get('logdir')
+    if kwargs.get('simple'):
+        msg = f"{VAR_NAME} is not supported for simple conversion"
+        print_message(msg)
+        return
 
     # check that we have some input files for every variable
     zerofiles = False
@@ -190,26 +194,24 @@ def handle(infiles, tables, user_input_path, **kwargs):
         # add hybrid level formula terms
         cmor.zfactor(
             zaxis_id=axis_ids[1],
-            zfactor_name=str('a_half'),
+            zfactor_name='a_half',
             axis_ids=[axis_ids[1], ],
-            zfactor_values=data['hyam'][:],
-            zfactor_bounds=data['hyai'][:])
+            zfactor_values=data['hyam'][:])
         cmor.zfactor(
             zaxis_id=axis_ids[1],
-            zfactor_name=str('b_half'),
+            zfactor_name='b_half',
             axis_ids=[axis_ids[1], ],
-            zfactor_values=data['hybm'][:],
-            zfactor_bounds=data['hybi'][:])
+            zfactor_values=data['hybm'][:])
         cmor.zfactor(
             zaxis_id=axis_ids[1],
-            zfactor_name=str('p0'),
-            units=str('Pa'),
+            zfactor_name='p0',
+            units='Pa',
             zfactor_values=100000)
         ips = cmor.zfactor(
             zaxis_id=axis_ids[1],
-            zfactor_name=str('ps2'),
+            zfactor_name='ps2',
             axis_ids=[0, 2, 3],
-            units=str('Pa'))
+            units='Pa')
 
         data['ips'] = ips
 

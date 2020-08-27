@@ -274,7 +274,7 @@ def open_mfdataset(fileNames, variableList=None,
     return ds
 
 
-def write_netcdf(ds, fileName, fillValues=netCDF4.default_fillvals):
+def write_netcdf(ds, fileName, fillValues=netCDF4.default_fillvals, unlimited=None):
     '''Write an xarray Dataset with NetCDF4 fill values where needed'''
     encodingDict = {}
     variableNames = list(ds.data_vars.keys()) + list(ds.coords.keys())
@@ -292,7 +292,10 @@ def write_netcdf(ds, fileName, fillValues=netCDF4.default_fillvals):
 
     update_history(ds)
 
-    ds.to_netcdf(fileName, encoding=encodingDict)
+    if unlimited:
+        ds.to_netcdf(fileName, encoding=encodingDict, unlimited_dims=unlimited)
+    else:    
+        ds.to_netcdf(fileName, encoding=encodingDict)
 
 
 def update_history(ds):

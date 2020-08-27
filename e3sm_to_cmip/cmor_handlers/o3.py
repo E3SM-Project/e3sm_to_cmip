@@ -22,9 +22,12 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     o3 = O3
     """
+    outdata = data[RAW_VARIABLES[0] ][index, :]
+    if kwargs.get('simple'):
+        return outdata
     cmor.write(
         varid,
-        data['O3'][index, :],
+        outdata,
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
@@ -52,5 +55,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
         levels=LEVELS,
-        logdir=kwargs.get('logdir'))
+        logdir=kwargs.get('logdir'),
+        simple=kwargs.get('simple'),
+        outpath=kwargs.get('outpath'))
 # ------------------------------------------------------------------

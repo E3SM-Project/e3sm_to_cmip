@@ -19,15 +19,19 @@ LEVELS = {
 
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
+    outdata = data[RAW_VARIABLES[0] ][index, :]
+    if kwargs.get('simple'):
+        return outdata
     cmor.write(
         varid,
-        data['OMEGA'][index, :],
+        outdata,
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
+
     return handle_variables(
         metadata_path=user_input_path,
         tables=tables,
@@ -39,5 +43,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
         levels=LEVELS,
-        logdir=kwargs.get('logdir'))
+        logdir=kwargs.get('logdir'),
+        simple=kwargs.get('simple'),
+        outpath=kwargs.get('outpath'))
 # ------------------------------------------------------------------

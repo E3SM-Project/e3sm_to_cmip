@@ -1,6 +1,7 @@
 import sys
 import os
 import argparse
+import shutil
 
 
 def main():
@@ -20,6 +21,9 @@ def main():
     parser.add_argument('-l', '--leave-source', 
                         action="store_true",
                         help="leave the source directory in place")
+    parser.add_argument('-c', '--copy', 
+                        action="store_true",
+                        help="copy files from the source to the dest")
     parser.add_argument('-s', '--sym-link', 
                         action="store_true",
                         help="create symlinks instead of moving the files")
@@ -38,18 +42,21 @@ def main():
             old_path = os.path.join(src_path, f)
             new_path = os.path.join(dst_path, f)
             if os.path.exists(new_path) and not args.over_write:
-                print("Error: file at destination already exists")
+                print("Error: file at destination already exists, skipping")
                 continue
             if not args.dryrun:
                 if args.sym_link:
-                    print("Creating link {} -> {}".format(old_path, new_path))
+                    print(f"Creating link {old_path} -> {new_path}")
                     os.symlink(old_path, new_path)
+                elif args.copy:
+                    print(f"copying file {old_path} -> {new_path}")
+                    shutil.copy(old_path, new_path, follow_symlinks=True)
                 else:
-                    print("Moving {} -> {}".format(old_path, new_path))
+                    print(f"Moving {old_path} -> {new_path}")
                     os.rename(old_path, new_path)
 
         if not args.dryrun and not args.leave_source and not args.sym_link:
-            print("removing {}".format(src_path))
+            print(f"removing {src_path}")
             os.rmdir(src_path)
 
     return 0
