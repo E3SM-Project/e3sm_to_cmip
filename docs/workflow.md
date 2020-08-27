@@ -9,19 +9,19 @@ The CWL workflows currently assume you have a SLURM controller available to subm
 
 First create a new conda environment and install the required packages.
 
-```
-conda create -n workflow -c conda-forge cwltool nodejs python>3
+```bash
+conda create -n workflow -c conda-forge cwltool nodejs "python>3" nco "cmor>=3.6.0" cdutil "cdms2>=3.1" tqdm pathos pyyaml xarray netcdf4 dask scipy
 ```
 
 Then pull down a copy of the e3sm_to_cmip repository and install the python modules. 
 
-```
+```bash
 git clone https://github.com/E3SM-Project/e3sm_to_cmip.git
 cd e3sm_to_cmip
 python setup.py install
 ```
 
-Note that although the e3sm_to_cmip package itself can be installed via conda, the CWL workflows arent currently packaged along side, so even if you already have the e3sm_to_cmip package in your environment you will still need to clone the repo to get access to the workflow scripts.
+Note that although the e3sm_to_cmip package itself can be installed via conda, the CWL workflows aren't currently packaged along side, so even if you already have the e3sm_to_cmip package in your environment you will still need to clone the repo to get access to the workflow scripts.
 
 ## CWL workflows
 
@@ -30,8 +30,7 @@ There are several CWL workflows provided under the scripts/cwl_workflows directo
 A set of sample parameters needed by the workflows are provided along side the workflow as a YAML file with a name matching the workflow. For example the fx workflow contains a file named fx-job.yaml with the following parameters:
 
 ```yaml
-
-# The path to the raw atmos data as a string
+# The path to the raw atmos data as a string, this directory should only contain cam.h0 files
 atm_data_path: /p/test/ 
 
 # A list of strings containing the CMIP6 variable names
@@ -55,11 +54,13 @@ metadata_path: /p/metadata/case_metadata.json
 
 # Workflow Execution
 
-To run the workflows, first create a case directory to contain the required parameter file and to store the output. Copy the CWL parameter file from the workflow directory into the new case directory, and edit it to add the specific values for your case. Then, envoke the cwltool with the path to the workflow file and the parameter file as arguments.
+To run the workflows, first create a case directory to contain the required parameter file and to store the output. Copy the CWL parameter file from the workflow directory into the new case directory, and edit it to add the specific values for your case. Then, invoke the cwltool with the path to the workflow file and the parameter file as arguments.
 
 ```bash
 cwltool ~/workflows/fx/fx.cwl fx-params.yaml
 ```
+
+To run the tool in parallel mode, add the "--parallel" flag to the cwltool call as the first argument.
 
 ## Example
 
@@ -73,12 +74,14 @@ mkdir bgc-historical
 
 Then copy the example parameter file into it
 ```bash
-cp ~/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-unified/
+cp ~/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-unified/atm-unified-job.yaml bgc-historical/
 ```
+
+In an effort to keep everything together, it helps to also store your metadata.json file along side in the same directory.
 
 atm-unified-job.yaml
 ```yaml
-# the full path to the raw E3SM data
+# the full path to the raw E3SM data, this should only contain cam.h0 files
 data_path:  /p/user_pub/work/E3SM/1_1_ECA/hist-BDRD/1deg_atm_60-30km_ocean/atmos/native/model-output/mon/ens1/v2/
 
 # the number of years to include in each output file
