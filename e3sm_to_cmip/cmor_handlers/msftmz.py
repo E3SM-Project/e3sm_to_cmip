@@ -45,13 +45,17 @@ def handle(infiles, tables, user_input_path, **kwargs):
         msg = f"{VAR_NAME} is not supported for simple conversion"
         print_message(msg)
         return
-        
+
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
 
     meshFileName = infiles['MPAS_mesh']
     timeSeriesFiles = infiles['MPASO']
     regionMaskFileName = infiles['MPASO_MOC_regions']
+    namelistFileName = infiles['MPASO_namelist']
+
+    namelist = mpas.convert_namelist_to_dict(namelistFileName)
+    config_density0 = float(namelist['config_density0'])
 
     dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
     dsMesh = dsMesh.isel(Time=0)
@@ -67,8 +71,9 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     with mpas.open_mfdataset(timeSeriesFiles, variableList) as dsIn:
         showProgress = 'serial' in kwargs and kwargs['serial']
-        ds = mpas.compute_moc_streamfunction(dsIn, dsMesh, dsMasks,
-                                             showProgress=showProgress)
+        ds = config_density0*mpas.compute_moc_streamfunction(
+            dsIn, dsMesh, dsMasks, showProgress=showProgress)
+
     ds = ds.rename({'moc': VAR_NAME})
 
     mpas.setup_cmor(VAR_NAME, tables, user_input_path, component='ocean')
