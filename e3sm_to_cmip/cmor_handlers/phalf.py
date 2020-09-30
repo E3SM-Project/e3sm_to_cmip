@@ -17,7 +17,7 @@ VAR_NAME = str('phalf')
 VAR_UNITS = str('Pa')
 TABLE = str('CMIP6_Amon.json')
 LEVELS = {
-    'name': 'standard_hybrid_sigma_half',
+    'name': 'atmosphere_sigma_coordinate',
     'units': '1',
     'e3sm_axis_name': 'lev',
     'e3sm_axis_bnds': 'ilev',
