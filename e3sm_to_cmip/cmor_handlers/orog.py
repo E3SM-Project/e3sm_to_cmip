@@ -49,7 +49,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
             table_data = json.load(ip)
         
         ds = xr.Dataset()
-        outname = f'{VAR_NAME}.nc'
+        outname = f'{VAR_NAME}_fx_.nc'
         with xr.open_dataset(infiles[RAW_VARIABLES[0]][0]) as inputds:
 
             ds['lat'] = inputds['lat']

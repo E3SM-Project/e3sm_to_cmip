@@ -499,9 +499,7 @@ def terminate(pool, debug=False):
     """
     if debug:
         print_message('Shutting down process pool', 'debug')
-    pool.close()
-    pool.terminate()
-    pool.join()
+    pool.shutdown()
 # ------------------------------------------------------------------
 
 

@@ -62,7 +62,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
         }
 
         pool_res.append(
-            pool.apipe(
+            pool.submit(
                 handler_method,
                 input_paths,
                 tables_path,
@@ -76,7 +76,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
 
     for idx, res in enumerate(pool_res):
         try:
-            out = res.get(9999999)
+            out = res.result()
             if out:
                 num_success += 1
                 msg = f'Finished {out}, {idx + 1}/{num_handlers} jobs complete'
@@ -288,6 +288,7 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
         time_bounds_name = 'time_bnds' if 'time_bnds' in inputds.data_vars else 'time_bounds'
         ds['time_bnds'] = inputds[time_bounds_name]
         ds['time'] = inputds['time']
+        ds['time'].attrs['bounds'] = 'time_bnds'
 
     resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
     table_path = os.path.join(resource_path, table)
@@ -300,10 +301,14 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
         ds[outvar_name].attrs[attr] = table_data['variable_entry'][outvar_name][attr]
 
     output_file_path = os.path.join(
-        outpath, f'{outvar_name}_{start_year}_{end_year}.nc')
+        outpath, f'{outvar_name}_{table[:-5]}_{start_year}-{end_year}')
     msg = f'writing out variable to file {output_file_path}'
     print_message(msg, 'ok')
-    write_netcdf(ds, output_file_path, unlimited=['time'])
+    fillVals = {
+        np.dtype('float32'): 1e20,
+        np.dtype('float64'): 1e20,
+    }
+    write_netcdf(ds, output_file_path, fillValues=fillVals, unlimited=['time'])
 
     msg = f'{outvar_name}: file close complete'
     logger.debug(msg)
