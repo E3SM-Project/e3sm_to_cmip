@@ -1,5 +1,3 @@
-import sys
-import os
 from setuptools import find_packages, setup
 from e3sm_to_cmip.version import __version__
 
