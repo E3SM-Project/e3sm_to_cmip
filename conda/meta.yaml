@@ -30,7 +30,6 @@ requirements:
       - cdutil
       - cdms2 >=3.1
       - tqdm
-      - pathos
       - pyyaml
       - xarray
       - netcdf4

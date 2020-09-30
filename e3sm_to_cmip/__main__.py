@@ -23,7 +23,7 @@ import logging
 import tempfile
 import threading
 import signal
-from pathos.multiprocessing import ProcessPool as Pool
+from concurrent.futures import ProcessPoolExecutor as Pool
 
 os.environ['CDAT_ANONYMOUS_LOG'] = 'false'
 
@@ -162,7 +162,7 @@ def main():
     else:
         print_message('Running CMOR handlers in parallel', 'ok')
         try:
-            pool = Pool(nproc)
+            pool = Pool(max_workers=nproc)
             status = run_parallel(
                 pool=pool,
                 handlers=handlers,
