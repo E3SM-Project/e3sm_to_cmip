@@ -98,11 +98,11 @@ def add_time(ds, dsIn, referenceDate='0001-01-01', offsetYears=0):
     dsIn = dsIn.rename({'Time': 'time'})
     xtimeStart = dsIn.xtime_startMonthly
     xtimeEnd = dsIn.xtime_endMonthly
-    xtimeStart = [''.join(str(xtimeStart.astype('U'))).strip()
-                  for xtimeStart in xtimeStart.values]
+    xtimeStart = [''.join(x.astype('U')).strip()
+                  for x in xtimeStart.values]
 
-    xtimeEnd = [''.join(str(xtimeEnd.astype('U'))).strip()
-                for xtimeEnd in xtimeEnd.values]
+    xtimeEnd = [''.join(x.astype('U')).strip()
+                for x in xtimeEnd.values]
 
     # fix xtimeStart, which has an offset by a time step (or so)
     xtimeStart = ['{}_00:00:00'.format(xtime[0:10]) for xtime in xtimeStart]
@@ -248,8 +248,8 @@ def open_mfdataset(fileNames, variableList=None,
                     pool=ThreadPool(min(multiprocessing.cpu_count(),
                                         daskThreads)))
 
-
-    ds = xarray.open_mfdataset(fileNames, concat_dim='Time',
+    ds = xarray.open_mfdataset(fileNames, combine='nested', decode_cf=False, 
+                               decode_times=False, concat_dim='Time',
                                mask_and_scale=False, chunks=chunks)
 
     if variableList is not None:
@@ -519,7 +519,7 @@ def _string_to_days_since_date(dateStrings, referenceDate='0001-01-01'):
     reference date
 
     """
-
+    
     dates = [_string_to_datetime(string) for string in dateStrings]
     days = _datetime_to_days(dates, referenceDate=referenceDate)
 
@@ -544,7 +544,7 @@ def _parse_date_string(dateString):
     a datetime or timedelta
     """
 
-    # change underscores to spaces so both can be supported
+        # change underscores to spaces so both can be supported
     dateString = dateString.replace('_', ' ').strip()
     if ' ' in dateString:
         ymd, hms = dateString.split(' ')
