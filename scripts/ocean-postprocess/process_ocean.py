@@ -7,19 +7,26 @@ from tempfile import TemporaryDirectory
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 def d2f(inpath, outpath):
+    if os.path.exists(outpath):
+        return 0, outpath
     cmd = f'ncpdq -M dbl_flt {inpath} {outpath}'.split()
     proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
     out, err = proc.communicate()
-    out = out.decode('utf-8')
-    err = err.decode('utf-8')
     if err:
+        err = err.decode('utf-8')
         print(err)
         return 1, inpath
     if out:
+        out = out.decode('utf-8')
         print(out)
     return 0, outpath
 
 def zMid(inpath, outpath, rst, comp_type=None, comp_lvl=None):
+    if os.path.exists(outpath):
+        return 0, inpath
+    if not os.path.exists(inpath):
+        print(f"Input path doesnt exist {inpath}")
+        return 1, inpath
     cmd = f"python add_zMid.py -i {inpath} -o {outpath} -c {rst}".split()
     if comp_type and comp_lvl:
         cmd.extend(['--compression-type', comp_type, '--compression-level', comp_lvl])
@@ -53,11 +60,21 @@ def main():
         return 1
     os.makedirs(args.output, exist_ok=True)
 
+    if args.tempdir:
+        old_temp = os.environ.get('TMPDIR')
+        os.environ['TMPDIR'] = args.tempdir
+
     files = os.listdir(args.input)
     with TemporaryDirectory() as tempdir:
         print(f"Putting temp files in {tempdir}")
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
             d2f_futures = []
+            outpaths = [x for x in os.listdir(args.output)]
+            files = [x for x in files if x not in outpaths]
+            if not files:
+                print("This case already has all the output required")
+                return 0
+        
             for file in files:
                 inpath = os.path.join(args.input, file)
                 temppath = os.path.join(tempdir, file)
@@ -70,30 +87,32 @@ def main():
             pbar2 = tqdm(total=0, desc="zMid processing", position=1)
             counter = 0
             for future in as_completed(d2f_futures):
-                retcode, path = future.result()
+                retcode, d2f_path = future.result()
                 pbar1.update(1)
+                if not os.path.exists(d2f_path) or retcode != 0:
+                    print(f"Output from d2f conversion doesnt exist {d2f_path}")
+                    continue
                 counter += 1
                 pbar2.total = counter
                 pbar2.refresh()
-
-                if retcode != 0:
-                    print(f"Error running d2f for {path}")
-                    continue
                 
-                _, name = os.path.split(path)
+                _, name = os.path.split(d2f_path)
                 outpath = os.path.join(args.output, name)
                 zMid_futures.append(
                     pool.submit(
-                        zMid, temppath, outpath, args.restart))
+                        zMid, d2f_path, outpath, args.restart))
             
             for future in as_completed(zMid_futures):
                 pbar2.update(1)
-                retcode, path = future.result()
+                retcode, zMid_path = future.result()
                 if retcode != 0:
-                    print(f"Error adding zMid to {path}")
+                    print(f"Error adding zMid to {zMid_path}")
             pbar1.close()
             pbar2.close()
-                
+    
+    if args.tempdir and old_temp:
+        os.environ['TMPDIR'] = old_temp
+
     return 0
 
 
