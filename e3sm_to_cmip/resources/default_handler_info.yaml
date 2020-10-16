@@ -213,7 +213,7 @@
   unit_conversion: g-to-kg
 
 - cmip_name: cSoilSlow
-  e3sm_name: SOIL2C
+  e3sm_name: SOIL3C
   units: "kg m-2"
   table: CMIP6_Lmon.json
   unit_conversion: g-to-kg
@@ -276,3 +276,10 @@
   table: CMIP6_Lmon.json
   positive: up
   unit_conversion: g-to-kg
+
+- cmip_name: sftlf
+  e3sm_name: LANDFRAC
+  units: "%"
+  table: CMIP6_fx.json
+  unit_conversion: 1-to-%
+  
