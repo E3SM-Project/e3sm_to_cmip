@@ -134,7 +134,7 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
                                      find_atm_files(var, input_path)]
                                for var in handler_variables}
             elif mode == 'fx':
-                input_paths = {var: [x for x in os.listdir(input_path) if x[-3:] == '.nc']
+                input_paths = {var: [os.path.join(input_path, x) for x in os.listdir(input_path) if x[-3:] == '.nc']
                                for var in handler_variables}
             else:
                 input_paths = {var: find_mpas_files(var, input_path,
@@ -179,7 +179,7 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
 # ------------------------------------------------------------------
 
 
-def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units, serial=None, positive=None, levels=None, axis=None, logdir=None, outpath=None, table='Amon'):
+def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units, serial=None, positive=None, levels=None, axis=None, logdir=None, outpath=None, table='Amon', has_time=True):
     from e3sm_to_cmip.util import print_message
     logger = logging.getLogger()
 
@@ -242,7 +242,10 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
 
                 # new data set
                 ds = xr.Dataset()
-                dims = ['time', 'lat', 'lon']
+                if has_time:
+                    dims = ['time', 'lat', 'lon']
+                else:
+                    dims = ['lat', 'lon']
 
                 for depth_dim in ['lev', 'plev', 'levgrnd']:
                     if depth_dim in new_data.keys():
@@ -316,10 +319,18 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
     return outvar_name
 
 # ------------------------------------------------------------------
+def var_has_time(table_path, variable):
+    with open(table_path, 'r') as inputstream:
+        table_info = json.load(inputstream)
+    axis_info = table_info['variable_entry'][variable]['dimensions'].split(' ')
+    if 'time' in axis_info:
+        return True
+    return False
 
 
 def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None, levels=None, axis=None, logdir=None, simple=False, outpath=None):
 
+    has_time = var_has_time(os.path.join(tables, table), outvar_name)
     if simple:
         return handle_simple(
             infiles,
@@ -333,7 +344,8 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             levels=levels,
             axis=axis,
             logdir=logdir,
-            outpath=outpath)
+            outpath=outpath,
+            has_time=has_time)
 
     from e3sm_to_cmip.util import print_message
     logger = logging.getLogger()
@@ -404,7 +416,11 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
 
                 # new data set
                 ds = xr.Dataset()
-                dims = ('time', 'lat', 'lon')
+                if has_time:
+                    dims = ('time', 'lat', 'lon')
+                else:
+                    dims = ('lat', 'lon')
+
                 if 'lev' in new_data.keys():
                     dims = ('time', 'lev', 'lat', 'lon')
                 elif 'plev' in new_data.keys():
@@ -416,7 +432,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
         logger.info(f'{outvar_name}: loading axes')
 
         # create the cmor variable and axis
-        axis_ids, ips = load_axis(data=data, levels=levels)
+        axis_ids, ips = load_axis(data=data, levels=levels, has_time=has_time)
 
         if ips:
             data['ips'] = ips
@@ -435,17 +451,24 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             pbar = tqdm(total=len(data['time']))
             pbar.set_description(msg)
 
-        for index, val in enumerate(data['time']):
+        if has_time:
+            for index, val in enumerate(data['time']):
+                write_data(
+                    varid=varid,
+                    data=data,
+                    timeval=val,
+                    timebnds=[data['time_bnds'][index, :]],
+                    index=index,
+                    raw_variables=raw_variables,
+                    simple=False)
+                if serial:
+                    pbar.update(1)
+        else:
             write_data(
                 varid=varid,
                 data=data,
-                timeval=val,
-                timebnds=[data['time_bnds'][index, :]],
-                index=index,
                 raw_variables=raw_variables,
                 simple=False)
-            if serial:
-                pbar.update(1)
         if serial:
             pbar.close()
 
@@ -560,14 +583,14 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
 # ------------------------------------------------------------------
 
 
-def load_axis(data, levels=None):
+def load_axis(data, levels=None, has_time=True):
     # use the special name for time if it exists
     if levels and levels.get('time_name'):
         name = levels.get('time_name')
         units = data[levels.get('time_name')].units
         time = cmor.axis(name, units=units)
     # else add the normal time name
-    else:
+    elif has_time:
         time = cmor.axis('time', units=data['time'].units)
 
     # use whatever level name this handler requires
@@ -600,8 +623,10 @@ def load_axis(data, levels=None):
 
     if levels:
         axes = [time, lev, lat, lon]
-    else:
+    elif has_time:
         axes = [time, lat, lon]
+    else:
+        axes = [lat, lon]
 
     ips = None
     # add hybrid level formula terms
