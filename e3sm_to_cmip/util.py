@@ -51,7 +51,7 @@ def print_message(message, status='error'):
         print(colors.OKGREEN + '[+] ' + colors.ENDC + str(message))
     elif status == 'debug':
         print(colors.OKBLUE + '[*] ' + colors.ENDC + str(message)
-              + colors.OKBLUE + ' [*]' + colors.ENDC)
+              + colors.OKBLUE + colors.ENDC)
 # ------------------------------------------------------------------
 
 
@@ -93,12 +93,10 @@ def parse_argsuments():
     parser.add_argument(
         '-i', '--input-path',
         metavar='',
-        required=True,
         help='Path to directory containing e3sm time series data files. Additionally namelist, restart, and mappings files if handling MPAS data.')
     parser.add_argument(
         '-o', '--output-path',
         metavar='',
-        required=True,
         help='Where to store cmorized output')
     parser.add_argument(
         '--simple',
@@ -160,6 +158,10 @@ def parse_argsuments():
         type=str,
         help="Check for each variable if its already in the output CMIP6 directory, only run variables that dont have CMIP6 output")
     parser.add_argument(
+        '--info',
+        action="store_true",
+        help="Print information about the variables passed in the --var-list argument and exit without doing any processing")
+    parser.add_argument(
         '--version',
         help='print the version number and exit',
         action='version',
@@ -175,15 +177,31 @@ def parse_argsuments():
             raise ValueError("MPAS ocean handling requires a map file")
         if _args.mode == 'mpassi' and not _args.map:
             raise ValueError("MPAS sea-ice handling requires a map file")
-        if not _args.simple and not _args.tables_path:
+        if not _args.simple and not _args.tables_path and not _args.info:
             raise ValueError(
                 "Running without the --simple flag requires CMIP6 tables path")
-        if not _args.simple and not _args.user_metadata:
+        if (not _args.input_path or not _args.output_path) and not _args.info:
+            raise ValueError("Input and output paths required")
+        if not _args.simple and not _args.user_metadata and not _args.info:
             raise ValueError(
                 "Running without the --simple flag requires CMIP6 metadata json file")
 
     return _args
 # ------------------------------------------------------------------
+
+
+def print_var_info(handlers):
+    for handler in handlers:
+        msg = f"""
+CMIP6 Name: {handler['name']},
+CMIP6 Table: {handler['table']},
+CMIP6 Units: {handler['units']},
+E3SM Variables: {', '.join(handler['raw_variables'])}"""
+        if handler.get('unit_conversion'):
+            msg += f",\nUnit conversion: {handler['unit_conversion']}"
+        print_message(msg, status='debug')
+# ------------------------------------------------------------------
+
 
 
 def load_handlers(handlers_path, var_list, debug=None):
@@ -214,6 +232,8 @@ def load_handlers(handlers_path, var_list, debug=None):
         for variable in var_list:
             if variable in table_names:
                 load_tables.append(variable)
+    else:
+        load_tables = list()
 
     # load default handlers if they're in the variable list
     resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
@@ -270,7 +290,7 @@ def load_handlers(handlers_path, var_list, debug=None):
         # pull the table name out from the format CMIP6_Amon.json
         table = module.TABLE.split('.')[0].split('_')[-1]
 
-        if table in load_tables or module_name in var_list:
+        if table in load_tables or module_name in var_list or 'all' in var_list:
 
             handlers.append({
                 'name': module_name,
