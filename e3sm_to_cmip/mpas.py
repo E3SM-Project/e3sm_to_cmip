@@ -248,7 +248,7 @@ def open_mfdataset(fileNames, variableList=None,
                     pool=ThreadPool(min(multiprocessing.cpu_count(),
                                         daskThreads)))
 
-    ds = xarray.open_mfdataset(fileNames, combine='nested', decode_cf=False, 
+    ds = xarray.open_mfdataset(fileNames, combine='nested', decode_cf=False,
                                decode_times=False, concat_dim='Time',
                                mask_and_scale=False, chunks=chunks)
 
@@ -294,7 +294,7 @@ def write_netcdf(ds, fileName, fillValues=netCDF4.default_fillvals, unlimited=No
 
     if unlimited:
         ds.to_netcdf(fileName, encoding=encodingDict, unlimited_dims=unlimited)
-    else:    
+    else:
         ds.to_netcdf(fileName, encoding=encodingDict)
 
 
@@ -323,7 +323,7 @@ def convert_namelist_to_dict(fileName):
     return nml
 
 
-def setup_cmor(varname, tables, user_input_path, component='ocean'):
+def setup_cmor(varname, tables, user_input_path, component='ocean', table=None):
     '''Set up CMOR for MPAS-Ocean or MPAS-Seaice'''
     logfile = os.path.join(os.getcwd(), 'cmor_logs')
     if not os.path.exists(logfile):
@@ -334,12 +334,13 @@ def setup_cmor(varname, tables, user_input_path, component='ocean'):
         netcdf_file_action=cmor.CMOR_REPLACE,
         logfile=logfile)
     cmor.dataset_json(str(user_input_path))
-    if component == 'ocean':
-        table = 'CMIP6_Omon.json'
-    elif component == 'seaice':
-        table = 'CMIP6_SImon.json'
-    else:
-        raise ValueError('Unexpected component {}'.format(component))
+    if table is None:
+        if component == 'ocean':
+            table = 'CMIP6_Omon.json'
+        elif component == 'seaice':
+            table = 'CMIP6_SImon.json'
+        else:
+            raise ValueError('Unexpected component {}'.format(component))
     try:
         cmor.load_table(table)
     except Exception:
@@ -368,11 +369,16 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
 
     # write out the data
     try:
-        cmor.write(
-            varid,
-            ds[varname].values,
-            time_vals=ds.time.values,
-            time_bnds=ds.time_bnds.values)
+        if 'time' not in ds.dims:
+            cmor.write(
+                varid,
+                ds[varname].values)
+        else:
+            cmor.write(
+                varid,
+                ds[varname].values,
+                time_vals=ds.time.values,
+                time_bnds=ds.time_bnds.values)
     except Exception as error:
         logging.exception('Error in cmor.write for {}'.format(varname))
         raise
@@ -519,7 +525,7 @@ def _string_to_days_since_date(dateStrings, referenceDate='0001-01-01'):
     reference date
 
     """
-    
+
     dates = [_string_to_datetime(string) for string in dateStrings]
     days = _datetime_to_days(dates, referenceDate=referenceDate)
 
