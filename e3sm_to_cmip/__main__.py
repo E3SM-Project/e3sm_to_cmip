@@ -12,6 +12,7 @@ from e3sm_to_cmip.util import print_debug
 from e3sm_to_cmip.util import copy_user_metadata
 from e3sm_to_cmip.util import add_metadata
 from e3sm_to_cmip.util import load_handlers
+from e3sm_to_cmip.util import print_var_info
 from e3sm_to_cmip.util import parse_argsuments
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip import resources
@@ -95,6 +96,18 @@ def main():
             file_path=output_path,
             var_list=var_list)
         return 0
+    
+    # load variable handlers
+    handlers = load_handlers(
+        handlers_path,
+        var_list,
+        debug)
+    if len(handlers) == 0:
+        print_message('No handlers loaded')
+        sys.exit(1)
+    if _args.get('info'):
+        print_var_info(handlers)
+        sys.exit(0)
 
     new_metadata_path = os.path.join(
         output_path,
@@ -129,15 +142,6 @@ def main():
     if not simple:
         copy_user_metadata(
             user_metadata, output_path)
-
-    # load variable handlers
-    handlers = load_handlers(
-        handlers_path,
-        var_list,
-        debug)
-    if len(handlers) == 0:
-        print_message('No handlers loaded')
-        sys.exit(1)
 
     # run in the user-selected mode
     if serial:
