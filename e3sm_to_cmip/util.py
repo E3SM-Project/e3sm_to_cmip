@@ -9,7 +9,9 @@ import argparse
 import imp
 import yaml
 import cdms2
+import json
 
+from pathlib import Path
 from tqdm import tqdm
 from e3sm_to_cmip import resources
 from e3sm_to_cmip.version import __version__
@@ -103,6 +105,10 @@ def parse_argsuments():
         help='Perform a simple translation of the E3SM output to CMIP format, but without the CMIP6 metadata checks',
         action='store_true')
     parser.add_argument(
+        '-f','--freq',
+        help='The frequency of that data, default is monthly. Accepted values are mon, day, 6hr, 3hr, 1hr',
+        default="mon")
+    parser.add_argument(
         '-u', '--user-metadata',
         metavar='<user_input_json_path>',
         help='Path to user json file for CMIP6 metadata, required unless the --simple flag is used')
@@ -126,13 +132,8 @@ def parse_argsuments():
         default=None,
         help='Path to cmor handlers directory, default = e3sm_to_cmip/cmor_handlers')
     parser.add_argument(
-        '--no-metadata',
-        help='Do not add E3SM metadata to the output',
-        action='store_true')
-    parser.add_argument(
-        '--only-metadata',
-        help='Update the metadata for any files found and exit',
-        action='store_true')
+        '--custom-metadata',
+        help='the path to a json file with additional custom metadata to add to the output files')
     parser.add_argument(
         '-s', '--serial',
         help='Run in serial mode, usefull for debugging purposes',
@@ -185,6 +186,9 @@ def parse_argsuments():
         if not _args.simple and not _args.user_metadata and not _args.info:
             raise ValueError(
                 "Running without the --simple flag requires CMIP6 metadata json file")
+        allowed_freqs = ['mon', 'day', '6hr', '3hr', '1hr']
+        if _args.freq and _args.freq not in allowed_freqs:
+            raise ValueError(f"Frequency set to {_args.freq} which is not in the set of allowed frequencies: {', '.join(allowed_freqs)}")
 
     return _args
 # ------------------------------------------------------------------
@@ -202,9 +206,34 @@ E3SM Variables: {', '.join(handler['raw_variables'])}"""
         print_message(msg, status='debug')
 # ------------------------------------------------------------------
 
+def get_table(table, variable, freq, tables):
+    """
+    given the base table (for monthly data), find the correct
+    table given the frequency. Check the tables directory that this table
+    exists and the variable is included
+
+    Returns a Path to the correct table, and if the variable is included in the selected table
+    """
+    if table == "CMIP6_Amon.json":
+        real_table = f"CMIP6_{freq}.json"
+    else:
+        real_table = f"{table[:-8]}{freq}.json"
+    
+    table_path = Path(tables, real_table)
+    if not table_path.exists():
+        raise ValueError(f"CMIP6 table doesnt exist: {table_path}")
+
+    with open(table_path, 'r') as instream:
+        table_data = json.load(instream)
+
+    if variable not in table_data['variable_entry'].keys():
+        return table_path, False
+    else:
+        return table_path, True
+    
 
 
-def load_handlers(handlers_path, var_list, debug=None):
+def load_handlers(handlers_path, var_list, tables, freq="mon", simple=False, debug=None):
     """
     load the cmor handler modules
 
@@ -225,41 +254,41 @@ def load_handlers(handlers_path, var_list, debug=None):
     if debug:
         print_message(f"looking for handlers for: {' '.join(var_list)}")
 
-    if 'all' not in var_list:
-        table_names = ['CFmon', 'Amon', 'Lmon',
-                       'Omon', 'AERmon', 'SImon', 'LImon']
-        load_tables = list()
-        for variable in var_list:
-            if variable in table_names:
-                load_tables.append(variable)
-    else:
-        load_tables = list()
-
     # load default handlers if they're in the variable list
     resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
     defaults_path = os.path.join(
         resource_path,
         'default_handler_info.yaml')
+    
     with open(defaults_path, 'r') as infile:
 
         defaults = yaml.load(infile)
-
         for default in defaults:
 
-            table = default.get('table').split('.')[0].split('_')[-1]
-            if default.get('cmip_name') in var_list or 'all' in var_list or table in load_tables:
+            if default.get('cmip_name') not in var_list and 'all' not in var_list:
+                continue
+            
+            if simple:
+                table = default['table']
+            else:
+                table, var_included = get_table(
+                    table=default['table'],
+                    variable=default.get('cmip_name'),
+                    freq=freq,
+                    tables=tables)
+                if not var_included:
+                    print_message(f"Variable {default['cmip_name']} is not included in table {table}")
+                    continue
 
-                handlers.append({
-                    'name': default.get('cmip_name'),
-                    'method': default_handler,
-                    'raw_variables': [default.get('e3sm_name')],
-                    'units': default.get('units'),
-                    'table': default.get('table'),
-                    'positive': default.get('positive'),
-                    'unit_conversion': default.get('unit_conversion')
-                })
-            elif debug:
-                print_message(f"{default.get('cmip_name')} not loaded")
+            handlers.append({
+                'name': default.get('cmip_name'),
+                'method': default_handler,
+                'raw_variables': [default.get('e3sm_name')],
+                'units': default.get('units'),
+                'table': table,
+                'positive': default.get('positive'),
+                'unit_conversion': default.get('unit_conversion')
+            })
 
     # load the more complex handlers
     for handler in os.listdir(handlers_path):
@@ -288,16 +317,23 @@ def load_handlers(handlers_path, var_list, debug=None):
         module = imp.load_source(module_name, module_path)
 
         # pull the table name out from the format CMIP6_Amon.json
-        table = module.TABLE.split('.')[0].split('_')[-1]
+        if simple:
+            table = module.TABLE
+        else:
+            table = get_table(
+                table=module.TABLE,
+                variable=module.VAR_NAME,
+                freq=freq,
+                tables=tables)
 
-        if table in load_tables or module_name in var_list or 'all' in var_list:
+        if module_name in var_list or 'all' in var_list:
 
             handlers.append({
                 'name': module_name,
                 'method': module.handle,
                 'raw_variables': module.RAW_VARIABLES,
                 'units': module.VAR_UNITS,
-                'table': module.TABLE,
+                'table': table,
                 'positive': module.POSITIVE if hasattr(module, 'POSITIVE') else None
             })
         elif debug:
@@ -347,7 +383,7 @@ def copy_user_metadata(input_path, output_path):
 # ------------------------------------------------------------------
 
 
-def add_metadata(file_path, var_list):
+def add_metadata(file_path, var_list, metadata):
     """
     Recurses down a file tree, adding metadata to any netcdf files in the tree
     that are on the variable list.

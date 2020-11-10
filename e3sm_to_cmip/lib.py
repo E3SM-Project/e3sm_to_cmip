@@ -98,7 +98,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
 
 
 def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
-               mode='atm', logdir=None, simple=False, outpath=None):
+               mode='atm', logdir=None, simple=False, outpath=None, freq="mon"):
     """
     Run each of the handlers one at a time on the main process
 
@@ -154,7 +154,8 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
                 logdir=logdir,
                 simple=simple,
                 outpath=outpath,
-                unit_conversion=unit_conversion)
+                unit_conversion=unit_conversion,
+                freq=freq)
 
             if name is not None:
                 num_success += 1
@@ -218,7 +219,7 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
     for var_name in raw_variables:
         infiles[var_name].sort()
 
-    for index in range(num_files_per_variable):
+    for file_index in range(num_files_per_variable):
         loaded = False
 
         # reload the dimensions for each time slice
@@ -231,7 +232,7 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
             logger.info(f'{outvar_name}: loading {var_name}')
 
             new_data = get_dimension_data(
-                filename=infiles[var_name][index],
+                filename=infiles[var_name][file_index],
                 variable=var_name,
                 levels=levels,
                 get_dims=get_dims)
@@ -263,16 +264,17 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
             pbar = tqdm(total=len(data['time']))
             pbar.set_description(msg)
 
-        for index, val in enumerate(data['time']):
+        for time_index, val in enumerate(data['time']):
+            
             outdata = write_data(
                 varid=0,
                 data=data,
                 timeval=val,
-                timebnds=[data['time_bnds'][index, :]],
-                index=index,
+                timebnds=[data['time_bnds'][time_index, :]],
+                index=time_index,
                 raw_variables=raw_variables,
                 simple=True)
-            ds[outvar_name][index] = outdata
+            ds[outvar_name][time_index] = outdata
             if serial:
                 pbar.update(1)
 
