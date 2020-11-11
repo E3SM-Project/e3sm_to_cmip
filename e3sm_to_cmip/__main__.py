@@ -13,7 +13,7 @@ from e3sm_to_cmip.util import copy_user_metadata
 from e3sm_to_cmip.util import add_metadata
 from e3sm_to_cmip.util import load_handlers
 from e3sm_to_cmip.util import print_var_info
-from e3sm_to_cmip.util import parse_argsuments
+from e3sm_to_cmip.util import parse_arguments
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip import resources
 from e3sm_to_cmip import cmor_handlers
@@ -40,7 +40,7 @@ def timeout_exit():
 def main():
 
     # parse the command line arguments
-    _args = parse_argsuments().__dict__
+    _args = parse_arguments().__dict__
 
     if len(_args.get('var_list')) == 1 and " " in _args.get('var_list')[0]:
         var_list = _args.get('var_list')[0].split()
@@ -101,7 +101,11 @@ def main():
         print_message('No handlers loaded')
         sys.exit(1)
     if _args.get('info'):
-        print_var_info(handlers)
+        print_var_info(
+            handlers,
+            freq,
+            input_path,
+            tables_path)
         sys.exit(0)
 
     new_metadata_path = os.path.join(
