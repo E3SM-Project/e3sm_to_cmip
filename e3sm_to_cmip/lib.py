@@ -34,6 +34,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
     """
 
     pool_res = list()
+    will_run = []
     for idx, handler in enumerate(handlers):
         handler_method = handler['method']
         handler_variables = handler['raw_variables']
@@ -60,6 +61,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
             'simple': kwargs.get('simple'),
             'outpath': kwargs.get('outpath')
         }
+        will_run.append(handler.get('name'))
 
         pool_res.append(
             pool.submit(
@@ -73,10 +75,11 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
     pbar = tqdm(total=len(pool_res))
     num_success = 0
     num_handlers = len(handlers)
-
+    finished_success = []
     for idx, res in enumerate(pool_res):
         try:
             out = res.result()
+            finished_success.append(out)
             if out:
                 num_success += 1
                 msg = f'Finished {out}, {idx + 1}/{num_handlers} jobs complete'
@@ -85,14 +88,16 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
                 print_message(msg, 'error')
 
             logger.info(msg)
-            pbar.update(1)
         except Exception as e:
             print_debug(e)
-            return 1
+        pbar.update(1)
 
     pbar.close()
     terminate(pool)
     print_message(f"{num_success} of {num_handlers} handlers complete", 'ok')
+    failed = set(will_run) - set(finished_success)
+    if failed:
+        print_message(f"{', '.join(list(failed))} failed to complete")
     return 0
 # ------------------------------------------------------------------
 
