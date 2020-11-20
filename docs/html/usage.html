@@ -156,70 +156,42 @@
             
   <div class="section" id="usage">
 <span id="id1"></span><h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
-<blockquote>
-<div><p>usage: e3sm_to_cmip</p>
-<p>Convert ESM model output into CMIP compatible format</p>
-<dl>
-<dt>optional arguments:</dt><dd><dl class="option-list">
-<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
-<dd><p>show this help message and exit</p>
-</dd>
-<dt><kbd><span class="option">-v</span></kbd></dt>
-<dd><p>[ …], –var-list  [ …]
-space seperated list of variables to convert from e3sm to cmip. Use ‘all’ to convert all variables or the name of a CMIP6 table to run all handlers from that table</p>
-</dd>
-<dt><kbd><span class="option">-i</span>, <span class="option">--input-path</span></kbd></dt>
-<dd><p>path to directory containing e3sm time series data files. Additionally namelist, restart, and mappings files if handling MPAS data.</p>
-</dd>
-<dt><kbd><span class="option">-o</span>, <span class="option">--output-path</span></kbd></dt>
-<dd><p>where to store cmorized output</p>
-</dd>
-<dt><kbd><span class="option">-u <var>&lt;user_input_json_path&gt;</var></span>, <span class="option">--user-metadata <var>&lt;user_input_json_path&gt;</var></span></kbd></dt>
-<dd><p>path to user json file for CMIP6 metadata</p>
-</dd>
-<dt><kbd><span class="option">-t <var>&lt;tables-path&gt;</var></span>, <span class="option">--tables-path <var>&lt;tables-path&gt;</var></span></kbd></dt>
-<dd><p>Path to directory containing CMOR Tables directory</p>
-</dd>
-<dt><kbd><span class="option">--map <var>&lt;map_mpas_to_std_grid&gt;</var></span></kbd></dt>
-<dd><p>The path to an mpas remapping file. Must be used when using the –mpaso or –mpassi options</p>
-</dd>
-<dt><kbd><span class="option">-n <var>&lt;nproc&gt;</var></span>, <span class="option">--num-proc <var>&lt;nproc&gt;</var></span></kbd></dt>
-<dd><p>optional: number of processes, default = 6</p>
-</dd>
-<dt><kbd><span class="option">-H <var>&lt;handler_path&gt;</var></span>, <span class="option">--handlers <var>&lt;handler_path&gt;</var></span></kbd></dt>
-<dd><p>path to cmor handlers directory, default = e3sm_to_cmip/cmor_handlers</p>
-</dd>
-<dt><kbd><span class="option">--no-metadata</span></kbd></dt>
-<dd><p>Do not add E3SM metadata to the output</p>
-</dd>
-<dt><kbd><span class="option">--only-metadata</span></kbd></dt>
-<dd><p>Update the metadata for any files found and exit</p>
-</dd>
-<dt><kbd><span class="option">-s</span>, <span class="option">--serial</span></kbd></dt>
-<dd><p>Run in serial mode, usefull for debugging purposes</p>
-</dd>
-<dt><kbd><span class="option">--debug</span></kbd></dt>
-<dd><p>Set output level to debug</p>
-</dd>
-<dt><kbd><span class="option">--mode <var>&lt;mode&gt;</var></span></kbd></dt>
-<dd><p>The component to analyze, atm, lnd, mpaso or mpassi</p>
-</dd>
-<dt><kbd><span class="option">--logdir <var>LOGDIR</var></span></kbd></dt>
-<dd><p>Where to put the logging output from CMOR</p>
-</dd>
-<dt><kbd><span class="option">--timeout <var>TIMEOUT</var></span></kbd></dt>
-<dd><p>Exit with code -1 if execution time exceeds given time in seconds</p>
-</dd>
-<dt><kbd><span class="option">--precheck <var>PRECHECK</var></span></kbd></dt>
-<dd><p>Check for each variable if its already in the output CMIP6 directory, only run variables that dont have CMIP6 output</p>
-</dd>
-<dt><kbd><span class="option">--version</span></kbd></dt>
-<dd><p>print the version number and exit</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</div></blockquote>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>usage: e3sm_to_cmip [-h]
+
+Convert ESM model output into CMIP compatible format
+
+optional arguments:
+-h, --help            show this help message and exit
+-v  [ ...], --var-list  [ ...]
+                        Space separated list of variables to convert from e3sm to cmip. Use &#39;all&#39; to convert all variables or the name of a CMIP6 table to run all handlers from that table
+-i , --input-path     Path to directory containing e3sm time series data files. Additionally namelist, restart, and mappings files if handling MPAS data.
+-o , --output-path    Where to store cmorized output
+--simple              Perform a simple translation of the E3SM output to CMIP format, but without the CMIP6 metadata checks
+-f FREQ, --freq FREQ  The frequency of that data, default is monthly. Accepted values are mon, day, 6hr, 3hr, 1hr
+-u &lt;user_input_json_path&gt;, --user-metadata &lt;user_input_json_path&gt;
+                        Path to user json file for CMIP6 metadata, required unless the --simple flag is used
+-t &lt;tables-path&gt;, --tables-path &lt;tables-path&gt;
+                        Path to directory containing CMOR Tables directory, required unless the --simple flag is used
+--map &lt;map_mpas_to_std_grid&gt;
+                        The path to an mpas remapping file. Required if mode is mpaso or mpassi
+-n &lt;nproc&gt;, --num-proc &lt;nproc&gt;
+                        optional: number of processes, default = 6
+-H &lt;handler_path&gt;, --handlers &lt;handler_path&gt;
+                        Path to cmor handlers directory, default = e3sm_to_cmip/cmor_handlers
+--custom-metadata CUSTOM_METADATA
+                        the path to a json file with additional custom metadata to add to the output files
+-s, --serial          Run in serial mode, usefull for debugging purposes
+--debug               Set output level to debug
+--mode &lt;mode&gt;         The component to analyze, atm, lnd, mpaso or mpassi
+--logdir LOGDIR       Where to put the logging output from CMOR
+--timeout TIMEOUT     Exit with code -1 if execution time exceeds given time in seconds
+--precheck PRECHECK   Check for each variable if its already in the output CMIP6 directory, only run variables that dont have CMIP6 output
+--info                Print information about the variables passed in the --var-list argument and exit without doing any processing. There are three modes for getting the info, if you just pass the --info flag with the --var-list then it will print out the information for the
+                        requested variable. If the --freq &lt;frequency&gt; is passed along with the --tables-path, then the CMIP6 tables will get checked to see if the requested variables are present in the CMIP6 table matching the freq. If the --freq &lt;freq&gt; is passed with the
+                        --tables-path, and the --input-path, and the input-path points to raw unprocessed E3SM files, then an additional check will me made for if the required raw variables are present in the E3SM output.
+--version             print the version number and exit
+</pre></div>
+</div>
 </div>
 
 

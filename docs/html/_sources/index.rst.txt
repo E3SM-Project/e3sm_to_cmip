@@ -38,20 +38,23 @@ source:
    python setup.py install
 
 
-If installing from source, the tool will require and environment with the following packages:
-- python >=3
-- nco
-- cmor >=3.5.0
-- libcdms >=4.7.4
-- cdutil
-- cdms2 >=3.1
-- tqdm
-- pathos
-- pyyaml
-- xarray
-- netcdf4
-- dask
-- scipy
+If installing from source, the tool will require an environment with the following packages:
+
+.. code-block::
+
+   - python >=3
+   - nco
+   - cmor >=3.5.0
+   - libcdms >=4.7.4
+   - cdutil
+   - cdms2 >=3.1
+   - tqdm
+   - pathos
+   - pyyaml
+   - xarray
+   - netcdf4
+   - dask
+   - scipy
 
 
 **ATMOSHERE**

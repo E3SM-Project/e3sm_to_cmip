@@ -175,20 +175,22 @@ process an arbitraraly large set of simulation data in whatever chunk size requi
 python setup.py install
 </pre></div>
 </div>
-<p>If installing from source, the tool will require and environment with the following packages:
-- python &gt;=3
-- nco
-- cmor &gt;=3.5.0
-- libcdms &gt;=4.7.4
-- cdutil
-- cdms2 &gt;=3.1
-- tqdm
-- pathos
-- pyyaml
-- xarray
-- netcdf4
-- dask
-- scipy</p>
+<p>If installing from source, the tool will require an environment with the following packages:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">python</span> <span class="o">&gt;=</span><span class="mi">3</span>
+<span class="o">-</span> <span class="n">nco</span>
+<span class="o">-</span> <span class="n">cmor</span> <span class="o">&gt;=</span><span class="mf">3.5</span><span class="o">.</span><span class="mi">0</span>
+<span class="o">-</span> <span class="n">libcdms</span> <span class="o">&gt;=</span><span class="mf">4.7</span><span class="o">.</span><span class="mi">4</span>
+<span class="o">-</span> <span class="n">cdutil</span>
+<span class="o">-</span> <span class="n">cdms2</span> <span class="o">&gt;=</span><span class="mf">3.1</span>
+<span class="o">-</span> <span class="n">tqdm</span>
+<span class="o">-</span> <span class="n">pathos</span>
+<span class="o">-</span> <span class="n">pyyaml</span>
+<span class="o">-</span> <span class="n">xarray</span>
+<span class="o">-</span> <span class="n">netcdf4</span>
+<span class="o">-</span> <span class="n">dask</span>
+<span class="o">-</span> <span class="n">scipy</span>
+</pre></div>
+</div>
 <p><strong>ATMOSHERE</strong></p>
 <p>Atmospheric data must be regridding time-series files, in the one-variable-per-file format produced by ncclimo. Each CMIP6 variable requires
 one or more E3SM variable to function, see the table of CMIP6 to E3SM variable mappings. Use the flag –mode atm</p>

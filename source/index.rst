@@ -38,41 +38,39 @@ source:
    python setup.py install
 
 
-If installing from source, the tool will require and environment with the following packages:
-- python >=3
-- nco
-- cmor >=3.5.0
-- libcdms >=4.7.4
-- cdutil
-- cdms2 >=3.1
-- tqdm
-- pathos
-- pyyaml
-- xarray
-- netcdf4
-- dask
-- scipy
+If installing from source, the tool will require an environment with the following packages:
+
+.. code-block::
+
+   - python >=3
+   - nco
+   - cmor >=3.5.0
+   - libcdms >=4.7.4
+   - cdutil
+   - cdms2 >=3.1
+   - tqdm
+   - pathos
+   - pyyaml
+   - xarray
+   - netcdf4
+   - dask
+   - scipy
 
 
-**ATMOSHERE**
+**Usage**
 
-Atmospheric data must be regridding time-series files, in the one-variable-per-file format produced by ncclimo. Each CMIP6 variable requires
-one or more E3SM variable to function, see the table of CMIP6 to E3SM variable mappings. Use the flag --mode atm
+There are two main ways to run the CMIP converters, either by invoking the e3sm_to_cmip package directly on the appropriately pre-processed input files,
+or by using the automated CWL workflows provided in the scripts/cwl_workflows directory in the repository.
 
-**LAND**
+The e3sm_to_cmip package can operate on 4 different components: atmosphere, land, ocean, and sea-ice. The input data for each of these is different.
 
-Land data must be regridded time-series file, in the ncclimo format. Make sure to use subgrid scale options when generating the time-series files.
-Use the flag --mode lnd
+atmosphere
+----------
 
-**OCEAN**
+Processing atmosphere variables requires that each of the input variables be provided in regridded time-series files (multiple files spanning different time segments is allowed), 
+and follow the NCO naming format of VARNAME_START_END.nc, for example PRECC_185001_201412.nc 
 
-The ocean variables require as input the mpaso.hist.am.timeSeriesStatsMonthly files, along with a single MPASO restart file (which contains
-important mesh information), and a mapping file to convert the mpas mesh data to a regular lon lat grid. Use --mode ocn
-
-**SEA-ICE**
-
-The ocean variables require as input the mpassi.hist.am.timeSeriesStatsMonthly files, along with a single MPASO restart file (which contains
-important mesh information), and a mapping file to convert the mpas mesh data to a regular lon lat grid. Use --mode ice
+Additionally, a set of 3D atmosphere variables need to be converted from the internal model vertical levels over to the "plev19" levels.
 
 
 .. toctree::
