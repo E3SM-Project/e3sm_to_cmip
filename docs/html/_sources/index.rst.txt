@@ -7,9 +7,6 @@
 e3sm_to_cmip's documentation
 ****************************
 
-Welcome to e3sm_to_cmip's documentation!
-========================================
-
 The e3sm_to_cmip tool converts E3SM model output variables to the CMIP standard format. 
 The tool works for atmospheric, land, MPAS-Ocean, and MPAS-Sea-Ice variables. The handling of each component is slightly different, so care
 must be made when dealing with the various data types. 
@@ -19,15 +16,22 @@ which break the input files up into managable segment size and perform all the r
 invoking the e3sm_to_cmip tool itself. These scripts have been designed to run on a SLURM cluster in parallel and will 
 process an arbitraraly large set of simulation data in whatever chunk size required.
 
+.. toctree::
+   :maxdepth: 1
 
-**INSTALLATION**
+   usage
+   var_map_atm
+   var_map_lnd
+   var_map_ocn
+   var_map_ice
+
+**Installation**
 
 conda:
 
 .. code-block:: bash
 
    conda create -n e2c -c conda-forge -c e3sm e3sm_to_cmip==1.4.1=1 libcdms==4.7.4
-
 
 source:
 
@@ -57,34 +61,43 @@ If installing from source, the tool will require an environment with the followi
    - scipy
 
 
-**ATMOSHERE**
+**Operation**
 
-Atmospheric data must be regridding time-series files, in the one-variable-per-file format produced by ncclimo. Each CMIP6 variable requires
-one or more E3SM variable to function, see the table of CMIP6 to E3SM variable mappings. Use the flag --mode atm
+There are two main ways to run the CMIP converters, either by invoking the e3sm_to_cmip package directly on the appropriately pre-processed input files,
+or by using the automated CWL workflows provided in the scripts/cwl_workflows directory in the repository.
 
-**LAND**
+The e3sm_to_cmip package can operate on 4 different components: atmosphere, land, ocean, and sea-ice. The input data for each of these is different.
 
-Land data must be regridded time-series file, in the ncclimo format. Make sure to use subgrid scale options when generating the time-series files.
-Use the flag --mode lnd
-
-**OCEAN**
-
-The ocean variables require as input the mpaso.hist.am.timeSeriesStatsMonthly files, along with a single MPASO restart file (which contains
-important mesh information), and a mapping file to convert the mpas mesh data to a regular lon lat grid. Use --mode ocn
-
-**SEA-ICE**
-
-The ocean variables require as input the mpassi.hist.am.timeSeriesStatsMonthly files, along with a single MPASO restart file (which contains
-important mesh information), and a mapping file to convert the mpas mesh data to a regular lon lat grid. Use --mode ice
+* Atmosphere
 
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+Processing atmosphere variables requires that each of the input variables be provided in regridded time-series files (multiple files spanning different time segments is allowed), 
+and follow the NCO naming format of VARNAME_START_END.nc, for example PRECC_185001_201412.nc 
 
-   usage
-   var_map_atm
-   var_map_lnd
-   var_map_ocn
-   var_map_ice
+Additionally, a set of 3D atmosphere variables need to be converted from the internal model vertical levels over to the "plev19" levels. `A copy of the vertical remap file can be found here <https://github.com/E3SM-Project/e3sm_to_cmip/raw/master/e3sm_to_cmip/resources/vrt_remap_plev19.nco>`_
+
+
+CMIP6 files requiring this vertical level change are: hur, hus, ta, ua, va, wap, and zg.
+
+* Land
+
+Similarly to the atmospheric variables, land variables must be provided as regridded time-series files in the NCO naming format.
+
+* Ocean
+
+Ocean variables are regridded at run time, and so dont require pre-processing. Data required for ocean processing are as follows:
+
+  * mpaso.hist.am.timeSeriesStatsMonthly
+  * mpaso_in or mpas-o_in
+  * one mpaso restart file
+
+* Sea-ice
+
+Sea-ice variables are regridded at run time, and so dont require pre-processing. Data required for ocean processing are as follows:
+
+  * mpascie.hist.am.timeSeriesStatsMonthly or mpassi.hist.am.timeSeriesStatsMonthly
+  * mpassi_in or mpas-cice_in
+  * one mpassi or mpascice restart file
+
+
 

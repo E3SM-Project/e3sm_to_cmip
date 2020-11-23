@@ -1,0 +1,263 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>e3sm_to_cmip’s documentation &mdash; e3sm_to_cmip 1.4.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home"> e3sm_to_cmip
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">e3sm_to_cmip’s documentation</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">e3sm_to_cmip</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>e3sm_to_cmip’s documentation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="e3sm-to-cmip-s-documentation">
+<h1>e3sm_to_cmip’s documentation<a class="headerlink" href="#e3sm-to-cmip-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>The e3sm_to_cmip tool converts E3SM model output variables to the CMIP standard format.
+The tool works for atmospheric, land, MPAS-Ocean, and MPAS-Sea-Ice variables. The handling of each component is slightly different, so care
+must be made when dealing with the various data types.</p>
+<p>Along with the e3sm_to_cmip command-line tool, there is also a set of workflow scripts for each component,
+which break the input files up into managable segment size and perform all the required input processing needed before
+invoking the e3sm_to_cmip tool itself. These scripts have been designed to run on a SLURM cluster in parallel and will
+process an arbitraraly large set of simulation data in whatever chunk size required.</p>
+<p><strong>Installation</strong></p>
+<p>conda:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -n e2c -c conda-forge -c e3sm <span class="nv">e3sm_to_cmip</span><span class="o">==</span><span class="m">1</span>.4.1<span class="o">=</span><span class="m">1</span> <span class="nv">libcdms</span><span class="o">==</span><span class="m">4</span>.7.4
+</pre></div>
+</div>
+<p>source:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/E3SM-Project/e3sm_to_cmip.git
+<span class="nb">cd</span> e3sm_to_cmip
+python setup.py install
+</pre></div>
+</div>
+<p>If installing from source, the tool will require an environment with the following packages:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">python</span> <span class="o">&gt;=</span><span class="mi">3</span>
+<span class="o">-</span> <span class="n">nco</span>
+<span class="o">-</span> <span class="n">cmor</span> <span class="o">&gt;=</span><span class="mf">3.5</span><span class="o">.</span><span class="mi">0</span>
+<span class="o">-</span> <span class="n">libcdms</span> <span class="o">&gt;=</span><span class="mf">4.7</span><span class="o">.</span><span class="mi">4</span>
+<span class="o">-</span> <span class="n">cdutil</span>
+<span class="o">-</span> <span class="n">cdms2</span> <span class="o">&gt;=</span><span class="mf">3.1</span>
+<span class="o">-</span> <span class="n">tqdm</span>
+<span class="o">-</span> <span class="n">pathos</span>
+<span class="o">-</span> <span class="n">pyyaml</span>
+<span class="o">-</span> <span class="n">xarray</span>
+<span class="o">-</span> <span class="n">netcdf4</span>
+<span class="o">-</span> <span class="n">dask</span>
+<span class="o">-</span> <span class="n">scipy</span>
+</pre></div>
+</div>
+<p><strong>Operation</strong></p>
+<p>There are two main ways to run the CMIP converters, either by invoking the e3sm_to_cmip package directly on the appropriately pre-processed input files,
+or by using the automated CWL workflows provided in the scripts/cwl_workflows directory in the repository.</p>
+<p>The e3sm_to_cmip package can operate on 4 different components: atmosphere, land, ocean, and sea-ice. The input data for each of these is different.</p>
+<ul class="simple">
+<li><p>Atmosphere</p></li>
+</ul>
+<p>Processing atmosphere variables requires that each of the input variables be provided in regridded time-series files (multiple files spanning different time segments is allowed),
+and follow the NCO naming format of VARNAME_START_END.nc, for example PRECC_185001_201412.nc</p>
+<p>Additionally, a set of 3D atmosphere variables need to be converted from the internal model vertical levels over to the “plev19” levels. <a class="reference external" href="https://github.com/E3SM-Project/e3sm_to_cmip/raw/master/e3sm_to_cmip/resources/vrt_remap_plev19.nco">A copy of the vertical remap file can be found here</a></p>
+<p>CMIP6 files requiring this vertical level change are: hur, hus, ta, ua, va, wap, and zg.</p>
+<ul class="simple">
+<li><p>Land</p></li>
+</ul>
+<p>Similarly to the atmospheric variables, land variables must be provided as regridded time-series files in the NCO naming format.</p>
+<ul class="simple">
+<li><p>Ocean</p></li>
+</ul>
+<p>Ocean variables are regridded at run time, and so dont require pre-processing. Data required for ocean processing are as follows:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>mpaso.hist.am.timeSeriesStatsMonthly</p></li>
+<li><p>mpaso_in or mpas-o_in</p></li>
+<li><p>one mpaso restart file</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>Sea-ice</p></li>
+</ul>
+<p>Sea-ice variables are regridded at run time, and so dont require pre-processing. Data required for ocean processing are as follows:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>mpascie.hist.am.timeSeriesStatsMonthly or mpassi.hist.am.timeSeriesStatsMonthly</p></li>
+<li><p>mpassi_in or mpas-cice_in</p></li>
+<li><p>one mpassi or mpascice restart file</p></li>
+</ul>
+</div></blockquote>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Sterling Baldwin
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
