@@ -218,6 +218,8 @@ CMIP6 Units: {handler['units']},
 E3SM Variables: {', '.join(handler['raw_variables'])}"""
             if handler.get('unit_conversion'):
                 msg += f",\nUnit conversion: {handler['unit_conversion']}"
+            if handler.get('levels'):
+                msg += f"\nLevels: {handler['levels']}"
             messages.append(msg)
     
     # if the user asked if the variable is included in the table
@@ -432,14 +434,14 @@ def load_handlers(handlers_path, var_list, tables, freq="mon", mode='atm', simpl
             continue
 
         if module_name in var_list or 'all' in var_list:
-
             handlers.append({
                 'name': module_name,
                 'method': module.handle,
                 'raw_variables': module.RAW_VARIABLES,
                 'units': module.VAR_UNITS,
                 'table': table,
-                'positive': module.POSITIVE if hasattr(module, 'POSITIVE') else None
+                'positive': module.POSITIVE if hasattr(module, 'POSITIVE') else None,
+                'levels': module.LEVELS if hasattr(module, 'LEVELS') else None
             })
         elif debug:
             print_message(f"{module_name} not loaded")
