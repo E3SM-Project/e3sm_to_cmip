@@ -34,7 +34,9 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Variable Map Land" href="var_map_lnd.html" />
+    <link rel="prev" title="Examples" href="examples.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -78,10 +80,13 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Variable Map Atmos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_lnd.html">Variable Map Land</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_ocn.html">Variable Map Ocean</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_ice.html">Variable Map Sea-Ice</a></li>
 </ul>
 
             
@@ -148,6 +153,371 @@
             
   <div class="section" id="variable-map-atmos">
 <span id="var-map-atm"></span><h1>Variable Map Atmos<a class="headerlink" href="#variable-map-atmos" title="Permalink to this headline">¶</a></h1>
+<div class="line-block">
+<div class="line">CMIP6 Name: abs550aer,</div>
+<div class="line">CMIP6 Table: CMIP6_AERmon.json,</div>
+<div class="line">CMIP6 Units: 1,</div>
+<div class="line">E3SM Variables: AODABS</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: od550aer,</div>
+<div class="line">CMIP6 Table: CMIP6_AERmon.json,</div>
+<div class="line">CMIP6 Units: 1,</div>
+<div class="line">E3SM Variables: AODVIS</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: cltisccp,</div>
+<div class="line">CMIP6 Table: CMIP6_CFmon.json,</div>
+<div class="line">CMIP6 Units: %,</div>
+<div class="line">E3SM Variables: CLDTOT_ISCCP</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: albisccp,</div>
+<div class="line">CMIP6 Table: CMIP6_CFmon.json,</div>
+<div class="line">CMIP6 Units: 1,</div>
+<div class="line">E3SM Variables: MEANCLDALB_ISCCP</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: pctisccp,</div>
+<div class="line">CMIP6 Table: CMIP6_CFmon.json,</div>
+<div class="line">CMIP6 Units: Pa,</div>
+<div class="line">E3SM Variables: MEANPTOP_ISCCP</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: cltcalipso,</div>
+<div class="line">CMIP6 Table: CMIP6_CFmon.json,</div>
+<div class="line">CMIP6 Units: %,</div>
+<div class="line">E3SM Variables: CLDTOT_CAL</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: cllcalipso,</div>
+<div class="line">CMIP6 Table: CMIP6_CFmon.json,</div>
+<div class="line">CMIP6 Units: %,</div>
+<div class="line">E3SM Variables: CLDLOW_CAL</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: clmcalipso,</div>
+<div class="line">CMIP6 Table: CMIP6_CFmon.json,</div>
+<div class="line">CMIP6 Units: %,</div>
+<div class="line">E3SM Variables: CLDMED_CAL</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: clhcalipso,</div>
+<div class="line">CMIP6 Table: CMIP6_CFmon.json,</div>
+<div class="line">CMIP6 Units: %,</div>
+<div class="line">E3SM Variables: CLDHGH_CAL</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: clivi,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: kg m-2,</div>
+<div class="line">E3SM Variables: TGCLDIWP</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: clwvi,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: kg m-2,</div>
+<div class="line">E3SM Variables: TGCLDCWP</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: clt,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: %,</div>
+<div class="line">E3SM Variables: CLDTOT,</div>
+<div class="line">Unit conversion: 1-to-%</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: evspsbl,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: kg m-2 s-1,</div>
+<div class="line">E3SM Variables: QFLX</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: hfls,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: W m-2,</div>
+<div class="line">E3SM Variables: LHFLX</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: hfss,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: W m-2,</div>
+<div class="line">E3SM Variables: SHFLX</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: huss,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: 1,</div>
+<div class="line">E3SM Variables: QREFHT</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: prw,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: kg m-2,</div>
+<div class="line">E3SM Variables: TMQ</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: ps,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: Pa,</div>
+<div class="line">E3SM Variables: PS</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: psl,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: Pa,</div>
+<div class="line">E3SM Variables: PSL</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: rlds,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: W m-2,</div>
+<div class="line">E3SM Variables: FLDS</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: rlutcs,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: W m-2,</div>
+<div class="line">E3SM Variables: FLUTC</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: rsds,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: W m-2,</div>
+<div class="line">E3SM Variables: FSDS</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: rsdt,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: W m-2,</div>
+<div class="line">E3SM Variables: SOLIN</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: rsut,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: W m-2,</div>
+<div class="line">E3SM Variables: FSUTOA</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: rsutcs,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: W m-2,</div>
+<div class="line">E3SM Variables: FSUTOAC</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: sfcWind,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: m s-1,</div>
+<div class="line">E3SM Variables: U10</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: rsdscs,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: W m-2,</div>
+<div class="line">E3SM Variables: FSDSC</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: tas,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: K,</div>
+<div class="line">E3SM Variables: TREFHT</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: ts,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: K,</div>
+<div class="line">E3SM Variables: TS</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: prc,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: kg m-2 s-1,</div>
+<div class="line">E3SM Variables: PRECC,</div>
+<div class="line">Unit conversion: m/s-to-kg/ms</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: tauu,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: Pa,</div>
+<div class="line">E3SM Variables: TAUX,</div>
+<div class="line">Unit conversion: -1</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: tauv,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: Pa,</div>
+<div class="line">E3SM Variables: TAUY,</div>
+<div class="line">Unit conversion: -1</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: sftlf,</div>
+<div class="line">CMIP6 Table: CMIP6_fx.json,</div>
+<div class="line">CMIP6 Units: %,</div>
+<div class="line">E3SM Variables: LANDFRAC,</div>
+<div class="line">Unit conversion: 1-to-%</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: tasmin,</div>
+<div class="line">CMIP6 Table: CMIP6_day.json,</div>
+<div class="line">CMIP6 Units: K,</div>
+<div class="line">E3SM Variables: TREFHTMN</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: tasmax,</div>
+<div class="line">CMIP6 Table: CMIP6_day.json,</div>
+<div class="line">CMIP6 Units: K,</div>
+<div class="line">E3SM Variables: TREFHTMX</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: areacella,</div>
+<div class="line">CMIP6 Table: CMIP6_fx.json,</div>
+<div class="line">CMIP6 Units: m2,</div>
+<div class="line">E3SM Variables: area</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: cl,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: %,</div>
+<div class="line">E3SM Variables: CLOUD</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: clcalipso,</div>
+<div class="line">CMIP6 Table: CMIP6_CFmon.json,</div>
+<div class="line">CMIP6 Units: %,</div>
+<div class="line">E3SM Variables: CLD_CAL</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: cli,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: kg kg-1,</div>
+<div class="line">E3SM Variables: CLDICE</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: clisccp,</div>
+<div class="line">CMIP6 Table: CMIP6_CFmon.json,</div>
+<div class="line">CMIP6 Units: %,</div>
+<div class="line">E3SM Variables: FISCCP1_COSP</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: clw,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: kg kg-1,</div>
+<div class="line">E3SM Variables: CLDLIQ</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: hur,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: %,</div>
+<div class="line">E3SM Variables: RELHUM</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: hus,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: 1,</div>
+<div class="line">E3SM Variables: Q</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: o3,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: mol mol-1,</div>
+<div class="line">E3SM Variables: O3</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: orog,</div>
+<div class="line">CMIP6 Table: CMIP6_fx.json,</div>
+<div class="line">CMIP6 Units: m,</div>
+<div class="line">E3SM Variables: PHIS</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: pfull,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: Pa,</div>
+<div class="line">E3SM Variables: hybi, hyai, hyam, hybm, PS</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: phalf,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: Pa,</div>
+<div class="line">E3SM Variables: hybi, hyai, hyam, hybm, PS</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: pr,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: kg m-2 s-1,</div>
+<div class="line">E3SM Variables: PRECC, PRECL</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: prsn,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: kg m-2 s-1,</div>
+<div class="line">E3SM Variables: PRECSC, PRECSL</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: rldscs,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: W m-2,</div>
+<div class="line">E3SM Variables: FLDS, FLNS, FLNSC</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: rlus,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: W m-2,</div>
+<div class="line">E3SM Variables: FLDS, FLNS</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: rlut,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: W m-2,</div>
+<div class="line">E3SM Variables: FSNTOA, FSNT, FLNT</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: rsus,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: W m-2,</div>
+<div class="line">E3SM Variables: FSNS, FSDS</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: rsuscs,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: W m-2,</div>
+<div class="line">E3SM Variables: FSDSC, FSNSC</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: rtmt,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: W m-2,</div>
+<div class="line">E3SM Variables: FSNT, FLNT</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: ta,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: K,</div>
+<div class="line">E3SM Variables: T</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: ua,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: m s-1,</div>
+<div class="line">E3SM Variables: U</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: va,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: m s-1,</div>
+<div class="line">E3SM Variables: V</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: wap,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: Pa s-1,</div>
+<div class="line">E3SM Variables: OMEGA</div>
+</div>
+<div class="line-block">
+<div class="line">CMIP6 Name: zg,</div>
+<div class="line">CMIP6 Table: CMIP6_Amon.json,</div>
+<div class="line">CMIP6 Units: m,</div>
+<div class="line">E3SM Variables: Z3</div>
+</div>
 </div>
 
 
@@ -155,6 +525,15 @@
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="var_map_lnd.html" class="btn btn-neutral float-right" title="Variable Map Land" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="examples.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

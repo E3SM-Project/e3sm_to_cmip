@@ -34,7 +34,8 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Usage" href="usage.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -78,11 +79,15 @@
               
             
             
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">e3sm_to_cmip’s documentation</a></li>
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_atm.html">Variable Map Atmos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_lnd.html">Variable Map Land</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_ocn.html">Variable Map Ocean</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_ice.html">Variable Map Sea-Ice</a></li>
 </ul>
-</div>
+
             
           
         </div>
@@ -154,6 +159,16 @@ must be made when dealing with the various data types.</p>
 which break the input files up into managable segment size and perform all the required input processing needed before
 invoking the e3sm_to_cmip tool itself. These scripts have been designed to run on a SLURM cluster in parallel and will
 process an arbitraraly large set of simulation data in whatever chunk size required.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_atm.html">Variable Map Atmos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_lnd.html">Variable Map Land</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_ocn.html">Variable Map Ocean</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var_map_ice.html">Variable Map Sea-Ice</a></li>
+</ul>
+</div>
 <p><strong>Installation</strong></p>
 <p>conda:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -n e2c -c conda-forge -c e3sm <span class="nv">e3sm_to_cmip</span><span class="o">==</span><span class="m">1</span>.4.1<span class="o">=</span><span class="m">1</span> <span class="nv">libcdms</span><span class="o">==</span><span class="m">4</span>.7.4
@@ -225,6 +240,13 @@ and follow the NCO naming format of VARNAME_START_END.nc, for example PRECC_1850
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="usage.html" class="btn btn-neutral float-right" title="Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
   
 
   <hr/>

@@ -16,6 +16,16 @@ which break the input files up into managable segment size and perform all the r
 invoking the e3sm_to_cmip tool itself. These scripts have been designed to run on a SLURM cluster in parallel and will 
 process an arbitraraly large set of simulation data in whatever chunk size required.
 
+.. toctree::
+   :maxdepth: 1
+
+   usage
+   examples
+   var_map_atm
+   var_map_lnd
+   var_map_ocn
+   var_map_ice
+
 **Installation**
 
 conda:

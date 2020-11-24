@@ -20,6 +20,7 @@ process an arbitraraly large set of simulation data in whatever chunk size requi
    :maxdepth: 1
 
    usage
+   examples
    var_map_atm
    var_map_lnd
    var_map_ocn
