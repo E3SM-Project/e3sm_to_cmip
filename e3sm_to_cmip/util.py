@@ -18,6 +18,15 @@ from e3sm_to_cmip import resources
 from e3sm_to_cmip.version import __version__
 
 
+ATMOS_TABLES = ['CMIP6_Amon.json', 'CMIP6_day.json', 'CMIP6_3hr.json', \
+                'CMIP6_6hrLev.json', 'CMIP6_6hrPlev.json', 'CMIP6_6hrPlevPt.json', \
+                'CMIP6_AERmon.json', 'CMIP6_AERday.json', 'CMIP6_AERhr.json', \
+                'CMIP6_CFmon.json', 'CMIP6_CF3hr.json', 'CMIP6_CFday.json', 'CMIP6_fx.json']
+
+LAND_TABLES = ['CMIP6_Lmon.json']
+OCEAN_TABLES = ['CMIP6_Omon.json']
+SEAICE_TABLES = ['CMIP6_SImon.json']
+
 def print_debug(e):
     _, _, tb = sys.exc_info()
     traceback.print_tb(tb)
@@ -301,10 +310,10 @@ def get_table_freq(table, freq):
         return None
      
     return f"{table[:-8]}{freq}.json"
-    
 
 
-def load_handlers(handlers_path, var_list, tables, freq="mon", simple=False, debug=None):
+
+def load_handlers(handlers_path, var_list, tables, freq="mon", mode='atm', simple=False, debug=None):
     """
     load the cmor handler modules
 
@@ -353,6 +362,14 @@ def load_handlers(handlers_path, var_list, tables, freq="mon", simple=False, deb
                 if not var_included:
                     print_message(f"Variable {default['cmip_name']} is not included in table {table}")
                     continue
+            if mode == 'atm' and table not in ATMOS_TABLES:
+                continue
+            elif mode == 'lnd' and table not in LAND_TABLES:
+                continue
+            elif mode == 'ocn' and table not in OCEAN_TABLES:
+                continue
+            elif mode == 'ice' and table not in SEAICE_TABLES:
+                continue
 
             handlers.append({
                 'name': default.get('cmip_name'),
@@ -366,7 +383,7 @@ def load_handlers(handlers_path, var_list, tables, freq="mon", simple=False, deb
 
     # load the more complex handlers
     for handler in os.listdir(handlers_path):
-
+        
         if not handler.endswith('.py'):
             continue
         if handler == "__init__.py":
@@ -405,6 +422,14 @@ def load_handlers(handlers_path, var_list, tables, freq="mon", simple=False, deb
             if not var_included:
                 print_message(f"Variable {module.VAR_NAME} is not included in table {table}")
                 continue
+        if mode == 'atm' and table not in ATMOS_TABLES:
+            continue
+        elif mode == 'lnd' and table not in LAND_TABLES:
+            continue
+        elif mode == 'ocn' and table not in OCEAN_TABLES:
+            continue
+        elif mode == 'ice' and table not in SEAICE_TABLES:
+            continue
 
         if module_name in var_list or 'all' in var_list:
 

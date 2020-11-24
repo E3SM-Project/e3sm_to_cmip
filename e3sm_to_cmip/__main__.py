@@ -94,6 +94,7 @@ def main():
         handlers_path=handlers_path,
         var_list=var_list,
         freq=freq,
+        mode=mode,
         tables=tables_path,
         simple=simple)
 
