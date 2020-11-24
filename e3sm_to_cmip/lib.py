@@ -342,7 +342,7 @@ def var_has_time(table_path, variable):
 
 
 def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None, levels=None, axis=None, logdir=None, simple=False, outpath=None):
-
+    
     timename = var_has_time(os.path.join(tables, table), outvar_name)
     if simple:
         return handle_simple(

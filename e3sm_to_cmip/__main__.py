@@ -65,6 +65,9 @@ def main():
 
     if simple:
         no_metadata = True
+        if not tables_path:
+            resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
+            tables_path = resource_path
 
     timer = None
     if timeout:
