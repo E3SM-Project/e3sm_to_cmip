@@ -178,7 +178,49 @@ E3SM Variables: PRECC, PRECL
 <p>From this we can see that the clt variable needs the CLDTOT input variable, and pr needs both PRECC and PRECL.</p>
 <p>Next we use ncclimo to extract the time-series and do the regridding. <a class="reference external" href="https://www.youtube.com/watch?v=AJyAjH-1HuA">A detailed tutorial can be found here</a>
 Variables specific to your case will be denoted &lt;LIKE THIS&gt;</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ncclimo --start<span class="o">=</span><span class="m">0001</span> --end<span class="o">=</span><span class="m">0001</span> --ypf<span class="o">=</span><span class="m">1</span> -c &lt;CASENAME&gt; -o ./native -O ./regrid -v CLDTOT,PRECC,PRECL -i ./atmos-input --map<span class="o">=</span>&lt;PATH TO YOUR MAPFILE&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; ncclimo --start<span class="o">=</span><span class="m">0001</span> --end<span class="o">=</span><span class="m">0001</span> --ypf<span class="o">=</span><span class="m">1</span> -c &lt;CASENAME&gt; -o ./native -O ./regrid -v CLDTOT,PRECC,PRECL -i ./atmos-input --map<span class="o">=</span>&lt;PATH TO YOUR MAPFILE&gt;
+Climatology operations invoked with command:
+/export/baldwin32/anaconda3/envs/cwl/bin/ncclimo --start<span class="o">=</span><span class="m">2015</span> --end<span class="o">=</span><span class="m">2015</span> --ypf<span class="o">=</span><span class="m">1</span> -c <span class="m">20191204</span>.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy -o ./native --regrid<span class="o">=</span>./regrid -v CLDTOT,PRECC,PRECL -i ./atm_testing -v CLDTOT,PRECC,PRECL --map<span class="o">=</span>/export/zender1/data/maps/map_ne30np4_to_cmip6_180x360_aave.20181001.nc
+Started climatology generation <span class="k">for</span> dataset <span class="m">20191204</span>.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy at Tue Nov <span class="m">24</span> <span class="m">15</span>:05:20 PST <span class="m">2020</span>
+Running climatology script ncclimo from directory /export/baldwin32/anaconda3/envs/cwl/bin
+NCO binaries version <span class="m">4</span>.9.3 from directory /export/baldwin32/anaconda3/envs/cwl/bin
+Parallelism <span class="nv">mode</span> <span class="o">=</span> background
+Timeseries will be created <span class="k">for</span> each of <span class="m">3</span> variables
+Background parallelism processing variables in var_nbr/job_nbr <span class="o">=</span> <span class="m">3</span>/3 <span class="o">=</span> <span class="m">1</span> sequential batches of <span class="nv">job_nbr</span> <span class="o">=</span> <span class="m">3</span> simultaneous <span class="nb">jobs</span> <span class="o">(</span><span class="m">1</span> per variable<span class="o">)</span>, <span class="k">then</span> remaining <span class="m">0</span> jobs/variables simultaneously
+Will split data <span class="k">for</span> each variable into one timeseries of length <span class="m">1</span> years
+Splitting climatology from <span class="m">12</span> raw input files in directory ./atm_testing
+Each input file assumed to contain mean of one month
+Native-grid split files to directory ./native
+Regridded split files to directory ./regrid
+Tue Nov <span class="m">24</span> <span class="m">15</span>:05:21 PST <span class="m">2020</span>: Generated ./native/CLDTOT_201501_201512.nc
+Tue Nov <span class="m">24</span> <span class="m">15</span>:05:21 PST <span class="m">2020</span>: Generated ./native/PRECC_201501_201512.nc
+Tue Nov <span class="m">24</span> <span class="m">15</span>:05:21 PST <span class="m">2020</span>: Generated ./native/PRECL_201501_201512.nc
+Tue Nov <span class="m">24</span> <span class="m">15</span>:05:22 PST <span class="m">2020</span>: Regridded ./regrid/CLDTOT_201501_201512.nc
+Tue Nov <span class="m">24</span> <span class="m">15</span>:05:22 PST <span class="m">2020</span>: Regridded ./regrid/PRECC_201501_201512.nc
+Tue Nov <span class="m">24</span> <span class="m">15</span>:05:22 PST <span class="m">2020</span>: Regridded ./regrid/PRECL_201501_201512.nc
+Quick plots of last variable split in last segment:
+ncview ./regrid/PRECL_201501_201512.nc <span class="p">&amp;</span>
+panoply ./regrid/PRECL_201501_201512.nc <span class="p">&amp;</span>
+Completed <span class="m">1</span>-year climatology operations <span class="k">for</span> dataset with <span class="nv">caseid</span> <span class="o">=</span> <span class="m">20191204</span>.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy at Tue Nov <span class="m">24</span> <span class="m">15</span>:05:22 PST <span class="m">2020</span>
+Elapsed <span class="nb">time</span> 0m2s
+</pre></div>
+</div>
+<p>Now that we have appropriate input files, we can run the converter package.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; e3sm_to_cmip -i regrid/ -o cmip_output -v prc, clt -t &lt;PATH TO CMIP6 TABLES&gt; -u &lt;PATH TO CMOR USER INPUT JSON&gt;
+<span class="o">[</span>*<span class="o">]</span> Writing log output to: cmip_output/converter.log
+<span class="o">[</span>+<span class="o">]</span> Running CMOR handlers in parallel
+<span class="m">100</span>%<span class="p">|</span>███████████████████████████████████████<span class="p">|</span> <span class="m">2</span>/2 <span class="o">[</span><span class="m">00</span>:01&lt;<span class="m">00</span>:00,  <span class="m">1</span>.96it/s<span class="o">]</span>
+<span class="o">[</span>+<span class="o">]</span> <span class="m">2</span> of <span class="m">2</span> handlers <span class="nb">complete</span>
+</pre></div>
+</div>
+<p>Alternately, if this isnt going to be published to CMIP6, we can use the “simple” mode which doesnt require the full CMIP6 tables or metadata</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; python -m e3sm_to_cmip -i regrid -o cmip_output -v prc, clt --simple
+<span class="o">[</span>*<span class="o">]</span> Writing log output to: cmip_output/converter.log
+<span class="o">[</span>+<span class="o">]</span> Running CMOR handlers in parallel
+<span class="o">[</span>+<span class="o">]</span> writing out variable to file /cmip_output/prc_CMIP6_Amon_201501-201512.nc                                                                                                                                                                                                                                              <span class="p">|</span> <span class="m">0</span>/2 <span class="o">[</span><span class="m">00</span>:00&lt;?, ?it/s<span class="o">][</span>+<span class="o">]</span> writing out variable to file /p/user_pub/e3sm/baldwin32/workshop/ssp585/ssp585/output/pp/cmor/ssp585/2015_2100/cmip_output/prc_CMIP6_Amon_201501-201512.nc
+<span class="o">[</span>+<span class="o">]</span> writing out variable to file /cmip_output/clt_CMIP6_Amon_201501-201512.nc
+<span class="m">100</span>%<span class="p">|</span>███████████████████████████████████████<span class="p">|</span> <span class="m">2</span>/2 <span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,  <span class="m">6</span>.79it/s<span class="o">]</span>
+<span class="o">[</span>+<span class="o">]</span> <span class="m">2</span> of <span class="m">2</span> handlers <span class="nb">complete</span>
 </pre></div>
 </div>
 </div>
