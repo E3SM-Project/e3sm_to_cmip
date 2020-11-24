@@ -74,4 +74,21 @@ Now that we have appropriate input files, we can run the converter package.
 
 Alternately, if this isnt going to be published to CMIP6, we can use the "simple" mode which doesnt require the full CMIP6 tables or metadata
 
+.. code-block:: bash
+
+    >> python -m e3sm_to_cmip -i regrid -o cmip_output -v prc, clt --simple
+    [*] Writing log output to: cmip_output/converter.log
+    [+] Running CMOR handlers in parallel       
+    [+] writing out variable to file /cmip_output/prc_CMIP6_Amon_201501-201512.nc                                                                                                                                                                                                                                              | 0/2 [00:00<?, ?it/s][+] writing out variable to file /p/user_pub/e3sm/baldwin32/workshop/ssp585/ssp585/output/pp/cmor/ssp585/2015_2100/cmip_output/prc_CMIP6_Amon_201501-201512.nc
+    [+] writing out variable to file /cmip_output/clt_CMIP6_Amon_201501-201512.nc
+    100%|███████████████████████████████████████| 2/2 [00:00<00:00,  6.79it/s]
+    [+] 2 of 2 handlers complete
+
+
+
+Plev atmosphere variable example (no CWL)
+=========================================
+
+
+ 
 
