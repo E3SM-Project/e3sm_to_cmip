@@ -13,7 +13,7 @@ from e3sm_to_cmip.util import copy_user_metadata
 from e3sm_to_cmip.util import add_metadata
 from e3sm_to_cmip.util import load_handlers
 from e3sm_to_cmip.util import print_var_info
-from e3sm_to_cmip.util import parse_argsuments
+from e3sm_to_cmip.util import parse_arguments
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip import resources
 from e3sm_to_cmip import cmor_handlers
@@ -40,7 +40,7 @@ def timeout_exit():
 def main():
 
     # parse the command line arguments
-    _args = parse_argsuments().__dict__
+    _args = parse_arguments().__dict__
 
     if len(_args.get('var_list')) == 1 and " " in _args.get('var_list')[0]:
         var_list = _args.get('var_list')[0].split()
@@ -51,8 +51,7 @@ def main():
     output_path = _args.get('output_path')
     tables_path = _args.get('tables_path')
     user_metadata = _args.get('user_metadata')
-    no_metadata = _args.get('no_metadata')
-    only_metadata = _args.get('only_metadata')
+    custom_metadata = _args.get('custom_metadata')
     nproc = _args.get('num_proc')
     serial = _args.get('serial')
     mode = _args.get('mode')
@@ -62,9 +61,13 @@ def main():
     timeout = int(_args.get('timeout')) if _args.get('timeout') else False
     simple = _args.get('simple', False)
     precheck_path = _args.get('precheck', False)
+    freq = _args.get('freq')
 
     if simple:
         no_metadata = True
+        if not tables_path:
+            resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
+            tables_path = resource_path
 
     timer = None
     if timeout:
@@ -88,25 +91,25 @@ def main():
             print_message(
                 f"Setting up conversion for {' '.join(new_var_list)}", 'ok')
             var_list = new_var_list
-
-    # add additional optional metadata to the output files
-    if only_metadata:
-        print_message('Updating file metadata and exiting', 'ok')
-        add_metadata(
-            file_path=output_path,
-            var_list=var_list)
-        return 0
     
     # load variable handlers
     handlers = load_handlers(
-        handlers_path,
-        var_list,
-        debug)
+        handlers_path=handlers_path,
+        var_list=var_list,
+        freq=freq,
+        mode=mode,
+        tables=tables_path,
+        simple=simple)
+
     if len(handlers) == 0:
         print_message('No handlers loaded')
         sys.exit(1)
     if _args.get('info'):
-        print_var_info(handlers)
+        print_var_info(
+            handlers,
+            freq,
+            input_path,
+            tables_path)
         sys.exit(0)
 
     new_metadata_path = os.path.join(
@@ -156,7 +159,8 @@ def main():
                 mode=mode,
                 logdir=cmor_log_dir,
                 simple=simple,
-                outpath=output_path)
+                outpath=output_path,
+                freq=freq)
         except KeyboardInterrupt as error:
             print_message(' -- keyboard interrupt -- ', 'error')
             return 1
@@ -177,7 +181,8 @@ def main():
                 mode=mode,
                 logdir=cmor_log_dir,
                 simple=simple,
-                outpath=output_path)
+                outpath=output_path,
+                freq=freq)
         except KeyboardInterrupt as error:
             print_message(' -- keyboard interrupt -- ', 'error')
             return 1
@@ -189,13 +194,11 @@ def main():
             f"Error running handlers: { ' '.join([x['name'] for x in handlers]) }")
         return 1
 
-    # add additional optional metadata to the output files
-    if no_metadata:
-        print_message('Not adding additional metadata', 'ok')
-    else:
+    if custom_metadata:
         add_metadata(
             file_path=output_path,
-            var_list=var_list)
+            var_list=var_list,
+            metadata=custom_metadata)
 
     if timeout:
         timer.cancel()

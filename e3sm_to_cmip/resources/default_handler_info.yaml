@@ -282,4 +282,14 @@
   units: "%"
   table: CMIP6_fx.json
   unit_conversion: 1-to-%
+
+- cmip_name: tasmin
+  e3sm_name: TREFHTMN
+  units: K
+  table: CMIP6_day.json
+
+- cmip_name: tasmax
+  e3sm_name: TREFHTMX
+  units: K
+  table: CMIP6_day.json
   

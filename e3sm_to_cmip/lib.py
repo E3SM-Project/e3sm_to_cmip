@@ -34,6 +34,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
     """
 
     pool_res = list()
+    will_run = []
     for idx, handler in enumerate(handlers):
         handler_method = handler['method']
         handler_variables = handler['raw_variables']
@@ -60,6 +61,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
             'simple': kwargs.get('simple'),
             'outpath': kwargs.get('outpath')
         }
+        will_run.append(handler.get('name'))
 
         pool_res.append(
             pool.submit(
@@ -73,10 +75,11 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
     pbar = tqdm(total=len(pool_res))
     num_success = 0
     num_handlers = len(handlers)
-
+    finished_success = []
     for idx, res in enumerate(pool_res):
         try:
             out = res.result()
+            finished_success.append(out)
             if out:
                 num_success += 1
                 msg = f'Finished {out}, {idx + 1}/{num_handlers} jobs complete'
@@ -85,20 +88,22 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
                 print_message(msg, 'error')
 
             logger.info(msg)
-            pbar.update(1)
         except Exception as e:
             print_debug(e)
-            return 1
+        pbar.update(1)
 
     pbar.close()
     terminate(pool)
     print_message(f"{num_success} of {num_handlers} handlers complete", 'ok')
+    failed = set(will_run) - set(finished_success)
+    if failed:
+        print_message(f"{', '.join(list(failed))} failed to complete")
     return 0
 # ------------------------------------------------------------------
 
 
 def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
-               mode='atm', logdir=None, simple=False, outpath=None):
+               mode='atm', logdir=None, simple=False, outpath=None, freq="mon"):
     """
     Run each of the handlers one at a time on the main process
 
@@ -117,6 +122,7 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
 
         num_handlers = len(handlers)
         num_success = 0
+        name = None
 
         if mode != 'atm':
             pbar = tqdm(total=len(handlers))
@@ -141,27 +147,31 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
                                                     map_path)
                                for var in handler_variables}
 
-            name = handler_method(
-                input_paths,
-                tables_path,
-                metadata_path,
-                raw_variables=handler.get('raw_variables'),
-                units=handler.get('units'),
-                name=handler.get('name'),
-                table=handler.get('table'),
-                positive=handler.get('positive'),
-                serial=True,
-                logdir=logdir,
-                simple=simple,
-                outpath=outpath,
-                unit_conversion=unit_conversion)
+            try:
+                name = handler_method(
+                    input_paths,
+                    tables_path,
+                    metadata_path,
+                    raw_variables=handler.get('raw_variables'),
+                    units=handler.get('units'),
+                    name=handler.get('name'),
+                    table=handler.get('table'),
+                    positive=handler.get('positive'),
+                    serial=True,
+                    logdir=logdir,
+                    simple=simple,
+                    outpath=outpath,
+                    unit_conversion=unit_conversion,
+                    freq=freq)
+            except Exception as e:
+                print_debug(e)
 
             if name is not None:
                 num_success += 1
                 msg = f'Finished {name}, {num_success}/{num_handlers} jobs complete'
             else:
                 msg = f'Error running handler {handler["name"]}'
-                print_message(msg, 'error')
+                print_message(msg, status='error')
             logger.info(msg)
 
             if mode != 'atm':
@@ -218,7 +228,7 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
     for var_name in raw_variables:
         infiles[var_name].sort()
 
-    for index in range(num_files_per_variable):
+    for file_index in range(num_files_per_variable):
         loaded = False
 
         # reload the dimensions for each time slice
@@ -231,7 +241,7 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
             logger.info(f'{outvar_name}: loading {var_name}')
 
             new_data = get_dimension_data(
-                filename=infiles[var_name][index],
+                filename=infiles[var_name][file_index],
                 variable=var_name,
                 levels=levels,
                 get_dims=get_dims)
@@ -263,16 +273,17 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
             pbar = tqdm(total=len(data['time']))
             pbar.set_description(msg)
 
-        for index, val in enumerate(data['time']):
+        for time_index, val in enumerate(data['time']):
+            
             outdata = write_data(
                 varid=0,
                 data=data,
                 timeval=val,
-                timebnds=[data['time_bnds'][index, :]],
-                index=index,
+                timebnds=[data['time_bnds'][time_index, :]],
+                index=time_index,
                 raw_variables=raw_variables,
                 simple=True)
-            ds[outvar_name][index] = outdata
+            ds[outvar_name][time_index] = outdata
             if serial:
                 pbar.update(1)
 
@@ -324,13 +335,15 @@ def var_has_time(table_path, variable):
         table_info = json.load(inputstream)
     axis_info = table_info['variable_entry'][variable]['dimensions'].split(' ')
     if 'time' in axis_info:
-        return True
+        return 'time'
+    elif 'time1' in axis_info:
+        return 'time1'
     return False
 
 
 def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None, levels=None, axis=None, logdir=None, simple=False, outpath=None):
-
-    has_time = var_has_time(os.path.join(tables, table), outvar_name)
+    
+    timename = var_has_time(os.path.join(tables, table), outvar_name)
     if simple:
         return handle_simple(
             infiles,
@@ -345,7 +358,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             axis=axis,
             logdir=logdir,
             outpath=outpath,
-            has_time=has_time)
+            has_time=timename)
 
     from e3sm_to_cmip.util import print_message
     logger = logging.getLogger()
@@ -416,15 +429,15 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
 
                 # new data set
                 ds = xr.Dataset()
-                if has_time:
-                    dims = ('time', 'lat', 'lon')
+                if timename:
+                    dims = (timename, 'lat', 'lon')
                 else:
                     dims = ('lat', 'lon')
 
                 if 'lev' in new_data.keys():
-                    dims = ('time', 'lev', 'lat', 'lon')
+                    dims = (timename, 'lev', 'lat', 'lon')
                 elif 'plev' in new_data.keys():
-                    dims = ('time', 'plev', 'lat', 'lon')
+                    dims = (timename, 'plev', 'lat', 'lon')
                 ds[outvar_name] = (dims, new_data[var_name])
                 for d in dims:
                     ds.coords[d] = new_data[d][:]
@@ -432,7 +445,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
         logger.info(f'{outvar_name}: loading axes')
 
         # create the cmor variable and axis
-        axis_ids, ips = load_axis(data=data, levels=levels, has_time=has_time)
+        axis_ids, ips = load_axis(data=data, levels=levels, has_time=timename)
 
         if ips:
             data['ips'] = ips
@@ -451,7 +464,7 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             pbar = tqdm(total=len(data['time']))
             pbar.set_description(msg)
 
-        if has_time:
+        if timename:
             for index, val in enumerate(data['time']):
                 write_data(
                     varid=varid,
@@ -591,7 +604,7 @@ def load_axis(data, levels=None, has_time=True):
         time = cmor.axis(name, units=units)
     # else add the normal time name
     elif has_time:
-        time = cmor.axis('time', units=data['time'].units)
+        time = cmor.axis(has_time, units=data['time'].units)
 
     # use whatever level name this handler requires
     if levels:

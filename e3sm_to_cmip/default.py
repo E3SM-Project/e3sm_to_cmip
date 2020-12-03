@@ -8,7 +8,8 @@ def default_handler(infiles, tables, user_input_path, **kwargs):
     unit_conversion = kwargs.get('unit_conversion')
     
     def write_data(varid, data, timeval=None, timebnds=None, index=None, **kwargs):
-        if timeval:
+        
+        if timeval is not None:
             if unit_conversion is not None:
                 if unit_conversion == 'g-to-kg':
                     outdata =  data[RAW_VARIABLES[0] ][index, :] / 1000.0
