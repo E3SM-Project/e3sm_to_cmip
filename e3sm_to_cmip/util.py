@@ -292,9 +292,9 @@ def get_table(table, variable, freq, tables):
     table_data = get_table_info(tables, real_table)
 
     if variable not in table_data['variable_entry'].keys():
-        return str(table_path), False
+        return table_path.name, False
     else:
-        return str(table_path), True
+        return table_path.name, True
 
 def get_table_info(tables, table):
     table = Path(tables, table)
