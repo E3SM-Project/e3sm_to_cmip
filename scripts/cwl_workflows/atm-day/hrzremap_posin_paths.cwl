@@ -39,7 +39,7 @@ arguments:
   - --dfl_lvl=1
   - --no_cll_msr
   - --no_stdin
-  - --clm_md=hgh_frq
+  - --clm_md=hgh_frq_spl
   - -O
   - $(runtime.outdir)
   - -o
