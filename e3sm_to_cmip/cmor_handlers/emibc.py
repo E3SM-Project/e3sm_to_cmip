@@ -13,8 +13,8 @@ from e3sm_to_cmip.lib import handle_variables
 # list of raw variable names needed
 RAW_VARIABLES = [str('SFbc_a4'), str('bc_a4_CLXF')]
 VAR_NAME = str('emibc')
-VAR_UNITS = str('kg m-2 s-1') #fix
-TABLE = str('CMIP6_AERmon.json') #fix
+VAR_UNITS = str('kg m-2 s-1')
+TABLE = str('CMIP6_AERmon.json')
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
