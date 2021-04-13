@@ -1,0 +1,339 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Usage &mdash; e3sm_to_cmip 1.6.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="High Frequency Data" href="high_freq.html" />
+    <link rel="prev" title="e3sm_to_cmip’s documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> e3sm_to_cmip
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#variable-list">Variable List</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#input-path">Input Path</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#output-path">Output Path</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#simple">Simple</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#frequency">Frequency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#user-input-metadata">User Input Metadata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tables-path">Tables Path</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mpas-mapfile">Mpas mapfile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#numproc">Numproc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#handler-path">Handler Path</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#custom-metadata">Custom Metadata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#serial">Serial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-mode">Data Mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#info">Info</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="high_freq.html">High Frequency Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cwl.html">CWL Workflows</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">e3sm_to_cmip</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Usage</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/usage.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="usage">
+<span id="id1"></span><h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: e3sm_to_cmip [-h]
+
+Convert ESM model output into CMIP compatible format
+
+optional arguments:
+-h, --help            show this help message and exit
+-v  [ ...], --var-list  [ ...]
+                        Space separated list of variables to convert from e3sm to cmip. Use &#39;all&#39; to convert all variables or the name of a CMIP6 table to run all handlers from that table
+-i , --input-path     Path to directory containing e3sm time series data files. Additionally namelist, restart, and mappings files if handling MPAS data.
+-o , --output-path    Where to store cmorized output
+--simple              Perform a simple translation of the E3SM output to CMIP format, but without the CMIP6 metadata checks
+-f FREQ, --freq FREQ  The frequency of that data, default is monthly. Accepted values are mon, day, 6hr, 3hr, 1hr
+-u &lt;user_input_json_path&gt;, --user-metadata &lt;user_input_json_path&gt;
+                        Path to user json file for CMIP6 metadata, required unless the --simple flag is used
+-t &lt;tables-path&gt;, --tables-path &lt;tables-path&gt;
+                        Path to directory containing CMOR Tables directory, required unless the --simple flag is used
+--map &lt;map_mpas_to_std_grid&gt;
+                        The path to an mpas remapping file. Required if mode is mpaso or mpassi
+-n &lt;nproc&gt;, --num-proc &lt;nproc&gt;
+                        optional: number of processes, default = 6
+-H &lt;handler_path&gt;, --handlers &lt;handler_path&gt;
+                        Path to cmor handlers directory, default = e3sm_to_cmip/cmor_handlers
+--custom-metadata CUSTOM_METADATA
+                        the path to a json file with additional custom metadata to add to the output files
+-s, --serial          Run in serial mode, usefull for debugging purposes
+--debug               Set output level to debug
+--mode &lt;mode&gt;         The component to analyze, atm, lnd, mpaso or mpassi
+--logdir LOGDIR       Where to put the logging output from CMOR
+--timeout TIMEOUT     Exit with code -1 if execution time exceeds given time in seconds
+--precheck PRECHECK   Check for each variable if its already in the output CMIP6 directory, only run variables that dont have CMIP6 output
+--info                Print information about the variables passed in the --var-list argument and exit without doing any processing. There are three modes for getting the info, if you just pass the --info flag with the --var-list then it will print out the information for the
+                        requested variable. If the --freq &lt;frequency&gt; is passed along with the --tables-path, then the CMIP6 tables will get checked to see if the requested variables are present in the CMIP6 table matching the freq. If the --freq &lt;freq&gt; is passed with the
+                        --tables-path, and the --input-path, and the input-path points to raw unprocessed E3SM files, then an additional check will me made for if the required raw variables are present in the E3SM output.
+--version             print the version number and Exit
+</pre></div>
+</div>
+<div class="section" id="variable-list">
+<h2>Variable List<a class="headerlink" href="#variable-list" title="Permalink to this headline">¶</a></h2>
+<p>The “–var-list” or “-v” flag is a mandatory option, and should be a list of CMIP6 variable names to be output. The value “all” can also be used, which will cause
+the package to do its best to process all variables it can, given the contents of the input directory.</p>
+</div>
+<div class="section" id="input-path">
+<h2>Input Path<a class="headerlink" href="#input-path" title="Permalink to this headline">¶</a></h2>
+<p>This mandatory flag should point at a directory containing the data files to be processed.</p>
+</div>
+<div class="section" id="output-path">
+<h2>Output Path<a class="headerlink" href="#output-path" title="Permalink to this headline">¶</a></h2>
+<p>This mandatory flag is the location that all output files will be placed. The main output is a directory named CMIP6, which contains the CMIP6
+directory structure, with the output files as leaf nodes. Other output files include a copy of the user metadata (if present), and a directory named
+cmor_logs containing the per-variable log files generated by CMOR.</p>
+</div>
+<div class="section" id="simple">
+<h2>Simple<a class="headerlink" href="#simple" title="Permalink to this headline">¶</a></h2>
+<p>This optional flag will cause the tool to run without needing or checking for the custom CMIP metadata usually required for processing. Output from this mode
+use the same converter code as the default mode, but the output doesnt contain the required metadata needed for a CMIP publication. This mode should be used
+when the output is intended for analysis, but is not suited for publication.</p>
+</div>
+<div class="section" id="frequency">
+<h2>Frequency<a class="headerlink" href="#frequency" title="Permalink to this headline">¶</a></h2>
+<p>The “–freq” and “-f” flags can be used to process high-frequency datasets. By default the tool assumes its working with monthly data. The following submonthly frequencies
+are supported: [6hr, 6hrLev, 6hrPlev, 3hr, day]</p>
+</div>
+<div class="section" id="user-input-metadata">
+<h2>User Input Metadata<a class="headerlink" href="#user-input-metadata" title="Permalink to this headline">¶</a></h2>
+<p>The “–user-metadata” or “-u” flag should be the path to a json formatted metadata file containing CMIP6 metadata for the case being processed. This flag can be avoided for
+non-official data by using the “–simple” flag. Otherwise, the file should look something like the metadata files <a class="reference external" href="https://github.com/E3SM-Project/CMIP6-Metadata">that can be found here</a></p>
+</div>
+<div class="section" id="tables-path">
+<h2>Tables Path<a class="headerlink" href="#tables-path" title="Permalink to this headline">¶</a></h2>
+<p>The “–tables-path” or “-t” flag should point to the “Tables” directory of the CMIP6 controlled vocabulary repository.
+The repository <a class="reference external" href="https://github.com/PCMDI/cmip6-cmor-tables/">can be found here</a></p>
+</div>
+<div class="section" id="mpas-mapfile">
+<h2>Mpas mapfile<a class="headerlink" href="#mpas-mapfile" title="Permalink to this headline">¶</a></h2>
+<p>When processing MPAS ocean or sea-ice variables, a mapfile is needed for regridding. Use the “–map” flag to pass the path to this mapfile.</p>
+</div>
+<div class="section" id="numproc">
+<h2>Numproc<a class="headerlink" href="#numproc" title="Permalink to this headline">¶</a></h2>
+<p>By default, the variable converters are run in parallel using a process pool with 6 worker processes. The “–num-proc” or “-n” flag can be used to control the number
+of simultaneously executing processes. For example, 3D ocean fields take significantly more RAM then other variables, so the number of converters running at once
+may be reduced to accommodate the machine being used.</p>
+</div>
+<div class="section" id="handler-path">
+<h2>Handler Path<a class="headerlink" href="#handler-path" title="Permalink to this headline">¶</a></h2>
+<p>A directory of custom variable handlers can be passed using the “–handlers” or “-H” flag.</p>
+</div>
+<div class="section" id="custom-metadata">
+<h2>Custom Metadata<a class="headerlink" href="#custom-metadata" title="Permalink to this headline">¶</a></h2>
+<p>Additional custom metadata can be added to the global attributes of the output files by using the “–custom-metadata” flag to point to a json formatted
+file containing the metadata key value pairs.</p>
+</div>
+<div class="section" id="serial">
+<h2>Serial<a class="headerlink" href="#serial" title="Permalink to this headline">¶</a></h2>
+<p>For debugging purposes, or when running in a resource constrained environment, the “–serial” or “-s” boolean flag can be used to cause the conversion process
+to be run in serial, using the main process.</p>
+</div>
+<div class="section" id="data-mode">
+<h2>Data Mode<a class="headerlink" href="#data-mode" title="Permalink to this headline">¶</a></h2>
+<p>The type of data being operated on should be specified using the “–mode” flag. Allowed values are “atm”, “lnd”, “mpaso” and “mpassi.” This is needed so that the package
+can correctly determine what type of input files to look for.</p>
+</div>
+<div class="section" id="info">
+<h2>Info<a class="headerlink" href="#info" title="Permalink to this headline">¶</a></h2>
+<p>The “–info” flag can be used in three different ways to determine information about the variables being requested for processing. In the simplest form, passing only
+the “–info” and “–var-list” flags will return information about the required input and CMIP6 output names of the variables passed in the variable list.</p>
+<p>If the –freq &lt;frequency&gt; is passed along with the –tables-path, then the CMIP6 tables will get checked to see if the requested variables are present in the CMIP6 table matching the freq.</p>
+<p>If the –freq &lt;freq&gt; is passed with the –tables-path, and the –input-path, and the input-path points to raw unprocessed E3SM files, then an additional check will me made for if the required raw variables are present in the E3SM output.
+In this last mode, instead of passing a directory of time-series files as the input path, pass the path to raw unprocessed E3SM cam or eam files.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="high_freq.html" class="btn btn-neutral float-right" title="High Frequency Data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="e3sm_to_cmip’s documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, Sterling Baldwin
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
