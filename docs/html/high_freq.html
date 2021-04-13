@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Search &mdash; e3sm_to_cmip 1.6.0 documentation</title>
+  <title>High Frequency Data &mdash; e3sm_to_cmip 1.6.0 documentation</title>
   
 
   
@@ -20,7 +20,6 @@
   
 
   
-    
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -35,9 +34,10 @@
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-    <script type="text/javascript" src="_static/searchtools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="#" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="CWL Workflows" href="cwl.html" />
+    <link rel="prev" title="Usage" href="usage.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -64,7 +64,7 @@
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="#" method="get">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -82,11 +82,10 @@
               
             
             
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="high_freq.html">High Frequency Data</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">High Frequency Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cwl.html">CWL Workflows</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
 
             
@@ -133,12 +132,14 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Search</li>
+      <li>High Frequency Data</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
+            <a href="_sources/high_freq.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -150,23 +151,40 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <noscript>
-  <div id="fallback" class="admonition warning">
-    <p class="last">
-      Please activate JavaScript to enable the search functionality.
-    </p>
-  </div>
-  </noscript>
+  <div class="section" id="high-frequency-data">
+<span id="id1"></span><h1>High Frequency Data<a class="headerlink" href="#high-frequency-data" title="Permalink to this headline">¶</a></h1>
+<p>Data from sub-monthly frequency files (i.e. high frequency data) can be processed the same way as monthly data, however the ncclimo commands to
+extract the time-series files is slightly different. Here’s an example of extracting high-frequency time-series:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">in_dir</span><span class="o">=</span>./raw_data_path/
+<span class="nv">out_dir</span><span class="o">=</span>./regridded_time_series/
+<span class="nv">native_out</span><span class="o">=</span>./native_grid_time_series/
+<span class="nv">flags</span><span class="o">=</span><span class="s1">&#39;-7 --dfl_lvl=1 --no_cll_msr --clm_md=hfs&#39;</span>
+<span class="nv">variables</span><span class="o">=</span><span class="s1">&#39;PRECT TS&#39;</span>
+<span class="nv">start_year</span><span class="o">=</span><span class="s1">&#39;1850&#39;</span>
+<span class="nv">end_year</span><span class="o">=</span><span class="s1">&#39;2000&#39;</span>
+<span class="nv">years_per_output_file</span><span class="o">=</span><span class="s1">&#39;50&#39;</span>
+<span class="nv">mapfile</span><span class="o">=</span><span class="si">${</span><span class="nv">DATA</span><span class="si">}</span>/maps/map_ne30v3_to_cmip6_180x360_aave.nc
+ncclimo <span class="si">${</span><span class="nv">flags</span><span class="si">}</span> -v <span class="si">${</span><span class="nv">variables</span><span class="si">}</span> -O <span class="si">${</span><span class="nv">out_dir</span><span class="si">}</span> -o <span class="o">{</span>native_out<span class="o">}</span> --map<span class="o">=</span><span class="si">${</span><span class="nv">mapfile</span><span class="si">}</span> -c historical -i <span class="si">${</span><span class="nv">in_dir</span><span class="si">}</span>
+</pre></div>
+</div>
+<p>Once you’ve extracted the time-series files, simply use the path to where they’re stored as the input path argument to e3sm_to_cmip, and
+supply the <code class="docutils literal notranslate"><span class="pre">--freq</span></code> flag with the appropriate frequency.</p>
+</div>
 
-  
-  <div id="search-results">
-  
-  </div>
 
            </div>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="cwl.html" class="btn btn-neutral float-right" title="CWL Workflows" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="usage.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
@@ -206,14 +224,7 @@
   
   
     
-  
-  <script type="text/javascript">
-    jQuery(function() { Search.loadIndex("searchindex.js"); });
-  </script>
-  
-  <script type="text/javascript" id="searchindexloader"></script>
    
-
 
 </body>
 </html>

@@ -1,5 +1,5 @@
 .. e3sm_to_cmip documentation master file, created by
-   sphinx-quickstart on Thu May 28 14:08:09 2020.
+   sphinx-quickstart on Tue Apr 13 10:10:31 2021.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
@@ -12,18 +12,17 @@ The tool works for atmospheric, land, MPAS-Ocean, and MPAS-Sea-Ice variables. Th
 must be made when dealing with the various data types. 
 
 Along with the e3sm_to_cmip command-line tool, there is also a set of workflow scripts for each component, 
-which break the input files up into managable segment size and perform all the required input processing needed before
+which break the input files up into manageable segment size and perform all the required input processing needed before
 invoking the e3sm_to_cmip tool itself. These scripts have been designed to run on a SLURM cluster in parallel and will 
-process an arbitraraly large set of simulation data in whatever chunk size required.
+process an arbitrarily large set of simulation data in whatever chunk size required.
 
 .. toctree::
    :maxdepth: 1
 
    usage
-   var_map_atm
-   var_map_lnd
-   var_map_ocn
-   var_map_ice
+   high_freq
+   cwl
+   examples
 
 **Installation**
 
@@ -61,7 +60,7 @@ If installing from source, the tool will require an environment with the followi
    - scipy
 
 
-**Operation**
+**Usage**
 
 There are two main ways to run the CMIP converters, either by invoking the e3sm_to_cmip package directly on the appropriately pre-processed input files,
 or by using the automated CWL workflows provided in the scripts/cwl_workflows directory in the repository.
@@ -87,17 +86,14 @@ Similarly to the atmospheric variables, land variables must be provided as regri
 
 Ocean variables are regridded at run time, and so dont require pre-processing. Data required for ocean processing are as follows:
 
-  * mpaso.hist.am.timeSeriesStatsMonthly
-  * mpaso_in or mpas-o_in
-  * one mpaso restart file
+1. mpaso.hist.am.timeSeriesStatsMonthly
+2. mpaso_in or mpas-o_in
+3. one mpaso restart file
 
 * Sea-ice
 
 Sea-ice variables are regridded at run time, and so dont require pre-processing. Data required for ocean processing are as follows:
 
-  * mpascie.hist.am.timeSeriesStatsMonthly or mpassi.hist.am.timeSeriesStatsMonthly
-  * mpassi_in or mpas-cice_in
-  * one mpassi or mpascice restart file
-
-
-
+1. mpascie.hist.am.timeSeriesStatsMonthly or mpassi.hist.am.timeSeriesStatsMonthly
+2. mpassi_in or mpas-cice_in
+3. one mpassi or mpascice restart file

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Usage &mdash; e3sm_to_cmip 1.4.1 documentation</title>
+  <title>Usage &mdash; e3sm_to_cmip 1.6.0 documentation</title>
   
 
   
@@ -36,7 +36,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Variable Map Atmos" href="var_map_atm.html" />
+    <link rel="next" title="High Frequency Data" href="high_freq.html" />
     <link rel="prev" title="e3sm_to_cmip’s documentation" href="index.html" /> 
 </head>
 
@@ -100,10 +100,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#info">Info</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_atm.html">Variable Map Atmos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_lnd.html">Variable Map Land</a></li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_ocn.html">Variable Map Ocean</a></li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_ice.html">Variable Map Sea-Ice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="high_freq.html">High Frequency Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cwl.html">CWL Workflows</a></li>
 </ul>
 
             
@@ -171,40 +169,40 @@
             
   <div class="section" id="usage">
 <span id="id1"></span><h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">e3sm_to_cmip</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: e3sm_to_cmip [-h]
 
-<span class="n">Convert</span> <span class="n">ESM</span> <span class="n">model</span> <span class="n">output</span> <span class="n">into</span> <span class="n">CMIP</span> <span class="n">compatible</span> <span class="nb">format</span>
+Convert ESM model output into CMIP compatible format
 
-<span class="n">optional</span> <span class="n">arguments</span><span class="p">:</span>
-<span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>            <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
-<span class="o">-</span><span class="n">v</span>  <span class="p">[</span> <span class="o">...</span><span class="p">],</span> <span class="o">--</span><span class="n">var</span><span class="o">-</span><span class="nb">list</span>  <span class="p">[</span> <span class="o">...</span><span class="p">]</span>
-                        <span class="n">Space</span> <span class="n">separated</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">variables</span> <span class="n">to</span> <span class="n">convert</span> <span class="kn">from</span> <span class="nn">e3sm</span> <span class="n">to</span> <span class="n">cmip</span><span class="o">.</span> <span class="n">Use</span> <span class="s1">&#39;all&#39;</span> <span class="n">to</span> <span class="n">convert</span> <span class="nb">all</span> <span class="n">variables</span> <span class="ow">or</span> <span class="n">the</span> <span class="n">name</span> <span class="n">of</span> <span class="n">a</span> <span class="n">CMIP6</span> <span class="n">table</span> <span class="n">to</span> <span class="n">run</span> <span class="nb">all</span> <span class="n">handlers</span> <span class="kn">from</span> <span class="nn">that</span> <span class="n">table</span>
-<span class="o">-</span><span class="n">i</span> <span class="p">,</span> <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">path</span>     <span class="n">Path</span> <span class="n">to</span> <span class="n">directory</span> <span class="n">containing</span> <span class="n">e3sm</span> <span class="n">time</span> <span class="n">series</span> <span class="n">data</span> <span class="n">files</span><span class="o">.</span> <span class="n">Additionally</span> <span class="n">namelist</span><span class="p">,</span> <span class="n">restart</span><span class="p">,</span> <span class="ow">and</span> <span class="n">mappings</span> <span class="n">files</span> <span class="k">if</span> <span class="n">handling</span> <span class="n">MPAS</span> <span class="n">data</span><span class="o">.</span>
-<span class="o">-</span><span class="n">o</span> <span class="p">,</span> <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">path</span>    <span class="n">Where</span> <span class="n">to</span> <span class="n">store</span> <span class="n">cmorized</span> <span class="n">output</span>
-<span class="o">--</span><span class="n">simple</span>              <span class="n">Perform</span> <span class="n">a</span> <span class="n">simple</span> <span class="n">translation</span> <span class="n">of</span> <span class="n">the</span> <span class="n">E3SM</span> <span class="n">output</span> <span class="n">to</span> <span class="n">CMIP</span> <span class="nb">format</span><span class="p">,</span> <span class="n">but</span> <span class="n">without</span> <span class="n">the</span> <span class="n">CMIP6</span> <span class="n">metadata</span> <span class="n">checks</span>
-<span class="o">-</span><span class="n">f</span> <span class="n">FREQ</span><span class="p">,</span> <span class="o">--</span><span class="n">freq</span> <span class="n">FREQ</span>  <span class="n">The</span> <span class="n">frequency</span> <span class="n">of</span> <span class="n">that</span> <span class="n">data</span><span class="p">,</span> <span class="n">default</span> <span class="ow">is</span> <span class="n">monthly</span><span class="o">.</span> <span class="n">Accepted</span> <span class="n">values</span> <span class="n">are</span> <span class="n">mon</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="mi">6</span><span class="n">hr</span><span class="p">,</span> <span class="mi">3</span><span class="n">hr</span><span class="p">,</span> <span class="mi">1</span><span class="n">hr</span>
-<span class="o">-</span><span class="n">u</span> <span class="o">&lt;</span><span class="n">user_input_json_path</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">--</span><span class="n">user</span><span class="o">-</span><span class="n">metadata</span> <span class="o">&lt;</span><span class="n">user_input_json_path</span><span class="o">&gt;</span>
-                        <span class="n">Path</span> <span class="n">to</span> <span class="n">user</span> <span class="n">json</span> <span class="n">file</span> <span class="k">for</span> <span class="n">CMIP6</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">required</span> <span class="n">unless</span> <span class="n">the</span> <span class="o">--</span><span class="n">simple</span> <span class="n">flag</span> <span class="ow">is</span> <span class="n">used</span>
-<span class="o">-</span><span class="n">t</span> <span class="o">&lt;</span><span class="n">tables</span><span class="o">-</span><span class="n">path</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">--</span><span class="n">tables</span><span class="o">-</span><span class="n">path</span> <span class="o">&lt;</span><span class="n">tables</span><span class="o">-</span><span class="n">path</span><span class="o">&gt;</span>
-                        <span class="n">Path</span> <span class="n">to</span> <span class="n">directory</span> <span class="n">containing</span> <span class="n">CMOR</span> <span class="n">Tables</span> <span class="n">directory</span><span class="p">,</span> <span class="n">required</span> <span class="n">unless</span> <span class="n">the</span> <span class="o">--</span><span class="n">simple</span> <span class="n">flag</span> <span class="ow">is</span> <span class="n">used</span>
-<span class="o">--</span><span class="nb">map</span> <span class="o">&lt;</span><span class="n">map_mpas_to_std_grid</span><span class="o">&gt;</span>
-                        <span class="n">The</span> <span class="n">path</span> <span class="n">to</span> <span class="n">an</span> <span class="n">mpas</span> <span class="n">remapping</span> <span class="n">file</span><span class="o">.</span> <span class="n">Required</span> <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="n">mpaso</span> <span class="ow">or</span> <span class="n">mpassi</span>
-<span class="o">-</span><span class="n">n</span> <span class="o">&lt;</span><span class="n">nproc</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">--</span><span class="n">num</span><span class="o">-</span><span class="n">proc</span> <span class="o">&lt;</span><span class="n">nproc</span><span class="o">&gt;</span>
-                        <span class="n">optional</span><span class="p">:</span> <span class="n">number</span> <span class="n">of</span> <span class="n">processes</span><span class="p">,</span> <span class="n">default</span> <span class="o">=</span> <span class="mi">6</span>
-<span class="o">-</span><span class="n">H</span> <span class="o">&lt;</span><span class="n">handler_path</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">--</span><span class="n">handlers</span> <span class="o">&lt;</span><span class="n">handler_path</span><span class="o">&gt;</span>
-                        <span class="n">Path</span> <span class="n">to</span> <span class="n">cmor</span> <span class="n">handlers</span> <span class="n">directory</span><span class="p">,</span> <span class="n">default</span> <span class="o">=</span> <span class="n">e3sm_to_cmip</span><span class="o">/</span><span class="n">cmor_handlers</span>
-<span class="o">--</span><span class="n">custom</span><span class="o">-</span><span class="n">metadata</span> <span class="n">CUSTOM_METADATA</span>
-                        <span class="n">the</span> <span class="n">path</span> <span class="n">to</span> <span class="n">a</span> <span class="n">json</span> <span class="n">file</span> <span class="k">with</span> <span class="n">additional</span> <span class="n">custom</span> <span class="n">metadata</span> <span class="n">to</span> <span class="n">add</span> <span class="n">to</span> <span class="n">the</span> <span class="n">output</span> <span class="n">files</span>
-<span class="o">-</span><span class="n">s</span><span class="p">,</span> <span class="o">--</span><span class="n">serial</span>          <span class="n">Run</span> <span class="ow">in</span> <span class="n">serial</span> <span class="n">mode</span><span class="p">,</span> <span class="n">usefull</span> <span class="k">for</span> <span class="n">debugging</span> <span class="n">purposes</span>
-<span class="o">--</span><span class="n">debug</span>               <span class="n">Set</span> <span class="n">output</span> <span class="n">level</span> <span class="n">to</span> <span class="n">debug</span>
-<span class="o">--</span><span class="n">mode</span> <span class="o">&lt;</span><span class="n">mode</span><span class="o">&gt;</span>         <span class="n">The</span> <span class="n">component</span> <span class="n">to</span> <span class="n">analyze</span><span class="p">,</span> <span class="n">atm</span><span class="p">,</span> <span class="n">lnd</span><span class="p">,</span> <span class="n">mpaso</span> <span class="ow">or</span> <span class="n">mpassi</span>
-<span class="o">--</span><span class="n">logdir</span> <span class="n">LOGDIR</span>       <span class="n">Where</span> <span class="n">to</span> <span class="n">put</span> <span class="n">the</span> <span class="n">logging</span> <span class="n">output</span> <span class="kn">from</span> <span class="nn">CMOR</span>
-<span class="o">--</span><span class="n">timeout</span> <span class="n">TIMEOUT</span>     <span class="n">Exit</span> <span class="k">with</span> <span class="n">code</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">execution</span> <span class="n">time</span> <span class="n">exceeds</span> <span class="n">given</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">seconds</span>
-<span class="o">--</span><span class="n">precheck</span> <span class="n">PRECHECK</span>   <span class="n">Check</span> <span class="k">for</span> <span class="n">each</span> <span class="n">variable</span> <span class="k">if</span> <span class="n">its</span> <span class="n">already</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">output</span> <span class="n">CMIP6</span> <span class="n">directory</span><span class="p">,</span> <span class="n">only</span> <span class="n">run</span> <span class="n">variables</span> <span class="n">that</span> <span class="n">dont</span> <span class="n">have</span> <span class="n">CMIP6</span> <span class="n">output</span>
-<span class="o">--</span><span class="n">info</span>                <span class="n">Print</span> <span class="n">information</span> <span class="n">about</span> <span class="n">the</span> <span class="n">variables</span> <span class="n">passed</span> <span class="ow">in</span> <span class="n">the</span> <span class="o">--</span><span class="n">var</span><span class="o">-</span><span class="nb">list</span> <span class="n">argument</span> <span class="ow">and</span> <span class="n">exit</span> <span class="n">without</span> <span class="n">doing</span> <span class="nb">any</span> <span class="n">processing</span><span class="o">.</span> <span class="n">There</span> <span class="n">are</span> <span class="n">three</span> <span class="n">modes</span> <span class="k">for</span> <span class="n">getting</span> <span class="n">the</span> <span class="n">info</span><span class="p">,</span> <span class="k">if</span> <span class="n">you</span> <span class="n">just</span> <span class="k">pass</span> <span class="n">the</span> <span class="o">--</span><span class="n">info</span> <span class="n">flag</span> <span class="k">with</span> <span class="n">the</span> <span class="o">--</span><span class="n">var</span><span class="o">-</span><span class="nb">list</span> <span class="n">then</span> <span class="n">it</span> <span class="n">will</span> <span class="nb">print</span> <span class="n">out</span> <span class="n">the</span> <span class="n">information</span> <span class="k">for</span> <span class="n">the</span>
-                        <span class="n">requested</span> <span class="n">variable</span><span class="o">.</span> <span class="n">If</span> <span class="n">the</span> <span class="o">--</span><span class="n">freq</span> <span class="o">&lt;</span><span class="n">frequency</span><span class="o">&gt;</span> <span class="ow">is</span> <span class="n">passed</span> <span class="n">along</span> <span class="k">with</span> <span class="n">the</span> <span class="o">--</span><span class="n">tables</span><span class="o">-</span><span class="n">path</span><span class="p">,</span> <span class="n">then</span> <span class="n">the</span> <span class="n">CMIP6</span> <span class="n">tables</span> <span class="n">will</span> <span class="n">get</span> <span class="n">checked</span> <span class="n">to</span> <span class="n">see</span> <span class="k">if</span> <span class="n">the</span> <span class="n">requested</span> <span class="n">variables</span> <span class="n">are</span> <span class="n">present</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">CMIP6</span> <span class="n">table</span> <span class="n">matching</span> <span class="n">the</span> <span class="n">freq</span><span class="o">.</span> <span class="n">If</span> <span class="n">the</span> <span class="o">--</span><span class="n">freq</span> <span class="o">&lt;</span><span class="n">freq</span><span class="o">&gt;</span> <span class="ow">is</span> <span class="n">passed</span> <span class="k">with</span> <span class="n">the</span>
-                        <span class="o">--</span><span class="n">tables</span><span class="o">-</span><span class="n">path</span><span class="p">,</span> <span class="ow">and</span> <span class="n">the</span> <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">path</span><span class="p">,</span> <span class="ow">and</span> <span class="n">the</span> <span class="nb">input</span><span class="o">-</span><span class="n">path</span> <span class="n">points</span> <span class="n">to</span> <span class="n">raw</span> <span class="n">unprocessed</span> <span class="n">E3SM</span> <span class="n">files</span><span class="p">,</span> <span class="n">then</span> <span class="n">an</span> <span class="n">additional</span> <span class="n">check</span> <span class="n">will</span> <span class="n">me</span> <span class="n">made</span> <span class="k">for</span> <span class="k">if</span> <span class="n">the</span> <span class="n">required</span> <span class="n">raw</span> <span class="n">variables</span> <span class="n">are</span> <span class="n">present</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">E3SM</span> <span class="n">output</span><span class="o">.</span>
-<span class="o">--</span><span class="n">version</span>             <span class="nb">print</span> <span class="n">the</span> <span class="n">version</span> <span class="n">number</span> <span class="ow">and</span> <span class="n">Exit</span>
+optional arguments:
+-h, --help            show this help message and exit
+-v  [ ...], --var-list  [ ...]
+                        Space separated list of variables to convert from e3sm to cmip. Use &#39;all&#39; to convert all variables or the name of a CMIP6 table to run all handlers from that table
+-i , --input-path     Path to directory containing e3sm time series data files. Additionally namelist, restart, and mappings files if handling MPAS data.
+-o , --output-path    Where to store cmorized output
+--simple              Perform a simple translation of the E3SM output to CMIP format, but without the CMIP6 metadata checks
+-f FREQ, --freq FREQ  The frequency of that data, default is monthly. Accepted values are mon, day, 6hr, 3hr, 1hr
+-u &lt;user_input_json_path&gt;, --user-metadata &lt;user_input_json_path&gt;
+                        Path to user json file for CMIP6 metadata, required unless the --simple flag is used
+-t &lt;tables-path&gt;, --tables-path &lt;tables-path&gt;
+                        Path to directory containing CMOR Tables directory, required unless the --simple flag is used
+--map &lt;map_mpas_to_std_grid&gt;
+                        The path to an mpas remapping file. Required if mode is mpaso or mpassi
+-n &lt;nproc&gt;, --num-proc &lt;nproc&gt;
+                        optional: number of processes, default = 6
+-H &lt;handler_path&gt;, --handlers &lt;handler_path&gt;
+                        Path to cmor handlers directory, default = e3sm_to_cmip/cmor_handlers
+--custom-metadata CUSTOM_METADATA
+                        the path to a json file with additional custom metadata to add to the output files
+-s, --serial          Run in serial mode, usefull for debugging purposes
+--debug               Set output level to debug
+--mode &lt;mode&gt;         The component to analyze, atm, lnd, mpaso or mpassi
+--logdir LOGDIR       Where to put the logging output from CMOR
+--timeout TIMEOUT     Exit with code -1 if execution time exceeds given time in seconds
+--precheck PRECHECK   Check for each variable if its already in the output CMIP6 directory, only run variables that dont have CMIP6 output
+--info                Print information about the variables passed in the --var-list argument and exit without doing any processing. There are three modes for getting the info, if you just pass the --info flag with the --var-list then it will print out the information for the
+                        requested variable. If the --freq &lt;frequency&gt; is passed along with the --tables-path, then the CMIP6 tables will get checked to see if the requested variables are present in the CMIP6 table matching the freq. If the --freq &lt;freq&gt; is passed with the
+                        --tables-path, and the --input-path, and the input-path points to raw unprocessed E3SM files, then an additional check will me made for if the required raw variables are present in the E3SM output.
+--version             print the version number and Exit
 </pre></div>
 </div>
 <div class="section" id="variable-list">
@@ -290,7 +288,7 @@ In this last mode, instead of passing a directory of time-series files as the in
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="var_map_atm.html" class="btn btn-neutral float-right" title="Variable Map Atmos" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="high_freq.html" class="btn btn-neutral float-right" title="High Frequency Data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="index.html" class="btn btn-neutral float-left" title="e3sm_to_cmip’s documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>e3sm_to_cmip’s documentation &mdash; e3sm_to_cmip 1.4.1 documentation</title>
+  <title>e3sm_to_cmip’s documentation &mdash; e3sm_to_cmip 1.6.0 documentation</title>
   
 
   
@@ -83,10 +83,9 @@
             
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_atm.html">Variable Map Atmos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_lnd.html">Variable Map Land</a></li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_ocn.html">Variable Map Ocean</a></li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_ice.html">Variable Map Sea-Ice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="high_freq.html">High Frequency Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cwl.html">CWL Workflows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
 
             
@@ -158,16 +157,15 @@
 The tool works for atmospheric, land, MPAS-Ocean, and MPAS-Sea-Ice variables. The handling of each component is slightly different, so care
 must be made when dealing with the various data types.</p>
 <p>Along with the e3sm_to_cmip command-line tool, there is also a set of workflow scripts for each component,
-which break the input files up into managable segment size and perform all the required input processing needed before
+which break the input files up into manageable segment size and perform all the required input processing needed before
 invoking the e3sm_to_cmip tool itself. These scripts have been designed to run on a SLURM cluster in parallel and will
-process an arbitraraly large set of simulation data in whatever chunk size required.</p>
+process an arbitrarily large set of simulation data in whatever chunk size required.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_atm.html">Variable Map Atmos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_lnd.html">Variable Map Land</a></li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_ocn.html">Variable Map Ocean</a></li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_ice.html">Variable Map Sea-Ice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="high_freq.html">High Frequency Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cwl.html">CWL Workflows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
 </div>
 <p><strong>Installation</strong></p>
@@ -197,7 +195,7 @@ python setup.py install
 <span class="o">-</span> <span class="n">scipy</span>
 </pre></div>
 </div>
-<p><strong>Operation</strong></p>
+<p><strong>Usage</strong></p>
 <p>There are two main ways to run the CMIP converters, either by invoking the e3sm_to_cmip package directly on the appropriately pre-processed input files,
 or by using the automated CWL workflows provided in the scripts/cwl_workflows directory in the repository.</p>
 <p>The e3sm_to_cmip package can operate on 4 different components: atmosphere, land, ocean, and sea-ice. The input data for each of these is different.</p>
@@ -216,24 +214,20 @@ and follow the NCO naming format of VARNAME_START_END.nc, for example PRECC_1850
 <li><p>Ocean</p></li>
 </ul>
 <p>Ocean variables are regridded at run time, and so dont require pre-processing. Data required for ocean processing are as follows:</p>
-<blockquote>
-<div><ul class="simple">
+<ol class="arabic simple">
 <li><p>mpaso.hist.am.timeSeriesStatsMonthly</p></li>
 <li><p>mpaso_in or mpas-o_in</p></li>
 <li><p>one mpaso restart file</p></li>
-</ul>
-</div></blockquote>
+</ol>
 <ul class="simple">
 <li><p>Sea-ice</p></li>
 </ul>
 <p>Sea-ice variables are regridded at run time, and so dont require pre-processing. Data required for ocean processing are as follows:</p>
-<blockquote>
-<div><ul class="simple">
+<ol class="arabic simple">
 <li><p>mpascie.hist.am.timeSeriesStatsMonthly or mpassi.hist.am.timeSeriesStatsMonthly</p></li>
 <li><p>mpassi_in or mpas-cice_in</p></li>
 <li><p>one mpassi or mpascice restart file</p></li>
-</ul>
-</div></blockquote>
+</ol>
 </div>
 
 

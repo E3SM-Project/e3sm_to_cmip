@@ -22,6 +22,7 @@ process an arbitrarily large set of simulation data in whatever chunk size requi
    usage
    high_freq
    cwl
+   examples
 
 **Installation**
 
