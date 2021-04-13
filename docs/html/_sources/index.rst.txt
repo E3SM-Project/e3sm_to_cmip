@@ -24,76 +24,107 @@ process an arbitrarily large set of simulation data in whatever chunk size requi
    cwl
    examples
 
-**Installation**
-
-conda:
-
-.. code-block:: bash
-
-   conda create -n e2c -c conda-forge -c e3sm e3sm_to_cmip==1.4.1=1 libcdms==4.7.4
-
-source:
-
-.. code-block:: bash
-
-   git clone https://github.com/E3SM-Project/e3sm_to_cmip.git
-   cd e3sm_to_cmip
-   python setup.py install
+Installation
+############
 
 
-If installing from source, the tool will require an environment with the following packages:
+There are two ways to install the e3sm_to_cmip package, either use the pre-build conda version which will bring all the dependencies with it, or install the dependencies yourself and use the source code.
+conda
 
-.. code-block::
+conda
+*****
 
-   - python >=3
+.. code-block:: text
+
+   conda create -n e2c -c conda-forge -c e3sm e3sm_to_cmip
+
+Get a copy of the CMIP6 Controlled Vocabulary tables
+
+.. code-block:: text
+
+   git clone https://github.com/PCMDI/cmip6-cmor-tables.git
+
+Source
+******
+
+To install from source, you'll need to setup your own environment and install the dependencies yourself. The required packages are:
+
+.. code-block:: text
+
+   - python >=3.7
    - nco
-   - cmor >=3.5.0
-   - libcdms >=4.7.4
+   - cmor >=3.6.0
    - cdutil
    - cdms2 >=3.1
    - tqdm
-   - pathos
    - pyyaml
    - xarray
    - netcdf4
    - dask
    - scipy
 
+Once you have the required packages installed, simply run
 
-**Usage**
+.. code-block:: text
 
-There are two main ways to run the CMIP converters, either by invoking the e3sm_to_cmip package directly on the appropriately pre-processed input files,
-or by using the automated CWL workflows provided in the scripts/cwl_workflows directory in the repository.
-
-The e3sm_to_cmip package can operate on 4 different components: atmosphere, land, ocean, and sea-ice. The input data for each of these is different.
-
-* Atmosphere
+   git clone https://github.com/E3SM-Project/e3sm_to_cmip.git
+   cd e3sm_to_cmip
+   python setup.py install
 
 
-Processing atmosphere variables requires that each of the input variables be provided in regridded time-series files (multiple files spanning different time segments is allowed), 
+Usage
+#####
+
+There are two main ways to run the CMIP converters, either by invoking the e3sm_to_cmip package directly 
+on the appropriately pre-processed input files,
+or by using the automated CWL workflows provided in the scripts/cwl_workflows directory in the repository. 
+
+For an example on how to run manually see :ref:`the examples page<examples>`.
+
+.. raw:: html
+
+   <br />
+
+For ane example on how to use the CWL workflows see :ref:`the CWL examples page<CWL Workflows>`.
+
+The e3sm_to_cmip package can operate on 4 different components: atmosphere, land, ocean, and sea-ice. 
+The input data for each of these is different.
+
+Atmosphere
+**********
+
+Processing atmosphere variables requires that each of the input variables be provided in regridded 
+time-series files (multiple files spanning different time segments is supported), 
 and follow the NCO naming format of VARNAME_START_END.nc, for example PRECC_185001_201412.nc 
 
-Additionally, a set of 3D atmosphere variables need to be converted from the internal model vertical levels over to the "plev19" levels. `A copy of the vertical remap file can be found here <https://github.com/E3SM-Project/e3sm_to_cmip/raw/master/e3sm_to_cmip/resources/vrt_remap_plev19.nco>`_
+* NOTE: 3D atmosphere variables
 
+A subset of the 3D atmosphere variables require that they be converted from the internal model vertical 
+levels over to the "plev19" levels. `A copy of the vertical remap file can be found here <https://github.com/E3SM-Project/e3sm_to_cmip/raw/master/e3sm_to_cmip/resources/vrt_remap_plev19.nco>`_
 
 CMIP6 files requiring this vertical level change are: hur, hus, ta, ua, va, wap, and zg.
 
-* Land
+Land
+****
 
 Similarly to the atmospheric variables, land variables must be provided as regridded time-series files in the NCO naming format.
 
-* Ocean
+Ocean
+*****
 
-Ocean variables are regridded at run time, and so dont require pre-processing. Data required for ocean processing are as follows:
+Ocean variables are regridded at run time, and so dont require pre-processing. These files should all be present
+in the input directory. Data required for ocean processing are as follows:
 
 1. mpaso.hist.am.timeSeriesStatsMonthly
 2. mpaso_in or mpas-o_in
 3. one mpaso restart file
 
-* Sea-ice
+Sea-ice
+*******
 
-Sea-ice variables are regridded at run time, and so dont require pre-processing. Data required for ocean processing are as follows:
+Sea-ice variables are regridded at run time, and so dont require pre-processing. These files should all be present
+in the input directory. Data required for ocean processing are as follows:
 
-1. mpascie.hist.am.timeSeriesStatsMonthly or mpassi.hist.am.timeSeriesStatsMonthly
+1. mpascice.hist.am.timeSeriesStatsMonthly or mpassi.hist.am.timeSeriesStatsMonthly
 2. mpassi_in or mpas-cice_in
 3. one mpassi or mpascice restart file

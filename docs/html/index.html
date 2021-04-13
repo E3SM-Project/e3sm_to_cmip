@@ -168,66 +168,90 @@ process an arbitrarily large set of simulation data in whatever chunk size requi
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
 </div>
-<p><strong>Installation</strong></p>
-<p>conda:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -n e2c -c conda-forge -c e3sm <span class="nv">e3sm_to_cmip</span><span class="o">==</span><span class="m">1</span>.4.1<span class="o">=</span><span class="m">1</span> <span class="nv">libcdms</span><span class="o">==</span><span class="m">4</span>.7.4
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>There are two ways to install the e3sm_to_cmip package, either use the pre-build conda version which will bring all the dependencies with it, or install the dependencies yourself and use the source code.
+conda</p>
+<div class="section" id="conda">
+<h3>conda<a class="headerlink" href="#conda" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>conda create -n e2c -c conda-forge -c e3sm e3sm_to_cmip
 </pre></div>
 </div>
-<p>source:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/E3SM-Project/e3sm_to_cmip.git
-<span class="nb">cd</span> e3sm_to_cmip
+<p>Get a copy of the CMIP6 Controlled Vocabulary tables</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/PCMDI/cmip6-cmor-tables.git
+</pre></div>
+</div>
+</div>
+<div class="section" id="source">
+<h3>Source<a class="headerlink" href="#source" title="Permalink to this headline">¶</a></h3>
+<p>To install from source, you’ll need to setup your own environment and install the dependencies yourself. The required packages are:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>- python &gt;=3.7
+- nco
+- cmor &gt;=3.6.0
+- cdutil
+- cdms2 &gt;=3.1
+- tqdm
+- pyyaml
+- xarray
+- netcdf4
+- dask
+- scipy
+</pre></div>
+</div>
+<p>Once you have the required packages installed, simply run</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/E3SM-Project/e3sm_to_cmip.git
+cd e3sm_to_cmip
 python setup.py install
 </pre></div>
 </div>
-<p>If installing from source, the tool will require an environment with the following packages:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">python</span> <span class="o">&gt;=</span><span class="mi">3</span>
-<span class="o">-</span> <span class="n">nco</span>
-<span class="o">-</span> <span class="n">cmor</span> <span class="o">&gt;=</span><span class="mf">3.5</span><span class="o">.</span><span class="mi">0</span>
-<span class="o">-</span> <span class="n">libcdms</span> <span class="o">&gt;=</span><span class="mf">4.7</span><span class="o">.</span><span class="mi">4</span>
-<span class="o">-</span> <span class="n">cdutil</span>
-<span class="o">-</span> <span class="n">cdms2</span> <span class="o">&gt;=</span><span class="mf">3.1</span>
-<span class="o">-</span> <span class="n">tqdm</span>
-<span class="o">-</span> <span class="n">pathos</span>
-<span class="o">-</span> <span class="n">pyyaml</span>
-<span class="o">-</span> <span class="n">xarray</span>
-<span class="o">-</span> <span class="n">netcdf4</span>
-<span class="o">-</span> <span class="n">dask</span>
-<span class="o">-</span> <span class="n">scipy</span>
-</pre></div>
 </div>
-<p><strong>Usage</strong></p>
-<p>There are two main ways to run the CMIP converters, either by invoking the e3sm_to_cmip package directly on the appropriately pre-processed input files,
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>There are two main ways to run the CMIP converters, either by invoking the e3sm_to_cmip package directly
+on the appropriately pre-processed input files,
 or by using the automated CWL workflows provided in the scripts/cwl_workflows directory in the repository.</p>
-<p>The e3sm_to_cmip package can operate on 4 different components: atmosphere, land, ocean, and sea-ice. The input data for each of these is different.</p>
-<ul class="simple">
-<li><p>Atmosphere</p></li>
-</ul>
-<p>Processing atmosphere variables requires that each of the input variables be provided in regridded time-series files (multiple files spanning different time segments is allowed),
+<p>For an example on how to run manually see <a class="reference internal" href="examples.html#examples"><span class="std std-ref">the examples page</span></a>.</p>
+<br /><p>For ane example on how to use the CWL workflows see <a class="reference internal" href="cwl.html#cwl-workflows"><span class="std std-ref">the CWL examples page</span></a>.</p>
+<p>The e3sm_to_cmip package can operate on 4 different components: atmosphere, land, ocean, and sea-ice.
+The input data for each of these is different.</p>
+<div class="section" id="atmosphere">
+<h3>Atmosphere<a class="headerlink" href="#atmosphere" title="Permalink to this headline">¶</a></h3>
+<p>Processing atmosphere variables requires that each of the input variables be provided in regridded
+time-series files (multiple files spanning different time segments is supported),
 and follow the NCO naming format of VARNAME_START_END.nc, for example PRECC_185001_201412.nc</p>
-<p>Additionally, a set of 3D atmosphere variables need to be converted from the internal model vertical levels over to the “plev19” levels. <a class="reference external" href="https://github.com/E3SM-Project/e3sm_to_cmip/raw/master/e3sm_to_cmip/resources/vrt_remap_plev19.nco">A copy of the vertical remap file can be found here</a></p>
+<ul class="simple">
+<li><p>NOTE: 3D atmosphere variables</p></li>
+</ul>
+<p>A subset of the 3D atmosphere variables require that they be converted from the internal model vertical
+levels over to the “plev19” levels. <a class="reference external" href="https://github.com/E3SM-Project/e3sm_to_cmip/raw/master/e3sm_to_cmip/resources/vrt_remap_plev19.nco">A copy of the vertical remap file can be found here</a></p>
 <p>CMIP6 files requiring this vertical level change are: hur, hus, ta, ua, va, wap, and zg.</p>
-<ul class="simple">
-<li><p>Land</p></li>
-</ul>
+</div>
+<div class="section" id="land">
+<h3>Land<a class="headerlink" href="#land" title="Permalink to this headline">¶</a></h3>
 <p>Similarly to the atmospheric variables, land variables must be provided as regridded time-series files in the NCO naming format.</p>
-<ul class="simple">
-<li><p>Ocean</p></li>
-</ul>
-<p>Ocean variables are regridded at run time, and so dont require pre-processing. Data required for ocean processing are as follows:</p>
+</div>
+<div class="section" id="ocean">
+<h3>Ocean<a class="headerlink" href="#ocean" title="Permalink to this headline">¶</a></h3>
+<p>Ocean variables are regridded at run time, and so dont require pre-processing. These files should all be present
+in the input directory. Data required for ocean processing are as follows:</p>
 <ol class="arabic simple">
 <li><p>mpaso.hist.am.timeSeriesStatsMonthly</p></li>
 <li><p>mpaso_in or mpas-o_in</p></li>
 <li><p>one mpaso restart file</p></li>
 </ol>
-<ul class="simple">
-<li><p>Sea-ice</p></li>
-</ul>
-<p>Sea-ice variables are regridded at run time, and so dont require pre-processing. Data required for ocean processing are as follows:</p>
+</div>
+<div class="section" id="sea-ice">
+<h3>Sea-ice<a class="headerlink" href="#sea-ice" title="Permalink to this headline">¶</a></h3>
+<p>Sea-ice variables are regridded at run time, and so dont require pre-processing. These files should all be present
+in the input directory. Data required for ocean processing are as follows:</p>
 <ol class="arabic simple">
-<li><p>mpascie.hist.am.timeSeriesStatsMonthly or mpassi.hist.am.timeSeriesStatsMonthly</p></li>
+<li><p>mpascice.hist.am.timeSeriesStatsMonthly or mpassi.hist.am.timeSeriesStatsMonthly</p></li>
 <li><p>mpassi_in or mpas-cice_in</p></li>
 <li><p>one mpassi or mpascice restart file</p></li>
 </ol>
+</div>
+</div>
 </div>
 
 

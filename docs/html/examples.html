@@ -35,7 +35,8 @@
 
     
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="CWL Workflows" href="cwl.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -80,10 +81,15 @@
               
             
             
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="high_freq.html">High Frequency Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cwl.html">CWL Workflows</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#simple-atmosphere-variable-example-no-cwl">Simple atmosphere variable example (no CWL)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plev-atmosphere-variable-example-no-cwl">Plev atmosphere variable example (no CWL)</a></li>
+</ul>
+</li>
 </ul>
 
             
@@ -155,7 +161,7 @@
 <h2>Simple atmosphere variable example (no CWL)<a class="headerlink" href="#simple-atmosphere-variable-example-no-cwl" title="Permalink to this headline">¶</a></h2>
 <p>The first step in converting atmosphere variables by hand is to do the regridding and time-series extraction. For this example, lets assume there’s
 a directory named “atmos-input” that contains a single year of cam.h0 monthly history files, and we want to end up with the “pr,” and “clt” variables.</p>
-<p>First we ask the e3sm_to_cmip package what source variables are needed for these two output variables, or look them up in the <span class="xref std std-ref">var_map_atm</span></p>
+<p>First we ask the e3sm_to_cmip package what source variables are needed for these two output variables</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; e3sm_to_cmip --info -v pr, clt
 <span class="o">[</span>*<span class="o">]</span>
 CMIP6 Name: clt,
@@ -241,9 +247,6 @@ Levels: <span class="o">{</span><span class="s1">&#39;name&#39;</span>: <span cl
 <p>The output files will be converted from the default 72 vertical levels which come out of the E3SM model into 19 vertical levels defined by the CMIP6 project.
 These files can then be regridded and converted as in the “Simple” example above.</p>
 </div>
-<div class="section" id="atmosphere-example-using-cwl">
-<h2>Atmosphere example using CWL<a class="headerlink" href="#atmosphere-example-using-cwl" title="Permalink to this headline">¶</a></h2>
-</div>
 </div>
 
 
@@ -251,6 +254,13 @@ These files can then be regridded and converted as in the “Simple” example a
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="cwl.html" class="btn btn-neutral float-left" title="CWL Workflows" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Examples &mdash; e3sm_to_cmip 1.4.1 documentation</title>
+  <title>Examples &mdash; e3sm_to_cmip 1.6.0 documentation</title>
   
 
   
@@ -35,8 +35,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Variable Map Atmos" href="var_map_atm.html" />
-    <link rel="prev" title="Usage" href="usage.html" /> 
+    <link rel="prev" title="CWL Workflows" href="cwl.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -82,15 +81,13 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="high_freq.html">High Frequency Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cwl.html">CWL Workflows</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#simple-atmosphere-variable-example-no-cwl">Simple atmosphere variable example (no CWL)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plev-atmosphere-variable-example-no-cwl">Plev atmosphere variable example (no CWL)</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_atm.html">Variable Map Atmos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_lnd.html">Variable Map Land</a></li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_ocn.html">Variable Map Ocean</a></li>
-<li class="toctree-l1"><a class="reference internal" href="var_map_ice.html">Variable Map Sea-Ice</a></li>
 </ul>
 
             
@@ -161,7 +158,7 @@
 <h2>Simple atmosphere variable example (no CWL)<a class="headerlink" href="#simple-atmosphere-variable-example-no-cwl" title="Permalink to this headline">¶</a></h2>
 <p>The first step in converting atmosphere variables by hand is to do the regridding and time-series extraction. For this example, lets assume there’s
 a directory named “atmos-input” that contains a single year of cam.h0 monthly history files, and we want to end up with the “pr,” and “clt” variables.</p>
-<p>First we ask the e3sm_to_cmip package what source variables are needed for these two output variables, or look them up in the <a class="reference internal" href="var_map_atm.html#var-map-atm"><span class="std std-ref">Variable Map Atmos</span></a></p>
+<p>First we ask the e3sm_to_cmip package what source variables are needed for these two output variables</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; e3sm_to_cmip --info -v pr, clt
 <span class="o">[</span>*<span class="o">]</span>
 CMIP6 Name: clt,
@@ -178,7 +175,8 @@ E3SM Variables: PRECC, PRECL
 </div>
 <p>From this we can see that the clt variable needs the CLDTOT input variable, and pr needs both PRECC and PRECL.</p>
 <p>Next we use ncclimo to extract the time-series and do the regridding. <a class="reference external" href="https://www.youtube.com/watch?v=AJyAjH-1HuA">A detailed tutorial can be found here</a>
-Variables specific to your case will be denoted &lt;LIKE THIS&gt;</p>
+Variables specific to your case will be denoted &lt;LIKE THIS&gt;.</p>
+<p>In this example Im using files which look like “20191204.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy.cam.h0.1850-01.nc”, and so their casename is “20191204.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy”.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; ncclimo --start<span class="o">=</span><span class="m">0001</span> --end<span class="o">=</span><span class="m">0001</span> --ypf<span class="o">=</span><span class="m">1</span> -c &lt;CASENAME&gt; -o ./native -O ./regrid -v CLDTOT,PRECC,PRECL -i ./atmos-input --map<span class="o">=</span>&lt;PATH TO YOUR MAPFILE&gt;
 Climatology operations invoked with command:
 /export/baldwin32/anaconda3/envs/cwl/bin/ncclimo --start<span class="o">=</span><span class="m">2015</span> --end<span class="o">=</span><span class="m">2015</span> --ypf<span class="o">=</span><span class="m">1</span> -c <span class="m">20191204</span>.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy -o ./native --regrid<span class="o">=</span>./regrid -v CLDTOT,PRECC,PRECL -i ./atm_testing -v CLDTOT,PRECC,PRECL --map<span class="o">=</span>/export/zender1/data/maps/map_ne30np4_to_cmip6_180x360_aave.20181001.nc
@@ -256,10 +254,8 @@ These files can then be regridded and converted as in the “Simple” example a
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="var_map_atm.html" class="btn btn-neutral float-right" title="Variable Map Atmos" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
-      
-        <a href="usage.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="cwl.html" class="btn btn-neutral float-left" title="CWL Workflows" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

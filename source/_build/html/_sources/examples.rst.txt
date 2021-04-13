@@ -12,7 +12,7 @@ Simple atmosphere variable example (no CWL)
 The first step in converting atmosphere variables by hand is to do the regridding and time-series extraction. For this example, lets assume there's
 a directory named "atmos-input" that contains a single year of cam.h0 monthly history files, and we want to end up with the "pr," and "clt" variables.
 
-First we ask the e3sm_to_cmip package what source variables are needed for these two output variables, or look them up in the :ref:`var_map_atm`
+First we ask the e3sm_to_cmip package what source variables are needed for these two output variables
 
 .. code-block:: bash
 
@@ -32,7 +32,9 @@ First we ask the e3sm_to_cmip package what source variables are needed for these
 From this we can see that the clt variable needs the CLDTOT input variable, and pr needs both PRECC and PRECL.
 
 Next we use ncclimo to extract the time-series and do the regridding. `A detailed tutorial can be found here <https://www.youtube.com/watch?v=AJyAjH-1HuA>`_
-Variables specific to your case will be denoted <LIKE THIS>
+Variables specific to your case will be denoted <LIKE THIS>.
+
+In this example Im using files which look like "20191204.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy.cam.h0.1850-01.nc", and so their casename is "20191204.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy".
 
 .. code-block:: bash
 
@@ -112,6 +114,7 @@ Before performing the horizontal remapping, run the following command using the 
 
 The output files will be converted from the default 72 vertical levels which come out of the E3SM model into 19 vertical levels defined by the CMIP6 project.
 These files can then be regridded and converted as in the "Simple" example above.
+
 
  
 
