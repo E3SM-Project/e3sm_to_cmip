@@ -47,6 +47,8 @@ def main():
             if not args.dryrun:
                 if args.sym_link:
                     print(f"Creating link {old_path} -> {new_path}")
+                    if os.path.exists(new_path):
+                        os.remove(new_path)
                     os.symlink(old_path, new_path)
                 elif args.copy:
                     print(f"copying file {old_path} -> {new_path}")
@@ -54,6 +56,8 @@ def main():
                 else:
                     print(f"Moving {old_path} -> {new_path}")
                     os.rename(old_path, new_path)
+            else:
+                print(f"Would move {old_path} -> {new_path}")
 
         if not args.dryrun and not args.leave_source and not args.sym_link:
             print(f"removing {src_path}")

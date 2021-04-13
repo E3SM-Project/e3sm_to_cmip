@@ -32,12 +32,12 @@ outputs:
     type: Directory[]
     outputSource: step_cmor/cmip6_dir
     linkMerge: merge_flattened
-  cmor_logs:
-    type: Directory[]
-    outputSource: step_cmor/logs
-  time_series:
-    type: File[]
-    outputSource: step_join_timeseries/array_1d
+  # cmor_logs:
+  #   type: Directory[]
+  #   outputSource: step_cmor/logs
+  # time_series:
+  #   type: File[]
+  #   outputSource: step_join_timeseries/array_1d
 
 steps:
 
@@ -134,34 +134,34 @@ steps:
       - raw_file_list
     out:
       - cmip6_dir
-      - logs
+      # - logs
   
-  step_join_timeseries:
-    run:
-      class: ExpressionTool
-      inputs:
-        arrayTwoDim:
-          type:
-            type: array
-            items:
-              type: array
-              items: File
-          inputBinding:
-            loadContents: true
-      outputs:
-        array_1d:
-          type: File[]
-      expression: >
-        ${
-          var newArray= [];
-          for (var i = 0; i < inputs.arrayTwoDim.length; i++) {
-            for (var k = 0; k < inputs.arrayTwoDim[i].length; k++) {
-              newArray.push((inputs.arrayTwoDim[i])[k]);
-            }
-          }
-          return { 'array_1d' : newArray }
-        }
-    in: 
-      arrayTwoDim: time_series/remaped_time_series
-    out:
-      [array_1d]
+  # step_join_timeseries:
+  #   run:
+  #     class: ExpressionTool
+  #     inputs:
+  #       arrayTwoDim:
+  #         type:
+  #           type: array
+  #           items:
+  #             type: array
+  #             items: File
+  #         inputBinding:
+  #           loadContents: true
+  #     outputs:
+  #       array_1d:
+  #         type: File[]
+  #     expression: >
+  #       ${
+  #         var newArray= [];
+  #         for (var i = 0; i < inputs.arrayTwoDim.length; i++) {
+  #           for (var k = 0; k < inputs.arrayTwoDim[i].length; k++) {
+  #             newArray.push((inputs.arrayTwoDim[i])[k]);
+  #           }
+  #         }
+  #         return { 'array_1d' : newArray }
+  #       }
+  #   in: 
+  #     arrayTwoDim: time_series/remaped_time_series
+  #   out:
+  #     [array_1d]

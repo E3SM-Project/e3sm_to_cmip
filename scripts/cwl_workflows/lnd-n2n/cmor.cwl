@@ -46,13 +46,15 @@ arguments:
   - .
   - --output-path
   - $(runtime.outdir)
+  - --mode
+  - lnd
 
 outputs: 
   cmip6_dir: 
     type: Directory
     outputBinding:
       glob: CMIP6
-  logs:
-    type: Directory
-    outputBinding:
-      glob: cmor_logs
+  # logs:
+  #   type: Directory
+  #   outputBinding:
+  #     glob: cmor_logs
