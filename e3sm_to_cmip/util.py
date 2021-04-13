@@ -24,7 +24,7 @@ ATMOS_TABLES = ['CMIP6_Amon.json', 'CMIP6_day.json', 'CMIP6_3hr.json', \
                 'CMIP6_CFmon.json', 'CMIP6_CF3hr.json', 'CMIP6_CFday.json', 'CMIP6_fx.json']
 
 LAND_TABLES = ['CMIP6_Lmon.json']
-OCEAN_TABLES = ['CMIP6_Omon.json']
+OCEAN_TABLES = ['CMIP6_Omon.json', 'CMIP6_Ofx.json']
 SEAICE_TABLES = ['CMIP6_SImon.json']
 
 def print_debug(e):
@@ -424,6 +424,7 @@ def load_handlers(handlers_path, var_list, tables, freq="mon", mode='atm', simpl
             if not var_included:
                 print_message(f"Variable {module.VAR_NAME} is not included in table {table}")
                 continue
+
         if mode == 'atm' and table not in ATMOS_TABLES:
             continue
         elif mode == 'lnd' and table not in LAND_TABLES:

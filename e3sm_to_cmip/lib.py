@@ -465,17 +465,20 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             pbar.set_description(msg)
 
         if timename:
-            for index, val in enumerate(data['time']):
-                write_data(
-                    varid=varid,
-                    data=data,
-                    timeval=val,
-                    timebnds=[data['time_bnds'][index, :]],
-                    index=index,
-                    raw_variables=raw_variables,
-                    simple=False)
-                if serial:
-                    pbar.update(1)
+            try:
+                for index, val in enumerate(data['time']):
+                    write_data(
+                        varid=varid,
+                        data=data,
+                        timeval=val,
+                        timebnds=[data['time_bnds'][index, :]],
+                        index=index,
+                        raw_variables=raw_variables,
+                        simple=False)
+                    if serial:
+                        pbar.update(1)
+            except Exception as e:
+                print(e)
         else:
             write_data(
                 varid=varid,
@@ -551,9 +554,17 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
             'lat_bnds': fp('lat_bnds'),
             'lon_bnds': fp('lon_bnds'),
             'time': variable_data.getTime(),
-            'time2': variable_data.getTime(),
-            'time_bnds': fp(time_bounds_name)
+            'time2': variable_data.getTime()#,
+            # 'time_bnds': fp(time_bounds_name)
         })
+        if time_bounds_name in fp.variables.keys():
+            time_bnds = fp(time_bounds_name)
+            if len(time_bnds.shape) == 1:
+                # import ipdb; ipdb.set_trace()
+                time_bnds = time_bnds.reshape(1, 2)
+            data.update({
+                'time_bnds': time_bnds
+            })
 
         try:
             index = variable_data.getAxisIds().index('levgrnd')

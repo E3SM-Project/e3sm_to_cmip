@@ -84,6 +84,7 @@ def main():
         new_var_list = precheck(input_path, precheck_path, var_list, mode)
         if not new_var_list:
             print("All variables previously computed")
+            os.mkdir(os.path.join(output_path, 'CMIP6'))
             if timer:
                 timer.cancel()
             return 0
