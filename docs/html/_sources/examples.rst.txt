@@ -6,13 +6,13 @@ Examples
 
 
 
-Simple atmosphere variable example (no CWL)
-===========================================
+Simple atmosphere variable example
+==================================
 
-The first step in converting atmosphere variables by hand is to do the regridding and time-series extraction. For this example, lets assume there's
-a directory named "atmos-input" that contains a single year of cam.h0 monthly history files, and we want to end up with the "pr," and "clt" variables.
+The first step in converting atmosphere variables is to do the regridding and time-series extraction. For this example, assume there's
+a directory named "atmos-input" that contains a single year of cam.h0 monthly history files, and the target is to produce the "pr," and "clt" variables.
 
-First we ask the e3sm_to_cmip package what source variables are needed for these two output variables
+The first step is to run a query to find what source variables are needed for these two output variables:
 
 .. code-block:: bash
 
@@ -29,12 +29,11 @@ First we ask the e3sm_to_cmip package what source variables are needed for these
     CMIP6 Units: kg m-2 s-1,
     E3SM Variables: PRECC, PRECL
 
-From this we can see that the clt variable needs the CLDTOT input variable, and pr needs both PRECC and PRECL.
+This shows that the clt CMIP variable needs the raw CLDTOT input variable, and pr needs both PRECC and PRECL.
 
-Next we use ncclimo to extract the time-series and do the regridding. `A detailed tutorial can be found here <https://www.youtube.com/watch?v=AJyAjH-1HuA>`_
-Variables specific to your case will be denoted <LIKE THIS>.
+The next step is to use ncclimo to extract the time-series and do the regridding. `A detailed tutorial can be found here <https://www.youtube.com/watch?v=AJyAjH-1HuA>`_
 
-In this example Im using files which look like "20191204.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy.cam.h0.1850-01.nc", and so their casename is "20191204.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy".
+This example uses files which look like "20191204.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy.cam.h0.1850-01.nc", and so their casename is "20191204.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy".
 
 .. code-block:: bash
 
@@ -64,7 +63,7 @@ In this example Im using files which look like "20191204.BDRD_CNPCTC_SSP585_OIBG
     Completed 1-year climatology operations for dataset with caseid = 20191204.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy at Tue Nov 24 15:05:22 PST 2020
     Elapsed time 0m2s
 
-Now that we have appropriate input files, we can run the converter package. 
+The next step is to call the e3sm_to_cmip package and use the time-series files as input: 
 
 .. code-block:: bash
 
@@ -74,7 +73,8 @@ Now that we have appropriate input files, we can run the converter package.
     100%|███████████████████████████████████████| 2/2 [00:01<00:00,  1.96it/s]
     [+] 2 of 2 handlers complete
 
-Alternately, if this isnt going to be published to CMIP6, we can use the "simple" mode which doesnt require the full CMIP6 tables or metadata
+Alternately, if the data isn't going to be published to CMIP6, the "simple" mode can be used which doesnt require the full CMIP6 tables or metadata
+and produces output files that are very close to the CMIP6 requirements, but with placeholder metadata
 
 .. code-block:: bash
 
@@ -88,12 +88,13 @@ Alternately, if this isnt going to be published to CMIP6, we can use the "simple
 
 
 
-Plev atmosphere variable example (no CWL)
-=========================================
+Plev atmosphere variable example
+================================
 
 Some 3D atmosphere CMIP6 variables are on the plev19 vertical levels instead of the model and require remapping from the default model levels to the plev19 levels. 
+These variables can be distinguished from model-level variables by the ``Levels`` field in their info having the name ``plev19``.
 
-For example: 
+An example us the ``hus`` variable
 
 .. code-block:: bash
 
@@ -105,15 +106,19 @@ For example:
     E3SM Variables: Q
     Levels: {'name': 'plev19', 'units': 'Pa', 'e3sm_axis_name': 'plev'}
 
-Before performing the horizontal remapping, run the following command using the vertical remapping file `which can be found here <https://github.com/E3SM-Project/e3sm_to_cmip/blob/master/e3sm_to_cmip/resources/vrt_remap_plev19.nc?raw=true>`_
+Before performing the horizontal remapping, the raw files must first be vertically remapped using the following command and the 
+plev19 vertical remapping file `which can be found here <https://github.com/E3SM-Project/e3sm_to_cmip/blob/master/e3sm_to_cmip/resources/vrt_remap_plev19.nc?raw=true>`_
 
 .. code-block:: bash
 
     mkdir vrt_regrid
-    for file in `ls atm-input`; do ncks --rgr xtr_mth=mss_val --vrt_fl=vrt_remap_plev19.nc ./atm-input/$file ./vrt_regrid/$file; done
+    for file in `ls atm-input`
+    do 
+      ncks --rgr xtr_mth=mss_val --vrt_fl=vrt_remap_plev19.nc ./atm-input/$file ./vrt_regrid/$file
+    done
 
 The output files will be converted from the default 72 vertical levels which come out of the E3SM model into 19 vertical levels defined by the CMIP6 project.
-These files can then be regridded and converted as in the "Simple" example above.
+These files can then be regridded and converted as in the example above.
 
 
  

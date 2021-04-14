@@ -49,8 +49,8 @@ The beginning of each workflow contains an ``inputs`` section which defines the 
         partition: string
         account: string
 
-along with the workflow cwl file, is an example yaml parameter file, for example along with ``mpaso.cwl`` is 
-the ``mpaso-job.yaml`` which contains the following
+Along with each of the cwl workflows is an example yaml parameter file, for example along with ``mpaso.cwl`` is 
+``mpaso-job.yaml`` which contains the following:
 
 .. code-block:: yaml
 
@@ -76,7 +76,7 @@ the ``mpaso-job.yaml`` which contains the following
 
     cmor_var_list: [masso, volo, thetaoga, tosga, soga, sosga, zos, masscello, tos, tob, sos, sob, mlotst, fsitherm, wfo, sfdsi, hfds, tauuo, tauvo, thetao, so, uo, vo, wo, hfsifrazil, zhalfo]
 
-Once you've filled out the parameter file, call the cwltool with the following
+Once the parameter file is complete, the workflow can be executed by calling the cwltool
 
 .. code-block:: text
 

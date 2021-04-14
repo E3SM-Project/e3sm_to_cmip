@@ -195,8 +195,8 @@ file named <code class="docutils literal notranslate"><span class="pre">mpaso.cw
     <span class="nt">account</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
 </pre></div>
 </div>
-<p>along with the workflow cwl file, is an example yaml parameter file, for example along with <code class="docutils literal notranslate"><span class="pre">mpaso.cwl</span></code> is
-the <code class="docutils literal notranslate"><span class="pre">mpaso-job.yaml</span></code> which contains the following</p>
+<p>Along with each of the cwl workflows is an example yaml parameter file, for example along with <code class="docutils literal notranslate"><span class="pre">mpaso.cwl</span></code> is
+<code class="docutils literal notranslate"><span class="pre">mpaso-job.yaml</span></code> which contains the following:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">data_path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/p/user_pub/e3sm/staging/prepub/1_1_ECA/ssp585-BDRD//1deg_atm_60-30km_ocean/ocean/native/model-output/mon/ens1/v0/</span>
 <span class="nt">workflow_output</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/p/user_pub/e3sm/baldwin32/workshop/ssp585/ssp585/output/pp/cmor/ssp585/2015_2100</span>
 
@@ -220,7 +220,7 @@ the <code class="docutils literal notranslate"><span class="pre">mpaso-job.yaml<
 <span class="nt">cmor_var_list</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">masso</span><span class="p p-Indicator">,</span> <span class="nv">volo</span><span class="p p-Indicator">,</span> <span class="nv">thetaoga</span><span class="p p-Indicator">,</span> <span class="nv">tosga</span><span class="p p-Indicator">,</span> <span class="nv">soga</span><span class="p p-Indicator">,</span> <span class="nv">sosga</span><span class="p p-Indicator">,</span> <span class="nv">zos</span><span class="p p-Indicator">,</span> <span class="nv">masscello</span><span class="p p-Indicator">,</span> <span class="nv">tos</span><span class="p p-Indicator">,</span> <span class="nv">tob</span><span class="p p-Indicator">,</span> <span class="nv">sos</span><span class="p p-Indicator">,</span> <span class="nv">sob</span><span class="p p-Indicator">,</span> <span class="nv">mlotst</span><span class="p p-Indicator">,</span> <span class="nv">fsitherm</span><span class="p p-Indicator">,</span> <span class="nv">wfo</span><span class="p p-Indicator">,</span> <span class="nv">sfdsi</span><span class="p p-Indicator">,</span> <span class="nv">hfds</span><span class="p p-Indicator">,</span> <span class="nv">tauuo</span><span class="p p-Indicator">,</span> <span class="nv">tauvo</span><span class="p p-Indicator">,</span> <span class="nv">thetao</span><span class="p p-Indicator">,</span> <span class="nv">so</span><span class="p p-Indicator">,</span> <span class="nv">uo</span><span class="p p-Indicator">,</span> <span class="nv">vo</span><span class="p p-Indicator">,</span> <span class="nv">wo</span><span class="p p-Indicator">,</span> <span class="nv">hfsifrazil</span><span class="p p-Indicator">,</span> <span class="nv">zhalfo</span><span class="p p-Indicator">]</span>
 </pre></div>
 </div>
-<p>Once you’ve filled out the parameter file, call the cwltool with the following</p>
+<p>Once the parameter file is complete, the workflow can be executed by calling the cwltool</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>cwltool --tmpdir-prefix=$TMPDIR ~/projects/e3sm_to_cmip/scripts/cwl_workflows/mpaso/mpaso.cwl mpaso-job.yaml
 </pre></div>
 </div>
