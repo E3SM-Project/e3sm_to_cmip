@@ -8,7 +8,6 @@ from e3sm_to_cmip import resources
 from tqdm import tqdm
 import os
 import cmor
-import cdms2
 import logging
 import xarray as xr
 import numpy as np
@@ -513,7 +512,7 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     Returns:
 
         {
-            data: cdms2 transient variable from the file
+            data: xarray Dataset from the file
             lat: numpy array of lat midpoints,
             lat_bnds: numpy array of lat edge points,
             lon: numpy array of lon midpoints,
@@ -532,10 +531,12 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     if not os.path.exists(filename):
         raise IOError(f"File not found: {filename}")
 
-    fp = cdms2.open(filename)
+    # fp = cdms2.open(filename)
+    ds = xr.open_dataset(filename)
 
     # load the data for each variable
-    variable_data = fp(variable)
+    # variable_data = fp(variable)
+    variable_data = ds[variable]
 
     # load
     data.update({
@@ -543,57 +544,70 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     })
 
     # atm uses "time_bnds" but the lnd component uses "time_bounds"
-    time_bounds_name = 'time_bnds' if 'time_bnds' in fp.variables.keys() else 'time_bounds'
+    time_bounds_name = 'time_bnds' if 'time_bnds' in ds.data_vars.keys() else 'time_bounds'
 
     # load the lon and lat info & bounds
-    # load time & time bounds
+    # load time
     if get_dims:
         data.update({
-            'lat': variable_data.getLatitude(),
-            'lon': variable_data.getLongitude(),
-            'lat_bnds': fp('lat_bnds'),
-            'lon_bnds': fp('lon_bnds'),
-            'time': variable_data.getTime(),
-            'time2': variable_data.getTime()#,
-            # 'time_bnds': fp(time_bounds_name)
+            'lat': variable_data['lat'],
+            'lon': variable_data['lon'],
+            'lat_bnds': ds('lat_bnds'),
+            'lon_bnds': ds('lon_bnds'),
+            'time': variable_data['time'],
+            'time2': variable_data.get('time2')
         })
         if time_bounds_name in fp.variables.keys():
-            time_bnds = fp(time_bounds_name)
+            time_bnds = ds[time_bounds_name]
             if len(time_bnds.shape) == 1:
-                # import ipdb; ipdb.set_trace()
                 time_bnds = time_bnds.reshape(1, 2)
             data.update({
                 'time_bnds': time_bnds
             })
 
-        try:
-            index = variable_data.getAxisIds().index('levgrnd')
-        except:
-            pass
-        else:
+        levgrnd = variable_data.get('levgrnd')
+        if levgrnd:
             data.update({
-                'levgrnd': variable_data.getAxis(index)
+                'levgrnd': levgrnd
             })
+        # try:
+        #     index = variable_data.getAxisIds().index('levgrnd')
+        # except:
+        #     pass
+        # else:
+        #     data.update({
+        #         'levgrnd': variable_data.getAxis(index)
+        #     })
 
         # load level and level bounds
         if levels is not None:
             if levels.get('name') == 'standard_hybrid_sigma' or levels.get('name') == 'standard_hybrid_sigma_half':
                 data.update({
-                    'lev': fp.getAxis('lev')[:]/1000,
-                    'ilev': fp.getAxis('ilev')[:]/1000,
-                    'ps': fp('PS'),
-                    'p0': fp('P0'),
-                    'hyam': fp('hyam'),
-                    'hyai': fp('hyai'),
-                    'hybm': fp('hybm'),
-                    'hybi': fp('hybi'),
+                    # 'lev': fp.getAxis('lev')[:]/1000,
+                    # 'ilev': fp.getAxis('ilev')[:]/1000,
+                    # 'ps': fp('PS'),
+                    # 'p0': fp('P0'),
+                    # 'hyam': fp('hyam'),
+                    # 'hyai': fp('hyai'),
+                    # 'hybm': fp('hybm'),
+                    # 'hybi': fp('hybi'),
+                    'lev': ds['lev']/1000,
+                    'ilev': ds['ilev']/1000,
+                    'ps': ds['PS'],
+                    'p0': ds['P0'],
+                    'hyam': ds['hyam'],
+                    'hyai': ds['hyai'],
+                    'hybm': ds['hybm'],
+                    'hybi': ds['hybm'],
                 })
             else:
                 name = levels.get('e3sm_axis_name')
-                if name in fp.listdimension():
-                    data[name] = fp.getAxis(name)[:]
-                else:
-                    raise IOError("Unable to find e3sm_axis_name")
+                # if name in fp.listdimension():
+                #     data[name] = fp.getAxis(name)[:]
+                # else:
+                #     raise IOError("Unable to find e3sm_axis_name")
+                if name in ds.data_vars or name in ds.coords:
+                    data[name]
 
                 bnds = levels.get('e3sm_axis_bnds')
                 if bnds:

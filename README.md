@@ -29,7 +29,6 @@ To install from source, you'll need to setup your own environment and install th
     - nco
     - cmor >=3.6.0
     - cdutil
-    - cdms2 >=3.1
     - tqdm
     - pyyaml
     - xarray
