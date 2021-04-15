@@ -456,21 +456,21 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             varid = cmor.variable(outvar_name, outvar_units, axis_ids)
 
         # write out the data
-        msg = f"{outvar_name}: time {data['time_bnds'][0][0]:1.1f} - {data['time_bnds'][-1][-1]:1.1f}"
+        msg = f"{outvar_name}: time {data['time_bnds'].values[0][0]:1.1f} - {data['time_bnds'].values[-1][-1]:1.1f}"
         logger.info(msg)
 
         if serial:
-            pbar = tqdm(total=len(data['time']))
+            pbar = tqdm(total=data['time'].shape[0])
             pbar.set_description(msg)
 
         if timename:
             try:
-                for index, val in enumerate(data['time']):
+                for index, val in enumerate(data['time'].values):
                     write_data(
                         varid=varid,
                         data=data,
                         timeval=val,
-                        timebnds=[data['time_bnds'][index, :]],
+                        timebnds=[data['time_bnds'].values[index, :]],
                         index=index,
                         raw_variables=raw_variables,
                         simple=False)
@@ -527,21 +527,17 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     """
     # extract data from the input file
     data = dict()
-
+    
     if not os.path.exists(filename):
         raise IOError(f"File not found: {filename}")
 
-    # fp = cdms2.open(filename)
-    ds = xr.open_dataset(filename)
+    ds = xr.open_dataset(filename, decode_times=False)
 
     # load the data for each variable
-    # variable_data = fp(variable)
     variable_data = ds[variable]
 
     # load
-    data.update({
-        variable: variable_data
-    })
+    data[variable] = variable_data
 
     # atm uses "time_bnds" but the lnd component uses "time_bounds"
     time_bounds_name = 'time_bnds' if 'time_bnds' in ds.data_vars.keys() else 'time_bounds'
@@ -552,47 +548,36 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
         data.update({
             'lat': variable_data['lat'],
             'lon': variable_data['lon'],
-            'lat_bnds': ds('lat_bnds'),
-            'lon_bnds': ds('lon_bnds'),
-            'time': variable_data['time'],
-            'time2': variable_data.get('time2')
+            'lat_bnds': ds['lat_bnds'],
+            'lon_bnds': ds['lon_bnds'],
+            'time': variable_data['time']
         })
-        if time_bounds_name in fp.variables.keys():
+        try:
+            time2 = variable_data['time2']
+        except KeyError:
+            pass
+        else:
+            data['time2'] = time2
+
+        if time_bounds_name in ds.data_vars:
             time_bnds = ds[time_bounds_name]
             if len(time_bnds.shape) == 1:
                 time_bnds = time_bnds.reshape(1, 2)
-            data.update({
-                'time_bnds': time_bnds
-            })
+            data['time_bnds'] = time_bnds
 
-        levgrnd = variable_data.get('levgrnd')
-        if levgrnd:
-            data.update({
-                'levgrnd': levgrnd
-            })
-        # try:
-        #     index = variable_data.getAxisIds().index('levgrnd')
-        # except:
-        #     pass
-        # else:
-        #     data.update({
-        #         'levgrnd': variable_data.getAxis(index)
-        #     })
+        try:
+            levgrnd = variable_data['levgrnd']
+        except KeyError:
+            pass
+        else:
+            data['levgrnd'] = levgrnd
 
         # load level and level bounds
         if levels is not None:
             if levels.get('name') == 'standard_hybrid_sigma' or levels.get('name') == 'standard_hybrid_sigma_half':
                 data.update({
-                    # 'lev': fp.getAxis('lev')[:]/1000,
-                    # 'ilev': fp.getAxis('ilev')[:]/1000,
-                    # 'ps': fp('PS'),
-                    # 'p0': fp('P0'),
-                    # 'hyam': fp('hyam'),
-                    # 'hyai': fp('hyai'),
-                    # 'hybm': fp('hybm'),
-                    # 'hybi': fp('hybi'),
-                    'lev': ds['lev']/1000,
-                    'ilev': ds['ilev']/1000,
+                    'lev': ds['lev'].values/1000,
+                    'ilev': ds['ilev'].values/1000,
                     'ps': ds['PS'],
                     'p0': ds['P0'],
                     'hyam': ds['hyam'],
@@ -602,19 +587,13 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
                 })
             else:
                 name = levels.get('e3sm_axis_name')
-                # if name in fp.listdimension():
-                #     data[name] = fp.getAxis(name)[:]
-                # else:
-                #     raise IOError("Unable to find e3sm_axis_name")
                 if name in ds.data_vars or name in ds.coords:
                     data[name]
 
                 bnds = levels.get('e3sm_axis_bnds')
                 if bnds:
-                    if bnds in fp.listdimension():
-                        data[bnds] = fp.getAxis(bnds)[:]
-                    elif bnds in fp.variables.keys():
-                        data[bnds] = fp(bnds)[:]
+                    if bnds in ds.dims or bnds in ds.data_vars:
+                        data[bnds] = ds[bnds]
                     else:
                         raise IOError("Unable to find e3sm_axis_bnds")
     return data
@@ -629,19 +608,19 @@ def load_axis(data, levels=None, has_time=True):
         time = cmor.axis(name, units=units)
     # else add the normal time name
     elif has_time:
-        time = cmor.axis(has_time, units=data['time'].units)
+        time = cmor.axis(has_time, units=data['time'].attrs['units'])
 
     # use whatever level name this handler requires
     if levels:
         name = levels.get('name')
         units = levels.get('units')
-        coord_vals = data[levels.get('e3sm_axis_name')][:]
+        coord_vals = data[levels.get('e3sm_axis_name')].values
 
         axis_bnds = levels.get('e3sm_axis_bnds')
         if axis_bnds:
             lev = cmor.axis(name,
                             units=units,
-                            cell_bounds=data[axis_bnds][:],
+                            cell_bounds=data[axis_bnds].values,
                             coord_vals=coord_vals)
         else:
             lev = cmor.axis(name,
@@ -651,13 +630,13 @@ def load_axis(data, levels=None, has_time=True):
     # add lon/lat
     lat = cmor.axis('latitude',
                     units=data['lat'].units,
-                    coord_vals=data['lat'][:],
-                    cell_bounds=data['lat_bnds'][:])
+                    coord_vals=data['lat'].values,
+                    cell_bounds=data['lat_bnds'].values)
 
     lon = cmor.axis('longitude',
                     units=data['lon'].units,
-                    coord_vals=data['lon'][:],
-                    cell_bounds=data['lon_bnds'][:])
+                    coord_vals=data['lon'].values,
+                    cell_bounds=data['lon_bnds'].values)
 
     if levels:
         axes = [time, lev, lat, lon]
@@ -673,14 +652,14 @@ def load_axis(data, levels=None, has_time=True):
             zaxis_id=lev,
             zfactor_name='a',
             axis_ids=[lev, ],
-            zfactor_values=data['hyam'][:],
-            zfactor_bounds=data['hyai'][:])
+            zfactor_values=data['hyam'].values,
+            zfactor_bounds=data['hyai'].values)
         cmor.zfactor(
             zaxis_id=lev,
             zfactor_name='b',
             axis_ids=[lev, ],
-            zfactor_values=data['hybm'][:],
-            zfactor_bounds=data['hybi'][:])
+            zfactor_values=data['hybm'].values,
+            zfactor_bounds=data['hybi'].values)
         cmor.zfactor(
             zaxis_id=lev,
             zfactor_name='p0',
