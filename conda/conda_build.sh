@@ -1,4 +1,4 @@
-export VERSION="1.6.0"
+export VERSION="1.6.1"
 export BUILD_NAME="0"
 export CONDA_BLD_PATH=~/conda-bld
 PLATFORM="linux-64"
