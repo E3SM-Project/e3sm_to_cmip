@@ -537,13 +537,15 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     variable_data = ds[variable]
 
     # load
-    data[variable] = variable_data
+    if 'plev' in ds.dims or 'lev' in ds.dims:
+        data[variable] = variable_data.values
+    else:    
+        data[variable] = variable_data
 
     # atm uses "time_bnds" but the lnd component uses "time_bounds"
     time_bounds_name = 'time_bnds' if 'time_bnds' in ds.data_vars.keys() else 'time_bounds'
 
-    # load the lon and lat info & bounds
-    # load time
+    # load the lon and lat and time info & bounds
     if get_dims:
         data.update({
             'lat': variable_data['lat'],
@@ -578,8 +580,8 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
                 data.update({
                     'lev': ds['lev'].values/1000,
                     'ilev': ds['ilev'].values/1000,
-                    'ps': ds['PS'],
-                    'p0': ds['P0'],
+                    'ps': ds['PS'].values,
+                    'p0': ds['P0'].values.item(),
                     'hyam': ds['hyam'],
                     'hyai': ds['hyai'],
                     'hybm': ds['hybm'],
@@ -588,7 +590,7 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
             else:
                 name = levels.get('e3sm_axis_name')
                 if name in ds.data_vars or name in ds.coords:
-                    data[name]
+                    data[name] = ds[name]
 
                 bnds = levels.get('e3sm_axis_bnds')
                 if bnds:
@@ -614,13 +616,13 @@ def load_axis(data, levels=None, has_time=True):
     if levels:
         name = levels.get('name')
         units = levels.get('units')
-        coord_vals = data[levels.get('e3sm_axis_name')].values
+        coord_vals = data[levels.get('e3sm_axis_name')]
 
         axis_bnds = levels.get('e3sm_axis_bnds')
         if axis_bnds:
             lev = cmor.axis(name,
                             units=units,
-                            cell_bounds=data[axis_bnds].values,
+                            cell_bounds=data[axis_bnds],
                             coord_vals=coord_vals)
         else:
             lev = cmor.axis(name,
