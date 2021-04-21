@@ -7,9 +7,9 @@ from e3sm_to_cmip.util import print_message
 from tqdm import tqdm
 
 import cmor
-import cdms2
 import logging
 import os
+import xarray as xr
 logger = logging.getLogger()
 
 
@@ -94,27 +94,24 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     for index in range(num_files_per_variable):
 
-        f = cdms2.open(infiles['FISCCP1_COSP'][index])
+        ds = xr.open_dataset(infiles['FISCCP1_COSP'][index], decode_times=False)
 
-        # load the data for each variable
-        variable_data = f('FISCCP1_COSP')
-
-        tau = variable_data.getAxis(2)[:]
+        tau = ds['cosp_tau'].values
         tau[-1] = 100.0
-        tau_bnds = f.variables['cosp_tau_bnds'][:]
+        tau_bnds = ds['cosp_tau_bnds'].values
         tau_bnds[-1] = [60.0, 100000.0]
 
         # load
         data = {
-            'FISCCP1_COSP': variable_data,
-            'lat': variable_data.getLatitude(),
-            'lon': variable_data.getLongitude(),
-            'lat_bnds': f('lat_bnds'),
-            'lon_bnds': f('lon_bnds'),
-            'time': variable_data.getTime(),
-            'time_bnds': f('time_bnds'),
-            'plev7c': variable_data.getAxis(1)[:] * 100.0,
-            'plev7c_bnds': f.variables['cosp_prs_bnds'][:] * 100.0,
+            'FISCCP1_COSP': ds['FISCCP1_COSP'].values,
+            'lat': ds['lat'],
+            'lon': ds['lon'],
+            'lat_bnds': ds['lat_bnds'],
+            'lon_bnds': ds['lon_bnds'],
+            'time': ds['time'].values,
+            'time_bnds': ds['time_bnds'].values,
+            'plev7c': ds['cosp_prs'].values * 100.0,
+            'plev7c_bnds': ds['cosp_prs_bnds'].values * 100.0,
             'tau': tau,
             'tau_bnds': tau_bnds
         }
@@ -122,7 +119,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         # create the cmor variable and axis
         axes = [{
             str('table_entry'): str('time'),
-            str('units'): data['time'].units
+            str('units'): ds['time'].units
         }, {
             str('table_entry'): str('plev7c'),
             str('units'): str('Pa'),
@@ -135,14 +132,14 @@ def handle(infiles, tables, user_input_path, **kwargs):
             str('cell_bounds'): data['tau_bnds']
         }, {
             str('table_entry'): str('latitude'),
-            str('units'): data['lat'].units,
-            str('coord_vals'): data['lat'][:],
-            str('cell_bounds'): data['lat_bnds'][:]
+            str('units'): ds['lat'].units,
+            str('coord_vals'): data['lat'].values,
+            str('cell_bounds'): data['lat_bnds'].values
         }, {
             str('table_entry'): str('longitude'),
-            str('units'): data['lon'].units,
-            str('coord_vals'): data['lon'][:],
-            str('cell_bounds'): data['lon_bnds'][:]
+            str('units'): ds['lon'].units,
+            str('coord_vals'): data['lon'].values,
+            str('cell_bounds'): data['lon_bnds'].values
         }]
 
         axis_ids = list()
@@ -153,10 +150,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids)
 
        # write out the data
-        msg = "{}: time {:1.1f} - {:1.1f}".format(
-            VAR_NAME,
-            data['time_bnds'][0][0],
-            data['time_bnds'][-1][-1])
+        msg = f"{VAR_NAME}: time {data['time_bnds'][0][0]:1.1f} - {data['time_bnds'][-1][-1]:1.1f}"
         logger.info(msg)
 
         serial = kwargs.get('serial')
@@ -164,8 +158,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
             pbar = tqdm(total=len(data['time']))
 
         for index, val in enumerate(data['time']):
-            if serial:
-                pbar.update(1)
             write_data(
                 varid=varid,
                 data=data,
@@ -173,7 +165,9 @@ def handle(infiles, tables, user_input_path, **kwargs):
                 timebnds=[data['time_bnds'][index, :]],
                 index=index)
             if serial:
-                pbar.close()
+                pbar.update(1)
+        if serial:
+            pbar.close()
 
     msg = f'{VAR_NAME}: write complete, closing'
     logger.info(msg)
