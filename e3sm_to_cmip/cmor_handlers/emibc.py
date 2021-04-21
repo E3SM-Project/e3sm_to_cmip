@@ -4,7 +4,6 @@ SFbc_a4, bc_a4_CLXF to emibc converter
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import cmor
-import cdms2
 import logging
 import numpy as np
 
