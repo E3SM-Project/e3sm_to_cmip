@@ -88,6 +88,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#simple-atmosphere-variable-example">Simple atmosphere variable example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plev-atmosphere-variable-example">Plev atmosphere variable example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#end-to-end-high-frequency-example">End-to-End High Frequency Example</a></li>
 </ul>
 </li>
 </ul>
@@ -251,6 +252,86 @@ plev19 vertical remapping file <a class="reference external" href="https://githu
 </div>
 <p>The output files will be converted from the default 72 vertical levels which come out of the E3SM model into 19 vertical levels defined by the CMIP6 project.
 These files can then be regridded and converted as in the example above.</p>
+</div>
+<div class="section" id="end-to-end-high-frequency-example">
+<h2>End-to-End High Frequency Example<a class="headerlink" href="#end-to-end-high-frequency-example" title="Permalink to this headline">¶</a></h2>
+<p>The first step is to check what variables in the raw input data are possible to be converted at the desired frequency. For this we need to use the “info” option and give it three
+things, the frequency of data we want to convert, the input path to the raw data (not time-series, but native model output), and the location of our copy of the CMIP6 controlled vocabulary tables:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; e3sm_to_cmip --info -v all --input /p/user_pub/work/E3SM/1_0/historical/1deg_atm_60-30km_ocean/atmos/native/model-output/day/ens1/v1/ --tables ~/projects/cmip6-cmor-tables/Tables/
+<span class="o">[</span>*<span class="o">]</span>
+CMIP6 Name: huss,
+CMIP6 Table: CMIP6_day.json,
+CMIP6 Units: <span class="m">1</span>,
+E3SM Variables: QREFHT
+<span class="o">[</span>*<span class="o">]</span>
+CMIP6 Name: tas,
+CMIP6 Table: CMIP6_day.json,
+CMIP6 Units: K,
+E3SM Variables: TREFHT
+<span class="o">[</span>*<span class="o">]</span>
+CMIP6 Name: tasmin,
+CMIP6 Table: CMIP6_day.json,
+CMIP6 Units: K,
+E3SM Variables: TREFHTMN
+<span class="o">[</span>*<span class="o">]</span>
+CMIP6 Name: tasmax,
+CMIP6 Table: CMIP6_day.json,
+CMIP6 Units: K,
+E3SM Variables: TREFHTMX
+<span class="o">[</span>*<span class="o">]</span>
+CMIP6 Name: rlut,
+CMIP6 Table: CMIP6_day.json,
+CMIP6 Units: W m-2,
+E3SM Variables: FLUT
+</pre></div>
+</div>
+<p>The next step is to find and setup the corresponding CWL workflow, in this case since we’re processing daily data we want to use the “atm-day” workflow under
+e3sm_to_cmip/scripts/cwl_workflows <a class="reference external" href="https://github.com/E3SM-Project/e3sm_to_cmip/tree/master/scripts/cwl_workflows/atm-day">which you can find here</a>. The CWL parameter
+file atm-day-job.yaml needs to be edited with the values for our case. We need to take the E3SM variable names given by the “–info” request earler and put them into the
+<code class="docutils literal notranslate"><span class="pre">std_var_list</span></code> parameter, and take the CMIP6 variable names and put them into the <code class="docutils literal notranslate"><span class="pre">std_cmor_list</span></code> parameter. Create a new directory to hold your output, and place
+the new parameter file there.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># path to the raw model data</span>
+<span class="nt">data_path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/p/user_pub/work/E3SM/1_0/historical/1deg_atm_60-30km_ocean/atmos/native/model-output/day/ens1/v1/</span>
+
+<span class="c1"># size of output data files in years</span>
+<span class="nt">frequency</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">25</span>
+
+<span class="c1"># number of ncremap workers</span>
+<span class="nt">num_workers</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">12</span>
+
+<span class="c1"># slurm account info</span>
+<span class="nt">account</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">e3sm</span>
+<span class="nt">partition</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">debug</span>
+<span class="nt">timeout</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2:00:00</span>
+
+<span class="c1"># horizontal regridding file path</span>
+<span class="nt">hrz_atm_map_path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/export/zender1/data/maps/map_ne30np4_to_cmip6_180x360_aave.20181001.nc</span>
+
+<span class="c1"># path to CMIP6 tables directory</span>
+<span class="nt">tables_path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/export/baldwin32/projects/cmip6-cmor-tables/Tables/</span>
+
+<span class="c1"># path to CMOR case metadata</span>
+<span class="nt">metadata_path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/p/user_pub/e3sm/baldwin32/resources/CMIP6-Metadata/1.0/historical_ens1.json</span>
+
+<span class="c1"># list if E3SM raw variable names</span>
+<span class="nt">std_var_list</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">QREFHT</span><span class="p p-Indicator">,</span> <span class="nv">TREFHT</span><span class="p p-Indicator">,</span> <span class="nv">TREFHTMN</span><span class="p p-Indicator">,</span> <span class="nv">TREFHTMX</span><span class="p p-Indicator">,</span> <span class="nv">FLUT</span><span class="p p-Indicator">]</span>
+
+<span class="c1"># list of CMIP6 variable names</span>
+<span class="nt">std_cmor_list</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">huss</span><span class="p p-Indicator">,</span> <span class="nv">tas</span><span class="p p-Indicator">,</span> <span class="nv">tasmin</span><span class="p p-Indicator">,</span> <span class="nv">tasmax</span><span class="p p-Indicator">,</span> <span class="nv">rlut</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>Make a temp directory to contain the intermediate files created by the workflow, and set it as your TMPDIR</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> /p/user_pub/e3sm/baldwin32/workshop/highfreq/1.0/historical
+mkdir tmp
+<span class="nb">export</span> <span class="nv">TMPDIR</span><span class="o">=</span>/p/user_pub/e3sm/baldwin32/workshop/highfreq/1.0/historical/tmp
+</pre></div>
+</div>
+<p>And startup the CWL workflow</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; cwltool --tmpdir-prefix<span class="o">=</span><span class="nv">$TMPDIR</span> --preserve-environment UDUNITS2_XML_PATH ~/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-day/atm-day.cwl historical-atm-day-ens1.yaml
+</pre></div>
+</div>
+<p>This will launch a fairly long running job as it steps through all the parts of the workflow. If you’re running a very large set of data, it can help to use the <code class="docutils literal notranslate"><span class="pre">nohup</span></code> tool to
+wrap the command so it doesnt get interupted by logging out.</p>
 </div>
 </div>
 

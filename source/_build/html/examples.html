@@ -84,8 +84,9 @@
 <li class="toctree-l1"><a class="reference internal" href="high_freq.html">High Frequency Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cwl.html">CWL Workflows</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#simple-atmosphere-variable-example-no-cwl">Simple atmosphere variable example (no CWL)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#plev-atmosphere-variable-example-no-cwl">Plev atmosphere variable example (no CWL)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#simple-atmosphere-variable-example">Simple atmosphere variable example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plev-atmosphere-variable-example">Plev atmosphere variable example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#end-to-end-high-frequency-example">End-to-End High Frequency Example</a></li>
 </ul>
 </li>
 </ul>
@@ -154,11 +155,11 @@
             
   <div class="section" id="examples">
 <span id="id1"></span><h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="simple-atmosphere-variable-example-no-cwl">
-<h2>Simple atmosphere variable example (no CWL)<a class="headerlink" href="#simple-atmosphere-variable-example-no-cwl" title="Permalink to this headline">¶</a></h2>
-<p>The first step in converting atmosphere variables by hand is to do the regridding and time-series extraction. For this example, lets assume there’s
-a directory named “atmos-input” that contains a single year of cam.h0 monthly history files, and we want to end up with the “pr,” and “clt” variables.</p>
-<p>First we ask the e3sm_to_cmip package what source variables are needed for these two output variables</p>
+<div class="section" id="simple-atmosphere-variable-example">
+<h2>Simple atmosphere variable example<a class="headerlink" href="#simple-atmosphere-variable-example" title="Permalink to this headline">¶</a></h2>
+<p>The first step in converting atmosphere variables is to do the regridding and time-series extraction. For this example, assume there’s
+a directory named “atmos-input” that contains a single year of cam.h0 monthly history files, and the target is to produce the “pr,” and “clt” variables.</p>
+<p>The first step is to run a query to find what source variables are needed for these two output variables:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; e3sm_to_cmip --info -v pr, clt
 <span class="o">[</span>*<span class="o">]</span>
 CMIP6 Name: clt,
@@ -173,10 +174,9 @@ CMIP6 Units: kg m-2 s-1,
 E3SM Variables: PRECC, PRECL
 </pre></div>
 </div>
-<p>From this we can see that the clt variable needs the CLDTOT input variable, and pr needs both PRECC and PRECL.</p>
-<p>Next we use ncclimo to extract the time-series and do the regridding. <a class="reference external" href="https://www.youtube.com/watch?v=AJyAjH-1HuA">A detailed tutorial can be found here</a>
-Variables specific to your case will be denoted &lt;LIKE THIS&gt;.</p>
-<p>In this example Im using files which look like “20191204.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy.cam.h0.1850-01.nc”, and so their casename is “20191204.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy”.</p>
+<p>This shows that the clt CMIP variable needs the raw CLDTOT input variable, and pr needs both PRECC and PRECL.</p>
+<p>The next step is to use ncclimo to extract the time-series and do the regridding. <a class="reference external" href="https://www.youtube.com/watch?v=AJyAjH-1HuA">A detailed tutorial can be found here</a></p>
+<p>This example uses files which look like “20191204.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy.cam.h0.1850-01.nc”, and so their casename is “20191204.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy”.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; ncclimo --start<span class="o">=</span><span class="m">0001</span> --end<span class="o">=</span><span class="m">0001</span> --ypf<span class="o">=</span><span class="m">1</span> -c &lt;CASENAME&gt; -o ./native -O ./regrid -v CLDTOT,PRECC,PRECL -i ./atmos-input --map<span class="o">=</span>&lt;PATH TO YOUR MAPFILE&gt;
 Climatology operations invoked with command:
 /export/baldwin32/anaconda3/envs/cwl/bin/ncclimo --start<span class="o">=</span><span class="m">2015</span> --end<span class="o">=</span><span class="m">2015</span> --ypf<span class="o">=</span><span class="m">1</span> -c <span class="m">20191204</span>.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy -o ./native --regrid<span class="o">=</span>./regrid -v CLDTOT,PRECC,PRECL -i ./atm_testing -v CLDTOT,PRECC,PRECL --map<span class="o">=</span>/export/zender1/data/maps/map_ne30np4_to_cmip6_180x360_aave.20181001.nc
@@ -204,7 +204,7 @@ Completed <span class="m">1</span>-year climatology operations <span class="k">f
 Elapsed <span class="nb">time</span> 0m2s
 </pre></div>
 </div>
-<p>Now that we have appropriate input files, we can run the converter package.</p>
+<p>The next step is to call the e3sm_to_cmip package and use the time-series files as input:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; e3sm_to_cmip -i regrid/ -o cmip_output -v prc, clt -t &lt;PATH TO CMIP6 TABLES&gt; -u &lt;PATH TO CMOR USER INPUT JSON&gt;
 <span class="o">[</span>*<span class="o">]</span> Writing log output to: cmip_output/converter.log
 <span class="o">[</span>+<span class="o">]</span> Running CMOR handlers in parallel
@@ -212,7 +212,8 @@ Elapsed <span class="nb">time</span> 0m2s
 <span class="o">[</span>+<span class="o">]</span> <span class="m">2</span> of <span class="m">2</span> handlers <span class="nb">complete</span>
 </pre></div>
 </div>
-<p>Alternately, if this isnt going to be published to CMIP6, we can use the “simple” mode which doesnt require the full CMIP6 tables or metadata</p>
+<p>Alternately, if the data isn’t going to be published to CMIP6, the “simple” mode can be used which doesnt require the full CMIP6 tables or metadata
+and produces output files that are very close to the CMIP6 requirements, but with placeholder metadata</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; python -m e3sm_to_cmip -i regrid -o cmip_output -v prc, clt --simple
 <span class="o">[</span>*<span class="o">]</span> Writing log output to: cmip_output/converter.log
 <span class="o">[</span>+<span class="o">]</span> Running CMOR handlers in parallel
@@ -223,10 +224,11 @@ Elapsed <span class="nb">time</span> 0m2s
 </pre></div>
 </div>
 </div>
-<div class="section" id="plev-atmosphere-variable-example-no-cwl">
-<h2>Plev atmosphere variable example (no CWL)<a class="headerlink" href="#plev-atmosphere-variable-example-no-cwl" title="Permalink to this headline">¶</a></h2>
-<p>Some 3D atmosphere CMIP6 variables are on the plev19 vertical levels instead of the model and require remapping from the default model levels to the plev19 levels.</p>
-<p>For example:</p>
+<div class="section" id="plev-atmosphere-variable-example">
+<h2>Plev atmosphere variable example<a class="headerlink" href="#plev-atmosphere-variable-example" title="Permalink to this headline">¶</a></h2>
+<p>Some 3D atmosphere CMIP6 variables are on the plev19 vertical levels instead of the model and require remapping from the default model levels to the plev19 levels.
+These variables can be distinguished from model-level variables by the <code class="docutils literal notranslate"><span class="pre">Levels</span></code> field in their info having the name <code class="docutils literal notranslate"><span class="pre">plev19</span></code>.</p>
+<p>An example us the <code class="docutils literal notranslate"><span class="pre">hus</span></code> variable</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; e3sm_to_cmip --info -v hus
 <span class="o">[</span>*<span class="o">]</span>
 CMIP6 Name: hus,
@@ -236,13 +238,97 @@ E3SM Variables: Q
 Levels: <span class="o">{</span><span class="s1">&#39;name&#39;</span>: <span class="s1">&#39;plev19&#39;</span>, <span class="s1">&#39;units&#39;</span>: <span class="s1">&#39;Pa&#39;</span>, <span class="s1">&#39;e3sm_axis_name&#39;</span>: <span class="s1">&#39;plev&#39;</span><span class="o">}</span>
 </pre></div>
 </div>
-<p>Before performing the horizontal remapping, run the following command using the vertical remapping file <a class="reference external" href="https://github.com/E3SM-Project/e3sm_to_cmip/blob/master/e3sm_to_cmip/resources/vrt_remap_plev19.nc?raw=true">which can be found here</a></p>
+<p>Before performing the horizontal remapping, the raw files must first be vertically remapped using the following command and the
+plev19 vertical remapping file <a class="reference external" href="https://github.com/E3SM-Project/e3sm_to_cmip/blob/master/e3sm_to_cmip/resources/vrt_remap_plev19.nc?raw=true">which can be found here</a></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir vrt_regrid
-<span class="k">for</span> file in <span class="sb">`</span>ls atm-input<span class="sb">`</span><span class="p">;</span> <span class="k">do</span> ncks --rgr <span class="nv">xtr_mth</span><span class="o">=</span>mss_val --vrt_fl<span class="o">=</span>vrt_remap_plev19.nc ./atm-input/<span class="nv">$file</span> ./vrt_regrid/<span class="nv">$file</span><span class="p">;</span> <span class="k">done</span>
+<span class="k">for</span> file in <span class="sb">`</span>ls atm-input<span class="sb">`</span>
+<span class="k">do</span>
+  ncks --rgr <span class="nv">xtr_mth</span><span class="o">=</span>mss_val --vrt_fl<span class="o">=</span>vrt_remap_plev19.nc ./atm-input/<span class="nv">$file</span> ./vrt_regrid/<span class="nv">$file</span>
+<span class="k">done</span>
 </pre></div>
 </div>
 <p>The output files will be converted from the default 72 vertical levels which come out of the E3SM model into 19 vertical levels defined by the CMIP6 project.
-These files can then be regridded and converted as in the “Simple” example above.</p>
+These files can then be regridded and converted as in the example above.</p>
+</div>
+<div class="section" id="end-to-end-high-frequency-example">
+<h2>End-to-End High Frequency Example<a class="headerlink" href="#end-to-end-high-frequency-example" title="Permalink to this headline">¶</a></h2>
+<p>The first step is to check what variables in the raw input data are possible to be converted at the desired frequency. For this we need to use the “info” option and give it three
+things, the frequency of data we want to convert, the input path to the raw data (not time-series, but native model output), and the location of our copy of the CMIP6 controlled vocabulary tables:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; e3sm_to_cmip --info -v all --input /p/user_pub/work/E3SM/1_0/historical/1deg_atm_60-30km_ocean/atmos/native/model-output/day/ens1/v1/ --tables ~/projects/cmip6-cmor-tables/Tables/
+<span class="o">[</span>*<span class="o">]</span>
+CMIP6 Name: huss,
+CMIP6 Table: CMIP6_day.json,
+CMIP6 Units: <span class="m">1</span>,
+E3SM Variables: QREFHT
+<span class="o">[</span>*<span class="o">]</span>
+CMIP6 Name: tas,
+CMIP6 Table: CMIP6_day.json,
+CMIP6 Units: K,
+E3SM Variables: TREFHT
+<span class="o">[</span>*<span class="o">]</span>
+CMIP6 Name: tasmin,
+CMIP6 Table: CMIP6_day.json,
+CMIP6 Units: K,
+E3SM Variables: TREFHTMN
+<span class="o">[</span>*<span class="o">]</span>
+CMIP6 Name: tasmax,
+CMIP6 Table: CMIP6_day.json,
+CMIP6 Units: K,
+E3SM Variables: TREFHTMX
+<span class="o">[</span>*<span class="o">]</span>
+CMIP6 Name: rlut,
+CMIP6 Table: CMIP6_day.json,
+CMIP6 Units: W m-2,
+E3SM Variables: FLUT
+</pre></div>
+</div>
+<p>The next step is to find and setup the corresponding CWL workflow, in this case since we’re processing daily data we want to use the “atm-day” workflow under
+e3sm_to_cmip/scripts/cwl_workflows <a class="reference external" href="https://github.com/E3SM-Project/e3sm_to_cmip/tree/master/scripts/cwl_workflows/atm-day">which you can find here</a>. The CWL parameter
+file atm-day-job.yaml needs to be edited with the values for our case. We need to take the E3SM variable names given by the “–info” request earler and put them into the
+<code class="docutils literal notranslate"><span class="pre">std_var_list</span></code> parameter, and take the CMIP6 variable names and put them into the <code class="docutils literal notranslate"><span class="pre">std_cmor_list</span></code> parameter. Create a new directory to hold your output, and place
+the new parameter file there.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># path to the raw model data</span>
+<span class="nt">data_path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/p/user_pub/work/E3SM/1_0/historical/1deg_atm_60-30km_ocean/atmos/native/model-output/day/ens1/v1/</span>
+
+<span class="c1"># size of output data files in years</span>
+<span class="nt">frequency</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">25</span>
+
+<span class="c1"># number of ncremap workers</span>
+<span class="nt">num_workers</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">12</span>
+
+<span class="c1"># slurm account info</span>
+<span class="nt">account</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">e3sm</span>
+<span class="nt">partition</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">debug</span>
+<span class="nt">timeout</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2:00:00</span>
+
+<span class="c1"># horizontal regridding file path</span>
+<span class="nt">hrz_atm_map_path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/export/zender1/data/maps/map_ne30np4_to_cmip6_180x360_aave.20181001.nc</span>
+
+<span class="c1"># path to CMIP6 tables directory</span>
+<span class="nt">tables_path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/export/baldwin32/projects/cmip6-cmor-tables/Tables/</span>
+
+<span class="c1"># path to CMOR case metadata</span>
+<span class="nt">metadata_path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/p/user_pub/e3sm/baldwin32/resources/CMIP6-Metadata/1.0/historical_ens1.json</span>
+
+<span class="c1"># list if E3SM raw variable names</span>
+<span class="nt">std_var_list</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">QREFHT</span><span class="p p-Indicator">,</span> <span class="nv">TREFHT</span><span class="p p-Indicator">,</span> <span class="nv">TREFHTMN</span><span class="p p-Indicator">,</span> <span class="nv">TREFHTMX</span><span class="p p-Indicator">,</span> <span class="nv">FLUT</span><span class="p p-Indicator">]</span>
+
+<span class="c1"># list of CMIP6 variable names</span>
+<span class="nt">std_cmor_list</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">huss</span><span class="p p-Indicator">,</span> <span class="nv">tas</span><span class="p p-Indicator">,</span> <span class="nv">tasmin</span><span class="p p-Indicator">,</span> <span class="nv">tasmax</span><span class="p p-Indicator">,</span> <span class="nv">rlut</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>Make a temp directory to contain the intermediate files created by the workflow, and set it as your TMPDIR</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> /p/user_pub/e3sm/baldwin32/workshop/highfreq/1.0/historical
+mkdir tmp
+<span class="nb">export</span> <span class="nv">TMPDIR</span><span class="o">=</span>/p/user_pub/e3sm/baldwin32/workshop/highfreq/1.0/historical/tmp
+</pre></div>
+</div>
+<p>And startup the CWL workflow</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; cwltool --tmpdir-prefix<span class="o">=</span><span class="nv">$TMPDIR</span> --preserve-environment UDUNITS2_XML_PATH ~/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-day/atm-day.cwl historical-atm-day-ens1.yaml
+</pre></div>
+</div>
+<p>This will launch a fairly long running job as it steps through all the parts of the workflow. If you’re running a very large set of data, it can help to use the <code class="docutils literal notranslate"><span class="pre">nohup</span></code> tool to
+wrap the command so it doesnt get interupted by logging out.</p>
 </div>
 </div>
 
