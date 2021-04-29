@@ -433,10 +433,10 @@ def load_handlers(handlers_path, var_list, tables, freq="mon", mode='atm', simpl
             continue
         elif mode == 'ice' and table not in SEAICE_TABLES:
             continue
-
+        
         if module_name in var_list or 'all' in var_list:
             handlers.append({
-                'name': module_name,
+                'name': module.VAR_NAME,
                 'method': module.handle,
                 'raw_variables': module.RAW_VARIABLES,
                 'units': module.VAR_UNITS,
