@@ -432,10 +432,10 @@ def load_handlers(handlers_path, var_list, tables, freq="mon", mode='atm', simpl
             continue
         elif mode == 'ice' and table not in SEAICE_TABLES:
             continue
-
+        
         if module_name in var_list or 'all' in var_list:
             handlers.append({
-                'name': module_name,
+                'name': module.VAR_NAME,
                 'method': module.handle,
                 'raw_variables': module.RAW_VARIABLES,
                 'units': module.VAR_UNITS,
@@ -538,13 +538,10 @@ def find_atm_files(var, path):
     --------
         files (list(str)): A list of paths to the matching files
     """
-    contents = os.listdir(path)
-    files = list()
-    pattern = var + r'\_\d{6}\_\d{6}'
-    for item in contents:
-        if re.search(pattern=pattern, string=item):
-            files.append(item)
-    return files
+    pattern = var + r'\_\d{6}\_\d{6}\.nc'
+    for item in os.listdir(path):
+        if re.match(pattern, item):
+            yield item
 # ------------------------------------------------------------------
 
 
