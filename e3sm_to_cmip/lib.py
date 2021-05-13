@@ -273,7 +273,7 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
             pbar.set_description(msg)
 
         for time_index, val in enumerate(data['time']):
-            
+
             outdata = write_data(
                 varid=0,
                 data=data,
@@ -329,6 +329,8 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
     return outvar_name
 
 # ------------------------------------------------------------------
+
+
 def var_has_time(table_path, variable):
     with open(table_path, 'r') as inputstream:
         table_info = json.load(inputstream)
@@ -341,7 +343,7 @@ def var_has_time(table_path, variable):
 
 
 def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None, levels=None, axis=None, logdir=None, simple=False, outpath=None):
-    
+
     timename = var_has_time(os.path.join(tables, table), outvar_name)
     if simple:
         return handle_simple(
@@ -502,7 +504,6 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     """
     Returns a list of data, along with the dimension and dimension bounds
     for a given lis of variables, with the option for vertical levels.
-
     Params:
     -------
         filename: the netCDF file to look inside
@@ -510,7 +511,6 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
         levels (bool): return verticle information
         get_dims (bool): is dimension data should be loaded too
     Returns:
-
         {
             data: xarray Dataset from the file
             lat: numpy array of lat midpoints,
@@ -520,14 +520,12 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
             time: array of time points,
             time_bdns: array of time bounds
         }
-
         optionally for 3d:
-
         lev, ilev, ps, p0, hyam, hyai, hybm, hybi
     """
     # extract data from the input file
     data = dict()
-    
+
     if not os.path.exists(filename):
         raise IOError(f"File not found: {filename}")
 
@@ -539,7 +537,7 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     # load
     if 'plev' in ds.dims or 'lev' in ds.dims:
         data[variable] = variable_data.values
-    else:    
+    else:
         data[variable] = variable_data
 
     # atm uses "time_bnds" but the lnd component uses "time_bounds"

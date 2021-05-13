@@ -12,6 +12,7 @@ import json
 import xarray as xr
 
 from pathlib import Path
+from pprint import pprint
 from tqdm import tqdm
 from e3sm_to_cmip import resources
 from e3sm_to_cmip.version import __version__
@@ -173,6 +174,10 @@ If the --freq <frequency> is passed along with the --tables-path, then the CMIP6
 If the --freq <freq> is passed with the --tables-path, and the --input-path, and the input-path points to raw unprocessed E3SM files, then an additional check will me made for if the required raw
 variables are present in the E3SM output.""")
     parser.add_argument(
+        '--info-out',
+        type=str,
+        help="If passed with the --info flag, will cause the variable info to be written out to the specified file path as yaml")
+    parser.add_argument(
         '--version',
         help='print the version number and exit',
         action='version',
@@ -204,21 +209,22 @@ variables are present in the E3SM output.""")
 # ------------------------------------------------------------------
 
 
-def print_var_info(handlers, freq=None, inpath=None, tables=None):
+def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
     
     messages = []
     # if the user just asked for the handler info
     if freq == "mon" and not inpath and not tables:
         for handler in handlers:
-            msg = f"""
-CMIP6 Name: {handler['name']},
-CMIP6 Table: {handler['table']},
-CMIP6 Units: {handler['units']},
-E3SM Variables: {', '.join(handler['raw_variables'])}"""
+            msg = {
+                "CMIP6 Name": handler['name'],
+                "CMIP6 Table": handler['table'],
+                "CMIP6 Units": handler['units'],
+                "E3SM Variables":  ', '.join(handler['raw_variables'])
+            }
             if handler.get('unit_conversion'):
-                msg += f",\nUnit conversion: {handler['unit_conversion']}"
+                msg["Unit conversion"] = handler['unit_conversion']
             if handler.get('levels'):
-                msg += f"\nLevels: {handler['levels']}"
+                msg["Levels"] = handler['levels']
             messages.append(msg)
     
     # if the user asked if the variable is included in the table
@@ -231,47 +237,52 @@ E3SM Variables: {', '.join(handler['raw_variables'])}"""
                 print_message(msg, status="error")
                 continue
             else:
-                msg = f"""
-CMIP6 Name: {handler['name']},
-CMIP6 Table: {handler['table']},
-CMIP6 Units: {handler['units']},
-E3SM Variables: {', '.join(handler['raw_variables'])}"""
+                msg = {
+                    "CMIP6 Name": handler['name'],
+                    "CMIP6 Table": handler['table'],
+                    "CMIP6 Units": handler['units'],
+                    "E3SM Variables":  ', '.join(handler['raw_variables'])
+                }
                 if handler.get('unit_conversion'):
-                    msg += f",\nUnit conversion: {handler['unit_conversion']}"
-            messages.append(msg)
+                    msg["Unit conversion"] = handler['unit_conversion']
+                if handler.get('levels'):
+                    msg["Levels"] = handler['levels']
+                messages.append(msg)
     
     elif freq and tables and inpath:
-        # import ipdb; ipdb.set_trace()
         file_path = os.path.join(inpath, os.listdir(inpath)[0])
         with xr.open_dataset(file_path) as ds:
             for handler in handlers:
                 table_info = get_table_info(tables, handler['table'])
                 if handler['name'] not in table_info['variable_entry']:
-                    msg = f"Variable {handler['name']} is not included in the table {handler['table']}"
-                    print_message(msg, status="error")
                     continue
                 has_vars = True
                 for raw_var in handler['raw_variables']:
                     if raw_var not in ds.data_vars:
-                        msg = f"Required input variable {raw_var} is not present in the raw input files, cant convert {handler['name']}"
-                        print_message(msg, status="error")
+                        # msg = f"Required input variable {raw_var} is not present in the raw input files, cant convert {handler['name']}"
+                        # print_message(msg, status="error")
                         has_vars = False
                 if not has_vars:
                     continue
                 
-                msg = f"""
-CMIP6 Name: {handler['name']},
-CMIP6 Table: {handler['table']},
-CMIP6 Units: {handler['units']},
-E3SM Variables: {', '.join(handler['raw_variables'])}"""
+                msg = {
+                    "CMIP6 Name": handler['name'],
+                    "CMIP6 Table": handler['table'],
+                    "CMIP6 Units": handler['units'],
+                    "E3SM Variables":  ', '.join(handler['raw_variables'])
+                }
                 if handler.get('unit_conversion'):
-                    msg += f",\nUnit conversion: {handler['unit_conversion']}"
+                    msg["Unit conversion"] = handler['unit_conversion']
+                if handler.get('levels'):
+                    msg["Levels"] = handler['levels']
                 messages.append(msg)
     
-    for msg in messages:
-        print_message(msg, status="debug")
-            
-            
+    
+    if outpath is not None:
+        with open(outpath, 'w') as outstream:
+            yaml.dump(messages, outstream)
+    else:
+        pprint(messages)
 # ------------------------------------------------------------------
 
 def get_table(table, variable, freq, tables):
@@ -621,7 +632,7 @@ def find_mpas_files(component, path, map_path=None):
             "Unable to find mpaso_moc_regions in the input directory")
 
     else:
-        files = find_atm_files(var, path)
+        files = [x for x in find_atm_files(var, path)]
         if len(files) > 0:
             files = [os.path.join(path, name) for name in files]
             return files

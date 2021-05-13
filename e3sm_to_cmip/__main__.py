@@ -110,7 +110,8 @@ def main():
             handlers,
             freq,
             input_path,
-            tables_path)
+            tables_path,
+            _args.get('info_out'))
         sys.exit(0)
 
     new_metadata_path = os.path.join(
