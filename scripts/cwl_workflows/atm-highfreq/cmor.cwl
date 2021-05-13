@@ -30,6 +30,8 @@ inputs:
     type: string
   timeout: 
     type: string
+  sample_freq:
+    type: string
 
 arguments:
   - -A
@@ -39,7 +41,7 @@ arguments:
   - -t
   - $(inputs.timeout)
   - e3sm_to_cmip
-  - --freq=day
+  - --freq=$(inputs.sample_freq)
   - prefix: --output-path
     valueFrom: $(runtime.outdir)
   - prefix: --var-list

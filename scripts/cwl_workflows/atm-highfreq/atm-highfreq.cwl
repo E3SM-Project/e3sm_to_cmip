@@ -13,6 +13,7 @@ inputs:
   metadata_path: string
 
   frequency: int
+  sample_freq: string
   num_workers: int
   tables_path: string
 
@@ -30,10 +31,6 @@ outputs:
     type: Directory[]
     outputSource: 
       - step_std_cmor/cmip6_dir
-  logs:
-    type: Directory[]
-    outputSource:
-      - step_std_cmor/cmor_logs
 
 steps:
   step_find_casename:
@@ -113,6 +110,7 @@ steps:
     in:
       tables_path: tables_path
       metadata_path: metadata_path
+      sample_freq: sample_freq
       num_workers: num_workers
       var_list: std_cmor_list
       raw_file_list: step_std_hrz_remap/time_series_files
@@ -121,4 +119,3 @@ steps:
       timeout: timeout
     out:
       - cmip6_dir
-      - cmor_logs
