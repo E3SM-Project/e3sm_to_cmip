@@ -14,6 +14,7 @@ inputs:
 
   frequency: int
   sample_freq: string
+  time_steps_per_day: string
   num_workers: int
   tables_path: string
 
@@ -28,7 +29,7 @@ inputs:
 
 outputs:
   cmorized:
-    type: Directory[]
+    type: Directory
     outputSource: 
       - step_std_cmor/cmip6_dir
 
@@ -47,35 +48,18 @@ steps:
     out:
       - start_year
       - end_year
-  
-  step_segments:
-    run: generate_segments.cwl
-    in:
-      start: step_find_start_end/start_year
-      end: step_find_start_end/end_year
-      frequency: frequency
-    out:
-      - segments_start
-      - segments_end
 
   step_discover_atm_files:
     run: discover_atm_files.cwl
     in:
       input: data_path
-      start: step_segments/segments_start
-      end: step_segments/segments_end
-    scatter:
-      - start
-      - end
-    scatterMethod: 
-      dotproduct
+      start: step_find_start_end/start_year
+      end: step_find_start_end/end_year
     out:
       - atm_files
   
   step_pull_paths:
     run: file_to_string_list.cwl
-    scatter:
-      a_File
     in:
       a_File: step_discover_atm_files/atm_files
     out:
@@ -83,30 +67,24 @@ steps:
 
   step_std_hrz_remap:
     run: hrzremap_posin_paths.cwl
-    scatter:
-      - input_files
-      - start_year
-      - end_year
-    scatterMethod: 
-      dotproduct
     in:
       casename: step_find_casename/casename
       variables: std_var_list
-      start_year: step_segments/segments_start
-      end_year: step_segments/segments_end
+      start_year: step_find_start_end/start_year
+      end_year: step_find_start_end/end_year
       year_per_file: frequency
+      num_workers: num_workers
       mapfile: hrz_atm_map_path
       input_files: step_pull_paths/list_of_strings
       account: account
       partition: partition
       timeout: timeout
+      time_steps_per_day: time_steps_per_day
     out:
       - time_series_files
   
   step_std_cmor:
     run: cmor.cwl
-    scatter:
-      - raw_file_list
     in:
       tables_path: tables_path
       metadata_path: metadata_path

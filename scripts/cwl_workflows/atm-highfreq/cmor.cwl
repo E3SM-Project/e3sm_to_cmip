@@ -41,6 +41,7 @@ arguments:
   - -t
   - $(inputs.timeout)
   - e3sm_to_cmip
+  - --serial
   - --freq=$(inputs.sample_freq)
   - prefix: --output-path
     valueFrom: $(runtime.outdir)
@@ -54,7 +55,3 @@ outputs:
     type: Directory
     outputBinding:
       glob: CMIP6
-  cmor_logs:
-    type: Directory
-    outputBinding:
-      glob: cmor_logs

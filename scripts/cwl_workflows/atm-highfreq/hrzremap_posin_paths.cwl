@@ -26,6 +26,10 @@ inputs:
     type: string
   timeout: 
     type: string
+  time_steps_per_day:
+    type: string
+  num_workers:
+    type: int
 
 arguments:
   - -A
@@ -39,7 +43,10 @@ arguments:
   - --dfl_lvl=1
   - --no_cll_msr
   - --no_stdin
+  - --job_nbr=$(inputs.num_workers)
+  - --thr_nbr=$(inputs.num_workers)
   - --clm_md=hgh_frq_spl
+  - --timesteps_per_day=$(inputs.time_steps_per_day)
   - -O
   - $(runtime.outdir)
   - -o
