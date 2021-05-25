@@ -250,7 +250,7 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
                 messages.append(msg)
     
     elif freq and tables and inpath:
-        file_path = os.path.join(inpath, os.listdir(inpath)[0])
+        file_path = next(Path(inpath).glob('*.nc'))
         with xr.open_dataset(file_path) as ds:
             for handler in handlers:
                 table_info = get_table_info(tables, handler['table'])
@@ -262,8 +262,10 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
                         # msg = f"Required input variable {raw_var} is not present in the raw input files, cant convert {handler['name']}"
                         # print_message(msg, status="error")
                         has_vars = False
+                        break
                 if not has_vars:
                     continue
+                import ipdb; ipdb.set_trace()
                 
                 msg = {
                     "CMIP6 Name": handler['name'],
@@ -743,3 +745,8 @@ def precheck(inpath, precheck_path, variables, mode):
                     break
 
     return [x['name'] for x in var_map if not x['found']]
+
+def reconstructPressureFromHybrid(ps, A, B, Po):
+    p = ps * B
+    p = p + A * Po
+    return p
