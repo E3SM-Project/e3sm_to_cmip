@@ -4,11 +4,12 @@ CLDICE to cli converter
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import cmor
-import xarray as xr
+import cdms2
 import logging
 import os
 from tqdm import tqdm
-from e3sm_to_cmip.util import print_message, reconstructPressureFromHybrid
+from e3sm_to_cmip.util import print_message
+from cdutil.vertical import reconstructPressureFromHybrid
 
 # list of raw variable names needed
 RAW_VARIABLES = [str('hybi'), str('hyai'), str('hyam'), str('hybm'), str('PS')]
@@ -30,12 +31,12 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
         data['PS'][index, :], data['hyam'], data['hybm'], 100000)
     cmor.write(
         varid,
-        outdata.values,
+        outdata,
         time_vals=timeval,
         time_bnds=timebnds)
     cmor.write(
         data['ips'],
-        data['ps'].values,
+        data['ps'],
         time_vals=timeval,
         time_bnds=timebnds,
         store_with=varid)
@@ -116,30 +117,39 @@ def handle(infiles, tables, user_input_path, **kwargs):
             if not os.path.exists(filename):
                 raise IOError("File not found: {}".format(filename))
 
-            ds = xr.open_dataset(filename, decode_times=False)
-            data[variable] = ds[var_name]
+            f = cdms2.open(filename)
+
+            # load the data for each variable
+            variable_data = f(var_name)
+
+            if not variable_data.any():
+                raise IOError("Variable data not found: {}".format(variable))
+
+            data.update({
+                variable: variable_data
+            })
 
             # load the lon and lat info & bounds
             # load time & time bounds
             if var_name == 'PS':
                 data.update({
-                    'ps': ds['PS'],
-                    'lat': ds['lat'],
-                    'lon': ds['lon'],
-                    'lat_bnds': ds['lat_bnds'],
-                    'lon_bnds': ds['lon_bnds'],
-                    'time': ds['time'],
-                    'time_bnds': ds['time_bnds']
+                    'ps': f('PS'),
+                    'lat': variable_data.getLatitude(),
+                    'lon': variable_data.getLongitude(),
+                    'lat_bnds': f('lat_bnds'),
+                    'lon_bnds': f('lon_bnds'),
+                    'time': variable_data.getTime(),
+                    'time2': variable_data.getTime(),
+                    'time_bnds': f('time_bnds')
                 })
 
-            if 'lev' in ds.dims and 'ilev' in ds.dims:
+            if 'lev' in f.listdimension() and 'ilev' in f.listdimension():
                 data.update({
-                    'lev': ds['lev'].values/1000,
-                    'ilev': ds['ilev'].values/1000
+                    'lev': f.getAxis('lev')[:]/1000,
+                    'ilev': f.getAxis('ilev')[:]/1000
                 })
-            new_data = {i: ds[i] for i in ['hyam', 'hybm', 'hyai', 'hybi'] 
-                                 if i in ds.data_vars
-                       }
+            new_data = {i: f(i) for i in [
+                'hyam', 'hybm', 'hyai', 'hybi'] if i in f.variables}
             
 
             data.update(new_data)
@@ -149,22 +159,22 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
         axes = [{
             str('table_entry'): 'time2',
-            str('units'): data['time'].units
+            str('units'): data['time2'].units
         }, {
             str('table_entry'): str('standard_hybrid_sigma'),
             str('units'): str('1'),
-            str('coord_vals'): data['lev'],
-            str('cell_bounds'): data['ilev']
+            str('coord_vals'): data['lev'][:],
+            str('cell_bounds'): data['ilev'][:]
         }, {
             str('table_entry'): str('latitude'),
-            str('units'): ds['lat'].units,
-            str('coord_vals'): data['lat'].values,
-            str('cell_bounds'): data['lat_bnds'].values
+            str('units'): data['lat'].units,
+            str('coord_vals'): data['lat'][:],
+            str('cell_bounds'): data['lat_bnds'][:]
         }, {
             str('table_entry'): str('longitude'),
-            str('units'): ds['lon'].units,
-            str('coord_vals'): data['lon'].values,
-            str('cell_bounds'): data['lon_bnds'].values
+            str('units'): data['lon'].units,
+            str('coord_vals'): data['lon'][:],
+            str('cell_bounds'): data['lon_bnds'][:]
         }]
 
         axis_ids = list()
@@ -175,26 +185,26 @@ def handle(infiles, tables, user_input_path, **kwargs):
         # add hybrid level formula terms
         cmor.zfactor(
             zaxis_id=axis_ids[1],
-            zfactor_name='a',
+            zfactor_name=str('a'),
             axis_ids=[axis_ids[1], ],
-            zfactor_values=data['hyam'].values,
-            zfactor_bounds=data['hyai'].values)
+            zfactor_values=data['hyam'][:],
+            zfactor_bounds=data['hyai'][:])
         cmor.zfactor(
             zaxis_id=axis_ids[1],
-            zfactor_name='b',
+            zfactor_name=str('b'),
             axis_ids=[axis_ids[1], ],
-            zfactor_values=data['hybm'].values,
-            zfactor_bounds=data['hybi'].values)
+            zfactor_values=data['hybm'][:],
+            zfactor_bounds=data['hybi'][:])
         cmor.zfactor(
             zaxis_id=axis_ids[1],
-            zfactor_name='p0',
-            units='Pa',
+            zfactor_name=str('p0'),
+            units=str('Pa'),
             zfactor_values=100000)
         ips = cmor.zfactor(
             zaxis_id=axis_ids[1],
-            zfactor_name='ps2',
+            zfactor_name=str('ps2'),
             axis_ids=[0, 2, 3],
-            units='Pa')
+            units=str('Pa'))
 
         data['ips'] = ips
 
@@ -203,23 +213,23 @@ def handle(infiles, tables, user_input_path, **kwargs):
         # write out the data
         msg = "{}: time {:1.1f} - {:1.1f}".format(
             VAR_NAME,
-            data['time_bnds'].values[0][0],
-            data['time_bnds'].values[-1][-1])
+            data['time_bnds'][0][0],
+            data['time_bnds'][-1][-1])
         logger.info(msg)
 
         if serial:
-            pbar = tqdm(total=ds['time'].shape[0])
+            pbar = tqdm(total=len(data['time']))
 
-        for index, val in enumerate(data['time'].values):
+        for index, val in enumerate(data['time']):
+            if serial:
+                pbar.update(1)
             write_data(
                 varid=varid,
                 data=data,
                 timeval=val,
-                timebnds=[data['time_bnds'].values[index, :]],
+                timebnds=[data['time_bnds'][index, :]],
                 index=index,
                 RAW_VARIABLES=RAW_VARIABLES)
-            if serial:
-                pbar.update(1)
         if serial:
             pbar.close()
 
