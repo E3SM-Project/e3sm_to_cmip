@@ -4,6 +4,12 @@ data_path: /compyfs/v1BGCoutput/bdrc_ctc/test
 # size of output data files in years
 frequency: 25
 
+# the sampling frequency of the data itself
+sample_freq: day
+
+# the number of time steps per day
+time_steps_per_day: 1
+
 # number of ncremap workers
 num_workers: 12
 

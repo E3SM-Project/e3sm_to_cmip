@@ -69,12 +69,8 @@ steps:
       flat_crossproduct
     out:
       - cmorized
-      - cmor_logs
 
 outputs:
   cmorized:
     type: Directory[]
     outputSource: step_render_cmor_template/cmorized
-  cmor_logs:
-    type: Directory[]
-    outputSource: step_render_cmor_template/cmor_logs

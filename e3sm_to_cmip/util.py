@@ -8,11 +8,11 @@ import re
 import argparse
 import imp
 import yaml
-import cdms2
 import json
 import xarray as xr
 
 from pathlib import Path
+from pprint import pprint
 from tqdm import tqdm
 from e3sm_to_cmip import resources
 from e3sm_to_cmip.version import __version__
@@ -174,6 +174,10 @@ If the --freq <frequency> is passed along with the --tables-path, then the CMIP6
 If the --freq <freq> is passed with the --tables-path, and the --input-path, and the input-path points to raw unprocessed E3SM files, then an additional check will me made for if the required raw
 variables are present in the E3SM output.""")
     parser.add_argument(
+        '--info-out',
+        type=str,
+        help="If passed with the --info flag, will cause the variable info to be written out to the specified file path as yaml")
+    parser.add_argument(
         '--version',
         help='print the version number and exit',
         action='version',
@@ -205,21 +209,22 @@ variables are present in the E3SM output.""")
 # ------------------------------------------------------------------
 
 
-def print_var_info(handlers, freq=None, inpath=None, tables=None):
+def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
     
     messages = []
     # if the user just asked for the handler info
     if freq == "mon" and not inpath and not tables:
         for handler in handlers:
-            msg = f"""
-CMIP6 Name: {handler['name']},
-CMIP6 Table: {handler['table']},
-CMIP6 Units: {handler['units']},
-E3SM Variables: {', '.join(handler['raw_variables'])}"""
+            msg = {
+                "CMIP6 Name": handler['name'],
+                "CMIP6 Table": handler['table'],
+                "CMIP6 Units": handler['units'],
+                "E3SM Variables":  ', '.join(handler['raw_variables'])
+            }
             if handler.get('unit_conversion'):
-                msg += f",\nUnit conversion: {handler['unit_conversion']}"
+                msg["Unit conversion"] = handler['unit_conversion']
             if handler.get('levels'):
-                msg += f"\nLevels: {handler['levels']}"
+                msg["Levels"] = handler['levels']
             messages.append(msg)
     
     # if the user asked if the variable is included in the table
@@ -232,47 +237,53 @@ E3SM Variables: {', '.join(handler['raw_variables'])}"""
                 print_message(msg, status="error")
                 continue
             else:
-                msg = f"""
-CMIP6 Name: {handler['name']},
-CMIP6 Table: {handler['table']},
-CMIP6 Units: {handler['units']},
-E3SM Variables: {', '.join(handler['raw_variables'])}"""
+                msg = {
+                    "CMIP6 Name": handler['name'],
+                    "CMIP6 Table": handler['table'],
+                    "CMIP6 Units": handler['units'],
+                    "E3SM Variables":  ', '.join(handler['raw_variables'])
+                }
                 if handler.get('unit_conversion'):
-                    msg += f",\nUnit conversion: {handler['unit_conversion']}"
-            messages.append(msg)
+                    msg["Unit conversion"] = handler['unit_conversion']
+                if handler.get('levels'):
+                    msg["Levels"] = handler['levels']
+                messages.append(msg)
     
     elif freq and tables and inpath:
-        # import ipdb; ipdb.set_trace()
-        file_path = os.path.join(inpath, os.listdir(inpath)[0])
+        file_path = next(Path(inpath).glob('*.nc'))
         with xr.open_dataset(file_path) as ds:
             for handler in handlers:
                 table_info = get_table_info(tables, handler['table'])
                 if handler['name'] not in table_info['variable_entry']:
-                    msg = f"Variable {handler['name']} is not included in the table {handler['table']}"
-                    print_message(msg, status="error")
                     continue
                 has_vars = True
                 for raw_var in handler['raw_variables']:
                     if raw_var not in ds.data_vars:
-                        msg = f"Required input variable {raw_var} is not present in the raw input files, cant convert {handler['name']}"
-                        print_message(msg, status="error")
+                        # msg = f"Required input variable {raw_var} is not present in the raw input files, cant convert {handler['name']}"
+                        # print_message(msg, status="error")
                         has_vars = False
+                        break
                 if not has_vars:
                     continue
                 
-                msg = f"""
-CMIP6 Name: {handler['name']},
-CMIP6 Table: {handler['table']},
-CMIP6 Units: {handler['units']},
-E3SM Variables: {', '.join(handler['raw_variables'])}"""
+                msg = {
+                    "CMIP6 Name": handler['name'],
+                    "CMIP6 Table": handler['table'],
+                    "CMIP6 Units": handler['units'],
+                    "E3SM Variables":  ', '.join(handler['raw_variables'])
+                }
                 if handler.get('unit_conversion'):
-                    msg += f",\nUnit conversion: {handler['unit_conversion']}"
+                    msg["Unit conversion"] = handler['unit_conversion']
+                if handler.get('levels'):
+                    msg["Levels"] = handler['levels']
                 messages.append(msg)
     
-    for msg in messages:
-        print_message(msg, status="debug")
-            
-            
+    
+    if outpath is not None:
+        with open(outpath, 'w') as outstream:
+            yaml.dump(messages, outstream)
+    else:
+        pprint(messages)
 # ------------------------------------------------------------------
 
 def get_table(table, variable, freq, tables):
@@ -491,7 +502,7 @@ def copy_user_metadata(input_path, output_path):
 # ------------------------------------------------------------------
 
 
-def add_metadata(file_path, var_list, metadata):
+def add_metadata(file_path, var_list, metadata_path):
     """
     Recurses down a file tree, adding metadata to any netcdf files in the tree
     that are on the variable list.
@@ -501,42 +512,29 @@ def add_metadata(file_path, var_list, metadata):
         file_path (str): the root directory to search for files under
         var_list (list(str)): a list of cmip6 variable names
     """
-    filepaths = list()
 
-    print_message('Adding additional metadata to output files', 'ok')
-    for root, _, files in os.walk(file_path, topdown=False):
-        for name in files:
-            if name[-3:] != '.nc':
-                continue
-            index = name.find('_')
-            if index != -1 and name[:index] in var_list or 'all' in var_list:
-                filepaths.append(os.path.join(root, name))
+    def filter_variables(file_path, var_list):
+        for root, _, files in os.walk(file_path, topdown=False):
+            for name in files:
+                if name[-3:] != '.nc':
+                    continue
+                index = name.find('_')
+                if index != -1 and name[:index] in var_list or 'all' in var_list:
+                    yield os.path.join(root, name)
+    
+    with open(metadata_path, 'r') as instream:
+        if metadata_path.endswith('json'):
+            metadata = json.load(instream)
+        elif metadata_path.endswith('yaml'):
+            metadata = yaml.load(instream, Loader=yaml.SafeLoader)
+        else:
+            raise ValueError(f"custom metadata file {metadata_path} is not a json or yaml document")
 
-    pbar = tqdm(total=len(filepaths))
-
-    for _, filepath in enumerate(filepaths):
-
-        datafile = cdms2.open(filepath, 'r+')
-        datafile.e3sm_source_code_doi = str('10.11578/E3SM/dc.20180418.36')
-        datafile.e3sm_paper_reference = str(
-            'https://doi.org/10.1029/2018MS001603')
-        datafile.e3sm_source_code_reference = str(
-            'https://github.com/E3SM-Project/E3SM/releases/tag/v1.0.0')
-        datafile.doe_acknowledgement = str(
-            'This research was supported as part of the Energy Exascale Earth System Model (E3SM) project, funded by the U.S. Department of Energy, Office of Science, Office of Biological and Environmental Research.')
-        datafile.computational_acknowledgement = str(
-            'The data were produced using resources of the National Energy Research Scientific Computing Center, a DOE Office of Science User Facility supported by the Office of Science of the U.S. Department of Energy under Contract No. DE-AC02-05CH11231.')
-        datafile.ncclimo_generation_command = str(
-            """ncclimo --var=${var} -7 --dfl_lvl=1 --no_cll_msr --no_frm_trm --no_stg_grd --yr_srt=1 --yr_end=500 --ypf=25 --map=map_ne30np4_to_cmip6_180x360_aave.20181001.nc """)
-        datafile.ncclimo_version = str('4.8.1-alpha04')
-
-        # picontrol specific
-        # datafile.base_year = str("1850")
-
-        datafile.close()
-        pbar.update(1)
-
-    pbar.close()
+    for filepath in tqdm(filter_variables(file_path, var_list), desc='Adding additional metadata to output files'):
+        ds = xr.open_dataset(filepath, decode_times=False)
+        for key, value in metadata.items():
+            ds.attrs[key] = value
+        ds.to_netcdf(filepath)        
 # ------------------------------------------------------------------
 
 
@@ -635,7 +633,7 @@ def find_mpas_files(component, path, map_path=None):
             "Unable to find mpaso_moc_regions in the input directory")
 
     else:
-        files = find_atm_files(var, path)
+        files = [x for x in find_atm_files(var, path)]
         if len(files) > 0:
             files = [os.path.join(path, name) for name in files]
             return files
@@ -746,3 +744,8 @@ def precheck(inpath, precheck_path, variables, mode):
                     break
 
     return [x['name'] for x in var_map if not x['found']]
+
+def reconstructPressureFromHybrid(ps, A, B, Po):
+    p = ps * B
+    p = p + A * Po
+    return p

@@ -40,11 +40,6 @@ outputs:
       Directory[]
     outputSource: 
       step_run_mpaso/cmorized
-  cmor_logs:
-    type:
-      Directory[]
-    outputSource:
-      step_run_mpaso/cmor_logs
 
 steps:
   step_find_casename:
@@ -144,4 +139,3 @@ steps:
       workflow_output: workflow_output
     out:
       - cmorized
-      - cmor_logs

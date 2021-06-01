@@ -8,7 +8,6 @@ from e3sm_to_cmip import resources
 from tqdm import tqdm
 import os
 import cmor
-import cdms2
 import logging
 import xarray as xr
 import numpy as np
@@ -274,7 +273,7 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
             pbar.set_description(msg)
 
         for time_index, val in enumerate(data['time']):
-            
+
             outdata = write_data(
                 varid=0,
                 data=data,
@@ -330,6 +329,8 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
     return outvar_name
 
 # ------------------------------------------------------------------
+
+
 def var_has_time(table_path, variable):
     with open(table_path, 'r') as inputstream:
         table_info = json.load(inputstream)
@@ -342,7 +343,7 @@ def var_has_time(table_path, variable):
 
 
 def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_units, table, tables, metadata_path, serial=None, positive=None, levels=None, axis=None, logdir=None, simple=False, outpath=None):
-    
+
     timename = var_has_time(os.path.join(tables, table), outvar_name)
     if simple:
         return handle_simple(
@@ -457,21 +458,21 @@ def handle_variables(infiles, raw_variables, write_data, outvar_name, outvar_uni
             varid = cmor.variable(outvar_name, outvar_units, axis_ids)
 
         # write out the data
-        msg = f"{outvar_name}: time {data['time_bnds'][0][0]:1.1f} - {data['time_bnds'][-1][-1]:1.1f}"
+        msg = f"{outvar_name}: time {data['time_bnds'].values[0][0]:1.1f} - {data['time_bnds'].values[-1][-1]:1.1f}"
         logger.info(msg)
 
         if serial:
-            pbar = tqdm(total=len(data['time']))
+            pbar = tqdm(total=data['time'].shape[0])
             pbar.set_description(msg)
 
         if timename:
             try:
-                for index, val in enumerate(data['time']):
+                for index, val in enumerate(data['time'].values):
                     write_data(
                         varid=varid,
                         data=data,
                         timeval=val,
-                        timebnds=[data['time_bnds'][index, :]],
+                        timebnds=[data['time_bnds'].values[index, :]],
                         index=index,
                         raw_variables=raw_variables,
                         simple=False)
@@ -503,7 +504,6 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     """
     Returns a list of data, along with the dimension and dimension bounds
     for a given lis of variables, with the option for vertical levels.
-
     Params:
     -------
         filename: the netCDF file to look inside
@@ -511,9 +511,8 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
         levels (bool): return verticle information
         get_dims (bool): is dimension data should be loaded too
     Returns:
-
         {
-            data: cdms2 transient variable from the file
+            data: xarray Dataset from the file
             lat: numpy array of lat midpoints,
             lat_bnds: numpy array of lat edge points,
             lon: numpy array of lon midpoints,
@@ -521,9 +520,7 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
             time: array of time points,
             time_bdns: array of time bounds
         }
-
         optionally for 3d:
-
         lev, ilev, ps, p0, hyam, hyai, hybm, hybi
     """
     # extract data from the input file
@@ -532,75 +529,71 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     if not os.path.exists(filename):
         raise IOError(f"File not found: {filename}")
 
-    fp = cdms2.open(filename)
+    ds = xr.open_dataset(filename, decode_times=False)
 
     # load the data for each variable
-    variable_data = fp(variable)
+    variable_data = ds[variable]
 
     # load
-    data.update({
-        variable: variable_data
-    })
+    if 'plev' in ds.dims or 'lev' in ds.dims:
+        data[variable] = variable_data.values
+    else:
+        data[variable] = variable_data
 
     # atm uses "time_bnds" but the lnd component uses "time_bounds"
-    time_bounds_name = 'time_bnds' if 'time_bnds' in fp.variables.keys() else 'time_bounds'
+    time_bounds_name = 'time_bnds' if 'time_bnds' in ds.data_vars.keys() else 'time_bounds'
 
-    # load the lon and lat info & bounds
-    # load time & time bounds
+    # load the lon and lat and time info & bounds
     if get_dims:
         data.update({
-            'lat': variable_data.getLatitude(),
-            'lon': variable_data.getLongitude(),
-            'lat_bnds': fp('lat_bnds'),
-            'lon_bnds': fp('lon_bnds'),
-            'time': variable_data.getTime(),
-            'time2': variable_data.getTime()#,
-            # 'time_bnds': fp(time_bounds_name)
+            'lat': ds['lat'],
+            'lon': ds['lon'],
+            'lat_bnds': ds['lat_bnds'],
+            'lon_bnds': ds['lon_bnds'],
+            'time': ds['time']
         })
-        if time_bounds_name in fp.variables.keys():
-            time_bnds = fp(time_bounds_name)
-            if len(time_bnds.shape) == 1:
-                # import ipdb; ipdb.set_trace()
-                time_bnds = time_bnds.reshape(1, 2)
-            data.update({
-                'time_bnds': time_bnds
-            })
-
         try:
-            index = variable_data.getAxisIds().index('levgrnd')
-        except:
+            time2 = ds['time2']
+        except KeyError:
             pass
         else:
-            data.update({
-                'levgrnd': variable_data.getAxis(index)
-            })
+            data['time2'] = time2
+
+        if time_bounds_name in ds.data_vars:
+            time_bnds = ds[time_bounds_name]
+            if len(time_bnds.shape) == 1:
+                time_bnds = time_bnds.reshape(1, 2)
+            data['time_bnds'] = time_bnds
+
+        try:
+            levgrnd = variable_data['levgrnd']
+        except KeyError:
+            pass
+        else:
+            data['levgrnd'] = levgrnd
 
         # load level and level bounds
         if levels is not None:
             if levels.get('name') == 'standard_hybrid_sigma' or levels.get('name') == 'standard_hybrid_sigma_half':
                 data.update({
-                    'lev': fp.getAxis('lev')[:]/1000,
-                    'ilev': fp.getAxis('ilev')[:]/1000,
-                    'ps': fp('PS'),
-                    'p0': fp('P0'),
-                    'hyam': fp('hyam'),
-                    'hyai': fp('hyai'),
-                    'hybm': fp('hybm'),
-                    'hybi': fp('hybi'),
+                    'lev': ds['lev'].values/1000,
+                    'ilev': ds['ilev'].values/1000,
+                    'ps': ds['PS'].values,
+                    'p0': ds['P0'].values.item(),
+                    'hyam': ds['hyam'],
+                    'hyai': ds['hyai'],
+                    'hybm': ds['hybm'],
+                    'hybi': ds['hybm'],
                 })
             else:
                 name = levels.get('e3sm_axis_name')
-                if name in fp.listdimension():
-                    data[name] = fp.getAxis(name)[:]
-                else:
-                    raise IOError("Unable to find e3sm_axis_name")
+                if name in ds.data_vars or name in ds.coords:
+                    data[name] = ds[name]
 
                 bnds = levels.get('e3sm_axis_bnds')
                 if bnds:
-                    if bnds in fp.listdimension():
-                        data[bnds] = fp.getAxis(bnds)[:]
-                    elif bnds in fp.variables.keys():
-                        data[bnds] = fp(bnds)[:]
+                    if bnds in ds.dims or bnds in ds.data_vars:
+                        data[bnds] = ds[bnds]
                     else:
                         raise IOError("Unable to find e3sm_axis_bnds")
     return data
@@ -615,19 +608,19 @@ def load_axis(data, levels=None, has_time=True):
         time = cmor.axis(name, units=units)
     # else add the normal time name
     elif has_time:
-        time = cmor.axis(has_time, units=data['time'].units)
+        time = cmor.axis(has_time, units=data['time'].attrs['units'])
 
     # use whatever level name this handler requires
     if levels:
         name = levels.get('name')
         units = levels.get('units')
-        coord_vals = data[levels.get('e3sm_axis_name')][:]
+        coord_vals = data[levels.get('e3sm_axis_name')]
 
         axis_bnds = levels.get('e3sm_axis_bnds')
         if axis_bnds:
             lev = cmor.axis(name,
                             units=units,
-                            cell_bounds=data[axis_bnds][:],
+                            cell_bounds=data[axis_bnds],
                             coord_vals=coord_vals)
         else:
             lev = cmor.axis(name,
@@ -637,13 +630,13 @@ def load_axis(data, levels=None, has_time=True):
     # add lon/lat
     lat = cmor.axis('latitude',
                     units=data['lat'].units,
-                    coord_vals=data['lat'][:],
-                    cell_bounds=data['lat_bnds'][:])
+                    coord_vals=data['lat'].values,
+                    cell_bounds=data['lat_bnds'].values)
 
     lon = cmor.axis('longitude',
                     units=data['lon'].units,
-                    coord_vals=data['lon'][:],
-                    cell_bounds=data['lon_bnds'][:])
+                    coord_vals=data['lon'].values,
+                    cell_bounds=data['lon_bnds'].values)
 
     if levels:
         axes = [time, lev, lat, lon]
@@ -659,14 +652,14 @@ def load_axis(data, levels=None, has_time=True):
             zaxis_id=lev,
             zfactor_name='a',
             axis_ids=[lev, ],
-            zfactor_values=data['hyam'][:],
-            zfactor_bounds=data['hyai'][:])
+            zfactor_values=data['hyam'].values,
+            zfactor_bounds=data['hyai'].values)
         cmor.zfactor(
             zaxis_id=lev,
             zfactor_name='b',
             axis_ids=[lev, ],
-            zfactor_values=data['hybm'][:],
-            zfactor_bounds=data['hybi'][:])
+            zfactor_values=data['hybm'].values,
+            zfactor_bounds=data['hybi'].values)
         cmor.zfactor(
             zaxis_id=lev,
             zfactor_name='p0',

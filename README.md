@@ -28,8 +28,6 @@ To install from source, you'll need to setup your own environment and install th
     - python >=3.7
     - nco
     - cmor >=3.6.0
-    - cdutil
-    - cdms2 >=3.1
     - tqdm
     - pyyaml
     - xarray
@@ -44,6 +42,10 @@ git clone https://github.com/E3SM-Project/e3sm_to_cmip.git
 cd e3sm_to_cmip
 python setup.py install
 ```
+
+### NOTE
+
+Two handlers (pfull and phalf) require the addition of the "cdms2" and "cdutil" packages. These packages arent included in the default dependency list since the two handlers aren't widely used. If you require these two variables, add "cdms2" and "cdutil" to the package list at install time.
 
 
 

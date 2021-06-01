@@ -4,7 +4,6 @@ SOILICE to mrfso converter
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import cmor
-import cdms2
 import logging
 import numpy as np
 

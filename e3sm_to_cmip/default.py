@@ -12,31 +12,31 @@ def default_handler(infiles, tables, user_input_path, **kwargs):
         if timeval is not None:
             if unit_conversion is not None:
                 if unit_conversion == 'g-to-kg':
-                    outdata =  data[RAW_VARIABLES[0] ][index, :] / 1000.0
+                    outdata =  data[RAW_VARIABLES[0] ].values[index, :] / 1000.0
                 elif unit_conversion == '1-to-%':
-                    outdata =  data[RAW_VARIABLES[0] ][index, :] * 100.0
+                    outdata =  data[RAW_VARIABLES[0] ].values[index, :] * 100.0
                 elif unit_conversion == 'm/s-to-kg/ms':
-                    outdata = data[RAW_VARIABLES[0] ][index, :] * 1000
+                    outdata = data[RAW_VARIABLES[0] ].values[index, :] * 1000
                 elif unit_conversion == '-1':
-                    outdata =  data[RAW_VARIABLES[0] ][index, :] * -1
+                    outdata =  data[RAW_VARIABLES[0] ].values[index, :] * -1
                 else:
-                    raise ValueError(f"{unit_conversion} isnt a supported unit conversion for default variables")
+                    raise ValueError(f"{unit_conversion} isn't a supported unit conversion for default variables")
             else:
-                outdata = data[ RAW_VARIABLES[0] ][index, :]
+                outdata = data[ RAW_VARIABLES[0] ].values[index, :]
         else:
             if unit_conversion is not None:
                 if unit_conversion == 'g-to-kg':
-                    outdata =  data[RAW_VARIABLES[0] ] / 1000.0
+                    outdata =  data[RAW_VARIABLES[0] ].values / 1000.0
                 elif unit_conversion == '1-to-%':
-                    outdata =  data[RAW_VARIABLES[0] ] * 100.0
+                    outdata =  data[RAW_VARIABLES[0] ].values * 100.0
                 elif unit_conversion == 'm/s-to-kg/ms':
-                    outdata = data[RAW_VARIABLES[0] ] * 1000
+                    outdata = data[RAW_VARIABLES[0] ].values * 1000
                 elif unit_conversion == '-1':
-                    outdata =  data[RAW_VARIABLES[0] ] * -1
+                    outdata =  data[RAW_VARIABLES[0] ].values * -1
                 else:
-                    raise ValueError(f"{unit_conversion} isnt a supported unit conversion for default variables")
+                    raise ValueError(f"{unit_conversion} isn't a supported unit conversion for default variables")
             else:
-                outdata = data[ RAW_VARIABLES[0] ]
+                outdata = data[ RAW_VARIABLES[0] ].values
 
         if kwargs.get('simple'):
             return outdata

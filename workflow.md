@@ -10,7 +10,7 @@ The CWL workflows currently assume you have a SLURM controller available to subm
 First create a new conda environment and install the required packages.
 
 ```bash
-conda create -n workflow -c conda-forge cwltool nodejs "python>3" nco "cmor>=3.6.0" cdutil "cdms2>=3.1" tqdm pathos pyyaml xarray netcdf4 dask scipy
+conda create -n workflow -c conda-forge cwltool nodejs "python>3" nco "cmor>=3.6.0" tqdm pathos pyyaml xarray netcdf4 dask scipy
 ```
 
 Then pull down a copy of the e3sm_to_cmip repository and install the python modules. 

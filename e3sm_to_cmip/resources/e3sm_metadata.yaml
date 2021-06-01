@@ -1,0 +1,5 @@
+e3sm_source_code_doi: 10.11578/E3SM/dc.20180418.36
+e3sm_paper_reference: https://doi.org/10.1029/2018MS001603
+e3sm_source_code_reference: https://github.com/E3SM-Project/E3SM/releases/tag/v1.0.0
+doe_acknowledgement: This research was supported as part of the Energy Exascale Earth System Model (E3SM) project, funded by the U.S. Department of Energy, Office of Science, Office of Biological and Environmental Research.
+computational_acknowledgement: The data were produced using resources of the National Energy Research Scientific Computing Center, a DOE Office of Science User Facility supported by the Office of Science of the U.S. Department of Energy under Contract No. DE-AC02-05CH11231.

@@ -10,7 +10,7 @@ import logging
 from e3sm_to_cmip import mpas
 from e3sm_to_cmip.util import print_message
 # 'MPAS' as a placeholder for raw variables needed
-RAW_VARIABLES = ['MPASO', 'MPAS_mesh', 'MPASO_MOC_regions']
+RAW_VARIABLES = ['MPASO', 'MPAS_mesh', 'MPASO_MOC_regions', 'MPASO_namelist']
 
 # output variable name
 VAR_NAME = 'msftmz'

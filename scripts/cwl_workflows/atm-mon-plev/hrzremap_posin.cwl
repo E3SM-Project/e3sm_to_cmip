@@ -41,6 +41,7 @@ arguments:
   - --no_stdin
   - -a
   - sdd
+  - --preserve=mean
   - -O
   - $(runtime.outdir)
   - -o

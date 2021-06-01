@@ -4,12 +4,17 @@ CLDICE to cli converter
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import cmor
-import cdms2
 import logging
 import os
 from tqdm import tqdm
 from e3sm_to_cmip.util import print_message
-from cdutil.vertical import reconstructPressureFromHybrid
+
+try:
+    import cdms2
+    from cdutil.vertical import reconstructPressureFromHybrid
+except ImportError as e:
+    print("The pfull variable handler requires both cdms2 and cdutil")
+    raise e
 
 # list of raw variable names needed
 RAW_VARIABLES = [str('hybi'), str('hyai'), str('hyam'), str('hybm'), str('PS')]

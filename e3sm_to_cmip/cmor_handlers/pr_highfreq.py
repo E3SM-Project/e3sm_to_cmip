@@ -17,7 +17,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     pr = PRECT * 1000.0
     """
-    outdata = data['PRECT'][index, :] * 1000.0
+    outdata = data['PRECT'].values[index, :] * 1000.0
     if kwargs.get('simple'):
         return outdata
     cmor.write(
