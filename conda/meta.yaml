@@ -24,14 +24,12 @@ requirements:
     - setuptools
 
   run:
-      - python
+      - python >= 3.6
       - nco
       - cmor >=3.6.0
-      - cdutil
       - tqdm
       - pyyaml
       - xarray
       - netcdf4
       - dask
       - scipy
-
