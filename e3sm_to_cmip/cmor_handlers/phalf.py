@@ -139,7 +139,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
                     'lon': ds['lon'],
                     'lat_bnds': ds['lat_bnds'],
                     'lon_bnds': ds['lon_bnds'],
-                    'time2': ds['time'],
+                    'time': ds['time'],
                     'time_bnds': ds['time_bnds']
                 })
 
@@ -159,10 +159,10 @@ def handle(infiles, tables, user_input_path, **kwargs):
         
         # create the cmor variable and axis
         axes = [{
-            str('table_entry'): 'time2',
+            str('table_entry'): LEVELS['time_name'],
             str('units'): data['time'].units
         }, {
-            str('table_entry'): str('standard_hybrid_sigma'),
+            str('table_entry'): str('standard_hybrid_sigma_half'),
             str('units'): str('1'),
             str('coord_vals'): data['lev'],
             str('cell_bounds'): data['ilev']
@@ -217,9 +217,9 @@ def handle(infiles, tables, user_input_path, **kwargs):
         logger.info(msg)
 
         if serial:
-            pbar = tqdm(total=ds['time2'].shape[0])
+            pbar = tqdm(total=ds['time'].shape[0])
 
-        for index, val in enumerate(data['time2'].values):
+        for index, val in enumerate(data['time'].values):
             write_data(
                 varid=varid,
                 data=data,
