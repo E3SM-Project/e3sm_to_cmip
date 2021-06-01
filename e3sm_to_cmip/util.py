@@ -265,7 +265,6 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
                         break
                 if not has_vars:
                     continue
-                import ipdb; ipdb.set_trace()
                 
                 msg = {
                     "CMIP6 Name": handler['name'],

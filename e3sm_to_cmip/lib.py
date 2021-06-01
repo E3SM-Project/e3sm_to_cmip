@@ -546,14 +546,14 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     # load the lon and lat and time info & bounds
     if get_dims:
         data.update({
-            'lat': variable_data['lat'],
-            'lon': variable_data['lon'],
+            'lat': ds['lat'],
+            'lon': ds['lon'],
             'lat_bnds': ds['lat_bnds'],
             'lon_bnds': ds['lon_bnds'],
-            'time': variable_data['time']
+            'time': ds['time']
         })
         try:
-            time2 = variable_data['time2']
+            time2 = ds['time2']
         except KeyError:
             pass
         else:
