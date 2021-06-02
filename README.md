@@ -13,7 +13,7 @@ There are two ways to install the e3sm_to_cmip package, either use the pre-build
 
 You can install the `e3sm_to_cmip` conda package directly from the `e3sm` channel:
 ```
-conda create -n e2c -c conda-forge -c e3sm e3sm_to_cmip
+conda create -n e2c -c conda-forge e3sm_to_cmip
 ```
 
 Get a copy of the CMIP6 Controlled Vocabulary tables
