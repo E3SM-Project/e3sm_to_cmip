@@ -10,6 +10,7 @@ source:
 build:
   script: python setup.py install
   string: {{ environ['BUILD_NAME'] }}
+  noarch: python
 
 about:
   home: https://github.com/E3SM-Project/e3sm_to_cmip
@@ -19,17 +20,17 @@ about:
 
 requirements:
   host:
-    - python
+    - python >=3.7
     - pip
     - setuptools
 
   run:
-      - python >=3.7
-      - nco
-      - cmor >=3.6.0
-      - tqdm
-      - pyyaml
-      - xarray
-      - netcdf4
-      - dask
-      - scipy
+    - python >=3.7
+    - nco
+    - cmor >=3.6.0
+    - tqdm
+    - pyyaml
+    - xarray
+    - netcdf4
+    - dask
+    - scipy
