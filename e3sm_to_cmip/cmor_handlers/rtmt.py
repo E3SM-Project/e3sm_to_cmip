@@ -18,7 +18,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     rtmt = FSNT - FLNT
     """
-    outdata = data['FSNT'][index, :] - data['FLNT'][index, :]
+    outdata = data['FSNT'][index, :].values - data['FLNT'][index, :].values
     if kwargs.get('simple'):
         return outdata
     cmor.write(

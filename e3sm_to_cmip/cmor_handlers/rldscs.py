@@ -18,8 +18,8 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     rldscs = FLDS + FLNS - FLNSC
     """
-    outdata = data['FLDS'][index, :] + \
-        data['FLNS'][index, :] - data['FLNSC'][index, :]
+    outdata = data['FLDS'][index, :].values + \
+        data['FLNS'][index, :].values - data['FLNSC'][index, :].values
     if kwargs.get('simple'):
         return outdata
     cmor.write(

@@ -625,7 +625,7 @@ def load_axis(data, levels=None, has_time=True):
         else:
             lev = cmor.axis(name,
                             units=units,
-                            coord_vals=coord_vals)
+                            coord_vals=coord_vals.values)
 
     # add lon/lat
     lat = cmor.axis('latitude',

@@ -17,7 +17,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     prsn = (PRECSC  + PRECSL) * 1000.0
     """
-    outdata = (data['PRECSC'][index, :] + data['PRECSL'][index, :]) * 1000.0
+    outdata = (data['PRECSC'][index, :].values + data['PRECSL'][index, :].values) * 1000.0
     if kwargs.get('simple'):
         return outdata
     cmor.write(

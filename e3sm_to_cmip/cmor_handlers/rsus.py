@@ -18,7 +18,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     rsus = FSDS - FSNS
     """
-    outdata = data['FSDS'][index, :] - data['FSNS'][index, :]
+    outdata = data['FSDS'][index, :].values - data['FSNS'][index, :].values
     if kwargs.get('simple'):
         return outdata
     cmor.write(

@@ -17,7 +17,8 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     pr = (PRECC  + PRECL) * 1000.0
     """
-    outdata = (data['PRECC'][index, :] + data['PRECL'][index, :]) * 1000.0
+    # import ipdb; ipdb.set_trace()
+    outdata = (data['PRECC'][index, :].values + data['PRECL'][index, :].values) * 1000.0
     if kwargs.get('simple'):
         return outdata
     cmor.write(
