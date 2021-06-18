@@ -18,7 +18,7 @@ At the moment it only tests atmospheric monthly variables, but more will be adde
 
 def run_cmd(cmd: str):
     print(f"running: '{cmd}'")
-    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE, shell=True)
     output = []
     while proc.poll() is None:
         out = proc.stdout.read()
