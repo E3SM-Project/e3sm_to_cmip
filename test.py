@@ -63,7 +63,12 @@ def test(vars: List, comp_branch: str, input: Path, output: Path):
         print(f'Error checking out {comp_branch}')
         return 1
     
-    # do the testing
+    # install the comparison version of the package so CWL uses the right version
+    cmd = 'python setup.py install'
+    retcode, output = run_cmd(cmd)
+    if retcode:
+        print(f'Error installing from comparison branch {comp_branch}')
+        return 1
 
     # swap back to the source branch
     cmd = f'git checkout {source_banch}'
@@ -71,7 +76,13 @@ def test(vars: List, comp_branch: str, input: Path, output: Path):
     if retcode:
         print(f'Error checking out {source_banch}')
         return 1
-
+    
+    # install the test version of the package and run the data again
+    cmd = 'python setup.py install'
+    retcode, output = run_cmd(cmd)
+    if retcode:
+        print(f'Error installing from comparison branch {source_banch}')
+        return 1
     return 0
 
 
