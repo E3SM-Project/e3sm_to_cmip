@@ -1,8 +1,10 @@
 import os
 import sys
-import argparse
-import subprocess
 import yaml
+import argparse
+
+from time import sleep
+from subprocess import Popen, PIPE
 from pathlib import Path
 from typing import List
 
@@ -14,14 +16,36 @@ to  be ingested by e3sm_to_cmip.
 
 At the moment it only tests atmospheric monthly variables, but more will be added in the future'''
 
+def run_cmd(cmd: str):
+    proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    output = []
+    while proc.poll() is None:
+        out = proc.stdout.read()
+        if out:
+            o = out.decode('utf-8')
+            print(o)
+            output.append(o)
+        err = proc.stderr.read()
+        if err:
+            print(err.decode('utf-8'))
+        sleep(0.1)
+    return proc.returncode, ''.join(output)
+
 
 def test(vars: List, branch: str, input: Path, output: Path):
     if not input.exists():
         raise ValueError(f"Input directory {input} does not exist")
-    output.touch(exist_ok=True)
+    output.mkdir(exist_ok=True)
 
-    cmd = 'git status'
-    p = subprocess.check_call(cmd)
+    cmd = 'git status --porcelain'.split()
+    retcode, output = run_cmd(cmd)
+    if retcode:
+        print('Error checking the git status')
+    if output and '??' in output or 'M' in output:
+        print('git status is not clean, commit or stash your changes and try again')
+        return 1
+    
+
     
     return 0
 
@@ -34,8 +58,9 @@ def main():
         'input', 
         help='directory of raw files to use, these should be native grid raw model output')
     parser.add_argument(
-        '--output', 
-        default='testing', 
+        '-o', '--output', 
+        default='testing',
+        required=False,
         help=f'path to where the output files from the test should be stored, default is {os.environ.get("PWD")}{os.sep}testing{os.sep}')
     parser.add_argument(
         '--cleanup', 
@@ -43,7 +68,7 @@ def main():
         help='remove the generated data if the test result is a success')
     parser.add_argument(
         '-v', '--var-list', 
-        default='all', 
+        default='all',
         nargs="*",
         help='select which variables to include in the comparison, default is all')
     parser.add_argument(
@@ -56,13 +81,19 @@ def main():
         retval = test(
             vars=parsed_args.var_list, 
             branch=parsed_args.compare, 
-            input=Path(parsed_args.input))
+            input=Path(parsed_args.input),
+            output=Path(parsed_args.output))
     except Exception as e:
         print(e)
         retval = 1
-    # if the test returns a 0, then it was successful
-    if retval == 0 and parsed_args.cleanup:
-        os.rmdir(parsed_args.output)
+    
+    # test success actions
+    if retval == 0:
+        if parsed_args.cleanup:
+            os.rmdir(parsed_args.output)
+        print('Testing successful')
+    else:
+        print('Testing error')
     return retval
 
 if __name__ == "__main__":
