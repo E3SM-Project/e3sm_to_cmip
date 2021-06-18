@@ -32,11 +32,11 @@ outputs:
     outputSource: 
       - step_plev_cmor/cmip6_dir
     linkMerge: merge_flattened
-  logs:
-    type: Directory[]
-    outputSource:
-      - step_plev_cmor/cmor_logs
-    linkMerge: merge_flattened
+#  logs:
+#    type: Directory[]
+#    outputSource:
+#     - step_plev_cmor/cmor_logs
+#  linkMerge: merge_flattened
 
 steps:
   step_find_casename:
@@ -139,4 +139,4 @@ steps:
       timeout: timeout
     out:
       - cmip6_dir
-      - cmor_logs
+#      - cmor_logs
