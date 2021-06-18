@@ -43,7 +43,7 @@ def test(vars: List, comp_branch: str, input: Path, output: Path):
     if retcode:
         print('Error checking the git status')
         return 1
-    if output and '??' in output or 'M' in output:
+    if output and '??' in output or 'M' in output or 'nothing to commit, working tree clean' not in output:
         print('git status is not clean, commit or stash your changes and try again')
         return 1
     
