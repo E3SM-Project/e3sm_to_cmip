@@ -17,8 +17,8 @@ to  be ingested by e3sm_to_cmip.
 At the moment it only tests atmospheric monthly variables, but more will be added in the future'''
 
 def run_cmd(cmd: str):
-    print(f"running: '{' '.join(cmd)}'")
-    proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    print(f"running: '{cmd}'")
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     output = []
     while proc.poll() is None:
         out = proc.stdout.read()
@@ -38,7 +38,7 @@ def test(vars: List, comp_branch: str, input: Path, output: Path):
         raise ValueError(f"Input directory {input} does not exist")
     output.mkdir(exist_ok=True)
 
-    cmd = 'git status --porcelain'.split()
+    cmd = 'git status --porcelain'
     retcode, output = run_cmd(cmd)
     if retcode:
         print('Error checking the git status')
