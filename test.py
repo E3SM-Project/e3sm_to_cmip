@@ -16,9 +16,12 @@ to  be ingested by e3sm_to_cmip.
 
 At the moment it only tests atmospheric monthly variables, but more will be added in the future'''
 
-def run_cmd(cmd: str):
+def run_cmd(cmd: str, shell=False):
     print(f"running: '{cmd}'")
-    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE, shell=True)
+    if not shell:
+        proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    else:
+        proc = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
     output = []
     while proc.poll() is None:
         out = proc.stdout.read()
@@ -65,7 +68,7 @@ def test(vars: List, comp_branch: str, input: Path, output: Path):
     
     # install the comparison version of the package so CWL uses the right version
     cmd = "find . -name '*.pyc' -delete; python setup.py install"
-    retcode, output = run_cmd(cmd)
+    retcode, output = run_cmd(cmd, shell=True)
     if retcode:
         print(f'Error installing from comparison branch {comp_branch}')
         return 1
@@ -79,7 +82,7 @@ def test(vars: List, comp_branch: str, input: Path, output: Path):
     
     # install the test version of the package and run the data again
     cmd = "find . -name '*.pyc' -delete; python setup.py install"
-    retcode, output = run_cmd(cmd)
+    retcode, output = run_cmd(cmd, shell=True)
     if retcode:
         print(f'Error installing from comparison branch {source_banch}')
         return 1
