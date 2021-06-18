@@ -49,7 +49,7 @@ def test(vars: List, comp_branch: str, input: Path, output: Path):
             return 1
     
     # store what the source branch name is
-    cmd = 'git branch --show-current'
+    cmd = "git branch --show-current"
     retcode, output = run_cmd(cmd)
     if retcode:
         print('Error getting the source git branch')
@@ -64,7 +64,7 @@ def test(vars: List, comp_branch: str, input: Path, output: Path):
         return 1
     
     # install the comparison version of the package so CWL uses the right version
-    cmd = 'python setup.py install'
+    cmd = "find . -name '*.pyc' -delete; python setup.py install"
     retcode, output = run_cmd(cmd)
     if retcode:
         print(f'Error installing from comparison branch {comp_branch}')
@@ -78,7 +78,7 @@ def test(vars: List, comp_branch: str, input: Path, output: Path):
         return 1
     
     # install the test version of the package and run the data again
-    cmd = 'python setup.py install'
+    cmd = "find . -name '*.pyc' -delete; python setup.py install"
     retcode, output = run_cmd(cmd)
     if retcode:
         print(f'Error installing from comparison branch {source_banch}')
