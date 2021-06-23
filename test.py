@@ -119,6 +119,7 @@ def test(vars: List, cmp_branch: str, input: Path, output_path: Path, cwl_path: 
 
     if retcode != 0:
         print("Error running comparison branch")
+        return retcode
     else:
         print("Completed running the comparison branch")
     
@@ -145,6 +146,11 @@ def test(vars: List, cmp_branch: str, input: Path, output_path: Path, cwl_path: 
     cmd = f"cwltool --outdir {output_path / src_branch}{tmp_dir} --preserve-environment UDUNITS2_XML_PATH {workflow_path} {parameter_path}"
     retcode, output = run_cmd(cmd)
     del output
+    if retcode != 0:
+        print("Error running source branch")
+        return retcode
+    else:
+        print("Completed running the source branch")
 
     # compare the output between the two runs
     issues = []
