@@ -90,9 +90,9 @@ def test(vars: List, cmp_branch: str, input: Path, output_path: Path, cwl_path: 
     # render out the cwl parameter file with the required info to generate
     # CMIP variables from the raw input
     workflow_path  = Path(cwl_path, 'atm-unified', 'atm-unified.cwl')
-    parameter_path = Path(cwl_path, 'atm-unified', 'atm-unified-job.yaml')
+    parameter_template_path = Path(cwl_path, 'atm-unified', 'atm-unified-job.yaml')
 
-    with open(parameter_path, 'r') as instream:
+    with open(parameter_template_path, 'r') as instream:
         parameters = yaml.load(instream, Loader=yaml.SafeLoader)
     
     parameters['data_path'] = str(input)
@@ -101,9 +101,11 @@ def test(vars: List, cmp_branch: str, input: Path, output_path: Path, cwl_path: 
     parameters['vrt_map_path'] = vrt_map
     parameters['metadata_path'] = metadata
 
-    cwl_parameter_path = output_path / 'cwl-parameter.yaml'
+    cwl_parameter_path = Path(output_path, f'atm-mon-{cmp_branch}.yaml')
     if cwl_parameter_path.exists():
         cwl_parameter_path.unlink()
+    
+    print(f"Writing out CWL parameter file {cwl_parameter_path}")
     with open(cwl_parameter_path, 'w') as outstream:
         yaml.dump(parameters, outstream)
 
@@ -113,7 +115,7 @@ def test(vars: List, cmp_branch: str, input: Path, output_path: Path, cwl_path: 
         cmp_output_path.rmdir()
 
     # execute the workflow and collect output for comparison
-    cmd = f"cwltool --outdir {output_path / cmp_branch}{tmp_dir} --preserve-environment UDUNITS2_XML_PATH {workflow_path} {parameter_path}"
+    cmd = f"cwltool --outdir {output_path / cmp_branch}{tmp_dir} --preserve-environment UDUNITS2_XML_PATH {workflow_path} {cwl_parameter_path}"
     retcode, output = run_cmd(cmd)
     del output
 
@@ -142,8 +144,12 @@ def test(vars: List, cmp_branch: str, input: Path, output_path: Path, cwl_path: 
     if src_output_path.exists():
         print("removing previous testing source output")
         cmp_output_path.rmdir()
+    
+    cwl_parameter_path = Path(output_path, f'atm-mon-{src_branch}.yaml')
+    if cwl_parameter_path.exists():
+        cwl_parameter_path.unlink()
 
-    cmd = f"cwltool --outdir {output_path / src_branch}{tmp_dir} --preserve-environment UDUNITS2_XML_PATH {workflow_path} {parameter_path}"
+    cmd = f"cwltool --outdir {output_path / src_branch}{tmp_dir} --preserve-environment UDUNITS2_XML_PATH {workflow_path} {cwl_parameter_path}"
     retcode, output = run_cmd(cmd)
     del output
     if retcode != 0:
