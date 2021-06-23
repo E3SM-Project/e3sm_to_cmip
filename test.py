@@ -89,8 +89,8 @@ def test(vars: List, cmp_branch: str, input: Path, output_path: Path, cwl_path: 
 
     # render out the cwl parameter file with the required info to generate
     # CMIP variables from the raw input
-    workflow_path  = cwl_path / 'atm-unified' / 'atm-unified.cwl'
-    parameter_path = cwl_path / 'atm-unified' / 'atm-unified-job.yaml'
+    workflow_path  = Path(cwl_path, 'atm-unified', 'atm-unified.cwl')
+    parameter_path = Path(cwl_path, 'atm-unified', 'atm-unified-job.yaml')
 
     with open(parameter_path, 'r') as instream:
         parameters = yaml.load(instream, Loader=yaml.SafeLoader)
