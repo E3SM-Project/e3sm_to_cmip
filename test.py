@@ -96,12 +96,13 @@ def test(vars: List, cmp_branch: str, input: Path, output_path: Path, cwl_path: 
         parameters = yaml.load(instream, Loader=yaml.SafeLoader)
     
     parameters['data_path'] = str(input)
-    parameters['frequency'] = '1'
+    parameters['frequency'] = 1
+    parameters['timeout'] = '0:30:00'
     parameters['hrz_atm_map_path'] = map_path
     parameters['vrt_map_path'] = vrt_map
     parameters['metadata_path'] = metadata
 
-    cwl_parameter_path = Path(output_path, f'atm-mon-{cmp_branch}.yaml')
+    cwl_parameter_path = Path(output_path, f'atm-mon-{cmp_branch}-vs-{src_branch}.yaml')
     if cwl_parameter_path.exists():
         cwl_parameter_path.unlink()
     
@@ -144,10 +145,6 @@ def test(vars: List, cmp_branch: str, input: Path, output_path: Path, cwl_path: 
     if src_output_path.exists():
         print("removing previous testing source output")
         cmp_output_path.rmdir()
-    
-    cwl_parameter_path = Path(output_path, f'atm-mon-{src_branch}.yaml')
-    if cwl_parameter_path.exists():
-        cwl_parameter_path.unlink()
 
     cmd = f"cwltool --outdir {output_path / src_branch}{tmp_dir} --preserve-environment UDUNITS2_XML_PATH {workflow_path} {cwl_parameter_path}"
     retcode, output = run_cmd(cmd)
