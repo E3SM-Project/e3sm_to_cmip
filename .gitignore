@@ -2,8 +2,8 @@
 sftp.json
 
 # e3sm_to_cmip testing output
-testing/
-testing/**
+testing_output/
+testing_output/**
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
