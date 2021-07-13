@@ -251,31 +251,51 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
     
     elif freq and tables and inpath:
         file_path = next(Path(inpath).glob('*.nc'))
+        
+        resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
+        defaults_path = os.path.join(
+            resource_path,
+            'default_handler_info.yaml')
+        
+        with open(defaults_path, 'r') as infile:
+            default_info = yaml.load(infile, Loader=yaml.SafeLoader)
+
         with xr.open_dataset(file_path) as ds:
             for handler in handlers:
+                
                 table_info = get_table_info(tables, handler['table'])
                 if handler['name'] not in table_info['variable_entry']:
                     continue
-                has_vars = True
-                for raw_var in handler['raw_variables']:
-                    if raw_var not in ds.data_vars:
-                        # msg = f"Required input variable {raw_var} is not present in the raw input files, cant convert {handler['name']}"
-                        # print_message(msg, status="error")
-                        has_vars = False
+
+                msg = None
+                for default in default_info:
+                    if handler['name'] + "_highfreq" == default['cmip_name']:
+                        msg = {
+                            "CMIP6 Name": default['cmip_name'],
+                            "CMIP6 Table": default['table'],
+                            "CMIP6 Units": default['units'],
+                            "E3SM Variables":  [default['e3sm_name']]
+                        }
                         break
-                if not has_vars:
-                    continue
-                
-                msg = {
-                    "CMIP6 Name": handler['name'],
-                    "CMIP6 Table": handler['table'],
-                    "CMIP6 Units": handler['units'],
-                    "E3SM Variables":  ', '.join(handler['raw_variables'])
-                }
+                if msg is None:
+                    msg = {
+                        "CMIP6 Name": handler['name'],
+                        "CMIP6 Table": handler['table'],
+                        "CMIP6 Units": handler['units'],
+                        "E3SM Variables":  ', '.join(handler['raw_variables'])
+                    }
                 if handler.get('unit_conversion'):
                     msg["Unit conversion"] = handler['unit_conversion']
                 if handler.get('levels'):
                     msg["Levels"] = handler['levels']
+
+                has_vars = True
+                for raw_var in msg["E3SM Variables"]:
+                    if raw_var not in ds.data_vars:
+                        has_vars = False
+                        break
+                if not has_vars:
+                    continue
                 messages.append(msg)
     
     
@@ -744,8 +764,3 @@ def precheck(inpath, precheck_path, variables, mode):
                     break
 
     return [x['name'] for x in var_map if not x['found']]
-
-def reconstructPressureFromHybrid(ps, A, B, Po):
-    p = ps * B
-    p = p + A * Po
-    return p
