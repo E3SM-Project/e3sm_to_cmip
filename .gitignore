@@ -1,6 +1,10 @@
 .vscode/
 sftp.json
 
+# e3sm_to_cmip testing output
+testing_output/
+testing_output/**
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
