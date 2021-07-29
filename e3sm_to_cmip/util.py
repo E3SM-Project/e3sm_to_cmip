@@ -513,6 +513,7 @@ def copy_user_metadata(input_path, output_path):
                 fout.write(f'\t"outpath": "{output_path}",\n')
             else:
                 fout.write(line)
+
     except IOError as error:
         print("Write failure for user metadata")
         raise error
