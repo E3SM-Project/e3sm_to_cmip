@@ -265,7 +265,8 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
                     ds.coords[d] = new_data[d][:]
 
         # write out the data
-        msg = f"{outvar_name}: time {data['time_bnds'][0][0]:1.1f} - {data['time_bnds'][-1][-1]:1.1f}"
+        msg = f"{outvar_name}: time {data['time_bnds'].values[0][0]:1.1f} - {data['time_bnds'].values[-1][-1]:1.1f}"
+                             
         logger.info(msg)
 
         if serial:
@@ -278,7 +279,7 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
                 varid=0,
                 data=data,
                 timeval=val,
-                timebnds=[data['time_bnds'][time_index, :]],
+                timebnds=[data['time_bnds'].values[time_index, :]],
                 index=time_index,
                 raw_variables=raw_variables,
                 simple=True)
