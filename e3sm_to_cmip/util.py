@@ -212,6 +212,7 @@ variables are present in the E3SM output.""")
 def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
     
     messages = []
+    
     # if the user just asked for the handler info
     if freq == "mon" and not inpath and not tables:
         for handler in handlers:
@@ -259,6 +260,8 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
         
         with open(defaults_path, 'r') as infile:
             default_info = yaml.load(infile, Loader=yaml.SafeLoader)
+        
+        
 
         with xr.open_dataset(file_path) as ds:
             for handler in handlers:
@@ -269,7 +272,7 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
 
                 msg = None
                 for default in default_info:
-                    if handler['name'] + "_highfreq" == default['cmip_name']:
+                    if handler['name'] + "_highfreq" == default['cmip_name'] and freq in default['table']:
                         msg = {
                             "CMIP6 Name": default['cmip_name'],
                             "CMIP6 Table": default['table'],
@@ -290,7 +293,7 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
                     msg["Levels"] = handler['levels']
 
                 has_vars = True
-                for raw_var in msg["E3SM Variables"]:
+                for raw_var in [x.strip() for x in msg["E3SM Variables"].split(',')]:
                     if raw_var not in ds.data_vars:
                         has_vars = False
                         break
