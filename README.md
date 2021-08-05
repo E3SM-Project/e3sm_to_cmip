@@ -7,11 +7,11 @@ A cli utility to transform E3SM model output into CMIP compatible data.
 
 ## Installation
 
-There are two ways to install the e3sm_to_cmip package, either use the pre-build conda version which will bring all the dependencies with it, or install the dependencies yourself and use the source code.
+There are two ways to install the e3sm_to_cmip package. Either use (1) the pre-built conda package through `conda-forge`, which will bring all the dependencies with it, or (2) setup the local development environment to install dependencies and use the source code directly.
 
-### <ins>conda</ins>
+### <ins>(1) Conda</ins>
 
-You can install the `e3sm_to_cmip` conda package directly from the `e3sm` channel:
+You can install the `e3sm_to_cmip` conda package directly from the `conda-forge` channel:
 ```
 conda create -n e2c -c conda-forge e3sm_to_cmip
 ```
@@ -21,25 +21,18 @@ Get a copy of the CMIP6 Controlled Vocabulary tables
 git clone https://github.com/PCMDI/cmip6-cmor-tables.git
 ```
 
-### <ins>source</ins>
+### <ins>(2) Conda Development Environment and Source Code</ins>
 
-To install from source, you'll need to setup your own environment and install the dependencies yourself. The required packages are:
-
-    - python >=3.7
-    - nco
-    - cmor >=3.6.0
-    - tqdm
-    - pyyaml
-    - xarray
-    - netcdf4
-    - dask
-    - scipy
-
-Once you have the required packages installed, simply run
-
+First, clone the repo and set up the conda dev environment:
 ```
 git clone https://github.com/E3SM-Project/e3sm_to_cmip.git
 cd e3sm_to_cmip
+conda env create -f conda/dev.yml
+conda activate e3sm_to_cmip_dev
+```
+
+Once you have dev environment setup, simply run:
+```
 python setup.py install
 ```
 
