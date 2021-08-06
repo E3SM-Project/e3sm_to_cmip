@@ -1,3 +1,6 @@
+import ipdb
+
+
 import os
 import sys
 import yaml
@@ -7,6 +10,8 @@ from time import sleep
 from subprocess import Popen, PIPE
 from pathlib import Path
 from typing import List
+
+from e3sm_to_cmip import resources
 
 DESC = '''test the output of the e3sm_to_cmip package from 
 two git branches and run a comparison check on the output. Returns 0 if 
@@ -35,8 +40,21 @@ def run_cmd(cmd: str, shell=False):
         sleep(0.1)
     return proc.returncode, ''.join(output)
 
-def swap_branch(target_branch):
-                
+
+def test(vars: List, cmp_branch: str, input: Path, output_path: Path, cwl_path: Path, map_path: str, vrt_map: str, metadata: str):
+    # i like to have the heavy imports happen after the command line arguments get parsed
+    # so that startup is faster when running --help
+    import xarray as xr
+    import numpy as np
+    if not input.exists():
+        raise ValueError(f"Input directory {input} does not exist")
+    output_path.mkdir(exist_ok=True)
+
+    if os.environ.get('TMPDIR'):
+        tmp_dir = f" --tmpdir-prefix={os.environ.get('TMPDIR')}"
+    else:
+        tmp_dir = ""
+
     cmd = 'git status --porcelain'
     retcode, output = run_cmd(cmd)
     if retcode:
@@ -48,49 +66,108 @@ def swap_branch(target_branch):
             return 1
     del output
     
-    # check out the branch to compare this one against
-    cmd = f'git checkout {target_branch}'
+    # store what the source branch name is
+    cmd = "git branch --show-current"
     retcode, output = run_cmd(cmd)
     if retcode:
-        print(f'Error checking out {target_branch}')
+        print('Error getting the source git branch')
         return 1
+    src_branch = output
     del output
 
-def install_and_run_test(branchname, vars, frequency, output_path):
-    test_output_path = Path(output_path, branchname, 'CMIP6')
-    if test_output_path.exists():
-        print("removing previous testing source output")
-        test_output_path.rmdir()
-    else:
-        print(f"Creating output directory {test_output_path}")
-        test_output_path.touch(0o655)
-
-    # swap over to the comparison branch
-    swap_branch(branchname)
-
+    # check out the branch to compare this one against
+    cmd = f'git checkout {cmp_branch}'
+    retcode, output = run_cmd(cmd)
+    if retcode:
+        print(f'Error checking out {cmp_branch}')
+        return 1
+    del output
+    
     # install the comparison version of the package so CWL uses the right version
     cmd = "find . -name '*.pyc' -delete; python setup.py install"
     retcode, output = run_cmd(cmd, shell=True)
     if retcode:
-        print(f'Error installing from comparison branch {branchname}')
+        print(f'Error installing from comparison branch {cmp_branch}')
         return 1
     del output
 
-    if retcode := run_test(vars, frequency):
-        print(f"Error running {branchname} brach test")
+
+    # render out the cwl parameter file with the required info to generate
+    # CMIP variables from the raw input
+    workflow_path  = Path(cwl_path, 'atm-unified', 'atm-unified.cwl')
+    parameter_template_path = Path(cwl_path, 'atm-unified', 'atm-unified-job.yaml')
+
+    with open(parameter_template_path, 'r') as instream:
+        parameters = yaml.load(instream, Loader=yaml.SafeLoader)
+    
+    parameters['data_path'] = str(input)
+    parameters['frequency'] = 1
+    parameters['timeout'] = '0:30:00'
+    parameters['hrz_atm_map_path'] = map_path
+    parameters['vrt_map_path'] = vrt_map
+    parameters['metadata_path'] = metadata
+
+    cwl_parameter_path = Path(output_path, f'atm-mon-{cmp_branch}-vs-{src_branch}.yaml')
+    if cwl_parameter_path.exists():
+        cwl_parameter_path.unlink()
+    
+    print(f"Writing out CWL parameter file {cwl_parameter_path}")
+    with open(cwl_parameter_path, 'w') as outstream:
+        yaml.dump(parameters, outstream)
+
+    cmp_output_path = Path(output_path, cmp_branch, 'CMIP6')
+    if cmp_output_path.exists():
+        print("removing previous testing comparison output")
+        cmp_output_path.rmdir()
+
+    # execute the workflow and collect output for comparison
+    cmd = f"cwltool --outdir {output_path / cmp_branch}{tmp_dir} --preserve-environment UDUNITS2_XML_PATH {workflow_path} {cwl_parameter_path}"
+    retcode, output = run_cmd(cmd)
+    del output
+
+    if retcode != 0:
+        print("Error running comparison branch")
         return retcode
+    else:
+        print("Completed running the comparison branch")
+    
+    # swap back to the source branch
+    cmd = f'git checkout {src_branch}'
+    retcode, output = run_cmd(cmd)
+    if retcode:
+        print(f'Error checking out {src_branch}')
+        return 1
+    del output
+    
+    # install the test version of the package and run the data again
+    cmd = "find . -name '*.pyc' -delete; python setup.py install"
+    retcode, output = run_cmd(cmd, shell=True)
+    if retcode:
+        print(f'Error installing from comparison branch {src_branch}')
+        return 1
+    
+    src_output_path = Path(output_path, src_branch, 'CMIP6')
+    if src_output_path.exists():
+        print("removing previous testing source output")
+        cmp_output_path.rmdir()
 
-    return 0
+    cmd = f"cwltool --outdir {output_path / src_branch}{tmp_dir} --preserve-environment UDUNITS2_XML_PATH {workflow_path} {cwl_parameter_path}"
+    retcode, output = run_cmd(cmd)
+    del output
+    if retcode != 0:
+        print("Error running source branch")
+        return retcode
+    else:
+        print("Completed running the source branch")
 
-def run_test(vars, freq):
-    pass
 
-def compare_output(src_name, cmp_name):
+    ipdb.set_trace()
     # compare the output between the two runs
     issues = []
-    for table in ['Amon', 'CFmon', 'AERmon']:
-        cmp_branch_path = Path(cmp_output_path, 'CMIP6/CMIP/E3SM-Project/E3SM-1-0/piControl/r1i1p1f1/', table)
-        src_branch_path = Path(src_output_path, 'CMIP6/CMIP/E3SM-Project/E3SM-1-0/piControl/r1i1p1f1/', table)
+    tables = [x for x in Path(cmp_output_path, 'CMIP6/CMIP/E3SM-Project/E3SM-1-0/piControl/r1i1p1f1/').glob("**")]
+    for table in tables:
+        cmp_branch_path = table.glob("**")
+        src_branch_path = Path(src_output_path, 'CMIP6/CMIP/E3SM-Project/E3SM-1-0/piControl/r1i1p1f1/', table.name)
         for variable in cmp_branch_path.glob('**'):
             # check that the variable exists in both sets of output
             source_var_path = src_branch_path / variable
@@ -110,39 +187,11 @@ def compare_output(src_name, cmp_name):
                 if not np.allclose(cmp_ds[str(variable)], src_ds[str(variable)]):
                     msg = f"{variable}: values do not match"
                     issues.append(msg)
-    return issues
-
-
-def test(vars: List, cmp_branch: str, input: Path, output_path: Path, cwl_path: Path, map_path: str, vrt_map: str, metadata: str):
-    # i like to have the heavy imports happen after the command line arguments get parsed
-    # so that startup is faster when running --help
-    import xarray as xr
-    import numpy as np
-    if not input.exists():
-        raise ValueError(f"Input directory {input} does not exist")
-    output_path.mkdir(exist_ok=True)
-    
-    # store what the source branch name is
-    cmd = "git branch --show-current"
-    retcode, output = run_cmd(cmd)
-    if retcode:
-        print('Error getting the source git branch')
-        return 1
-    src_branch = output
-
-    if ret := install_and_run_test(cmp_branch, vars, "monthly", output_path):
-        print(f"Failure to run {cmp_branch}")
-        return ret
-        
-    if ret := install_and_run_test(src_branch, vars, "monthly", output_path):
-        print(f"Failure to run {cmp_branch}")
-        return ret
-
-    if issues := compare_output(src_branch, cmp_branch):
-        for issue in issues:
-            print(issue)
-        return 1
-    return 0
+    if not issues:
+        return 0
+    for issue in issues:
+        print(issue)
+    return 1
 
 
 def main():
@@ -158,10 +207,6 @@ def main():
         required=False,
         help=f'path to where the output files from the test should be stored, default is {os.environ.get("PWD")}{os.sep}testing_output{os.sep}')
     parser.add_argument(
-        '--cleanup', 
-        action='store_true', 
-        help='remove the generated data if the test result is a success')
-    parser.add_argument(
         '-v', '--var-list', 
         default='all',
         nargs="*",
@@ -170,14 +215,30 @@ def main():
         '-c', '--compare', 
         default='master', 
         help='select which branch to run the comparison against, default is master')
+
+    resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
+    default_metadata_path = Path(resource_path, 'default_metadata.json')
+    parser.add_argument(
+        '--metadata', 
+        default=default_metadata_path,
+        help=f'metadata file to use in the conversion process, default path is {default_metadata_path}')
+
+    parser.add_argument(
+        '--cleanup', 
+        action='store_true', 
+        help='remove the generated data if the test result is a success')
     parsed_args = parser.parse_args()
 
     try:
         retval = test(
+            cwl_path=parsed_args.cwl_path,
             vars=parsed_args.var_list, 
             cmp_branch=parsed_args.compare, 
             input=Path(parsed_args.input),
-            output_path=Path(parsed_args.output))
+            output_path=Path(parsed_args.output),
+            map_path=parsed_args.map,
+            vrt_map=parsed_args.vrt_map,
+            metadata=parsed_args.metadata)
     except Exception as e:
         print(e)
         retval = 1
