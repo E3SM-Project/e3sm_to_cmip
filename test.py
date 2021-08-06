@@ -121,11 +121,6 @@ def test(vars: List, cmp_branch: str, input: Path, output_path: Path, cwl_path: 
     if not input.exists():
         raise ValueError(f"Input directory {input} does not exist")
     output_path.mkdir(exist_ok=True)
-
-    if os.environ.get('TMPDIR'):
-        tmp_dir = f" --tmpdir-prefix={os.environ.get('TMPDIR')}"
-    else:
-        tmp_dir = ""
     
     # store what the source branch name is
     cmd = "git branch --show-current"
@@ -158,32 +153,10 @@ def main():
         'input', 
         help='directory of raw files to use, these should be native grid raw model output')
     parser.add_argument(
-        'cwl_path', 
-        help='path to the "scripts/cwl_workflows" directory inside the e3sm_to_cmip repository')
-    parser.add_argument(
         '-o', '--output', 
         default='testing_output',
         required=False,
         help=f'path to where the output files from the test should be stored, default is {os.environ.get("PWD")}{os.sep}testing_output{os.sep}')
-    
-    default_map_path = '~zender1/data/maps/map_ne30np4_to_cmip6_180x360_aave.20181001.nc'
-    parser.add_argument(
-        '--map', 
-        default=default_map_path,
-        help=f'regrid map path, default is {default_map_path}')
-
-    default_vrt_map_path = '/p/user_pub/e3sm/baldwin32/resources/vrt_remap_plev19.nc'
-    parser.add_argument(
-        '--vrt-map', 
-        default=default_vrt_map_path,
-        help=f'vertical remap file path, default is {default_vrt_map_path}')
-    
-    default_metadata_path = '/p/user_pub/e3sm/baldwin32/resources/CMIP6-Metadata/E3SM-1-0/piControl_r1i1p1f1.json'
-    parser.add_argument(
-        '--metadata', 
-        default=default_metadata_path,
-        help=f'metadata file to use in the conversion process {default_metadata_path}')
-
     parser.add_argument(
         '--cleanup', 
         action='store_true', 
@@ -201,14 +174,10 @@ def main():
 
     try:
         retval = test(
-            cwl_path=parsed_args.cwl_path,
             vars=parsed_args.var_list, 
             cmp_branch=parsed_args.compare, 
             input=Path(parsed_args.input),
-            output_path=Path(parsed_args.output),
-            map_path=parsed_args.map,
-            vrt_map=parsed_args.vrt_map,
-            metadata=parsed_args.metadata)
+            output_path=Path(parsed_args.output))
     except Exception as e:
         print(e)
         retval = 1

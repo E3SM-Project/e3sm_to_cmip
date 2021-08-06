@@ -43,7 +43,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         msg = f"{VAR_NAME} is not supported for simple conversion"
         print_message(msg)
         return
-        
+
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
 
@@ -59,8 +59,8 @@ def handle(infiles, tables, user_input_path, **kwargs):
     ds = xarray.Dataset()
     with mpas.open_mfdataset(timeSeriesFiles, variableList) as dsIn:
         ds[VAR_NAME] = (dsIn.timeMonthly_avg_layerThickness.where(
-                            cellMask3D, 0.) *
-                        dsMesh.areaCell).sum(dim=['nVertLevels', 'nCells'])
+            cellMask3D, 0.) *
+            dsMesh.areaCell).sum(dim=['nVertLevels', 'nCells'])
 
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
