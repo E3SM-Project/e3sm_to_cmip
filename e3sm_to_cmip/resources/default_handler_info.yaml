@@ -310,3 +310,8 @@
   units: 'kg m-2 s-1'
   table: CMIP6_day.json
   unit_conversion: 'm/s-to-kg/ms'
+
+- cmip_name: snw
+  e3sm_name: SNOWICE
+  units: 'kg m-2'
+  table: CMIP6_LImon.json
