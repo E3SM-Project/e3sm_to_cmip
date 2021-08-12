@@ -23,7 +23,7 @@ ATMOS_TABLES = ['CMIP6_Amon.json', 'CMIP6_day.json', 'CMIP6_3hr.json', \
                 'CMIP6_AERmon.json', 'CMIP6_AERday.json', 'CMIP6_AERhr.json', \
                 'CMIP6_CFmon.json', 'CMIP6_CF3hr.json', 'CMIP6_CFday.json', 'CMIP6_fx.json']
 
-LAND_TABLES = ['CMIP6_Lmon.json']
+LAND_TABLES = ['CMIP6_Lmon.json', 'CMIP6_LImon.json']
 OCEAN_TABLES = ['CMIP6_Omon.json', 'CMIP6_Ofx.json']
 SEAICE_TABLES = ['CMIP6_SImon.json']
 
