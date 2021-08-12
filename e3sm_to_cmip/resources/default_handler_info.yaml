@@ -312,6 +312,6 @@
   unit_conversion: 'm/s-to-kg/ms'
 
 - cmip_name: snw
-  e3sm_name: SNOWICE
+  e3sm_name: H2OSNO
   units: 'kg m-2'
   table: CMIP6_LImon.json
