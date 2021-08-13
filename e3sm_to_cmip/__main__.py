@@ -54,7 +54,7 @@ def main():
     custom_metadata = _args.get('custom_metadata')
     nproc = _args.get('num_proc')
     serial = _args.get('serial')
-    mode = _args.get('mode')
+    realm = _args.get('realm')
     debug = True if _args.get('debug') else False
     map_path = _args.get('map')
     cmor_log_dir = _args.get('logdir')
@@ -81,7 +81,7 @@ def main():
             os.path.abspath(cmor_handlers.__file__))
 
     if precheck_path:
-        new_var_list = precheck(input_path, precheck_path, var_list, mode)
+        new_var_list = precheck(input_path, precheck_path, var_list, realm)
         if not new_var_list:
             print("All variables previously computed")
             os.mkdir(os.path.join(output_path, 'CMIP6'))
@@ -98,7 +98,7 @@ def main():
         handlers_path=handlers_path,
         var_list=var_list,
         freq=freq,
-        mode=mode,
+        realm=realm,
         tables=tables_path,
         simple=simple)
 
@@ -158,7 +158,7 @@ def main():
                 tables_path=tables_path,
                 metadata_path=new_metadata_path,
                 map_path=map_path,
-                mode=mode,
+                realm=realm,
                 logdir=cmor_log_dir,
                 simple=simple,
                 outpath=output_path,
@@ -180,7 +180,7 @@ def main():
                 tables_path=tables_path,
                 metadata_path=new_metadata_path,
                 map_path=map_path,
-                mode=mode,
+                realm=realm,
                 logdir=cmor_log_dir,
                 simple=simple,
                 outpath=output_path,

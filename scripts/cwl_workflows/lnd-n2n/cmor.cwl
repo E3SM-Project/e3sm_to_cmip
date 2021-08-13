@@ -46,7 +46,7 @@ arguments:
   - .
   - --output-path
   - $(runtime.outdir)
-  - --mode
+  - --realm
   - lnd
 
 outputs: 

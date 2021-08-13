@@ -36,7 +36,7 @@ echo $PWD
 echo $CONDA_PREFIX
 
 
-python -m e3sm_to_cmip -i {input_path} -o {output_path} -t /home/sbaldwin/projects/cmip6-cmor-tables/Tables/ -u /home/sbaldwin/projects/e3sm_to_cmip/e3sm_user_config_picontrol.json -v {variables} --mode ocn --map ~zender/data/maps/map_oEC60to30v3_to_cmip6_180x360_aave.20181001.nc
+python -m e3sm_to_cmip -i {input_path} -o {output_path} -t /home/sbaldwin/projects/cmip6-cmor-tables/Tables/ -u /home/sbaldwin/projects/e3sm_to_cmip/e3sm_user_config_picontrol.json -v {variables} --realm ocn --map ~zender/data/maps/map_oEC60to30v3_to_cmip6_180x360_aave.20181001.nc
                 """.format(
                     outname=outname,
                     variables=" ".join(variables),

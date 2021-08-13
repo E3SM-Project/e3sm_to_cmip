@@ -23,7 +23,7 @@ inputs:
 
 arguments:
   - "-s"
-  - "--mode" 
+  - "--realm" 
   - "fx"
   - prefix: --output-path
     valueFrom: $(runtime.outdir)

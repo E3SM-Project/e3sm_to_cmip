@@ -150,10 +150,10 @@ def parse_arguments():
         help='Set output level to debug',
         action='store_true')
     parser.add_argument(
-        '--mode',
-        metavar='<mode>',
+        '--realm',
+        metavar='<realm>',
         default='atm',
-        help="The component to analyze, atm, lnd, mpaso or mpassi")
+        help="The realm to process, atm, lnd, mpaso or mpassi. Default is atm")
     parser.add_argument(
         '--logdir',
         default='./cmor_logs',
@@ -189,9 +189,9 @@ variables are present in the E3SM output.""")
         sys.exit(1)
     else:
         _args = parser.parse_args(_args)
-        if _args.mode == 'mpaso' and not _args.map:
+        if _args.realm == 'mpaso' and not _args.map:
             raise ValueError("MPAS ocean handling requires a map file")
-        if _args.mode == 'mpassi' and not _args.map:
+        if _args.realm == 'mpassi' and not _args.map:
             raise ValueError("MPAS sea-ice handling requires a map file")
         if not _args.simple and not _args.tables_path and not _args.info:
             raise ValueError(
@@ -212,6 +212,7 @@ variables are present in the E3SM output.""")
 def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
     
     messages = []
+    
     # if the user just asked for the handler info
     if freq == "mon" and not inpath and not tables:
         for handler in handlers:
@@ -268,6 +269,7 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
                     continue
 
                 msg = None
+                raw_vars = []
                 for default in default_info:
                     if handler['name'] + "_highfreq" == default['cmip_name']:
                         msg = {
@@ -276,6 +278,7 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
                             "CMIP6 Units": default['units'],
                             "E3SM Variables":  [default['e3sm_name']]
                         }
+                        raw_vars.append(default['e3sm_name'])
                         break
                 if msg is None:
                     msg = {
@@ -284,15 +287,18 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
                         "CMIP6 Units": handler['units'],
                         "E3SM Variables":  ', '.join(handler['raw_variables'])
                     }
+                    raw_vars.extend(handler['raw_variables'])
                 if handler.get('unit_conversion'):
                     msg["Unit conversion"] = handler['unit_conversion']
                 if handler.get('levels'):
                     msg["Levels"] = handler['levels']
 
                 has_vars = True
-                for raw_var in msg["E3SM Variables"]:
+                for raw_var in raw_vars:
                     if raw_var not in ds.data_vars:
                         has_vars = False
+                        msg = f"Variable {handler['name']} is not present in the input dataset"
+                        print_message(msg, status="error")
                         break
                 if not has_vars:
                     continue
@@ -337,7 +343,7 @@ def get_table_info(tables, table):
 def get_table_freq(table, freq):
     if table == "CMIP6_Amon.json":
         return f"CMIP6_{freq}.json"
-    elif table == "CMIP6_Lmon.json" and freq != "mon":
+    elif table in ["CMIP6_Lmon.json", "CMIP6_LImon.json"] and freq != "mon":
         return None
     elif 'fx' in table and freq != "mon":
         return None
@@ -346,7 +352,7 @@ def get_table_freq(table, freq):
 
 
 
-def load_handlers(handlers_path, var_list, tables, freq="mon", mode='atm', simple=False, debug=None):
+def load_handlers(handlers_path, var_list, tables, freq="mon", realm='atm', simple=False, debug=None):
     """
     load the cmor handler modules
 
@@ -395,13 +401,14 @@ def load_handlers(handlers_path, var_list, tables, freq="mon", mode='atm', simpl
                 if not var_included:
                     print_message(f"Variable {default['cmip_name']} is not included in table {table}")
                     continue
-            if mode == 'atm' and table not in ATMOS_TABLES:
+
+            if realm == 'atm' and table not in ATMOS_TABLES:
                 continue
-            elif mode == 'lnd' and table not in LAND_TABLES:
+            elif realm == 'lnd' and table not in LAND_TABLES:
                 continue
-            elif mode == 'ocn' and table not in OCEAN_TABLES:
+            elif realm == 'mpaso' and table not in OCEAN_TABLES:
                 continue
-            elif mode == 'ice' and table not in SEAICE_TABLES:
+            elif realm == 'mpassi' and table not in SEAICE_TABLES:
                 continue
 
             handlers.append({
