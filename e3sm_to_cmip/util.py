@@ -463,13 +463,13 @@ def load_handlers(handlers_path, var_list, tables, freq="mon", realm='atm', simp
                 print_message(f"Variable {module.VAR_NAME} is not included in table {table}")
                 continue
 
-        if mode == 'atm' and table not in ATMOS_TABLES:
+        if realm == 'atm' and table not in ATMOS_TABLES:
             continue
-        elif mode == 'lnd' and table not in LAND_TABLES:
+        elif realm == 'lnd' and table not in LAND_TABLES:
             continue
-        elif mode == 'ocn' and table not in OCEAN_TABLES:
+        elif realm == 'ocn' and table not in OCEAN_TABLES:
             continue
-        elif mode == 'ice' and table not in SEAICE_TABLES:
+        elif realm == 'ice' and table not in SEAICE_TABLES:
             continue
         
         if module_name in var_list or 'all' in var_list:
