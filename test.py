@@ -126,13 +126,13 @@ def compare_output(output_path, src_name, cmp_name):
     # so that startup is faster when running --help
     import xarray as xr
     import numpy as np
+    
     # compare the output between the two runs
     issues = []
-    ipdb.set_trace()
-    tables = Path(output_path, cmp_name, 'CMIP6/CMIP/E3SM-Project/E3SM-1-0/piControl/r1i1p1f1/').glob("**")
+    tables = Path(output_path, cmp_name, 'CMIP6/CMIP/E3SM-Project/E3SM-1-0/piControl/r1i1p1f1/').glob("*")
     for table in tables:
         src_table_path = Path(output_path, src_name, 'CMIP6/CMIP/E3SM-Project/E3SM-1-0/piControl/r1i1p1f1/', table.name)
-        for variable in table.glob('**'):
+        for variable in table.glob('*'):
             # check that the variable exists in both sets of output
             source_var_path = src_table_path / variable.name
             if not source_var_path.exists():
@@ -147,6 +147,7 @@ def compare_output(output_path, src_name, cmp_name):
                 msg = f"Empty variable list in comparison branch {cmp_name}"
                 issues.append(msg)
                 continue
+
             try:
                 src_var_data_path = sorted([x for x in Path(src_table_path, variable.name, 'gr').glob('v*')])[-1]
             except IndexError:
@@ -154,16 +155,16 @@ def compare_output(output_path, src_name, cmp_name):
                 issues.append(msg)
                 continue
                 
-            print(f"Running comparison for {variable}", end=" ... ")
+            print(f"Running comparison for {variable.name}", end=" ... ")
 
             # each dataset should only have a single file in it
             with xr.open_dataset(cmp_var_data_path.glob('*.nc').__next__()) as cmp_ds, \
-                xr.open_dataset(src_var_data_path.glob('*.nc').__next__()) as src_ds:
+                 xr.open_dataset(src_var_data_path.glob('*.nc').__next__()) as src_ds:
                 
-                if np.allclose(cmp_ds[str(variable)], src_ds[str(variable)]):
-                    print(f"{variable} test pass")
+                if np.allclose(cmp_ds[str(variable.name)], src_ds[str(variable.name)]):
+                    print(f"{variable.name} test pass")
                 else:
-                    msg = f"{variable}: values do not match"
+                    msg = f"{variable.name}: values do not match"
                     issues.append(msg)
                     
     return issues
