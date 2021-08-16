@@ -2,41 +2,44 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from e3sm_to_cmip.lib import handle_variables
 import cmor
 
+
 def default_handler(infiles, tables, user_input_path, **kwargs):
-    
+
     RAW_VARIABLES = kwargs['raw_variables']
     unit_conversion = kwargs.get('unit_conversion')
-    
+
     def write_data(varid, data, timeval=None, timebnds=None, index=None, **kwargs):
-        
+
         if timeval is not None:
             if unit_conversion is not None:
                 if unit_conversion == 'g-to-kg':
-                    outdata =  data[RAW_VARIABLES[0] ].values[index, :] / 1000.0
+                    outdata = data[RAW_VARIABLES[0]].values[index, :] / 1000.0
                 elif unit_conversion == '1-to-%':
-                    outdata =  data[RAW_VARIABLES[0] ].values[index, :] * 100.0
+                    outdata = data[RAW_VARIABLES[0]].values[index, :] * 100.0
                 elif unit_conversion == 'm/s-to-kg/ms':
-                    outdata = data[RAW_VARIABLES[0] ].values[index, :] * 1000
+                    outdata = data[RAW_VARIABLES[0]].values[index, :] * 1000
                 elif unit_conversion == '-1':
-                    outdata =  data[RAW_VARIABLES[0] ].values[index, :] * -1
+                    outdata = data[RAW_VARIABLES[0]].values[index, :] * -1
                 else:
-                    raise ValueError(f"{unit_conversion} isn't a supported unit conversion for default variables")
+                    raise ValueError(
+                        f"{unit_conversion} isn't a supported unit conversion for default variables")
             else:
-                outdata = data[ RAW_VARIABLES[0] ].values[index, :]
+                outdata = data[RAW_VARIABLES[0]].values[index, :]
         else:
             if unit_conversion is not None:
                 if unit_conversion == 'g-to-kg':
-                    outdata =  data[RAW_VARIABLES[0] ].values / 1000.0
+                    outdata = data[RAW_VARIABLES[0]].values / 1000.0
                 elif unit_conversion == '1-to-%':
-                    outdata =  data[RAW_VARIABLES[0] ].values * 100.0
+                    outdata = data[RAW_VARIABLES[0]].values * 100.0
                 elif unit_conversion == 'm/s-to-kg/ms':
-                    outdata = data[RAW_VARIABLES[0] ].values * 1000
+                    outdata = data[RAW_VARIABLES[0]].values * 1000
                 elif unit_conversion == '-1':
-                    outdata =  data[RAW_VARIABLES[0] ].values * -1
+                    outdata = data[RAW_VARIABLES[0]].values * -1
                 else:
-                    raise ValueError(f"{unit_conversion} isn't a supported unit conversion for default variables")
+                    raise ValueError(
+                        f"{unit_conversion} isn't a supported unit conversion for default variables")
             else:
-                outdata = data[ RAW_VARIABLES[0] ].values
+                outdata = data[RAW_VARIABLES[0]].values
 
         if kwargs.get('simple'):
             return outdata
@@ -50,7 +53,7 @@ def default_handler(infiles, tables, user_input_path, **kwargs):
         else:
             cmor.write(varid, outdata)
         return outdata
-            
+
     return handle_variables(
         metadata_path=user_input_path,
         tables=tables,
