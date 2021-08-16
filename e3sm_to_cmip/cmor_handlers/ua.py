@@ -19,7 +19,7 @@ LEVELS = {
 
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
-    outdata = data[RAW_VARIABLES[0] ][index, :]
+    outdata = data[RAW_VARIABLES[0]][index, :]
     if kwargs.get('simple'):
         return outdata
     cmor.write(
