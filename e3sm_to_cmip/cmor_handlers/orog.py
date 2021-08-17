@@ -55,7 +55,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     simple = kwargs.get('simple')
     logger = logging.getLogger()
-    msg = '{}: Starting'.format(VAR_NAME)
+    msg = f'{VAR_NAME}: Starting'
     logger.info(msg)
 
     logdir = kwargs.get('logdir')
@@ -64,8 +64,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     zerofiles = False
     for variable in RAW_VARIABLES:
         if len(infiles[variable]) == 0:
-            msg = '{}: Unable to find input files for {}'.format(
-                VAR_NAME, variable)
+            msg = f'{VAR_NAME}: Unable to find input files for {variable}'
             print_message(msg)
             logging.error(msg)
             zerofiles = True

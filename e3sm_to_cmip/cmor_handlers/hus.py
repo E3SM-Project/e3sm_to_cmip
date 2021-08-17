@@ -23,10 +23,10 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     hus = Q
     """
     if kwargs.get('simple'):
-        return data[RAW_VARIABLES[0] ][index, :]
+        return data[RAW_VARIABLES[0]][index, :]
     cmor.write(
         varid,
-        data[RAW_VARIABLES[0] ][index, :],
+        data[RAW_VARIABLES[0]][index, :],
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------

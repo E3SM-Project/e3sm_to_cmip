@@ -42,7 +42,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         msg = f"{VAR_NAME} is not supported for simple conversion"
         print_message(msg)
         return
-        
+
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
 
