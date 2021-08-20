@@ -260,6 +260,8 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
         
         with open(defaults_path, 'r') as infile:
             default_info = yaml.load(infile, Loader=yaml.SafeLoader)
+        
+        
 
         with xr.open_dataset(file_path) as ds:
             for handler in handlers:
@@ -271,7 +273,7 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
                 msg = None
                 raw_vars = []
                 for default in default_info:
-                    if handler['name'] + "_highfreq" == default['cmip_name']:
+                    if handler['name'] + "_highfreq" == default['cmip_name'] and freq in default['table']:
                         msg = {
                             "CMIP6 Name": default['cmip_name'],
                             "CMIP6 Table": default['table'],
@@ -295,6 +297,7 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
 
                 has_vars = True
                 for raw_var in raw_vars:
+
                     if raw_var not in ds.data_vars:
                         has_vars = False
                         msg = f"Variable {handler['name']} is not present in the input dataset"
@@ -520,6 +523,7 @@ def copy_user_metadata(input_path, output_path):
                 fout.write(f'\t"outpath": "{output_path}",\n')
             else:
                 fout.write(line)
+
     except IOError as error:
         print("Write failure for user metadata")
         raise error
