@@ -126,7 +126,7 @@ def parse_arguments():
     parser.add_argument(
         '--map',
         metavar='<map_mpas_to_std_grid>',
-        help="The path to an mpas remapping file. Required if mode is mpaso or mpassi")
+        help="The path to an mpas remapping file. Required if realm is mpaso or mpassi")
     parser.add_argument(
         '-n', '--num-proc',
         metavar='<nproc>',
@@ -694,17 +694,17 @@ def get_levgrnd_bnds():
 # ------------------------------------------------------------------
 
 
-def get_years_from_raw(path, mode, var):
+def get_years_from_raw(path, realm, var):
     """
     given a file path, return the start and end years for the data
     Parameters:
     -----------
         path (str): the directory to look in for data
-        mode (str): the type of data to look for, i.e atm, lnd, mpaso, mpassi
+        realm (str): the type of data to look for, i.e atm, lnd, mpaso, mpassi
     """
     start = 0
     end = 0
-    if mode in ['atm', 'lnd']:
+    if realm in ['atm', 'lnd']:
         contents = sorted([f for f in os.listdir(path)
                            if f.endswith("nc") and
                            var in f])
@@ -713,9 +713,9 @@ def get_years_from_raw(path, mode, var):
         start = int(contents[0][s.start(): s.start()+4])
         s = re.search(pattern=p, string=contents[-1])
         end = int(contents[-1][s.start(): s.start()+4])
-    elif mode in ['mpassi', 'mpaso']:
+    elif realm in ['mpassi', 'mpaso']:
 
-        files = sorted(find_mpas_files(mode, path))
+        files = sorted(find_mpas_files(realm, path))
         p = r'\d{4}-\d{2}-\d{2}.nc'
         s = re.search(pattern=p, string=files[0])
         start = int(files[0][s.start(): s.start() + 4])
@@ -723,7 +723,7 @@ def get_years_from_raw(path, mode, var):
         end = int(files[-1][s.start(): s.start() + 4])
 
     else:
-        raise ValueError("Invalid mode")
+        raise ValueError("Invalid realm")
     return start, end
 
 
@@ -741,7 +741,7 @@ def get_year_from_cmip(filename):
     return start, end
 
 
-def precheck(inpath, precheck_path, variables, mode):
+def precheck(inpath, precheck_path, variables, realm):
     """
     Check if the data has already been produced and skip
 
@@ -749,7 +749,7 @@ def precheck(inpath, precheck_path, variables, mode):
     """
 
     # First check the inpath for the start and end years
-    start, end = get_years_from_raw(inpath, mode, variables[0])
+    start, end = get_years_from_raw(inpath, realm, variables[0])
     var_map = [{'found': False, 'name': var} for var in variables]
 
     # then check the output tree for files with the correct variables for those years
