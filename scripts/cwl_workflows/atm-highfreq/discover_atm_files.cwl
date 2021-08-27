@@ -12,15 +12,6 @@ requirements:
           import re
           import argparse
 
-          def get_year(filepath):
-              # Works for files matching the pattern: "somelongcasename.cam.h0.1850-12.nc"
-              _, name = os.path.split(filepath)
-              pattern = r'[c|e]am\.h\d'
-              s = re.search(pattern, name)
-              if not s:
-                raise ValueError(f"Unable to find year for file {name}")
-              return int(name[s.end() + 1: s.end() + 5])
-
           def main():
               parser = argparse.ArgumentParser()
               parser.add_argument(
@@ -39,16 +30,16 @@ requirements:
               start = _args.start_year
               end = _args.end_year
 
-              atm_pattern = f'[c|e]am\.h\d'
+              atm_pattern = r'[c|e]am\.h\d'
               atm_files = list()
 
-              for root, _, files in os.walk(inpath):
-                  if files:
-                      for f in files:
-                          if re.search(atm_pattern, f):
-                              year = get_year(f)
-                              if year >= start and year <= end:
-                                  atm_files.append(os.path.join(root, f))
+              for root, dirs, files in os.walk(inpath):
+                  if not files or dirs:
+                      continue
+
+                  for f in files:
+                      if re.search(atm_pattern, f):
+                          atm_files.append(os.path.join(root, f))
 
               for f in sorted(atm_files):
                   print(f)
@@ -64,14 +55,6 @@ inputs:
     type: string
     inputBinding:
       prefix: --input
-  start:
-    type: int
-    inputBinding:
-      prefix: --start
-  end:
-    type: int
-    inputBinding:
-      prefix: --end
 
 outputs:
   atm_files:
