@@ -15,8 +15,8 @@ requirements:
 
           def get_year(filename):
               # r"(?<=\.)(\d*?)(?=\-\d{2}.nc)" matches "1850" from "somelongcasename.cam.h0.1850-12.nc"
-              # r"^(\d{4})(?=\d{4}) matches "2018" from "20180129.DECKv1b_piControl.ne30_oEC.edison.cam.h1.0002-02-25-00000.nc"
-              year_patterns = [r"(?<=\.)(\d*?)(?=\-\d{2}.nc)", r"^(\d{4})(?=\d{4})"]
+              # r"(?<=\.)(\d*?)(?=\-\d{2}-\d{2})" matches "0002" from "20180129.DECKv1b_piControl.ne30_oEC.edison.cam.h1.0002-02-25-00000.nc"
+              year_patterns = [r"(?<=\.)(\d*?)(?=\-\d{2}.nc)", r"(?<=\.)(\d*?)(?=\-\d{2}-\d{2})"]
 
               year = None
               for pattern in year_patterns:
