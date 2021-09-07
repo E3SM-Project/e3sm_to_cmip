@@ -7,7 +7,7 @@
   e3sm_name: AODVIS
   units: '1'
   table: CMIP6_AERmon.json
-  
+
 - cmip_name: cltisccp
   e3sm_name: CLDTOT_ISCCP
   units: "%"
@@ -304,9 +304,3 @@
   units: "W m-2"
   table: CMIP6_Amon.json
   positive: up
-
-- cmip_name: pr_highfreq
-  e3sm_name: PRECT
-  units: 'kg m-2 s-1'
-  table: CMIP6_day.json
-  unit_conversion: 'm/s-to-kg/ms'
