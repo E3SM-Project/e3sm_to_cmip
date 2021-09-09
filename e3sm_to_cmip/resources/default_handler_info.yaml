@@ -293,12 +293,6 @@
   units: K
   table: CMIP6_day.json
 
-- cmip_name: rlut_highfreq
-  e3sm_name: FLUT
-  units: "W m-2"
-  table: CMIP6_Aday.json
-  positive: up
-
 - cmip_name: rsut
   e3sm_name: FSUTOA
   units: "W m-2"
