@@ -21,7 +21,7 @@ requirements:
               parser.add_argument(
                   '-e', '--end-year', help="end year", type=int)
               _args = parser.parse_args(sys.argv[1:])
-              
+
               inpath = _args.input
               if not os.path.exists(inpath):
                   print("ERROR: directory not found {}".format(inpath), file=sys.stderr)
@@ -34,18 +34,15 @@ requirements:
               atm_files = list()
 
               for root, dirs, files in os.walk(inpath):
-                  if not files or dirs:
-                      continue
-
-                  for f in files:
-                      if re.search(atm_pattern, f):
-                          atm_files.append(os.path.join(root, f))
+                for f in files:
+                  if re.search(atm_pattern, f):
+                    atm_files.append(os.path.join(root, f))
 
               for f in sorted(atm_files):
                   print(f)
 
               return 0
-              
+
           if __name__ == "__main__":
               sys.exit(main())
 
