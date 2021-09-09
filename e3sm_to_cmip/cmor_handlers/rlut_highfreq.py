@@ -14,12 +14,13 @@ VAR_UNITS = str('W m-2')
 TABLE = str('CMIP6_day.json')
 POSITIVE = str('up')
 
-def write_data(varid, data, timeval, timebnds, index, **kwargs):
+def write_data(varid, data, timeval, timebnds, **kwargs):
+    outdata = data["FLUT"].values
     if kwargs.get('simple'):
-        return data
+        return outdata
     cmor.write(
         varid,
-        data,
+        outdata,
         time_vals=timeval,
         time_bnds=timebnds)
 # ------------------------------------------------------------------
