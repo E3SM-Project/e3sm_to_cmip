@@ -12,19 +12,28 @@ requirements:
           import os
           import re
           import json
-          def get_year(filepath):
-              # Works for files matching the pattern: "somelongcasename.cam.h0.1850-12.nc"
-              _, name = os.path.split(filepath)
-              pattern = r'[c|e]am\.h\d'
-              s = re.search(pattern, name)
-              if not s:
-                raise ValueError(f"Unable to find year for file {name}")
-              return int(name[s.end() + 1: s.end() + 5])
+
+          def get_year(filename):
+              # r"(?<=\.)(\d*?)(?=\-\d{2}.nc)" matches "1850" from "somelongcasename.cam.h0.1850-12.nc"
+              # r"(?<=\.)(\d*?)(?=\-\d{2}-\d{2})" matches "0002" from "20180129.DECKv1b_piControl.ne30_oEC.edison.cam.h1.0002-02-25-00000.nc"
+              year_patterns = [r"(?<=\.)(\d*?)(?=\-\d{2}.nc)", r"(?<=\.)(\d*?)(?=\-\d{2}-\d{2})"]
+
+              year = None
+              for pattern in year_patterns:
+                  year = re.search(pattern, filename)
+                  if year is not None:
+                      break
+
+              if year is None:
+                  raise ValueError(f"Unable to find year for file {filename}")
+              return int(year.group(0))
+
           def main():
               parser = argparse.ArgumentParser()
               parser.add_argument('--data-path')
 
-              years = sorted([get_year(x) for x in os.listdir(parser.parse_args().data_path)])
+              filenames = [filename for filename in os.listdir(parser.parse_args().data_path) if '.nc' in filename]
+              years = sorted([get_year(filename) for filename in filenames])
               with open("cwl.output.json", "w") as output:
                 json.dump({"start_year": years[0], "end_year": years[-1]}, output)
               return 0

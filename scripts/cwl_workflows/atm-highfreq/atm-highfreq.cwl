@@ -53,8 +53,6 @@ steps:
     run: discover_atm_files.cwl
     in:
       input: data_path
-      start: step_find_start_end/start_year
-      end: step_find_start_end/end_year
     out:
       - atm_files
   
