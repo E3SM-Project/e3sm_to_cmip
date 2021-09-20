@@ -36,13 +36,7 @@ Once you have dev environment setup, simply run:
 python setup.py install
 ```
 
-### NOTE
-
-Two handlers (pfull and phalf) require the addition of the "cdms2" and "cdutil" packages. These packages arent included in the default dependency list since the two handlers aren't widely used. If you require these two variables, add "cdms2" and "cdutil" to the package list at install time.
-
-
-
-### Example
+## Example
 
 Here's an example of the tool usage, with the variables tas, prc, and rlut. The time-series files containing the regridded output are in a directory named input_path, and a directory named output_path will be used to hold the CMIP6 output.
 
