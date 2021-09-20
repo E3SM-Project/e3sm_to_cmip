@@ -16,7 +16,7 @@ logger = logging.getLogger()
 
 
 def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
-                 map_path=None, mode='atm', nproc=6, **kwargs):
+                 map_path=None, realm='atm', nproc=6, **kwargs):
     """
     Run all the handlers in parallel
     Params:
@@ -26,7 +26,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
         input_path (str): path to the input files directory
         tables_path (str): path to the tables directory
         metadata_path (str): path to the cmor input metadata
-        mode (str): what type of files to work with
+        realm (str): the realm of the data, [atm, lnd, mpaso, mpassi]
     Returns:
     --------
         returns 1 if an error occurs, else 0
@@ -38,11 +38,14 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
         handler_method = handler['method']
         handler_variables = handler['raw_variables']
         # find the input files this handler needs
-        if mode in ['atm', 'lnd']:
+        if realm in ['atm', 'lnd']:
 
             input_paths = {var: [os.path.join(input_path, x) for x in
                                  find_atm_files(var, input_path)]
                            for var in handler_variables}
+        elif realm == 'fx':
+                input_paths = {var: [os.path.join(input_path, x) for x in os.listdir(input_path) if x[-3:] == '.nc']
+                               for var in handler_variables}
         else:
             input_paths = {var: find_mpas_files(var, input_path,
                                                 map_path)
@@ -102,7 +105,7 @@ def run_parallel(pool, handlers, input_path, tables_path, metadata_path,
 
 
 def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
-               mode='atm', logdir=None, simple=False, outpath=None, freq="mon"):
+               realm='atm', logdir=None, simple=False, outpath=None, freq="mon"):
     """
     Run each of the handlers one at a time on the main process
 
@@ -112,7 +115,7 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
         input_path (str): path to the input files directory
         tables_path (str): path to the tables directory
         metadata_path (str): path to the cmor input metadata
-        mode (str): what type of files to work with
+        realm (str): what type of files to work with
     Returns:
     --------
         returns 1 if an error occurs, else 0
@@ -123,7 +126,7 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
         num_success = 0
         name = None
 
-        if mode != 'atm':
+        if realm != 'atm':
             pbar = tqdm(total=len(handlers))
 
         for _, handler in enumerate(handlers):
@@ -133,12 +136,12 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
             unit_conversion = handler.get('unit_conversion')
 
             # find the input files this handler needs
-            if mode in ['atm', 'lnd']:
+            if realm in ['atm', 'lnd']:
 
                 input_paths = {var: [os.path.join(input_path, x) for x in
                                      find_atm_files(var, input_path)]
                                for var in handler_variables}
-            elif mode == 'fx':
+            elif realm == 'fx':
                 input_paths = {var: [os.path.join(input_path, x) for x in os.listdir(input_path) if x[-3:] == '.nc']
                                for var in handler_variables}
             else:
@@ -173,9 +176,9 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
                 print_message(msg, status='error')
             logger.info(msg)
 
-            if mode != 'atm':
+            if realm != 'atm':
                 pbar.update(1)
-        if mode != 'atm':
+        if realm != 'atm':
             pbar.close()
 
     except Exception as error:

@@ -41,7 +41,7 @@ python setup.py install
 Here's an example of the tool usage, with the variables tas, prc, and rlut. The time-series files containing the regridded output are in a directory named input_path, and a directory named output_path will be used to hold the CMIP6 output.
 
 ```
-e3sm_to_cmip -v tas, prc, rlut --input ./input_path/ --output ./output_path/ -t ~/cmip6-cmor-tables -u e3sm_user_config_picontrol.json
+e3sm_to_cmip -v tas, prc, rlut --realm atm --input ./input_path/ --output ./output_path/ -t ~/cmip6-cmor-tables -u e3sm_user_config_picontrol.json
 ```
 
 This will produce a directory tree named CMIP6 below the output_path, with the CMIP6 directory tree based on the metadata json file. 

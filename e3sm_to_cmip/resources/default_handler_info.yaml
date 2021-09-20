@@ -298,3 +298,9 @@
   units: "W m-2"
   table: CMIP6_Amon.json
   positive: up
+
+- cmip_name: snw
+  e3sm_name: H2OSNO
+  units: 'kg m-2'
+  table: CMIP6_LImon.json
+

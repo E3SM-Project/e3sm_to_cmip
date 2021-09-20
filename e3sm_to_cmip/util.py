@@ -23,7 +23,7 @@ ATMOS_TABLES = ['CMIP6_Amon.json', 'CMIP6_day.json', 'CMIP6_3hr.json', \
                 'CMIP6_AERmon.json', 'CMIP6_AERday.json', 'CMIP6_AERhr.json', \
                 'CMIP6_CFmon.json', 'CMIP6_CF3hr.json', 'CMIP6_CFday.json', 'CMIP6_fx.json']
 
-LAND_TABLES = ['CMIP6_Lmon.json']
+LAND_TABLES = ['CMIP6_Lmon.json', 'CMIP6_LImon.json']
 OCEAN_TABLES = ['CMIP6_Omon.json', 'CMIP6_Ofx.json']
 SEAICE_TABLES = ['CMIP6_SImon.json']
 
@@ -126,7 +126,7 @@ def parse_arguments():
     parser.add_argument(
         '--map',
         metavar='<map_mpas_to_std_grid>',
-        help="The path to an mpas remapping file. Required if mode is mpaso or mpassi")
+        help="The path to an mpas remapping file. Required if realm is mpaso or mpassi")
     parser.add_argument(
         '-n', '--num-proc',
         metavar='<nproc>',
@@ -150,10 +150,10 @@ def parse_arguments():
         help='Set output level to debug',
         action='store_true')
     parser.add_argument(
-        '--mode',
-        metavar='<mode>',
+        '--realm',
+        metavar='<realm>',
         default='atm',
-        help="The component to analyze, atm, lnd, mpaso or mpassi")
+        help="The realm to process, atm, lnd, mpaso or mpassi. Default is atm")
     parser.add_argument(
         '--logdir',
         default='./cmor_logs',
@@ -189,9 +189,9 @@ variables are present in the E3SM output.""")
         sys.exit(1)
     else:
         _args = parser.parse_args(_args)
-        if _args.mode == 'mpaso' and not _args.map:
+        if _args.realm == 'mpaso' and not _args.map:
             raise ValueError("MPAS ocean handling requires a map file")
-        if _args.mode == 'mpassi' and not _args.map:
+        if _args.realm == 'mpassi' and not _args.map:
             raise ValueError("MPAS sea-ice handling requires a map file")
         if not _args.simple and not _args.tables_path and not _args.info:
             raise ValueError(
@@ -271,6 +271,7 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
                     continue
 
                 msg = None
+                raw_vars = []
                 for default in default_info:
                     if handler['name'] + "_highfreq" == default['cmip_name'] and freq in default['table']:
                         msg = {
@@ -279,6 +280,7 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
                             "CMIP6 Units": default['units'],
                             "E3SM Variables":  [default['e3sm_name']]
                         }
+                        raw_vars.append(default['e3sm_name'])
                         break
                 if msg is None:
                     msg = {
@@ -287,15 +289,19 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
                         "CMIP6 Units": handler['units'],
                         "E3SM Variables":  ', '.join(handler['raw_variables'])
                     }
+                    raw_vars.extend(handler['raw_variables'])
                 if handler.get('unit_conversion'):
                     msg["Unit conversion"] = handler['unit_conversion']
                 if handler.get('levels'):
                     msg["Levels"] = handler['levels']
 
                 has_vars = True
-                for raw_var in [x.strip() for x in msg["E3SM Variables"].split(',')]:
+                for raw_var in raw_vars:
+
                     if raw_var not in ds.data_vars:
                         has_vars = False
+                        msg = f"Variable {handler['name']} is not present in the input dataset"
+                        print_message(msg, status="error")
                         break
                 if not has_vars:
                     continue
@@ -340,7 +346,7 @@ def get_table_info(tables, table):
 def get_table_freq(table, freq):
     if table == "CMIP6_Amon.json":
         return f"CMIP6_{freq}.json"
-    elif table == "CMIP6_Lmon.json" and freq != "mon":
+    elif table in ["CMIP6_Lmon.json", "CMIP6_LImon.json"] and freq != "mon":
         return None
     elif 'fx' in table and freq != "mon":
         return None
@@ -349,7 +355,7 @@ def get_table_freq(table, freq):
 
 
 
-def load_handlers(handlers_path, var_list, tables, freq="mon", mode='atm', simple=False, debug=None):
+def load_handlers(handlers_path, var_list, tables, freq="mon", realm='atm', simple=False, debug=None):
     """
     load the cmor handler modules
 
@@ -398,13 +404,14 @@ def load_handlers(handlers_path, var_list, tables, freq="mon", mode='atm', simpl
                 if not var_included:
                     print_message(f"Variable {default['cmip_name']} is not included in table {table}")
                     continue
-            if mode == 'atm' and table not in ATMOS_TABLES:
+
+            if realm == 'atm' and table not in ATMOS_TABLES:
                 continue
-            elif mode == 'lnd' and table not in LAND_TABLES:
+            elif realm == 'lnd' and table not in LAND_TABLES:
                 continue
-            elif mode == 'ocn' and table not in OCEAN_TABLES:
+            elif realm == 'mpaso' and table not in OCEAN_TABLES:
                 continue
-            elif mode == 'ice' and table not in SEAICE_TABLES:
+            elif realm == 'mpassi' and table not in SEAICE_TABLES:
                 continue
 
             handlers.append({
@@ -459,13 +466,13 @@ def load_handlers(handlers_path, var_list, tables, freq="mon", mode='atm', simpl
                 print_message(f"Variable {module.VAR_NAME} is not included in table {table}")
                 continue
 
-        if mode == 'atm' and table not in ATMOS_TABLES:
+        if realm == 'atm' and table not in ATMOS_TABLES:
             continue
-        elif mode == 'lnd' and table not in LAND_TABLES:
+        elif realm == 'lnd' and table not in LAND_TABLES:
             continue
-        elif mode == 'ocn' and table not in OCEAN_TABLES:
+        elif realm == 'ocn' and table not in OCEAN_TABLES:
             continue
-        elif mode == 'ice' and table not in SEAICE_TABLES:
+        elif realm == 'ice' and table not in SEAICE_TABLES:
             continue
         
         if module_name in var_list or 'all' in var_list:
@@ -691,17 +698,17 @@ def get_levgrnd_bnds():
 # ------------------------------------------------------------------
 
 
-def get_years_from_raw(path, mode, var):
+def get_years_from_raw(path, realm, var):
     """
     given a file path, return the start and end years for the data
     Parameters:
     -----------
         path (str): the directory to look in for data
-        mode (str): the type of data to look for, i.e atm, lnd, mpaso, mpassi
+        realm (str): the type of data to look for, i.e atm, lnd, mpaso, mpassi
     """
     start = 0
     end = 0
-    if mode in ['atm', 'lnd']:
+    if realm in ['atm', 'lnd']:
         contents = sorted([f for f in os.listdir(path)
                            if f.endswith("nc") and
                            var in f])
@@ -710,9 +717,9 @@ def get_years_from_raw(path, mode, var):
         start = int(contents[0][s.start(): s.start()+4])
         s = re.search(pattern=p, string=contents[-1])
         end = int(contents[-1][s.start(): s.start()+4])
-    elif mode in ['mpassi', 'mpaso']:
+    elif realm in ['mpassi', 'mpaso']:
 
-        files = sorted(find_mpas_files(mode, path))
+        files = sorted(find_mpas_files(realm, path))
         p = r'\d{4}-\d{2}-\d{2}.nc'
         s = re.search(pattern=p, string=files[0])
         start = int(files[0][s.start(): s.start() + 4])
@@ -720,7 +727,7 @@ def get_years_from_raw(path, mode, var):
         end = int(files[-1][s.start(): s.start() + 4])
 
     else:
-        raise ValueError("Invalid mode")
+        raise ValueError("Invalid realm")
     return start, end
 
 
@@ -738,7 +745,7 @@ def get_year_from_cmip(filename):
     return start, end
 
 
-def precheck(inpath, precheck_path, variables, mode):
+def precheck(inpath, precheck_path, variables, realm):
     """
     Check if the data has already been produced and skip
 
@@ -746,7 +753,7 @@ def precheck(inpath, precheck_path, variables, mode):
     """
 
     # First check the inpath for the start and end years
-    start, end = get_years_from_raw(inpath, mode, variables[0])
+    start, end = get_years_from_raw(inpath, realm, variables[0])
     var_map = [{'found': False, 'name': var} for var in variables]
 
     # then check the output tree for files with the correct variables for those years

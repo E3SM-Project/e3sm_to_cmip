@@ -43,7 +43,7 @@ arguments:
   - --precheck
   - --output-path
   - $(runtime.outdir)
-  - --mode
+  - --realm
   - mpassi
 
 outputs:
