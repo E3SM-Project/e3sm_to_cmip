@@ -17,7 +17,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     tran = QSOIL + QVEGT
     """
-    outdata = data['QVEGT'][index, :] + data['QSOIL'][index, :]
+    outdata = data['QVEGT'][index, :].values + data['QSOIL'][index, :].values
     if kwargs.get('simple'):
         return outdata
     cmor.write(

@@ -17,7 +17,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     lai = LAISHA + LAISUN
     """
-    outdata = data['LAISHA'][index, :] + data['LAISUN'][index, :]
+    outdata = data['LAISHA'][index, :].values + data['LAISUN'][index, :].values
     if kwargs.get('simple'):
         return outdata
     cmor.write(
