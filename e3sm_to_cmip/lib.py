@@ -1,17 +1,18 @@
-from e3sm_to_cmip.util import terminate
-from e3sm_to_cmip.util import print_debug
-from e3sm_to_cmip.util import print_message
-from e3sm_to_cmip.util import find_mpas_files
-from e3sm_to_cmip.util import find_atm_files
-from e3sm_to_cmip.mpas import write_netcdf
-from e3sm_to_cmip import resources
-from tqdm import tqdm
-import os
-import cmor
-import logging
-import xarray as xr
-import numpy as np
 import json
+import logging
+import os
+
+import cmor
+import numpy as np
+import xarray as xr
+from tqdm import tqdm
+
+from e3sm_to_cmip import resources
+from e3sm_to_cmip.mpas import write_netcdf
+from e3sm_to_cmip.util import (find_atm_files, find_mpas_files,
+                               get_levgrnd_bnds, print_debug, print_message,
+                               terminate)
+
 logger = logging.getLogger()
 
 
@@ -269,7 +270,7 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
 
         # write out the data
         msg = f"{outvar_name}: time {data['time_bnds'].values[0][0]:1.1f} - {data['time_bnds'].values[-1][-1]:1.1f}"
-                             
+
         logger.info(msg)
 
         if serial:
@@ -338,7 +339,7 @@ def handle_simple(infiles, raw_variables, write_data, outvar_name, outvar_units,
 def var_has_time(table_path, variable):
     with open(table_path, 'r') as inputstream:
         table_info = json.load(inputstream)
-    
+
     if '_highfreq' in variable:
         variable = variable[:len('_highfreq') * -1]
     axis_info = table_info['variable_entry'][variable]['dimensions'].split(' ')
@@ -572,16 +573,10 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
                 time_bnds = time_bnds.reshape(1, 2)
             data['time_bnds'] = time_bnds
 
-        try:
-            levgrnd = variable_data['levgrnd']
-        except KeyError:
-            pass
-        else:
-            data['levgrnd'] = levgrnd
-
         # load level and level bounds
         if levels is not None:
-            if levels.get('name') == 'standard_hybrid_sigma' or levels.get('name') == 'standard_hybrid_sigma_half':
+            name = levels.get("name")
+            if name == 'standard_hybrid_sigma' or name == 'standard_hybrid_sigma_half':
                 data.update({
                     'lev': ds['lev'].values/1000,
                     'ilev': ds['ilev'].values/1000,
@@ -592,10 +587,17 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
                     'hybm': ds['hybm'],
                     'hybi': ds['hybm'],
                 })
+            elif name =="sdepth":
+                data.update({
+                    "levgrnd": ds["levgrnd"].values,
+                    "levgrnd_bnds": get_levgrnd_bnds()
+                })
             else:
                 name = levels.get('e3sm_axis_name')
                 if name in ds.data_vars or name in ds.coords:
                     data[name] = ds[name]
+                else:
+                    raise KeyError(f"Unable to find they 'e3sm_axis_name' key {(name)}) in the dataset.")
 
                 bnds = levels.get('e3sm_axis_bnds')
                 if bnds:
@@ -608,6 +610,7 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
 
 
 def load_axis(data, levels=None, has_time=True):
+    time = None
     # use the special name for time if it exists
     if levels and levels.get('time_name'):
         name = levels.get('time_name')
@@ -645,9 +648,9 @@ def load_axis(data, levels=None, has_time=True):
                     coord_vals=data['lon'].values,
                     cell_bounds=data['lon_bnds'].values)
 
-    if levels:
+    if levels and time is not None:
         axes = [time, lev, lat, lon]
-    elif has_time:
+    elif time is not None:
         axes = [time, lat, lon]
     else:
         axes = [lat, lon]
