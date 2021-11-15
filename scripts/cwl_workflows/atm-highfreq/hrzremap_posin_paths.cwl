@@ -41,7 +41,7 @@ arguments:
   - ncclimo
   - '-7'
   - --dfl_lvl=1
-  - --no_cll_msr
+  - --no_cell_measures
   - --no_stdin
   - --job_nbr=$(inputs.num_workers)
   - --thr_nbr=$(inputs.num_workers)

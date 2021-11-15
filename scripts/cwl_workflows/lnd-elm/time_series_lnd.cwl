@@ -35,11 +35,9 @@ arguments:
   - ncclimo
   - "-7"
   - --dfl_lvl=1
-  - --no_cll_msr
-  - -a
-  - sdd
+  - --no_cell_measures
   - -P
-  - "elm"
+  - elm
   - -v
   - $(inputs.variable_name.join(' ')) 
   - -c

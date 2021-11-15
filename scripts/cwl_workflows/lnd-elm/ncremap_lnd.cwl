@@ -14,7 +14,9 @@ arguments:
   - $(inputs.timeout)
   - ncremap
   - -P
-  - "elm"
+  - elm
+  - "-7"
+  - --dfl_lvl=1
   - -s
   - $(inputs.source_grid)
   - --sgs_frc=$(inputs.one_land_file)/landfrac

@@ -40,8 +40,7 @@ def remap(ds, mappingFileName, threshold=0.05):
     env['NCO_PATH_OVERRIDE'] = 'no'
 
     args = ['ncremap', '-7', '--dfl_lvl=1', '--no_stdin',
-            '--no_cll_msr', '--no_frm_trm', '--no_stg_grd', '--msk_src=none',
-            '--mask_dst=none', '--map={}'.format(mappingFileName), inFileName,
+            'no_cell_measures', 'no_formula_terms', '--map={}'.format(mappingFileName), inFileName,
             outFileName]
 
     proc = subprocess.Popen(args, stdout=subprocess.PIPE,

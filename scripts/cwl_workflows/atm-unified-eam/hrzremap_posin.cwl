@@ -37,12 +37,10 @@ arguments:
   - ncclimo
   - '-7'
   - --dfl_lvl=1
-  - --no_cll_msr
+  - --no_cell_measures
   - --no_stdin
   - -P
-  - "eam"
-  - -a
-  - sdd
+  - eam
   - --regrid_options="--rnr=0.0"
   - -O
   - $(runtime.outdir)
