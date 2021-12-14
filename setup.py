@@ -1,8 +1,10 @@
-import os
 import distutils.cmd
+import os
 
 from setuptools import find_packages, setup
+
 from e3sm_to_cmip.version import __version__
+
 
 class CleanCommand(distutils.cmd.Command):
     """
@@ -33,8 +35,8 @@ class CleanCommand(distutils.cmd.Command):
 setup(
     name="e3sm_to_cmip",
     version=__version__,
-    author="Sterling Baldwin",
-    author_email="baldwin32@llnl.gov",
+    author="Sterling Baldwin, Tom Vo, Chengzhu (Jill) Zhang, Anthony Bartoletti",
+    author_email="vo13@llnl.gov, zhang40@llnl.gov",
     description="Transform E3SM model data output into cmip6 compatable data "
                 "using the Climate Model Output Rewriter.",
     entry_points={'console_scripts':

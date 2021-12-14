@@ -24,4 +24,6 @@ dependencies:
   # ==================
   - cwltool=3.1.20210816212154
   - nodejs=16.6.1
+  - pip:
+      - tbump==6.6.0
 prefix: /opt/miniconda3/envs/e3sm_to_cmip_dev
