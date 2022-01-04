@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from e3sm_to_cmip.lib import handle_variables
 import cmor
-import xarray as xr
 import numpy as np
 
 
