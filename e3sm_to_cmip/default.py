@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from e3sm_to_cmip.lib import handle_variables
 import cmor
+import numpy as np
 
 
 def default_handler(infiles, tables, user_input_path, **kwargs):
@@ -41,6 +42,8 @@ def default_handler(infiles, tables, user_input_path, **kwargs):
             else:
                 outdata = data[RAW_VARIABLES[0]].values
 
+        outdata[np.isnan(outdata)] = 1e20 
+
         if kwargs.get('simple'):
             return outdata
 
@@ -52,6 +55,7 @@ def default_handler(infiles, tables, user_input_path, **kwargs):
                 time_bnds=timebnds)
         else:
             cmor.write(varid, outdata)
+        
         return outdata
 
     return handle_variables(
