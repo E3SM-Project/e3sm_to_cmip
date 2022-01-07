@@ -42,7 +42,7 @@ def default_handler(infiles, tables, user_input_path, **kwargs):
             else:
                 outdata = data[RAW_VARIABLES[0]].values
 
-        outdata[np.isnan(outdata)] = 1e20 
+        outdata[np.isnan(outdata)] = 1.e20 
 
         if kwargs.get('simple'):
             return outdata

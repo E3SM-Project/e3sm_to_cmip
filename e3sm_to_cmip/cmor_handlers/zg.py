@@ -20,6 +20,7 @@ LEVELS = {
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     outdata = data[RAW_VARIABLES[0]][index, :]
+    outdata[np.isnan(outdata)] = 1.e20
     if kwargs.get('simple'):
         return outdata
     cmor.write(
