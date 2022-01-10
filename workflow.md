@@ -21,7 +21,7 @@ cd e3sm_to_cmip
 python setup.py install
 ```
 
-Note that although the e3sm_to_cmip package itself can be installed via conda, the CWL workflows aren't currently packaged along side, so even if you already have the e3sm_to_cmip package in your environment you will still need to clone the repo to get access to the workflow scripts.
+Note that although the e3sm_to_cmip package itself can be installed via conda, the CWL workflows are not currently packaged along side, so even if you already have the e3sm_to_cmip package in your environment you will still need to clone the repo to get access to the workflow scripts.
 
 ## Case metadata
 
@@ -130,5 +130,5 @@ plev_cmor_list: [hus, o3, ta, ua, va, zg, hur,    wap]
 
 The cwltool command has a large number of flags that can be passed to it to change its behavior. Use `cwltool --help` to get a list of possible flags.
 
-One useful thing to take into account is the `$TMPDIR` environment variable. If you're running on a cluster, its possible that each machine will have its own `TMPDIR` that it uses by default, if these directories arent shared between the machines then its likely that there will be an error when one job finishes and tries to pass its output the the next job. Consider setting the TMPDIR variable via an `export` command before running the cwltool.
+One useful thing to take into account is the `$TMPDIR` environment variable. If you are running on a cluster, its possible that each machine will have its own `TMPDIR` that it uses by default, if these directories arent shared between the machines then its likely that there will be an error when one job finishes and tries to pass its output the the next job. Consider setting the TMPDIR variable via an `export` command before running the cwltool.
 
