@@ -129,7 +129,7 @@ steps:
       timeout: timeout
     out:
       - cmip6_dir
-      - cmor_logs
+      #- cmor_logs
 
   step_vrt_remap:
     run: vrtremap.cwl
