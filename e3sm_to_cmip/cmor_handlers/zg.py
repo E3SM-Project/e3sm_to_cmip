@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import cmor
 import numpy as np
 from e3sm_to_cmip.lib import handle_variables
+from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 
 # list of raw variable names needed
 RAW_VARIABLES = [str('Z3')]
@@ -21,7 +22,7 @@ LEVELS = {
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     outdata = data[RAW_VARIABLES[0]][index, :]
-    outdata[np.isnan(outdata)] = 1.e20
+    outdata[np.isnan(outdata)] = FILL_VALUE
     if kwargs.get('simple'):
         return outdata
     cmor.write(
