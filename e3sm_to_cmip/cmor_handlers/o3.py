@@ -4,7 +4,9 @@ O3 to o3 converter
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import cmor
+import numpy as np
 from e3sm_to_cmip.lib import handle_variables
+from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 
 # list of raw variable names needed
 RAW_VARIABLES = [str('O3')]
@@ -22,7 +24,9 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     o3 = O3
     """
+
     outdata = data[RAW_VARIABLES[0] ][index, :]
+    outdata[np.isnan(outdata)] = FILL_VALUE
     if kwargs.get('simple'):
         return outdata
     cmor.write(
