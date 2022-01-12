@@ -9,18 +9,11 @@ on:
 
   workflow_dispatch:
 
-jobs:
-  check-jobs-to-skip:
-    runs-on: ubuntu-latest
-    outputs:
-      should_skip: ${{ steps.skip_check.outputs.should_skip }}
-    steps:
-      - id: skip_check
-        uses: fkirc/skip-duplicate-actions@master
-        with:
-          cancel_others: true
-          paths_ignore: '["**/README.md", "**/docs/**", "**/examples/**", "**/misc/**"]'
+env:
+  CANCEL_OTHERS: true
+  PATHS_IGNORE: '["**/README.md", "**/docs/**", "**/examples/**", "**/misc/**", "**/.vscode/**"]'
 
+jobs:
   build:
     name: Build (Python ${{ matrix.python-version }})
     runs-on: "ubuntu-latest"
