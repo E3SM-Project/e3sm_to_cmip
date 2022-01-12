@@ -20,10 +20,15 @@ dependencies:
   # Note, these two packages don't support Python >3.8
   - cdms2=3.1.5
   - cdutil=8.2.1
+  # Documentation
+  # =================
+  - sphinx=4.3.2
+  - sphinx_rtd_theme=1.0.0
+  - tbump==6.7.0
     # CWL
   # ==================
   - cwltool=3.1.20210816212154
   - nodejs=16.6.1
   - pip:
-      - tbump==6.6.0
+      - sphinx-multiversion==0.2.4
 prefix: /opt/miniconda3/envs/e3sm_to_cmip_dev

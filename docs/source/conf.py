@@ -13,16 +13,16 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
-
+import sphinx_rtd_theme
 
 # -- Project information -----------------------------------------------------
-
+# General information about the project.
 project = 'e3sm_to_cmip'
-copyright = '2020, E3SM Publication Team'
-author = 'E3SM Publication Team'
+copyright = '2020, E3SM'
+author = 'E3SM'
 
 # The full version, including alpha/beta/rc tags
-release = '1.6.0'
+release = ""
 
 
 # -- General configuration ---------------------------------------------------
@@ -31,6 +31,8 @@ release = '1.6.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinx_rtd_theme",
+    "sphinx_multiversion",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -48,8 +50,19 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_sidebars = {
+    "**": [
+        "versions.html",
+    ],
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# -- Options sphinx-multiversion -------------------------------------------
+smv_tag_whitelist = r"^v\d+\.\d+.\d+$"  # Include tags like "tags/v2.5.0"
+smv_branch_whitelist = "master"
+smv_remote_whitelist = r"^(origin|upstream)$"  # Use branches from origin
