@@ -1,0 +1,11 @@
+# Conda e3sm_to_cmip CI/CD environment (used in GH Actions)
+name: e3sm_to_cmip_ci
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Base
+  # ==================
+  - python>=3.8
+  - pip
+prefix: /opt/miniconda3/envs/e3sm_to_cmip_ci
