@@ -22,45 +22,51 @@ jobs:
           paths_ignore: '["**/README.md", "**/docs/**", "**/examples/**", "**/misc/**"]'
 
   build:
-    needs: check-jobs-to-skip
-    if: ${{ needs.check-jobs-to-skip.outputs.should_skip != 'true' }}
-    runs-on: ubuntu-latest
+    name: Build (Python ${{ matrix.python-version }})
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 10
     defaults:
       run:
         shell: bash -l {0}
-    timeout-minutes: 5
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9"]
     steps:
-      - uses: actions/checkout@v2
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          cancel_others: ${{ env.CANCEL_OTHERS }}
+          paths_ignore: ${{ env.PATHS_IGNORE }}
 
-      - name: Cache Conda
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        uses: actions/checkout@v2
+
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        name: Cache Conda
         uses: actions/cache@v2
         env:
-          # Increase this value to reset cache if conda-env/dev.yml has not changed in the workflow
+          # Increase this value to reset cache if conda-env/ci.yml has not changed in the workflow
           CACHE_NUMBER: 0
         with:
           path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{
-            hashFiles('conda-env/dev.yml') }}
+          key: ${{ runner.os }}-${{ matrix.python-version }}-conda-${{ env.CACHE_NUMBER }}
 
-      - name: Build Conda Environment
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        name: Set up Conda Environment
         uses: conda-incubator/setup-miniconda@v2
         with:
-          activate-environment: e3sm_to_cmip_dev
-          environment-file: conda-env/dev.yml
+          activate-environment: "e3sm_to_cmip_ci"
+          environment-file: conda-env/ci.yml
           channel-priority: strict
           auto-update-conda: true
           # IMPORTANT: This needs to be set for caching to work properly!
           use-only-tar-bz2: true
+          python-version: ${{ matrix.python-version }}
 
-      - if: ${{ needs.check-jobs-to-skip.outputs.should_skip != 'true' }}
-        name: Show Conda Environment Info
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        name: Install e3sm_to_cmip
         run: |
-          conda config --set anaconda_upload no
-          conda info
-          conda list
-
-      - name: Install `e3sm_to_cmip` Package
-        run: pip install .
+          python -m pip install .
 
   publish-docs:
     if: ${{ github.event_name == 'push' }}
