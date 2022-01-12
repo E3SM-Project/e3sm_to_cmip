@@ -1,9 +1,12 @@
 """
 cLitter = (TOTLITC + CWDC)/1000.0
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import cmor
+import numpy as np
+from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
@@ -17,6 +20,8 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     cLitter = (TOTLITC + CWDC)/1000.0
     """
     outdata = (data['TOTLITC'][index, :] + data['CWDC'][index, :])/1000.0
+    outdata[np.isnan(outdata)] = FILL_VALUE
+
     if kwargs.get('simple'):
         return outdata
     cmor.write(

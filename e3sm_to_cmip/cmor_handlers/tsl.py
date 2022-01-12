@@ -5,6 +5,8 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
 import cmor
+import numpy as np
+from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
@@ -22,6 +24,8 @@ LEVELS = {
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     outdata = data['TSOI'][index, :].values
+    outdata[np.isnan(outdata)] = FILL_VALUE
+
     if kwargs.get('simple'):
         return outdata
     cmor.write(
