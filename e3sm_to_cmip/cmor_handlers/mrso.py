@@ -25,7 +25,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     total_mask = np.logical_or(icemask, liqmask)
 
     outdata = np.sum(
-        data['SOILICE'][index, :] + data['SOILLIQ'][index, :],
+        data['SOILICE'][index, :].values + data['SOILLIQ'][index, :].values,
         axis=0)
     capped = np.where(
         np.greater(outdata, 5000.0),

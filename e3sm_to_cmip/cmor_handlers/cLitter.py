@@ -19,7 +19,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     cLitter = (TOTLITC + CWDC)/1000.0
     """
-    outdata = (data['TOTLITC'][index, :] + data['CWDC'][index, :])/1000.0
+    outdata = (data['TOTLITC'][index, :].values + data['CWDC'][index, :].values)/1000.0
     outdata[np.isnan(outdata)] = FILL_VALUE
 
     if kwargs.get('simple'):

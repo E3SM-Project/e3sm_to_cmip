@@ -25,7 +25,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
 
     # sum the data over the levgrnd axis
     outdata = np.sum(
-        data['SOILICE'][index, :],
+        data['SOILICE'][index, :].values,
         axis=0)
 
     # replace all values greater then 5k with 5k
