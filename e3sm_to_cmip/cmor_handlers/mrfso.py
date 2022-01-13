@@ -20,23 +20,17 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     mrfso = verticalSum(SOILICE, capped_at=5000)
     """
+    soil_ice = data['SOILICE'][index, :].values
+
     # we only care about data with a value greater then 0
-    mask = np.greater(data['SOILICE'][index, :], 0.0)
+    mask = np.greater(soil_ice, 0.0)
 
     # sum the data over the levgrnd axis
-    outdata = np.sum(
-        data['SOILICE'][index, :].values,
-        axis=0)
+    outdata = np.sum(soil_ice, axis=0)
 
     # replace all values greater then 5k with 5k
-    capped = np.where(
-        np.greater(outdata, 5000.0),
-        5000.0,
-        outdata)
-    outdata = np.where(
-        mask,
-        capped,
-        outdata)
+    capped = np.where(np.greater(outdata, 5000.0), 5000.0, outdata)
+    outdata = np.where(mask, capped, outdata)
     outdata[np.isnan(outdata)] = FILL_VALUE
 
     if kwargs.get('simple'):

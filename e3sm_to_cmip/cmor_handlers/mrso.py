@@ -20,21 +20,16 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
     mrso = verticalSum(SOILICE + SOILLIQ, capped_at=5000)
     """
-    icemask = np.greater(data['SOILICE'][index, :], 0.0)
-    liqmask = np.greater(data['SOILLIQ'][index, :], 0.0)
+    soil_ice = data['SOILICE'][index, :].values
+    soil_liq = data['SOILLIQ'][index, :].values
+
+    icemask = np.greater(soil_ice, 0.0)
+    liqmask = np.greater(soil_liq, 0.0)
     total_mask = np.logical_or(icemask, liqmask)
 
-    outdata = np.sum(
-        data['SOILICE'][index, :].values + data['SOILLIQ'][index, :].values,
-        axis=0)
-    capped = np.where(
-        np.greater(outdata, 5000.0),
-        5000.0,
-        outdata)
-    outdata = np.where(
-        total_mask,
-        capped,
-        outdata)
+    outdata = np.sum(soil_ice + soil_liq, axis=0)
+    capped = np.where(np.greater(outdata, 5000.0), 5000.0, outdata)
+    outdata = np.where(total_mask, capped, outdata)
     outdata[np.isnan(outdata)] = FILL_VALUE
 
     if kwargs.get('simple'):
