@@ -384,7 +384,7 @@ def load_handlers(handlers_path, var_list, tables, freq="mon", realm='atm', simp
     
     with open(defaults_path, 'r') as infile:
 
-        defaults = yaml.load(infile)
+        defaults = yaml.load(infile, Loader=yaml.SafeLoader)
         for default in defaults:
 
             if default.get('cmip_name') not in var_list and 'all' not in var_list:
