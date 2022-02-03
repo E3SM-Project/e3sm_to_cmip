@@ -12,7 +12,7 @@ dependencies:
   - cmor=3.6.1
   - tqdm=4.62.3
   - pyyaml=6.0
-  - xarray=0.21.2
+  - xarray=0.21.1
   - netcdf4=1.5.8
   - dask=2022.1.1
   - scipy=1.7.3
