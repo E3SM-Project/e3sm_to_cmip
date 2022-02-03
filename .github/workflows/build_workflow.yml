@@ -61,6 +61,11 @@ jobs:
         run: |
           python -m pip install .
 
+      # TODO: Add test suite and enable this
+      # - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+      #   name: Run Tests
+      #   run: pytest
+
   publish-docs:
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
@@ -95,7 +100,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install sphinx==4.3.2 sphinx_rtd_theme==1.0.0 sphinx-multiversion==0.2.4
+          pip install sphinx==4.4.0 sphinx_rtd_theme==1.0.0 sphinx-multiversion==0.2.4
 
       - name: Build Sphinx Docs
         run: |
