@@ -1,6 +1,6 @@
 # path to raw clm2 data
 lnd_data_path: /lcrc/group/e3sm/ac.zhang40/E3SMv2/v2.LR.historical_0101/archive/lnd/hist
-one_land_file: /lcrc/group/e3sm/ac.zhang40/E3SMv2/v2.LR.historical_0101/archive/lnd/hist/v2.LR.historical_0101.elm.h0.2000-01-01-00000.nc
+one_land_file: /lcrc/group/e3sm/ac.zhang40/E3SMv2/v2.LR.historical_0101/archive/lnd/hist/v2.LR.historical_0101.elm.h0.2000-01.nc
 
 
 # path to CMOR case metadata
