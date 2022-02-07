@@ -6,7 +6,7 @@ channels:
 dependencies:
   # Base
   # ==================
-  - python=3.8.10
+  - python=3.9.9
   - pip=21.2.4
   - nco=5.0.6
   - cmor=3.6.1
@@ -16,10 +16,12 @@ dependencies:
   - netcdf4=1.5.8
   - dask=2022.1.1
   - scipy=1.7.3
-  # Used for phalf and pfull handlers.
-  # Note, these two packages don't support Python >3.8
+  # Required for phalf and pfull handlers.
   - cdms2=3.1.5
   - cdutil=8.2.1
+  # Required for CWL workflows.
+  - cwltool=3.1.20220202173120
+  - nodejs=17.4.0
   # Testing
   # ==================
   - pytest=6.2.5
@@ -28,10 +30,7 @@ dependencies:
   - sphinx=4.4.0
   - sphinx_rtd_theme=1.0.0
   - tbump=6.7.0
-    # CWL
-  # ==================
-  - cwltool=3.1.20220202173120
-  - nodejs=17.4.0
+
   - pip:
       - sphinx-multiversion==0.2.4
 prefix: /opt/miniconda3/envs/e3sm_to_cmip_dev

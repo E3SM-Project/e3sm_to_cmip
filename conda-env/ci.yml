@@ -9,17 +9,19 @@ dependencies:
   - python>=3.8
   - pip
   - nco
-  - cmor
+  - cmor>=3.6.0
   - tqdm
   - pyyaml
   - xarray
   - netcdf4
   - dask
   - scipy
-  # Used for phalf and pfull handlers.
-  # Note, these two packages don't support Python >3.8
+  # Required for phalf and pfull handlers.
   - cdms2=3.1.5
   - cdutil=8.2.1
+  # Required for CWL workflows.
+  - cwltool
+  - nodejs
   # Testing
   # ==================
   - pytest
