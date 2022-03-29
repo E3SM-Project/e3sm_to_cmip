@@ -3,28 +3,24 @@
 A python command line tool to turn E3SM model output into CMIP6 compatable data
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-import numpy as np
-from e3sm_to_cmip.lib import run_serial
-from e3sm_to_cmip.lib import run_parallel
-from e3sm_to_cmip.util import precheck
-from e3sm_to_cmip.util import print_debug
-from e3sm_to_cmip.util import copy_user_metadata
-from e3sm_to_cmip.util import add_metadata
-from e3sm_to_cmip.util import load_handlers
-from e3sm_to_cmip.util import print_var_info
-from e3sm_to_cmip.util import parse_arguments
-from e3sm_to_cmip.util import print_message
-from e3sm_to_cmip import resources
-from e3sm_to_cmip import cmor_handlers
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
-import os
-import sys
 import logging
+import os
+import signal
+import sys
 import tempfile
 import threading
-import signal
 from concurrent.futures import ProcessPoolExecutor as Pool
+
+import numpy as np
+
+from e3sm_to_cmip import cmor_handlers, resources
+from e3sm_to_cmip.lib import run_parallel, run_serial
+from e3sm_to_cmip.util import (load_handlers, add_metadata,
+                               copy_user_metadata, parse_arguments, precheck,
+                               print_debug, print_message, print_var_info)
 
 os.environ['CDAT_ANONYMOUS_LOG'] = 'false'
 
@@ -92,14 +88,14 @@ def main():
             print_message(
                 f"Setting up conversion for {' '.join(new_var_list)}", 'ok')
             var_list = new_var_list
-    
+
     # load variable handlers
     handlers = load_handlers(
         handlers_path=handlers_path,
+        tables_path=tables_path,
         var_list=var_list,
         freq=freq,
         realm=realm,
-        tables=tables_path,
         simple=simple)
 
     if len(handlers) == 0:
