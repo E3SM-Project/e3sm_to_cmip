@@ -25,4 +25,5 @@ dependencies:
   # Testing
   # ==================
   - pytest
+  - pytest-cov
 prefix: /opt/miniconda3/envs/e3sm_to_cmip_ci

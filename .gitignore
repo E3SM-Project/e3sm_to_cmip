@@ -1,4 +1,3 @@
-.vscode/
 sftp.json
 
 # e3sm_to_cmip testing output
@@ -111,3 +110,6 @@ docs/_build/
 # mypy
 .mypy_cache/
 
+# Repository specific
+qa/
+tests_coverage_reports/
