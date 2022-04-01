@@ -1,6 +1,5 @@
 import json
 import os
-from multiprocessing.sharedctypes import Value
 from unittest import result
 
 import pytest
