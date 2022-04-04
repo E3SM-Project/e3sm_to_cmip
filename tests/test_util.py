@@ -108,10 +108,10 @@ class TestLoadHandlers:
 
         # Only check an individual handler because there are many.
         result_default = next(
-            (handler for handler in handlers if handler["cmip_name"] == "clt"), None
+            (handler for handler in handlers if handler["name"] == "clt"), None
         )
         expected_default = {
-            "cmip_name": "clt",
+            "name": "clt",
             "units": "%",
             "table": "CMIP6_3hr.json",
             "method": default_handler,
@@ -121,14 +121,14 @@ class TestLoadHandlers:
         assert result_default == expected_default
 
         result_complex = next(
-            (handler for handler in handlers if handler["cmip_name"] == "pr"), None
+            (handler for handler in handlers if handler["name"] == "pr"), None
         )
         # Update "method" value to the name of the method because the memory
         # address changes with imports, so the handler dict won't align with the
         # expected output.
         result_complex["method"] = result_complex["method"].__name__
         expected_complex = {
-            "cmip_name": "pr",
+            "name": "pr",
             "units": "kg m-2 s-1",
             "table": "CMIP6_3hr.json",
             "method": pr_highfreq.handle.__name__,
@@ -151,10 +151,10 @@ class TestLoadHandlers:
 
         # Only check an individual handler because there are many.
         result_default = next(
-            (handler for handler in handlers if handler["cmip_name"] == "clt"), None
+            (handler for handler in handlers if handler["name"] == "clt"), None
         )
         expected_default = {
-            "cmip_name": "clt",
+            "name": "clt",
             "units": "%",
             "table": "CMIP6_Amon.json",
             "method": default_handler,
@@ -164,14 +164,14 @@ class TestLoadHandlers:
         assert result_default == expected_default
 
         result_complex = next(
-            (handler for handler in handlers if handler["cmip_name"] == "pr"), None
+            (handler for handler in handlers if handler["name"] == "pr"), None
         )
         # Update "method" value to the name of the method because the memory
         # address changes with imports, so the handler dict won't align with the
         # expected output.
         result_complex["method"] = result_complex["method"].__name__
         expected_complex = {
-            "cmip_name": "pr",
+            "name": "pr",
             "units": "kg m-2 s-1",
             "table": "CMIP6_Amon.json",
             "method": pr_highfreq.handle.__name__,
@@ -194,10 +194,10 @@ class TestLoadHandlers:
 
         # Only check an individual handler because there are many.
         result_default = next(
-            (handler for handler in handlers if handler["cmip_name"] == "clt"), None
+            (handler for handler in handlers if handler["name"] == "clt"), None
         )
         expected_default = {
-            "cmip_name": "clt",
+            "name": "clt",
             "units": "%",
             "table": "CMIP6_3hr.json",
             "method": default_handler,
@@ -207,14 +207,14 @@ class TestLoadHandlers:
         assert result_default == expected_default
 
         result_complex = next(
-            (handler for handler in handlers if handler["cmip_name"] == "pr"), None
+            (handler for handler in handlers if handler["name"] == "pr"), None
         )
         # Update "method" value to the name of the method because the memory
         # address changes with imports, so the handler dict won't align with the
         # expected output.
         result_complex["method"] = result_complex["method"].__name__
         expected_complex = {
-            "cmip_name": "pr",
+            "name": "pr",
             "units": "kg m-2 s-1",
             "table": "CMIP6_3hr.json",
             "method": pr_highfreq.handle.__name__,
@@ -234,7 +234,7 @@ class TestGetAvailableHandlers:
         # Only check an individual handler because there are many.
         result_default = handlers["abs550aer"]
         expected_default = {
-            "cmip_name": "abs550aer",
+            "name": "abs550aer",
             "units": "1",
             "table": "CMIP6_AERmon.json",
             "method": default_handler,
@@ -248,7 +248,7 @@ class TestGetAvailableHandlers:
         # expected output.
         result_complex["method"] = result_complex["method"].__name__
         expected_complex = {
-            "cmip_name": "pr",
+            "name": "pr",
             "units": "kg m-2 s-1",
             "table": "CMIP6_day.json",
             "method": pr_highfreq.handle.__name__,
@@ -267,7 +267,7 @@ class TestGetDefaultHandlers:
         # Only check an individual handler because there are many.
         result = handlers["abs550aer"]
         expected = {
-            "cmip_name": "abs550aer",
+            "name": "abs550aer",
             "units": "1",
             "table": "CMIP6_AERmon.json",
             "method": default_handler,
@@ -290,7 +290,7 @@ class TestGetComplexHandlers:
         # expected output.
         result["method"] = result["method"].__name__
         expected = {
-            "cmip_name": "pr",
+            "name": "pr",
             "units": "kg m-2 s-1",
             "table": "CMIP6_day.json",
             "method": pr_highfreq.handle.__name__,
