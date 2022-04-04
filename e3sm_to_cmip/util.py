@@ -133,6 +133,7 @@ def parse_arguments():
         prog="e3sm_to_cmip",
         usage="%(prog)s [-h]",
     )
+    # TODO: Add a check for valid variables
     parser.add_argument(
         "-v",
         "--var-list",
@@ -447,6 +448,8 @@ def load_handlers(
         # Use the high frequency version of a variable handler based on the
         # specified frequency. For example, for "pr" with a frequency of "day"
         # or "3hr, use "pr_highfreq.py" instead of "pr.py".
+        # TODO: Once the handler modules are refactored using classes, we can
+        # update this check to something more sophisticated.
         if _use_highfreq_handler(var, freq):
             var += "_highfreq"
 
