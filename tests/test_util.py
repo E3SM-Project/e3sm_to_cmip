@@ -16,7 +16,7 @@ from e3sm_to_cmip.util import (
     _get_table_info,
     _is_table_supported_by_realm,
     _use_highfreq_handler,
-    load_handlers,
+    _load_handlers,
 )
 
 
@@ -76,7 +76,7 @@ class TestLoadHandlers:
 
     def test_raises_error_if_variable_does_not_have_a_handler(self):
         with pytest.raises(KeyError):
-            load_handlers(
+            _load_handlers(
                 self.handlers_path,
                 self.tables_path,
                 var_list=["undefined_handler"],
@@ -95,7 +95,7 @@ class TestLoadHandlers:
     # tables under the temp directory for the test to pass.
     @pytest.mark.xfail
     def test_returns_all_handlers_when_all_string_in_var_list(self):
-        handlers = load_handlers(
+        handlers = _load_handlers(
             self.handlers_path,
             self.tables_path,
             var_list=["all"],
@@ -138,7 +138,7 @@ class TestLoadHandlers:
         assert result_complex == expected_complex
 
     def test_returns_handlers_with_simple_mode_and_no_highfreq(self):
-        handlers = load_handlers(
+        handlers = _load_handlers(
             self.handlers_path,
             self.tables_path,
             var_list=["clt", "pr"],
@@ -181,7 +181,7 @@ class TestLoadHandlers:
         assert result_complex == expected_complex
 
     def test_returns_handlers_for_selected_vars_with_highfreq(self):
-        handlers = load_handlers(
+        handlers = _load_handlers(
             self.handlers_path,
             self.tables_path,
             var_list=["clt", "pr"],

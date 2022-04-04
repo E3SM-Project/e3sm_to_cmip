@@ -391,7 +391,7 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
 # ------------------------------------------------------------------
 
 
-def load_handlers(
+def _load_handlers(
     handlers_path: str,
     tables_path: str,
     var_list: List[str],

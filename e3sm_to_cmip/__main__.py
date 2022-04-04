@@ -18,7 +18,7 @@ import numpy as np
 
 from e3sm_to_cmip import cmor_handlers, resources
 from e3sm_to_cmip.lib import run_parallel, run_serial
-from e3sm_to_cmip.util import (load_handlers, add_metadata,
+from e3sm_to_cmip.util import (_load_handlers, add_metadata,
                                copy_user_metadata, parse_arguments, precheck,
                                print_debug, print_message, print_var_info)
 
@@ -90,7 +90,7 @@ def main():
             var_list = new_var_list
 
     # load variable handlers
-    handlers = load_handlers(
+    handlers = _load_handlers(
         handlers_path=handlers_path,
         tables_path=tables_path,
         var_list=var_list,
