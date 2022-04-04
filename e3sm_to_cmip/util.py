@@ -283,7 +283,6 @@ variables are present in the E3SM output.""",
 
 
 def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
-
     messages = []
 
     # if the user just asked for the handler info
@@ -326,12 +325,6 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
     elif freq and tables and inpath:
         file_path = next(Path(inpath).glob("*.nc"))
 
-        resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
-        defaults_path = os.path.join(resource_path, "default_handler_info.yaml")
-
-        with open(defaults_path, "r") as infile:
-            default_info = yaml.load(infile, Loader=yaml.SafeLoader)
-
         with xr.open_dataset(file_path) as ds:
             for handler in handlers:
 
@@ -341,21 +334,7 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
 
                 msg = None
                 raw_vars = []
-                for default in default_info:
-                    # NOTE: This returns the legal CMIP6 info by using the
-                    # default handler instead of the e2c "_highfreq" convention
-                    if (
-                        handler["name"] + "_highfreq" == default["cmip_name"]
-                        and freq in default["table"]
-                    ):
-                        msg = {
-                            "CMIP6 Name": default["cmip_name"],
-                            "CMIP6 Table": default["table"],
-                            "CMIP6 Units": default["units"],
-                            "E3SM Variables": [default["e3sm_name"]],
-                        }
-                        raw_vars.append(default["e3sm_name"])
-                        break
+
                 if msg is None:
                     msg = {
                         "CMIP6 Name": handler["name"],
@@ -433,7 +412,7 @@ def _load_handlers(
             # Update the handler's "table" if the frequency is not monthly.
             if not simple and freq != "mon":
                 available_handlers[key]["table"] = _get_table_for_non_monthly_freq(
-                    handler["cmip_name"], handler["table"], freq, realm, tables_path
+                    handler["name"], handler["table"], freq, realm, tables_path
                 )
 
         print_message(
@@ -464,12 +443,12 @@ def _load_handlers(
         # Update the handler's "table" if the frequency is not monthly.
         if not simple and freq != "mon":
             handler["table"] = _get_table_for_non_monthly_freq(
-                handler["cmip_name"], handler["table"], freq, realm, tables_path
+                handler["name"], handler["table"], freq, realm, tables_path
             )
 
         chosen_handlers.append(handler)
         print_message(
-            f"Loaded `{var}` handler for variable `{handler['cmip_name']}`.", "debug"
+            f"Loaded `{var}` handler for variable `{handler['name']}`.", "debug"
         )
 
     return chosen_handlers
@@ -500,14 +479,14 @@ def _get_default_handlers() -> Dict[str, Dict[str, str]]:
     """Gets the information for all default handlers in a nested dictionary.
 
     The parent key is the CMIP name of the variable, and the value is a nested
-    dictionary storing key/value pairs for "cmip_name", "units", "table",
+    dictionary storing key/value pairs for "name", "units", "table",
     "method", "raw_variables", and "unit_conversion" (optional).
 
     Example output:
     ---------------
     {
         "abs550aer": {
-            "cmip_name": "abs550aer",
+            "name": "abs550aer",
             "units": "1",
             "table": "CMIP6_AERmon.json",
             "method": <function e3sm_to_cmip.default.default_handler(infiles, tables, user_input_path, **kwargs)>
@@ -532,7 +511,7 @@ def _get_default_handlers() -> Dict[str, Dict[str, str]]:
         default_handlers = yaml.load(infile, Loader=yaml.SafeLoader)
 
     # Convert the list of dicts to a nested dict, with the key being the
-    # "cmip_name" (variable name).
+    # "name" (cmip variable name).
     default_handlers = {handler["cmip_name"]: handler for handler in default_handlers}
 
     # Post-process the loaded default handlers to align with the example
@@ -544,6 +523,8 @@ def _get_default_handlers() -> Dict[str, Dict[str, str]]:
         default_handlers[key]["raw_variables"] = [
             default_handlers[key].pop("e3sm_name")
         ]
+        # Rename "cmip6_name" key to "name"
+        default_handlers[key]["name"] = default_handlers[key].pop("cmip_name")
 
     return default_handlers
 
@@ -552,14 +533,14 @@ def _get_complex_handlers(handlers_path: str) -> Dict[str, Dict[str, str]]:
     """Gets the information for all complex handlers in a nested dictionary.
 
     The parent key is the CMIP name of the variable, and the value is a nested
-    dictionary storing key/value pairs for "cmip_name", "units", "table",
+    dictionary storing key/value pairs for "name", "units", "table",
     "method", "raw_variables", "positive" (optional), and "levels" (optional).
 
     Example output:
     ---------------
     {
         "cesm_mmrbc": {
-            "cmip_name": "mmrbc",
+            "name": "mmrbc",
             "units": "kg kg-1",
             "table": "CMIP6_AERmon.json",
             "method": "<function cesm_mmrbc.handle(infiles, tables, user_input_path, **kwargs)>",
@@ -595,7 +576,7 @@ def _get_complex_handlers(handlers_path: str) -> Dict[str, Dict[str, str]]:
                 module = imp.load_source(var, filepath)
 
                 complex_handlers[var] = {
-                    "cmip_name": module.VAR_NAME,
+                    "name": module.VAR_NAME,
                     "units": module.VAR_UNITS,
                     "table": module.TABLE,
                     "method": module.handle,
