@@ -15,8 +15,8 @@ from e3sm_to_cmip.util import (
     _get_table_for_non_monthly_freq,
     _get_table_info,
     _is_table_supported_by_realm,
-    _use_highfreq_handler,
     _load_handlers,
+    _use_highfreq_handler,
 )
 
 
@@ -25,9 +25,11 @@ class TestLoadHandlers:
     def setup(self, tmp_path):
         self.handlers_path = os.path.dirname(cmor_handlers.__file__)
 
-        # Create temporary directory to save files.
+        # Create temporary directory to save CMOR tables.
         self.tables_path = tmp_path / "cmip6-cmor-tables"
         self.tables_path.mkdir()
+
+        # Create a CMOR table for testing.
         file_path = f"{self.tables_path}/CMIP6_3hr.json"
         with open(file_path, "w") as json_file:
             json.dump(
@@ -227,10 +229,10 @@ class TestLoadHandlers:
 class TestGetAvailableHandlers:
     def test_returns_all_default_and_complex_handlers(self):
         handlers_path = os.path.dirname(cmor_handlers.__file__)
-        result = _get_available_handlers(handlers_path)
+        handlers = _get_available_handlers(handlers_path)
 
         # Only check an individual handler because there are many.
-        result_default = result["abs550aer"]
+        result_default = handlers["abs550aer"]
         expected_default = {
             "cmip_name": "abs550aer",
             "units": "1",
@@ -240,7 +242,7 @@ class TestGetAvailableHandlers:
         }
         assert result_default == expected_default
 
-        result_complex = result["pr_highfreq"]
+        result_complex = handlers["pr_highfreq"]
         # Update "method" value to the name of the method because the memory
         # address changes with imports, so the handler dict won't align with the
         # expected output.
@@ -260,10 +262,10 @@ class TestGetAvailableHandlers:
 
 class TestGetDefaultHandlers:
     def test_returns_default_handler_from_yaml_file(self):
-        result = _get_default_handlers()
+        handlers = _get_default_handlers()
 
         # Only check an individual handler because there are many.
-        handler = result["abs550aer"]
+        result = handlers["abs550aer"]
         expected = {
             "cmip_name": "abs550aer",
             "units": "1",
@@ -272,20 +274,21 @@ class TestGetDefaultHandlers:
             "raw_variables": ["AODABS"],
         }
 
-        assert handler == expected
+        assert result == expected
 
 
 class TestGetComplexHandlers:
     def test_returns_complex_handler_from_cmor_handlers_dir(self):
         handlers_path = os.path.dirname(cmor_handlers.__file__)
-        result = _get_complex_handlers(handlers_path)
+        handlers = _get_complex_handlers(handlers_path)
 
-        handler = result["pr_highfreq"]
+        # Only check one handler because there are many.
+        result = handlers["pr_highfreq"]
 
         # Update "method" value to the name of the method because the memory
         # address changes with imports, so the handler dict won't align with the
         # expected output.
-        handler["method"] = handler["method"].__name__
+        result["method"] = result["method"].__name__
         expected = {
             "cmip_name": "pr",
             "units": "kg m-2 s-1",
@@ -296,15 +299,17 @@ class TestGetComplexHandlers:
             "levels": None,
         }
 
-        assert handler == expected
+        assert result == expected
 
 
 class TestGetTableForNonMonthlyFreq:
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
-        # Create temporary directory to save files.
+        # Create temporary directory to save CMOR tables.
         self.tables_path = tmp_path / "cmip6-cmor-tables"
         self.tables_path.mkdir()
+
+        # Create a CMOR table for testing.
         file_path = f"{self.tables_path}/CMIP6_3hr.json"
         with open(file_path, "w") as json_file:
             json.dump(
@@ -419,9 +424,11 @@ class TestGetTableForFreq:
 class TestGetTableInfo:
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
-        # Create temporary directory to save files.
+        # Create temporary directory to save CMOR tables.
         self.tables_path = tmp_path / "cmip6-cmor-tables"
         self.tables_path.mkdir()
+
+        # Create temporary directory to save CMOR tables.
         file_path = f"{self.tables_path}/CMIP6_3hr.json"
         self.table_info = {
             "variable_entry": {
