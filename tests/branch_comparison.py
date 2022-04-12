@@ -1,23 +1,22 @@
-import ipdb
 
 
-import yaml
+import argparse
 import os
 import sys
-from shutil import rmtree
-import argparse
-
-from time import sleep
-from subprocess import Popen, PIPE
 from pathlib import Path
+from shutil import rmtree
+from subprocess import PIPE, Popen
+from time import sleep
 from typing import List
+
+import yaml
 
 from e3sm_to_cmip import resources
 
-DESC = '''test the output of the e3sm_to_cmip package from 
-two git branches and run a comparison check on the output. Returns 0 if 
+DESC = '''test the output of the e3sm_to_cmip package from
+two git branches and run a comparison check on the output. Returns 0 if
 all checks run successfully, 1 otherwise. These checks
-use the included CWL workflows to post-process the data and prepare it 
+use the included CWL workflows to post-process the data and prepare it
 to  be ingested by e3sm_to_cmip.
 
 At the moment it only tests atmospheric monthly variables, but more will be added in the future'''
@@ -44,7 +43,7 @@ def run_cmd(cmd: str, shell=False, show_output=True):
     return proc.returncode, ''.join(output)
 
 def swap_branch(target_branch):
-                
+
     cmd = 'git status --porcelain'
     retcode, output = run_cmd(cmd)
     if retcode:
@@ -55,7 +54,7 @@ def swap_branch(target_branch):
             print('git status is not clean, commit or stash your changes and try again')
             return 1
     del output
-    
+
     # check out the branch to compare this one against
     cmd = f'git checkout {target_branch}'
     retcode, output = run_cmd(cmd)
@@ -75,7 +74,6 @@ def install_and_run_test(branchname, vars, frequency, input_path, output_path, t
     test_output_path.mkdir(parents=True)
 
     # swap over to the comparison branch
-    # ipdb.set_trace()
     if retcode := swap_branch(branchname):
         print("Unable to swap to branch {branchname}, exiting")
         return retcode
@@ -95,13 +93,12 @@ def install_and_run_test(branchname, vars, frequency, input_path, output_path, t
     return 0
 
 def run_test(vars, freq, input_path, out_path, tables_path):
-    # ipdb.set_trace()
     resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
     default_metadata_path = Path(resource_path, 'default_metadata.json')
     if  not  default_metadata_path.exists():
         print(f"Error: cannot file default CMOR metadata file: {default_metadata_path}")
         return 1
-    
+
     # actually run the package and make some output
     cmd = f"e3sm_to_cmip --serial -v {', '.join(vars)} -i {input_path} -o {out_path} -t {tables_path} -u {default_metadata_path} -f {freq}"
     retcode, output = run_cmd(cmd)
@@ -118,15 +115,15 @@ def get_input_vars(output_path, input_path, vars, tables_path, freq):
         return retcode
     with open(info_path, 'r') as infile:
         info = yaml.load(infile, Loader=yaml.SafeLoader)
-    
+
     vars = []
- 
+
 def compare_output(output_path, src_name, cmp_name):
     # i like to have the heavy imports happen after the command line arguments get parsed
     # so that startup is faster when running --help
-    import xarray as xr
     import numpy as np
-    
+    import xarray as xr
+
     # compare the output between the two runs
     issues = []
     tables = Path(output_path, cmp_name, 'CMIP6/CMIP/E3SM-Project/E3SM-1-0/piControl/r1i1p1f1/').glob("*")
@@ -154,26 +151,26 @@ def compare_output(output_path, src_name, cmp_name):
                 msg = f"Empty variable list in source branch {src_name}"
                 issues.append(msg)
                 continue
-                
+
             print(f"Running comparison for {variable.name}", end=" ... ")
 
             # each dataset should only have a single file in it
             with xr.open_dataset(cmp_var_data_path.glob('*.nc').__next__()) as cmp_ds, \
                  xr.open_dataset(src_var_data_path.glob('*.nc').__next__()) as src_ds:
-                
+
                 if np.allclose(cmp_ds[str(variable.name)], src_ds[str(variable.name)]):
                     print(f"{variable.name} test pass")
                 else:
                     msg = f"{variable.name}: values do not match"
                     issues.append(msg)
-                    
+
     return issues
 
 def test(vars: List, cmp_branch: str, input_path: Path, output_path: Path, tables: str, freq: str, cleanup=False):
     if not input_path.exists():
         raise ValueError(f"Input directory {input_path} does not exist")
     output_path.mkdir(exist_ok=True)
-    
+
     # store what the source branch name is
     cmd = "git branch --show-current"
     retcode, output = run_cmd(cmd)
@@ -185,7 +182,7 @@ def test(vars: List, cmp_branch: str, input_path: Path, output_path: Path, table
     if ret := install_and_run_test(cmp_branch, vars, freq, input_path=input_path, output_path=output_path, tables_path=tables):
         print(f"Failure to run {cmp_branch}")
         return ret
-        
+
     if ret := install_and_run_test(src_branch, vars, freq, input_path=input_path, output_path=output_path, tables_path=tables):
         print(f"Failure to run {src_branch}")
         return ret

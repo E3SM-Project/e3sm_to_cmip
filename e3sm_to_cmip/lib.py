@@ -340,8 +340,6 @@ def var_has_time(table_path, variable):
     with open(table_path, 'r') as inputstream:
         table_info = json.load(inputstream)
 
-    if '_highfreq' in variable:
-        variable = variable[:len('_highfreq') * -1]
     axis_info = table_info['variable_entry'][variable]['dimensions'].split(' ')
     if 'time' in axis_info:
         return 'time'
