@@ -9,8 +9,8 @@ from e3sm_to_cmip.cmor_handlers import pr_highfreq
 from e3sm_to_cmip.default import default_handler
 from e3sm_to_cmip.util import (
     _get_available_handlers,
-    _get_complex_handlers,
-    _get_default_handlers,
+    _get_handlers_from_modules,
+    _get_handlers_from_yaml,
     _get_table_for_freq,
     _get_table_for_non_monthly_freq,
     _get_table_info,
@@ -84,14 +84,13 @@ class TestLoadHandlers:
                 var_list=["undefined_handler"],
                 freq="mon",
                 realm="atm",
-                simple=False,
             )
 
 
     # TODO: Figure out an efficient way to write this test.
     # This test is tricky to create because it loops through all of the
-    # default handlers in `default_handlers_info.yaml` and complex handlers
-    # under `/cmor_handlers`, then checks the table names of each handler to
+    # handlers in `default_handlers_info.yaml` and handlers under
+    # `/cmor_handlers`, then checks the table names of each handler to
     # make sure it exists in the tables directory (a temp one created through
     # pytest). Currently, we would have to create all of the handler JSON
     # tables under the temp directory for the test to pass.
@@ -103,14 +102,13 @@ class TestLoadHandlers:
             var_list=["all"],
             freq="3hr",
             realm="atm",
-            simple=False,
         )
 
         # Only check an individual handler because there are many.
-        result_default = next(
+        result = next(
             (handler for handler in handlers if handler["name"] == "clt"), None
         )
-        expected_default = {
+        expected = {
             "name": "clt",
             "units": "%",
             "table": "CMIP6_3hr.json",
@@ -118,16 +116,16 @@ class TestLoadHandlers:
             "raw_variables": ["CLDTOT"],
             "unit_conversion": "1-to-%",
         }
-        assert result_default == expected_default
+        assert result == expected
 
-        result_complex = next(
+        result = next(
             (handler for handler in handlers if handler["name"] == "pr"), None
         )
         # Update "method" value to the name of the method because the memory
         # address changes with imports, so the handler dict won't align with the
         # expected output.
-        result_complex["method"] = result_complex["method"].__name__
-        expected_complex = {
+        result["method"] = result["method"].__name__
+        expected = {
             "name": "pr",
             "units": "kg m-2 s-1",
             "table": "CMIP6_3hr.json",
@@ -137,50 +135,7 @@ class TestLoadHandlers:
             "levels": None,
         }
 
-        assert result_complex == expected_complex
-
-    def test_returns_handlers_with_simple_mode_and_no_highfreq(self):
-        handlers = _load_handlers(
-            self.handlers_path,
-            self.tables_path,
-            var_list=["clt", "pr"],
-            freq="mon",
-            realm="atm",
-            simple=True,
-        )
-
-        # Only check an individual handler because there are many.
-        result_default = next(
-            (handler for handler in handlers if handler["name"] == "clt"), None
-        )
-        expected_default = {
-            "name": "clt",
-            "units": "%",
-            "table": "CMIP6_Amon.json",
-            "method": default_handler,
-            "raw_variables": ["CLDTOT"],
-            "unit_conversion": "1-to-%",
-        }
-        assert result_default == expected_default
-
-        result_complex = next(
-            (handler for handler in handlers if handler["name"] == "pr"), None
-        )
-        # Update "method" value to the name of the method because the memory
-        # address changes with imports, so the handler dict won't align with the
-        # expected output.
-        result_complex["method"] = result_complex["method"].__name__
-        expected_complex = {
-            "name": "pr",
-            "units": "kg m-2 s-1",
-            "table": "CMIP6_Amon.json",
-            "method": pr_highfreq.handle.__name__,
-            "raw_variables": ["PRECC", "PRECL"],
-            "positive": None,
-            "levels": None,
-        }
-
-        assert result_complex == expected_complex
+        assert result == expected
 
     def test_returns_handlers_for_selected_vars_with_highfreq(self):
         handlers = _load_handlers(
@@ -189,14 +144,13 @@ class TestLoadHandlers:
             var_list=["clt", "pr"],
             freq="3hr",
             realm="atm",
-            simple=False,
         )
 
         # Only check an individual handler because there are many.
-        result_default = next(
+        result_yaml = next(
             (handler for handler in handlers if handler["name"] == "clt"), None
         )
-        expected_default = {
+        expected_yaml = {
             "name": "clt",
             "units": "%",
             "table": "CMIP6_3hr.json",
@@ -204,16 +158,16 @@ class TestLoadHandlers:
             "raw_variables": ["CLDTOT"],
             "unit_conversion": "1-to-%",
         }
-        assert result_default == expected_default
+        assert result_yaml == expected_yaml
 
-        result_complex = next(
+        result_module = next(
             (handler for handler in handlers if handler["name"] == "pr"), None
         )
         # Update "method" value to the name of the method because the memory
         # address changes with imports, so the handler dict won't align with the
         # expected output.
-        result_complex["method"] = result_complex["method"].__name__
-        expected_complex = {
+        result_module["method"] = result_module["method"].__name__
+        expected_module = {
             "name": "pr",
             "units": "kg m-2 s-1",
             "table": "CMIP6_3hr.json",
@@ -223,31 +177,31 @@ class TestLoadHandlers:
             "levels": None,
         }
 
-        assert result_complex == expected_complex
+        assert result_module == expected_module
 
 
 class TestGetAvailableHandlers:
-    def test_returns_all_default_and_complex_handlers(self):
+    def test_returns_all_available_handlers(self):
         handlers_path = os.path.dirname(cmor_handlers.__file__)
         handlers = _get_available_handlers(handlers_path)
 
         # Only check an individual handler because there are many.
-        result_default = handlers["abs550aer"]
-        expected_default = {
+        result_yaml = handlers["abs550aer"]
+        expected_yaml = {
             "name": "abs550aer",
             "units": "1",
             "table": "CMIP6_AERmon.json",
             "method": default_handler,
             "raw_variables": ["AODABS"],
         }
-        assert result_default == expected_default
+        assert result_yaml == expected_yaml
 
-        result_complex = handlers["pr_highfreq"]
+        result_module = handlers["pr_highfreq"]
         # Update "method" value to the name of the method because the memory
         # address changes with imports, so the handler dict won't align with the
         # expected output.
-        result_complex["method"] = result_complex["method"].__name__
-        expected_complex = {
+        result_module["method"] = result_module["method"].__name__
+        expected_module = {
             "name": "pr",
             "units": "kg m-2 s-1",
             "table": "CMIP6_day.json",
@@ -257,12 +211,12 @@ class TestGetAvailableHandlers:
             "levels": None,
         }
 
-        assert result_complex == expected_complex
+        assert result_module == expected_module
 
 
-class TestGetDefaultHandlers:
-    def test_returns_default_handler_from_yaml_file(self):
-        handlers = _get_default_handlers()
+class TestGetHandlersFromYaml:
+    def test_returns_handlers_from_yaml_file(self):
+        handlers = _get_handlers_from_yaml()
 
         # Only check an individual handler because there are many.
         result = handlers["abs550aer"]
@@ -277,10 +231,10 @@ class TestGetDefaultHandlers:
         assert result == expected
 
 
-class TestGetComplexHandlers:
-    def test_returns_complex_handler_from_cmor_handlers_dir(self):
+class TestGetHandlersFromModules:
+    def test_returns_handlers_from_python_modules(self):
         handlers_path = os.path.dirname(cmor_handlers.__file__)
-        handlers = _get_complex_handlers(handlers_path)
+        handlers = _get_handlers_from_modules(handlers_path)
 
         # Only check one handler because there are many.
         result = handlers["pr_highfreq"]

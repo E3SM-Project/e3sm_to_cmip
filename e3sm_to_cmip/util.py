@@ -367,26 +367,24 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
         pprint(messages)
 
 
-# ------------------------------------------------------------------
-
-
 def _load_handlers(
     handlers_path: str,
     tables_path: str,
     var_list: List[str],
     freq: str = "mon",
     realm: str = "atm",
-    simple: bool = False,
 ) -> List[Dict[str, Any]]:
-    """Loads default and/or complex handlers based on a list of variable names.
+    """Loads variable handlers based on a list of variable names.
 
-    If this function is called with `simple=True`, then the `freq` argument
-    is not considered. This means that the base table is used (usually monthly).
+    The CMIP table used for the handler is based on the frequency that is
+    passed. If `freq="mon"`, then the base table is used (usually monthly).
+    For other frequencies such as "day", the table is derived using the
+    base table as the starting point.
 
     Parameters
     ----------
     handlers_path : str
-        The path to the complex handlers, which are Python modules.
+        The path to the Python module handlers.
     tables_path : str
         The path to the CMIP6 tables.
     var_list : List[str]
@@ -395,8 +393,6 @@ def _load_handlers(
         The frequency, by default "mon".
     realm : str, optional
         The realm, by default "atm".
-    simple : bool, optional
-        If True, run in simple mode, by default False
 
     Returns
     -------
@@ -410,7 +406,7 @@ def _load_handlers(
     if "all" in var_list:
         for key, handler in available_handlers.items():
             # Update the handler's "table" if the frequency is not monthly.
-            if not simple and freq != "mon":
+            if freq != "mon":
                 available_handlers[key]["table"] = _get_table_for_non_monthly_freq(
                     handler["name"], handler["table"], freq, realm, tables_path
                 )
@@ -436,12 +432,12 @@ def _load_handlers(
         if handler is None:
             raise KeyError(
                 f"Variable '{var}' failed to load. Either an entry is not defined in "
-                "the default handlers file, or a Python module of the same name does "
-                "not exist."
+                "the handlers yaml file, or a Python module with the name of the "
+                "variable does not exist."
             )
 
         # Update the handler's "table" if the frequency is not monthly.
-        if not simple and freq != "mon":
+        if freq != "mon":
             handler["table"] = _get_table_for_non_monthly_freq(
                 handler["name"], handler["table"], freq, realm, tables_path
             )
@@ -455,32 +451,37 @@ def _load_handlers(
 
 
 def _get_available_handlers(handlers_path: str) -> Dict[str, Dict[str, str]]:
-    """Loads default and/or complex handlers based on a list of variable names.
+    """Loads handlers based on a list of variable names.
 
     Parameters
     ----------
     handlers_path : str
-        The path to the complex handlers, which are Python modules.
+        The path to the Python module handlers.
 
     Returns
     -------
     Dict[str, Dict[str, str]]
-        A dictionary of dictionaries, with each dictionary storing the
-        information for a complex or default handler.
+        A dictionary of dictionaries, with each dictionary storing information
+        for a variable handler.
     """
-    default_handlers = _get_default_handlers()
-    complex_handlers = _get_complex_handlers(handlers_path)
-    all_handlers = {**default_handlers, **complex_handlers}
+    handlers_from_yaml = _get_handlers_from_yaml()
+    handlers_from_modules = _get_handlers_from_modules(handlers_path)
+    all_handlers = {**handlers_from_yaml, **handlers_from_modules}
 
     return all_handlers
 
 
-def _get_default_handlers() -> Dict[str, Dict[str, str]]:
-    """Gets the information for all default handlers in a nested dictionary.
+def _get_handlers_from_yaml() -> Dict[str, Dict[str, str]]:
+    """Get variable handlers from a yaml file.
 
-    The parent key is the CMIP name of the variable, and the value is a nested
-    dictionary storing key/value pairs for "name", "units", "table",
-    "method", "raw_variables", and "unit_conversion" (optional).
+    The handler yaml file (`default_handler_info.yaml`) defines handlers for
+    variables with information including `cmip_name`, `e3sm_name`, `units`,
+    `table`, `positive` (optional), and `unit_conversion` (optional).
+
+    The output of this function is a dictionary. The parent key is the CMIP
+    name of the variable, and the value is a nested dictionary storing
+    key/value pairs for "name", "units", "table", "method", "raw_variables",
+    and "unit_conversion" (optional).
 
     Example output:
     ---------------
@@ -498,7 +499,7 @@ def _get_default_handlers() -> Dict[str, Dict[str, str]]:
     -------
     Dict[str, Dict[str, str]]
         A dictionary of dictionaries, with each dictionary storing the
-        information for a default handler.
+        information for a handler.
     """
     # FIXME: Imports should be at the module level. However, moving this to the
     # module level results in a circular import.
@@ -508,33 +509,38 @@ def _get_default_handlers() -> Dict[str, Dict[str, str]]:
     defaults_path = os.path.join(resources_path, "default_handler_info.yaml")
 
     with open(defaults_path, "r") as infile:
-        default_handlers = yaml.load(infile, Loader=yaml.SafeLoader)
+        handlers = yaml.load(infile, Loader=yaml.SafeLoader)
 
     # Convert the list of dicts to a nested dict, with the key being the
     # "name" (cmip variable name).
-    default_handlers = {handler["cmip_name"]: handler for handler in default_handlers}
+    handlers = {handler["cmip_name"]: handler for handler in handlers}
 
-    # Post-process the loaded default handlers to align with the example
-    # dictionary structure.
-    for key in default_handlers.keys():
+    # Post-process the loaded handlers to align with the example dictionary
+    # structure.
+    for key in handlers.keys():
         # Add a "method" key with a value of default_handler to each nested dict.
-        default_handlers[key]["method"] = default_handler
+        handlers[key]["method"] = default_handler
         # The "raw_variables" entry should be a list of strings.
-        default_handlers[key]["raw_variables"] = [
-            default_handlers[key].pop("e3sm_name")
-        ]
+        handlers[key]["raw_variables"] = [handlers[key].pop("e3sm_name")]
         # Rename "cmip6_name" key to "name"
-        default_handlers[key]["name"] = default_handlers[key].pop("cmip_name")
+        handlers[key]["name"] = handlers[key].pop("cmip_name")
 
-    return default_handlers
+    return handlers
 
 
-def _get_complex_handlers(handlers_path: str) -> Dict[str, Dict[str, str]]:
-    """Gets the information for all complex handlers in a nested dictionary.
+def _get_handlers_from_modules(handlers_path: str) -> Dict[str, Dict[str, str]]:
+    """Gets variable handlers defined in Python modules.
 
-    The parent key is the CMIP name of the variable, and the value is a nested
-    dictionary storing key/value pairs for "name", "units", "table",
-    "method", "raw_variables", "positive" (optional), and "levels" (optional).
+    A Python module variable handler defines information about a variable,
+    including `RAW_VARIABLES`, `VAR_NAME`, `VAR_UNITS`, `TABLE`, the `handler()`
+    function, `positive` (bool, optional), and `levels` (dictionary, optional).
+    It also has a `write_data()` function, where additional processing may or
+    may not be performed.
+
+    The output of this function is a dictionary. The parent key is the CMIP name
+    of the variable, and the value is a nested dictionary storing key/value
+    pairs for "name", "units", "table", "method", "raw_variables", "positive"
+    (optional), and "levels" (optional).
 
     Example output:
     ---------------
@@ -558,15 +564,15 @@ def _get_complex_handlers(handlers_path: str) -> Dict[str, Dict[str, str]]:
     Parameters
     ----------
     handlers_path : str
-        The path to the complex handlers, which are Python modules.
+        The path to the Python module handlers.
 
     Returns
     -------
     Dict[str, Dict[str, str]]
         A dictionary of dictionaries, with each dictionary storing the
-        information for a complex handler.
+        information for a handler.
     """
-    complex_handlers = {}
+    handlers = {}
 
     for root, _, files in os.walk(handlers_path):
         for file in files:
@@ -575,7 +581,7 @@ def _get_complex_handlers(handlers_path: str) -> Dict[str, Dict[str, str]]:
                 filepath = os.path.join(root, file)
                 module = imp.load_source(var, filepath)
 
-                complex_handlers[var] = {
+                handlers[var] = {
                     "name": module.VAR_NAME,
                     "units": module.VAR_UNITS,
                     "table": module.TABLE,
@@ -587,7 +593,7 @@ def _get_complex_handlers(handlers_path: str) -> Dict[str, Dict[str, str]]:
                     "levels": module.LEVELS if hasattr(module, "LEVELS") else None,
                 }
 
-    return complex_handlers
+    return handlers
 
 
 def _get_table_for_non_monthly_freq(
@@ -641,9 +647,7 @@ def _get_table_for_non_monthly_freq(
     # Example: "/home/user/PCMDI/cmip6-cmor-tables/Tables/CMIP6_6hr.json"
     table_path = Path(tables_path, table_for_freq)
     if not table_path.exists():
-        raise ValueError(
-            f"Table `{table_for_freq}` does not exist in `{tables_path}`."
-        )
+        raise ValueError(f"Table `{table_for_freq}` does not exist in `{tables_path}`.")
 
     # Set table to the name of the table file
     # Example: "CMIP6_3hr.json"
