@@ -522,7 +522,7 @@ def _get_handlers_from_yaml() -> Dict[str, Dict[str, str]]:
         handlers[key]["method"] = default_handler
         # The "raw_variables" entry should be a list of strings.
         handlers[key]["raw_variables"] = [handlers[key].pop("e3sm_name")]
-        # Rename "cmip6_name" key to "name"
+        # Rename "cmip_name" key to "name"
         handlers[key]["name"] = handlers[key].pop("cmip_name")
 
     return handlers
