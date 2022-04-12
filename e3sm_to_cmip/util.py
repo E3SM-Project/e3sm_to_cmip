@@ -512,7 +512,7 @@ def _get_handlers_from_yaml() -> Dict[str, Dict[str, str]]:
         handlers = yaml.load(infile, Loader=yaml.SafeLoader)
 
     # Convert the list of dicts to a nested dict, with the key being the
-    # "name" (cmip variable name).
+    # "cmip_name" (cmip variable name).
     handlers = {handler["cmip_name"]: handler for handler in handlers}
 
     # Post-process the loaded handlers to align with the example dictionary
