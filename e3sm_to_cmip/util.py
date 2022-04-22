@@ -140,44 +140,45 @@ def parse_arguments():
         nargs="+",
         required=True,
         metavar="",
-        help="Space separated list of variables to convert from e3sm to cmip. Use 'all' to convert all variables or the name of a CMIP6 table to run all handlers from that table",
+        help="Space separated list of variables to convert from e3sm to cmip. Use 'all' to convert all variables or the name of a CMIP6 table to run all handlers from that table.",
     )
     parser.add_argument(
         "-i",
         "--input-path",
         metavar="",
-        help="Path to directory containing e3sm time series data files. Additionally namelist, restart, and mappings files if handling MPAS data.",
+        help="Path to directory containing e3sm time series data files. Additionally namelist, restart, and 'region' files if handling MPAS data. \
+            Region files are available from https://web.lcrc.anl.gov/public/e3sm/inputdata/ocn/mpas-o/<mpas_mesh_name>.",
     )
     parser.add_argument(
-        "-o", "--output-path", metavar="", help="Where to store cmorized output"
+        "-o", "--output-path", metavar="", help="Where to store cmorized output."
     )
     parser.add_argument(
         "--simple",
-        help="Perform a simple translation of the E3SM output to CMIP format, but without the CMIP6 metadata checks",
+        help="Perform a simple translation of the E3SM output to CMIP format, but without the CMIP6 metadata checks.",
         action="store_true",
     )
     parser.add_argument(
         "-f",
         "--freq",
-        help="The frequency of that data, default is monthly. Accepted values are mon, day, 6hrLev, 6hrPlev, 6hrPlevPt, 3hr, 1hr",
+        help="The frequency of that data, default is monthly. Accepted values are mon, day, 6hrLev, 6hrPlev, 6hrPlevPt, 3hr, 1hr.",
         default="mon",
     )
     parser.add_argument(
         "-u",
         "--user-metadata",
         metavar="<user_input_json_path>",
-        help="Path to user json file for CMIP6 metadata, required unless the --simple flag is used",
+        help="Path to user json file for CMIP6 metadata, required unless the --simple flag is used.",
     )
     parser.add_argument(
         "-t",
         "--tables-path",
         metavar="<tables-path>",
-        help="Path to directory containing CMOR Tables directory, required unless the --simple flag is used",
+        help="Path to directory containing CMOR Tables directory, required unless the --simple flag is used.",
     )
     parser.add_argument(
         "--map",
         metavar="<map_mpas_to_std_grid>",
-        help="The path to an mpas remapping file. Required if realm is mpaso or mpassi",
+        help="The path to an mpas remapping file. Required if realm is mpaso or mpassi.  Available from https://web.lcrc.anl.gov/public/e3sm/mapping/maps/",
     )
     parser.add_argument(
         "-n",
@@ -192,40 +193,40 @@ def parse_arguments():
         "--handlers",
         metavar="<handler_path>",
         default=None,
-        help="Path to cmor handlers directory, default = e3sm_to_cmip/cmor_handlers",
+        help="Path to cmor handlers directory, default is the (built-in) 'e3sm_to_cmip/cmor_handlers'",
     )
     parser.add_argument(
         "--custom-metadata",
-        help="the path to a json file with additional custom metadata to add to the output files",
+        help="the path to a json file with additional custom metadata to add to the output files.",
     )
     parser.add_argument(
         "-s",
         "--serial",
-        help="Run in serial mode, usefull for debugging purposes",
+        help="Run in serial mode, useful for debugging purposes.",
         action="store_true",
     )
     parser.add_argument(
-        "--debug", help="Set output level to debug", action="store_true"
+        "--debug", help="Set output level to debug.", action="store_true"
     )
     parser.add_argument(
         "--realm",
         metavar="<realm>",
         default="atm",
-        help="The realm to process, atm, lnd, mpaso or mpassi. Default is atm",
+        help="The realm to process.  Must be atm, lnd, mpaso or mpassi. Default is atm.",
     )
     parser.add_argument(
         "--logdir",
         default="./cmor_logs",
-        help="Where to put the logging output from CMOR",
+        help="Where to put the logging output from CMOR.",
     )
     parser.add_argument(
         "--timeout",
-        help="Exit with code -1 if execution time exceeds given time in seconds",
+        help="Exit with code -1 if execution time exceeds given time in seconds.",
     )
     parser.add_argument(
         "--precheck",
         type=str,
-        help="Check for each variable if its already in the output CMIP6 directory, only run variables that dont have CMIP6 output",
+        help="Check for each variable if its already in the output CMIP6 directory, only run variables that don't have pre-existing CMIP6 output.",
     )
     parser.add_argument(
         "--info",
@@ -239,11 +240,11 @@ variables are present in the E3SM output.""",
     parser.add_argument(
         "--info-out",
         type=str,
-        help="If passed with the --info flag, will cause the variable info to be written out to the specified file path as yaml",
+        help="If passed with the --info flag, will cause the variable info to be written out to the specified file path as yaml.",
     )
     parser.add_argument(
         "--version",
-        help="print the version number and exit",
+        help="print the version number and exit.",
         action="version",
         version="%(prog)s {}".format(__version__),
     )
