@@ -160,7 +160,7 @@ def parse_arguments():
     parser.add_argument(
         "-f",
         "--freq",
-        help="The frequency of that data, default is monthly. Accepted values are mon, day, 6hrLev, 6hrPlev, 6hrPlevPt, 3hr, 1hr.",
+        help="The frequency of the data (default is monthly). Accepted values are mon, day, 6hrLev, 6hrPlev, 6hrPlevPt, 3hr, 1hr.",
         default="mon",
     )
     parser.add_argument(
@@ -178,7 +178,7 @@ def parse_arguments():
     parser.add_argument(
         "--map",
         metavar="<map_mpas_to_std_grid>",
-        help="The path to an mpas remapping file. Required if realm is mpaso or mpassi.  Available from https://web.lcrc.anl.gov/public/e3sm/mapping/maps/",
+        help="The path to an mpas remapping file. Required if realm is mpaso or mpassi.  Available from https://web.lcrc.anl.gov/public/e3sm/mapping/maps/.",
     )
     parser.add_argument(
         "-n",
@@ -186,14 +186,14 @@ def parse_arguments():
         metavar="<nproc>",
         default=6,
         type=int,
-        help="optional: number of processes, default = 6",
+        help="optional: number of processes, default = 6.",
     )
     parser.add_argument(
         "-H",
         "--handlers",
         metavar="<handler_path>",
         default=None,
-        help="Path to cmor handlers directory, default is the (built-in) 'e3sm_to_cmip/cmor_handlers'",
+        help="Path to cmor handlers directory, default is the (built-in) 'e3sm_to_cmip/cmor_handlers'.",
     )
     parser.add_argument(
         "--custom-metadata",
