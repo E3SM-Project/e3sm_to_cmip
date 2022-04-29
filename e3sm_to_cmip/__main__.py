@@ -95,8 +95,7 @@ def main():
         tables_path=tables_path,
         var_list=var_list,
         freq=freq,
-        realm=realm,
-        simple=simple)
+        realm=realm)
 
     if len(handlers) == 0:
         print_message('No handlers loaded')
