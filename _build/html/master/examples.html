@@ -46,6 +46,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#simple-atmosphere-variable-example">Simple atmosphere variable example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plev-atmosphere-variable-example">Plev atmosphere variable example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#end-to-end-high-frequency-example">End-to-End High Frequency Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#simple-mpas-ocean-variable-example">Simple MPAS Ocean variable example</a></li>
 </ul>
 </li>
 </ul>
@@ -250,6 +251,18 @@ mkdir tmp
 </div>
 <p>This will launch a fairly long running job as it steps through all the parts of the workflow. If you’re running a very large set of data, it can help to use the <code class="docutils literal notranslate"><span class="pre">nohup</span></code> tool to
 wrap the command so it doesnt get interupted by logging out.</p>
+</section>
+<section id="simple-mpas-ocean-variable-example">
+<h2>Simple MPAS Ocean variable example<a class="headerlink" href="#simple-mpas-ocean-variable-example" title="Permalink to this headline"></a></h2>
+<p>Unlike Atmos and Land data, e3sm_to_cmip can work directly with the native MPAS Ocean (and Sea-Ice) model output files to cmorize selected variables.</p>
+<p>The command line requires the following inputs (example for variable “thetao”):</p>
+<p>[*]  The input directory for MPAS processing must also include</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>namelist:  mpaso_in
+restart:   <span class="o">(</span>e.g.<span class="o">)</span> mpaso.rst.1851-01-01_00000.nc <span class="o">(</span>from the native output<span class="o">)</span>
+regionfile: <span class="o">(</span>e.g.<span class="o">)</span> oEC60to30v3_Atlantic_region_and_southern_transect.nc
+</pre></div>
+</div>
+<p>Region files are available from <a class="reference external" href="https://web.lcrc.anl.gov/public/e3sm/inputdata/ocn/mpas-o">https://web.lcrc.anl.gov/public/e3sm/inputdata/ocn/mpas-o</a>/&lt;mpas_mesh_name&gt;.</p>
 </section>
 </section>
 

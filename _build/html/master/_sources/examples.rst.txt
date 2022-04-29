@@ -211,3 +211,33 @@ And startup the CWL workflow
 This will launch a fairly long running job as it steps through all the parts of the workflow. If you're running a very large set of data, it can help to use the ``nohup`` tool to 
 wrap the command so it doesnt get interupted by logging out.
 
+
+
+Simple MPAS Ocean variable example
+==================================
+
+Unlike Atmos and Land data, e3sm_to_cmip can work directly with the native MPAS Ocean (and Sea-Ice) model output files to cmorize selected variables.
+
+The command line requires the following inputs (example for variable "thetao"):
+
+.. code-block:: bash
+       --realm mpaso
+    -v thetao
+    --input The path to your input directory. [Raw MPAS ocean datafiles, plus namelist, restart, and mappings files[*]]
+    --map The path to an mpas remapping file. [Required for realm mpaso and mpassi.  Available from https://web.lcrc.anl.gov/public/e3sm/mapping/maps/
+    --user-metadata <path_to_your_metadata/name.json> [Required unless "—simple" is specified]
+    --tables-path <Path to directory containing CMOR Tables directory> [Required unless "—simple" is specified]
+    --output-path <Path to the directory for generated output>
+
+[*]  The input directory for MPAS processing must also include
+
+.. code-block:: bash
+
+    namelist:  mpaso_in
+    restart:   (e.g.) mpaso.rst.1851-01-01_00000.nc (from the native output)
+    regionfile: (e.g.) oEC60to30v3_Atlantic_region_and_southern_transect.nc
+
+
+Region files are available from https://web.lcrc.anl.gov/public/e3sm/inputdata/ocn/mpas-o/<mpas_mesh_name>.
+
+
