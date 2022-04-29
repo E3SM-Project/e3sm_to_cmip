@@ -212,7 +212,7 @@ def parse_arguments():
         "--realm",
         metavar="<realm>",
         default="atm",
-        help="The realm to process.  Must be atm, lnd, mpaso or mpassi. Default is atm.",
+        help="The realm to process. Must be atm, lnd, mpaso or mpassi. Default is atm.",
     )
     parser.add_argument(
         "--logdir",
@@ -226,7 +226,7 @@ def parse_arguments():
     parser.add_argument(
         "--precheck",
         type=str,
-        help="Check for each variable if its already in the output CMIP6 directory, only run variables that don't have pre-existing CMIP6 output.",
+        help="Check for each variable if it's already in the output CMIP6 directory, only run variables that don't have pre-existing CMIP6 output.",
     )
     parser.add_argument(
         "--info",
@@ -244,7 +244,7 @@ variables are present in the E3SM output.""",
     )
     parser.add_argument(
         "--version",
-        help="print the version number and exit.",
+        help="Print the version number and exit.",
         action="version",
         version="%(prog)s {}".format(__version__),
     )
