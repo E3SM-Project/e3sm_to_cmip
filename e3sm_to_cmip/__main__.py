@@ -21,6 +21,7 @@ from e3sm_to_cmip.lib import run_parallel, run_serial
 from e3sm_to_cmip.util import (_load_handlers, add_metadata,
                                copy_user_metadata, parse_arguments, precheck,
                                print_debug, print_message, print_var_info)
+from e3sm_to_cmip.util import log_message, setup_logging
 
 os.environ['CDAT_ANONYMOUS_LOG'] = 'false'
 
@@ -58,6 +59,11 @@ def main():
     simple = _args.get('simple', False)
     precheck_path = _args.get('precheck', False)
     freq = _args.get('freq')
+
+    setup_logging("debug", f"{cmor_log_dir}/e3sm_to_cmip.log")
+    log_message("info", f"TOP: input_path = {input_path}")
+    log_message("info", f"TOP: output_path = {output_path}")
+    log_message("info", f"TOP: precheck_path = {precheck_path}")
 
     if simple:
         no_metadata = True

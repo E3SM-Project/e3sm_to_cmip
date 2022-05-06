@@ -54,6 +54,61 @@ def print_debug(e):
     traceback.print_tb(tb)
     print(e)
 
+def setup_logging(loglevel, logpath):
+    logname = logpath + "-" + UTC.localize(datetime.utcnow()).strftime("%Y%m%d_%H%M%S_%f")
+    if loglevel == "debug":
+        level = logging.DEBUG
+    elif loglevel == "error":
+        level = logging.ERROR
+    elif loglevel == "warning":
+        level = logging.WARNING
+    else:
+        level = logging.INFO
+    logging.basicConfig(
+        filename=logname,
+        # format="%(asctime)s:%(levelname)s:%(module)s:%(message)s",
+        format="%(asctime)s_%(msecs)03d:%(levelname)s:%(message)s",
+        datefmt="%Y%m%d_%H%M%S",
+        level=level,
+    )
+    logging.Formatter.converter = time.gmtime
+    # should be a separate message call
+    # logging.info(f"Starting up the warehouse with parameters: \n{pformat(self.__dict__)}")
+
+def log_message(level, message, user_level='INFO'):  # message BOTH to log file and to console (in color)
+
+    process_stack = inspect.stack()[1]
+    parent_module = inspect.getmodule(process_stack[0])
+
+    parent_name = parent_module.__name__.split(".")[-1].upper()
+    if parent_name == "__MAIN__":
+        parent_name = process_stack[1].split(".")[0].upper()
+    message = f"{parent_name}:{message}"
+
+    level = level.upper()
+    colors = {"INFO": "white", "WARNING": "yellow", "ERROR": "red", "DEBUG": "cyan"}
+    color = colors.get(level, 'red')
+    tstamp = UTC.localize(datetime.utcnow()).strftime("%Y%m%d_%H%M%S_%f")  # for console output
+    # first, print to logfile
+    if level == "DEBUG":
+        logging.debug(message)
+    elif level == "ERROR":
+        logging.error(message)
+    elif level == "WARNING":
+        logging.warning(message)
+    elif level == "INFO":
+        logging.info(message)
+    else:
+        print(f"ERROR: {level} is not a valid log level")
+
+    if level == 'DEBUG' and user_level != level:
+        pass
+    else:
+        # now to the console
+        msg = f"{tstamp}:{level}:{message}"
+        cprint(msg, color)
+
+
 
 # ------------------------------------------------------------------
 
