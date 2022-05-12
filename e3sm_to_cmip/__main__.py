@@ -61,9 +61,9 @@ def main():
     freq = _args.get('freq')
 
     setup_logging("debug", f"{cmor_log_dir}/e3sm_to_cmip.log")
-    log_message("info", f"TOP: input_path = {input_path}")
-    log_message("info", f"TOP: output_path = {output_path}")
-    log_message("info", f"TOP: precheck_path = {precheck_path}")
+    log_message("info", f"__main__: input_path = {input_path}")
+    log_message("info", f"__main__: output_path = {output_path}")
+    log_message("info", f"__main__: precheck_path = {precheck_path}")
 
     if simple:
         no_metadata = True

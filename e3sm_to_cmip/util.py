@@ -7,6 +7,12 @@ import os
 import re
 import sys
 import traceback
+import logging
+import time
+import inspect
+from datetime import datetime
+from pytz import UTC
+from termcolor import colored, cprint
 from pathlib import Path
 from pprint import pprint
 from typing import Any, Dict, List
@@ -1106,10 +1112,14 @@ def precheck(inpath, precheck_path, variables, realm):
     start, end = get_years_from_raw(inpath, realm, variables[0])
     var_map = [{"found": False, "name": var} for var in variables]
 
+    log_message("info", f"precheck: working on year-range {start} to {end}")
+
     # then check the output tree for files with the correct variables for those years
     for val in var_map:
+        log_message("info", f"precheck: testing for var {val} in path {precheck_path}")
         for _, _, files in os.walk(precheck_path, topdown=False):
             if files:
+                # Seek files named <var>_<anything> 
                 prefix = val["name"] + "_"
                 if files[0][: len(prefix)] != prefix:
                     # this directory doesnt have the variable we're looking for
@@ -1119,6 +1129,7 @@ def precheck(inpath, precheck_path, variables, realm):
                 for f in files:
                     cmip_start, cmip_end = get_year_from_cmip(f)
                     if cmip_start == start and cmip_end == end:
+                        log_message("info", f"found file: {f}")
                         val["found"] = True
                         break
                 if val["found"] == True:
