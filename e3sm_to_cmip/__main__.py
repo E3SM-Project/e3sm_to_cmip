@@ -60,10 +60,10 @@ def main():
     precheck_path = _args.get('precheck', False)
     freq = _args.get('freq')
 
-    setup_logging("debug", f"{cmor_log_dir}/e3sm_to_cmip.log")
-    log_message("info", f"__main__: input_path = {input_path}")
-    log_message("info", f"__main__: output_path = {output_path}")
-    log_message("info", f"__main__: precheck_path = {precheck_path}")
+    logger = setup_custom_logger(f"{cmor_log_dir}/e3sm_to_cmip.log", True)
+    logger.info(f"input_path = {input_path}")
+    logger.info(f"output_path = {output_path}")
+    logger.info(f"precheck_path = {precheck_path}")
 
     if simple:
         no_metadata = True
