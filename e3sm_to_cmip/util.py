@@ -16,9 +16,8 @@ import xarray as xr
 import yaml
 from tqdm import tqdm
 
-from e3sm_to_cmip import resources
+from e3sm_to_cmip import __version__, resources
 from e3sm_to_cmip._logger import _setup_custom_logger
-from e3sm_to_cmip.version import __version__
 
 logger = _setup_custom_logger(__name__)
 

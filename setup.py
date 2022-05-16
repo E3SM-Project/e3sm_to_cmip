@@ -3,7 +3,7 @@ import os
 
 from setuptools import find_packages, setup
 
-from e3sm_to_cmip.version import __version__
+from e3sm_to_cmip import __version__
 
 
 class CleanCommand(distutils.cmd.Command):
