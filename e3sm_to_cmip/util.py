@@ -7,10 +7,6 @@ import os
 import re
 import sys
 import traceback
-import logging
-import time
-from datetime import datetime
-from pytz import UTC
 from pathlib import Path
 from pprint import pprint
 from typing import Any, Dict, List
@@ -57,44 +53,6 @@ def print_debug(e):
     _, _, tb = sys.exc_info()
     traceback.print_tb(tb)
     print(e)
-
-def setup_custom_logger(name: str, propagate: bool = False) -> logging.Logger:
-    """Sets up a custom logger.
-    Parameters
-    ----------
-    name : str
-        Name of the file where this function is called.
-    propagate : bool, optional
-        Whether to propagate logger messages or not, by default False
-    Returns
-    -------
-    logging.Logger
-        The logger.
-    """
-
-    # Setup
-    log_name = name + "-" + UTC.localize(datetime.utcnow()).strftime("%Y%m%d_%H%M%S_%f")
-    log_format = '%(asctime)s_%(msecs)03d:%(levelname)s:%(funcName)s:%(message)s'
-    logging.basicConfig(
-        filename=log_name,
-        format=log_format,
-        datefmt='%Y%m%d_%H%M%S',
-        level=logging.INFO,
-    )
-    logging.Formatter.converter = time.gmtime
-
-    logger = logging.getLogger(log_name)
-    logger.propagate = propagate
-
-    # Console output
-    consoleHandler = logging.StreamHandler()
-    logFormatter = logging.Formatter(log_format)
-    consoleHandler.setFormatter(logFormatter)
-    logger.addHandler(consoleHandler)
-
-    return logger
-
-# ------------------------------------------------------------------
 
 
 class colors:
@@ -1097,7 +1055,7 @@ def precheck(inpath, precheck_path, variables, realm):
         log_message("info", f"precheck: testing for var {val} in path {precheck_path}")
         for _, _, files in os.walk(precheck_path, topdown=False):
             if files:
-                # Seek files named <var>_<anything> 
+                # Seek files named <var>_<anything>
                 prefix = val["name"] + "_"
                 if files[0][: len(prefix)] != prefix:
                     # this directory doesnt have the variable we're looking for

@@ -3,8 +3,7 @@
 A python command line tool to turn E3SM model output into CMIP6 compatable data
 """
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import logging
 import os
@@ -17,11 +16,18 @@ from concurrent.futures import ProcessPoolExecutor as Pool
 import numpy as np
 
 from e3sm_to_cmip import cmor_handlers, resources
+from e3sm_to_cmip._logger import _setup_custom_logger
 from e3sm_to_cmip.lib import run_parallel, run_serial
-from e3sm_to_cmip.util import (_load_handlers, add_metadata,
-                               copy_user_metadata, parse_arguments, precheck,
-                               print_debug, print_message, print_var_info)
-from e3sm_to_cmip.util import setup_custom_logger
+from e3sm_to_cmip.util import (
+    _load_handlers,
+    add_metadata,
+    copy_user_metadata,
+    parse_arguments,
+    precheck,
+    print_debug,
+    print_message,
+    print_var_info,
+)
 
 os.environ['CDAT_ANONYMOUS_LOG'] = 'false'
 
@@ -60,7 +66,7 @@ def main():
     precheck_path = _args.get('precheck', False)
     freq = _args.get('freq')
 
-    logger = setup_custom_logger(f"{cmor_log_dir}/e3sm_to_cmip.log", True)
+    logger = _setup_custom_logger(f"{cmor_log_dir}/e3sm_to_cmip.log", True)
     logger.info(f"input_path = {input_path}")
     logger.info(f"output_path = {output_path}")
     logger.info(f"precheck_path = {precheck_path}")
