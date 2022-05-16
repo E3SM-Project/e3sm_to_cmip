@@ -17,7 +17,10 @@ import yaml
 from tqdm import tqdm
 
 from e3sm_to_cmip import resources
+from e3sm_to_cmip._logger import _setup_custom_logger
 from e3sm_to_cmip.version import __version__
+
+logger = _setup_custom_logger(__name__)
 
 ATMOS_TABLES = [
     "CMIP6_Amon.json",
@@ -1048,11 +1051,11 @@ def precheck(inpath, precheck_path, variables, realm):
     start, end = get_years_from_raw(inpath, realm, variables[0])
     var_map = [{"found": False, "name": var} for var in variables]
 
-    log_message("info", f"precheck: working on year-range {start} to {end}")
+    logger.info(f"precheck: working on year-range {start} to {end}")
 
     # then check the output tree for files with the correct variables for those years
     for val in var_map:
-        log_message("info", f"precheck: testing for var {val} in path {precheck_path}")
+        logger.info(f"precheck: testing for var {val} in path {precheck_path}")
         for _, _, files in os.walk(precheck_path, topdown=False):
             if files:
                 # Seek files named <var>_<anything>
@@ -1065,7 +1068,7 @@ def precheck(inpath, precheck_path, variables, realm):
                 for f in files:
                     cmip_start, cmip_end = get_year_from_cmip(f)
                     if cmip_start == start and cmip_end == end:
-                        log_message("info", f"found file: {f}")
+                        logger.info(f"found file: {f}")
                         val["found"] = True
                         break
                 if val["found"] == True:
