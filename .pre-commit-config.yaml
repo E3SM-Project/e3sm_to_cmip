@@ -35,4 +35,4 @@ repos:
       - id: mypy
         args: ["--config=setup.cfg"]
         additional_dependencies:
-          [dask==2022.11.1, numpy==1.23.5, xarray==2022.11.0]
+          [dask==2022.11.1, numpy==1.23.5, xarray==2022.11.0, cmor=3.6.1]

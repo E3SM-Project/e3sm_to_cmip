@@ -21,7 +21,7 @@ def _setup_custom_logger(
         The logger.
     """
     # Setup
-    log_name = name + "-" + UTC.localize(datetime.utcnow()).strftime("%Y%m%d_%H%M%S_%f")
+    log_name = f'logs/{UTC.localize(datetime.utcnow()).strftime("%Y%m%d_%H%M%S_%f")}'
     log_format = "%(asctime)s_%(msecs)03d:%(levelname)s:%(funcName)s:%(message)s"
     logging.basicConfig(
         filename=log_name,

@@ -1,0 +1,4 @@
+[run]
+omit =
+    e3sm_to_cmip/cmor_handlers/mpas_vars/*
+    e3sm_to_cmip/cmor_handlers/vars/*
