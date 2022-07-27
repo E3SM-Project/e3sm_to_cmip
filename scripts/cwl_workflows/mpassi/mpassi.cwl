@@ -63,7 +63,6 @@ steps:
       nested_crossproduct
     out:
       - cmorized
-    #  - cmor_logs
 
 outputs:
   cmorized:
@@ -73,11 +72,3 @@ outputs:
         type: array
         items: Directory
     outputSource: step_cmor/cmorized
-  # logs:
-  #   type:
-  #     type: array
-  #     items:
-  #       type: array
-  #       items: Directory
-  #   outputSource:
-  #     step_cmor/cmor_logs

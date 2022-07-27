@@ -40,7 +40,6 @@ arguments:
   - $(inputs.timeout)
   - e3sm_to_cmip
   - -s
-  - --precheck
   - --output-path
   - $(runtime.outdir)
   - --realm

@@ -67,7 +67,6 @@ steps:
       flat_crossproduct
     out:
       - cmorized
-    #   - logs
 
 outputs: 
   cmorized:
