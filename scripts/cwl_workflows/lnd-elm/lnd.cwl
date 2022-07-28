@@ -32,12 +32,6 @@ outputs:
     type: Directory[]
     outputSource: step_cmor/cmip6_dir
     linkMerge: merge_flattened
-  # cmor_logs:
-  #   type: Directory[]
-  #   outputSource: step_cmor/logs
-  # time_series:
-  #   type: File[]
-  #   outputSource: step_join_timeseries/array_1d
 
 steps:
 
@@ -134,7 +128,6 @@ steps:
       - raw_file_list
     out:
       - cmip6_dir
-      # - logs
   
   # step_join_timeseries:
   #   run:

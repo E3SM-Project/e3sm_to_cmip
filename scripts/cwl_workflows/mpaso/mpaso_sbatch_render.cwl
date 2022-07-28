@@ -19,7 +19,6 @@ requirements:
               e3sm_to_cmip \
                   -s \
                   --realm mpaso \
-                  --precheck {{ workflow_output }} \
                   -v {{ variables }} \
                   --tables-path {{ tables }} \
                   --user-metadata {{ metadata }} \
@@ -118,10 +117,6 @@ outputs:
     type: Directory
     outputBinding:
       glob: CMIP6
-  logs:
-    type: Directory
-    outputBinding:
-      glob: cmor_logs
 
 arguments:
   - --outdir
