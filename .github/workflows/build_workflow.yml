@@ -30,6 +30,7 @@ jobs:
         with:
           cancel_others: ${{ env.CANCEL_OTHERS }}
           paths_ignore: ${{ env.PATHS_IGNORE }}
+          do_not_skip: '["push", "workflow_dispatch"]'
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         uses: actions/checkout@v2
@@ -69,8 +70,8 @@ jobs:
         name: Upload Coverage Report
         uses: codecov/codecov-action@v1
         with:
-            file: "tests_coverage_reports/coverage.xml"
-            fail_ci_if_error: true
+          file: "tests_coverage_reports/coverage.xml"
+          fail_ci_if_error: true
 
   publish-docs:
     if: ${{ github.event_name == 'push' }}
