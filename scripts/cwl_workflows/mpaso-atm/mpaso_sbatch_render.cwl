@@ -19,7 +19,6 @@ requirements:
               e3sm_to_cmip \
                   -s \
                   --realm mpaso \
-                  --precheck {{ workflow_output }} \
                   -v {{ variables }} \
                   --tables-path {{ tables }} \
                   --user-metadata {{ metadata }} \

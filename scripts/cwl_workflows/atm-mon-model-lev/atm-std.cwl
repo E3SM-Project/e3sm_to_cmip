@@ -30,10 +30,6 @@ outputs:
     type: Directory[]
     outputSource: 
       - step_std_cmor/cmip6_dir
-  # logs:
-  #   type: Directory[]
-  #   outputSource:
-  #     - step_std_cmor/cmor_logs
 
 steps:
   step_find_casename:
@@ -121,4 +117,3 @@ steps:
       timeout: timeout
     out:
       - cmip6_dir
-      # - cmor_logs
