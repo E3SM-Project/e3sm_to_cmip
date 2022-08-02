@@ -48,7 +48,7 @@ FREQUENCIES = {
 }
 
 # Variables that have both a self-named and "_highfreq" handler.
-HIGHFREQ_VARS = ["pr", "rlut"]
+HIGHFREQ_VARS = ["pr", "rlut", "tasmin", "tasmax"]
 
 
 def print_debug(e):
