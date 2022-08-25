@@ -1,0 +1,120 @@
+# path to the raw model data
+data_path: /compyfs/v1BGCoutput/bdrc_ctc/test
+
+# size of output data files in years
+frequency: 25
+
+# number of ncremap workers
+num_workers: 12
+
+# slurm account info
+account: e3sm
+partition: short
+timeout: 2:00:00
+
+# horizontal regridding file path
+hrz_atm_map_path: /qfs/people/zender/data/maps/map_ne30pg2_to_cmip6_180x360_aave.20200201.nc
+
+# vertical interpolation remap file path
+vrt_map_path: /compyfs/v1BGCoutput/resources/vrt_remap_plev19.nc
+
+# path to CMIP6 tables directory
+tables_path: /qfs/people/bald158/projects/cmip6-cmor-tables/Tables/
+
+# path to CMOR case metadata
+metadata_path: /compyfs/v1BGCoutput/bdrc_ctc/resources/metadata_bdrc_ctc.json
+
+# list if E3SM raw variable names
+std_var_list:
+  [
+    AODABS,
+    AODVIS,
+    AREL,
+    CLDICE,
+    CLDLIQ,
+    CLDTOT,
+    CLOUD,
+    FLDS,
+    FLNS,
+    FLNSC,
+    FLNT,
+    FLUTC,
+    FSDS,
+    FSDSC,
+    FSNS,
+    FSNSC,
+    FSNT,
+    FSNTOA,
+    FSUTOA,
+    FSUTOAC,
+    hyai,
+    hyam,
+    hybi,
+    hybm,
+    LHFLX,
+    PRECC,
+    PRECL,
+    PRECSC,
+    PRECSL,
+    PS,
+    PSL,
+    QFLX,
+    QREFHT,
+    RELHUM,
+    SHFLX,
+    SOLIN,
+    TAUX,
+    TAUY,
+    TGCLDCWP,
+    TGCLDIWP,
+    TMQ,
+    TREFHT,
+    TS,
+    U10
+  ]
+
+# list of CMIP6 variable names
+std_cmor_list:
+  [
+    abs550aer,
+    cl,
+    cli,
+    clivi,
+    clt,
+    clw,
+    clwvi,
+    evspsbl,
+    hfls,
+    hfss,
+    hur,
+    huss,
+    od550aer,
+    pfull,
+    phalf,
+    pr,
+    prc,
+    prsn,
+    prw,
+    ps,
+    psl,
+    reffclwtop,
+    rlds,
+    rldscs,
+    rlus,
+    rlut,
+    rlutcs,
+    rsds,
+    rsdscs,
+    rsdt,
+    rsus,
+    rsuscs,
+    rsut,
+    rsutcs,
+    rtmt,
+    sfcWind,
+    tas,
+    tauu,
+    tauv,
+    ts
+  ]
+
