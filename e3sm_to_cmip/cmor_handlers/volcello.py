@@ -66,7 +66,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     ds = mpas.add_depth(ds, dsMesh)
     ds.compute()
 
-    ds = mpas.remap(ds, mappingFileName)
+    ds = mpas.remap(ds, 'mpasocean', mappingFileName)
 
     # set masked values (where there are no MPAS grid cells) to zero
     ds[VAR_NAME] = ds[VAR_NAME].where(

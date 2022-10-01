@@ -52,7 +52,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     ds = xarray.Dataset()
     ds[VAR_NAME] = ('nCells', cellMask2D.astype(float))
-    ds = mpas.remap(ds, mappingFileName)
+    ds = mpas.remap(ds, 'mpasocean', mappingFileName)
 
     # the result above is just a mask of area fraction.  We need to multiply
     # by the area on the output grid

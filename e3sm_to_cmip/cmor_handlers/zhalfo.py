@@ -86,7 +86,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
 
-    ds = mpas.remap(ds, mappingFileName)
+    ds = mpas.remap(ds, 'mpasocean', mappingFileName)
     depth_coord_half = numpy.zeros(nVertLevels+1)
     depth_coord_half[1:] = dsMesh.refBottomDepth.values
 

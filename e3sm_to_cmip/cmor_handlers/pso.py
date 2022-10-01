@@ -75,7 +75,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
 
-    ds = mpas.remap(ds, mappingFileName)
+    ds = mpas.remap(ds, 'mpasocean', mappingFileName)
 
     with xarray.open_mfdataset(pslFileNames, concat_dim='time') as dsIn:
         ds[VAR_NAME] = ds[VAR_NAME] + dsIn.PSL.values

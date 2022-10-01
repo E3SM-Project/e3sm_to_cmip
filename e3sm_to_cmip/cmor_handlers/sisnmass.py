@@ -72,7 +72,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     ds['cellMask'] = ds.siconc * ds.cellMask
     ds.compute()
 
-    ds = mpas.remap(ds, mappingFileName)
+    ds = mpas.remap(ds, 'mpasseaice', mappingFileName)
 
     mpas.setup_cmor(VAR_NAME, tables, user_input_path, component='seaice')
 
