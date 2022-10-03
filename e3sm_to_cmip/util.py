@@ -869,11 +869,11 @@ def find_mpas_files(component, path, map_path=None):
 
     if component == "mpaso":
 
-        pattern = r"mpaso.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc"
+        pattern = r".*mpaso.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc"
         results = [
             os.path.join(path, x)
             for x in contents
-            if re.match(pattern=pattern, string=x) or re.match(pattern=pattern, string='.'.join(x.split('.')[3:]))
+            if re.match(pattern=pattern, string=x)
         ]
         if results:
             return sorted(results)
@@ -881,14 +881,14 @@ def find_mpas_files(component, path, map_path=None):
 
     if component == "mpassi":
         patterns = [
-            r"mpassi.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc",
-            r"mpascice.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc",
+            r".*mpassi.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc",
+            r".*mpascice.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc",
         ]
         for pattern in patterns:
             results = [
                 os.path.join(path, x)
                 for x in contents
-                if re.match(pattern=pattern, string=x) or re.match(pattern=pattern, string='.'.join(x.split('.')[3:]))
+                if re.match(pattern=pattern, string=x)
             ]
             if results:
                 return sorted(results)
@@ -914,9 +914,9 @@ def find_mpas_files(component, path, map_path=None):
 
     elif component == "mpas_mesh":
 
-        pattern = r"mpaso.rst.\d{4}-\d{2}-\d{2}_\d{5}.nc"
+        pattern = r".*mpaso.rst.\d{4}-\d{2}-\d{2}_\d{5}.nc"
         for infile in contents:
-            if re.match(pattern, infile) or re.match(pattern, '.'.join(infile.split('.')[3:])):
+            if re.match(pattern, infile):
                 return os.path.abspath(os.path.join(path, infile))
         raise IOError("Unable to find mpas_mesh in the input directory")
 
