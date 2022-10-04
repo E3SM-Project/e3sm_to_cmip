@@ -931,9 +931,10 @@ def find_mpas_files(component, path, map_path=None):
 
     elif component == "mpaso_moc_regions":
 
-        pattern = "_region_"
+        pattern_v1 = "_region_"
+        pattern_v2 = "mocBasinsAndTransects"
         for infile in contents:
-            if pattern in infile:
+            if pattern_v1 in infile or pattern_v2 in infile:
                 return os.path.abspath(os.path.join(path, infile))
         raise IOError("Unable to find mpaso_moc_regions in the input directory")
 
