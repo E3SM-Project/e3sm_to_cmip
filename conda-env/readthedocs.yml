@@ -1,5 +1,5 @@
-# Conda e3sm_to_cmip development environment
-name: e3sm_to_cmip_dev
+# Conda e3sm_to_cmip readthedocs environment
+name: e3sm_to_cmip_rtd
 channels:
   - conda-forge
   - defaults
@@ -22,22 +22,9 @@ dependencies:
   # Required for CWL workflows.
   - cwltool=3.1.20220202173120
   - nodejs=17.4.0
-  # Quality Assurance
-  # ==================
-  # If versions are updated, also update 'rev' in `.pre-commit.config.yaml`
-  - black=22.1.0
-  - flake8=4.0.1
-  - flake8-isort=4.1.1
-  - isort=5.10.1
-  - mypy=0.941
-  - pre-commit=2.17.0
-  # Testing
-  # ==================
-  - pytest=7.1.1
-  - pytest-cov=3.0.0
   # Documentation
   # =================
   - sphinx=4.4.0
   - sphinx_rtd_theme=1.0.0
   - tbump=6.7.0
-prefix: /opt/miniconda3/envs/e3sm_to_cmip_dev
+prefix: /opt/miniconda3/envs/e3sm_to_cmip_rtd
