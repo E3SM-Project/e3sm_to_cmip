@@ -6,9 +6,8 @@ A cli utility to transform E3SM model output into CMIP compatible data.
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/e3sm_to_cmip/badges/downloads.svg)](https://anaconda.org/conda-forge/e3sm_to_cmip)
 
 [![CI/CD Build Workflow](https://github.com/E3SM-Project/e3sm_to_cmip/actions/workflows/build_workflow.yml/badge.svg)](https://github.com/E3SM-Project/e3sm_to_cmip/actions/workflows/build_workflow.yml)
-[![CI/CD Release Workflow](https://github.com/E3SM-Project/e3sm_to_cmip/actions/workflows/release_workflow.yml/badge.svg)](https://github.com/E3SM-Project/e3sm_to_cmip/actions/workflows/release_workflow.yml)
 
-[Documentation](https://e3sm-project.github.io/e3sm_to_cmip)
+[Documentation](https://e3sm-to-cmip.readthedocs.io/en/latest/)
 
 ## Installation
 
