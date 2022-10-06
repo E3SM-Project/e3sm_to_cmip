@@ -915,10 +915,9 @@ def find_mpas_files(component, path, map_path=None):
 
     elif component == "mpas_mesh":
 
-        pattern_o = r".*mpaso.rst.\d{4}-\d{2}-\d{2}_\d{5}.nc"
-        pattern_si = r".*mpassi.rst.\d{4}-\d{2}-\d{2}_\d{5}.nc"
+        pattern = r".*mpaso.rst.\d{4}-\d{2}-\d{2}_\d{5}.nc"
         for infile in contents:
-            if re.match(pattern_o, infile) or re.match(pattern_si, infile):
+            if re.match(pattern, infile):
                 logger.info(f"component mpas_mesh found: {infile}")
                 return os.path.abspath(os.path.join(path, infile))
         raise IOError("Unable to find mpas_mesh in the input directory")
