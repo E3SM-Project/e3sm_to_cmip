@@ -194,8 +194,8 @@ def add_si_mask(ds, mask, siconc, threshold=0.05):
     return ds
 
 
-def get_cell_masks(dsMesh):
-    '''Get 2D and 3D masks of valid MPAS cells from the mesh Dataset'''
+def get_mpaso_cell_masks(dsMesh):
+    '''Get 2D and 3D masks of valid MPAS-Ocean cells from the mesh Dataset'''
 
     cellMask2D = dsMesh.maxLevelCell > 0
 
@@ -208,6 +208,14 @@ def get_cell_masks(dsMesh):
     cellMask3D = vertIndex < dsMesh.maxLevelCell
 
     return cellMask2D, cellMask3D
+
+
+def get_mpassi_cell_mask(dsMesh):
+    '''Get 2D mask of valid MPAS-Seaice cells from the mesh Dataset'''
+
+    cellMask2D = xarray.ones_like(dsMesh.xCell)
+
+    return cellMask2D
 
 
 def get_sea_floor_values(ds, dsMesh):

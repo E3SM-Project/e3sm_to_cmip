@@ -51,7 +51,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     timeSeriesFiles = infiles['MPASO']
 
     dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
-    _, cellMask3D = mpas.get_cell_masks(dsMesh)
+    _, cellMask3D = mpas.get_mpaso_cell_masks(dsMesh)
 
     variableList = ['timeMonthly_avg_velocityMeridional',
                     'xtime_startMonthly', 'xtime_endMonthly']

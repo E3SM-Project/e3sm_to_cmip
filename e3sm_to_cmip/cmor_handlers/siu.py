@@ -52,7 +52,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     timeSeriesFiles = infiles['MPASSI']
 
     dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
-    cellMask2D, _ = mpas.get_cell_masks(dsMesh)
+    cellMask2D = mpas.get_mpassi_cell_mask(dsMesh)
 
     variableList = ['timeMonthly_avg_iceAreaCell',
                     'timeMonthly_avg_uVelocityGeo', 'xtime_startMonthly',

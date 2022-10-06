@@ -48,7 +48,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
     earth_radius = dsMesh.attrs['sphere_radius']
-    cellMask2D, _ = mpas.get_cell_masks(dsMesh)
+    cellMask2D, _ = mpas.get_mpaso_cell_masks(dsMesh)
 
     ds = xarray.Dataset()
     ds[VAR_NAME] = ('nCells', cellMask2D.astype(float))

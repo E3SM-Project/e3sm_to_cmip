@@ -57,7 +57,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         float(namelist['config_frazil_heat_of_fusion'])
 
     dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
-    _, cellMask3D = mpas.get_cell_masks(dsMesh)
+    _, cellMask3D = mpas.get_mpaso_cell_masks(dsMesh)
 
     variableList = ['timeMonthly_avg_frazilLayerThicknessTendency',
                     'xtime_startMonthly', 'xtime_endMonthly']
