@@ -150,6 +150,9 @@ def run_serial(handlers, input_path, tables_path, metadata_path, map_path=None,
                                                     map_path)
                                for var in handler_variables}
 
+            msg = f"trying handler: {handler}"
+            logger.info(msg)
+
             try:
                 name = handler_method(
                     input_paths,

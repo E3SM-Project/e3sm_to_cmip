@@ -864,8 +864,7 @@ def find_mpas_files(component, path, map_path=None):
     component = component.lower()
     contents = os.listdir(path)
 
-    print(f"INFO: find_mpas_files: path = {path}")
-    logger.info(f"find_mpas_files: path = {path}")
+    logger.info(f"find_mpas_files: component = {component}, path = {path}")
 
     if component == "mpaso":
 
@@ -876,6 +875,7 @@ def find_mpas_files(component, path, map_path=None):
             if re.match(pattern=pattern, string=x)
         ]
         if results:
+            logger.info(f"results found: {len(results)} items")
             return sorted(results)
         raise IOError("Unable to find mpaso in the input directory")
 
@@ -891,6 +891,7 @@ def find_mpas_files(component, path, map_path=None):
                 if re.match(pattern=pattern, string=x)
             ]
             if results:
+                logger.info(f"results found: {len(results)} items")
                 return sorted(results)
         raise IOError("Unable to find mpassi in the input directory")
 
@@ -914,9 +915,11 @@ def find_mpas_files(component, path, map_path=None):
 
     elif component == "mpas_mesh":
 
-        pattern = r".*mpaso.rst.\d{4}-\d{2}-\d{2}_\d{5}.nc"
+        pattern_o = r".*mpaso.rst.\d{4}-\d{2}-\d{2}_\d{5}.nc"
+        pattern_si = r".*mpassi.rst.\d{4}-\d{2}-\d{2}_\d{5}.nc"
         for infile in contents:
-            if re.match(pattern, infile):
+            if re.match(pattern_o, infile) or re.match(pattern_si, infile):
+                logger.info(f"component mpas_mesh found: {infile}")
                 return os.path.abspath(os.path.join(path, infile))
         raise IOError("Unable to find mpas_mesh in the input directory")
 
@@ -925,6 +928,7 @@ def find_mpas_files(component, path, map_path=None):
             raise ValueError("No map path given")
         map_path = os.path.abspath(map_path)
         if os.path.exists(map_path):
+            logger.info(f"component mpas_map found: {map_path}")
             return map_path
         else:
             raise IOError("Unable to find mpas_map in the input directory")
@@ -935,6 +939,7 @@ def find_mpas_files(component, path, map_path=None):
         pattern_v2 = "mocBasinsAndTransects"
         for infile in contents:
             if pattern_v1 in infile or pattern_v2 in infile:
+                logger.info(f"component mpas0_moc_regions found: {infile}")
                 return os.path.abspath(os.path.join(path, infile))
         raise IOError("Unable to find mpaso_moc_regions in the input directory")
 
