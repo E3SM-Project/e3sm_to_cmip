@@ -45,8 +45,7 @@ def remap(ds, pcode, mappingFileName, threshold=0.05):
             '--mask_dst=none', f'--map={mappingFileName}', inFileName, outFileName]
     else:
         args = ['ncremap', '-P', f'{pcode}', '-7', '--dfl_lvl=1', '--no_stdin',
-            '--no_cll_msr', '--no_frm_trm', '--no_stg_grd', '--msk_src=none',
-            '--mask_dst=none', f'--map={mappingFileName}', inFileName, outFileName]
+            '--no_cll_msr', '--no_frm_trm', f'--map={mappingFileName}', inFileName, outFileName]
 
     logtext = f"mpas.py: remap: ncremap args = {args}"
     logging.info(logtext)
