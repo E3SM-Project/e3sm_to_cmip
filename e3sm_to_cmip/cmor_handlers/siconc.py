@@ -60,6 +60,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     ds = xarray.Dataset()
     with mpas.open_mfdataset(timeSeriesFiles, variableList) as dsIn:
         ds[VAR_NAME] = 100.*dsIn.timeMonthly_avg_iceAreaCell
+        ds['timeMonthly_avg_iceAreaCell'] = dsIn.timeMonthly_avg_iceAreaCell
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
 

@@ -21,6 +21,41 @@ import dask
 import multiprocessing
 from multiprocessing.pool import ThreadPool
 
+def run_ncremap_cmd(args, env):
+    logtext = f"mpas.py: remap: ncremap args = {args}"
+    logging.info(logtext)
+
+    proc = subprocess.Popen(args, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, env=env)
+    (out, err) = proc.communicate()
+    logging.info(out)
+    if(proc.returncode):
+        print("Error running ncremap command: {}".format(" ".join(args)))
+        print(err.decode('utf-8'))
+        raise subprocess.CalledProcessError(
+            'ncremap returned {}'.format(proc.returncode))
+
+def remap_seaice_sgs(inFileName,outFileName,mappingFileName):
+    env = os.environ.copy()
+    ds_out = []
+    ds_in = xarray.open_dataset(inFileName, decode_times=False)
+    outFilePath = f'{outFileName}sub'
+    os.makedirs(outFilePath)
+    outFile_path=outFileName
+    for t_index in range(ds_in.sizes['time']):
+        print(t_index,'t_index')
+        ds_slice = ds_in.isel(time = slice(t_index,t_index+1))
+        ds_slice.to_netcdf(f'{outFilePath}/temp_in{t_index}.nc')
+        args = ['ncremap', '-P', 'mpasseaice', '-7', '--dfl_lvl=1', '--no_stdin',
+        '--no_cll_msr', '--no_frm_trm', f'--map={mappingFileName}', f'{outFilePath}/temp_in{t_index}.nc', f'{outFilePath}/temp_out{t_index}.nc']
+        run_ncremap_cmd(args, env)
+    # With  data_vars='minimal', only data variables in which the dimension already appears are included.
+    ds_out_all = xarray.open_mfdataset(f'{outFilePath}/temp_out*nc', data_vars='minimal')
+    ds_out_all =ds_out_all.drop('timeMonthly_avg_iceAreaCell')
+    # With encoding option, time units won't automatically re-calculated by xarray.
+    ds_out_all.to_netcdf(outFileName,encoding={'time':{'units': ds_in.time.units}})
+    #os.rmdir(outFilePath)
+
 
 def remap(ds, pcode, mappingFileName, threshold=0.05):
     '''Use ncreamp to remap the xarray Dataset to a new target grid'''
@@ -43,22 +78,13 @@ def remap(ds, pcode, mappingFileName, threshold=0.05):
         args = ['ncremap', '-7', '--dfl_lvl=1', '--no_stdin',
             '--no_cll_msr', '--no_frm_trm', '--no_stg_grd', '--msk_src=none',
             '--mask_dst=none', f'--map={mappingFileName}', inFileName, outFileName]
-    else:
+        run_ncremap_cmd(args, env)
+    elif pcode == 'mpaso':
         args = ['ncremap', '-P', f'{pcode}', '-7', '--dfl_lvl=1', '--no_stdin',
             '--no_cll_msr', '--no_frm_trm', f'--map={mappingFileName}', inFileName, outFileName]
 
-    logtext = f"mpas.py: remap: ncremap args = {args}"
-    logging.info(logtext)
-
-    proc = subprocess.Popen(args, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, env=env)
-    (out, err) = proc.communicate()
-    logging.info(out)
-    if(proc.returncode):
-        print("Error running ncremap command: {}".format(" ".join(args)))
-        print(err.decode('utf-8'))
-        raise subprocess.CalledProcessError(
-            'ncremap returned {}'.format(proc.returncode))
+    if pcode == 'mpasseaice' and 'sgs' not in mappingFileName:
+        remap_seaice_sgs(inFileName,outFileName,mappingFileName)
 
     ds = xarray.open_dataset(outFileName, decode_times=False)
 
@@ -67,15 +93,17 @@ def remap(ds, pcode, mappingFileName, threshold=0.05):
 
     ds.load()
 
+    print(ds)
     if 'cellMask' in ds:
         mask = ds['cellMask'] > threshold
-        norm = 1./ds['cellMask'].where(mask)
+        #norm = 1./ds['cellMask'].where(mask)
         ds = ds.drop('cellMask')
         for varName in ds.data_vars:
             var = ds[varName]
             # make sure all of the mask dimensions are in the variable
             if all([dim in var.dims for dim in mask.dims]):
-                ds[varName] = ds[varName].where(mask)*norm
+                # renomalization is now taken care using ncremap -P mpasseaice (using SGS mode)
+                ds[varName] = ds[varName].where(mask)#*norm
 
     # remove the temporary files
     os.remove(inFileName)

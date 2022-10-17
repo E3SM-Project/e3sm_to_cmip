@@ -61,14 +61,15 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     ds = xarray.Dataset()
     with mpas.open_mfdataset(timeSeriesFiles, variableList) as dsIn:
-        ds['siconc'] = dsIn.timeMonthly_avg_iceAreaCell
-        ds[VAR_NAME] = ds['siconc'] * \
-            (dsIn.timeMonthly_avg_surfaceTemperatureCell + 273.15)
+        ds['timeMonthly_avg_iceAreaCell'] = dsIn.timeMonthly_avg_iceAreaCell
+        ds[VAR_NAME] = dsIn.timeMonthly_avg_surfaceTemperatureCell + 273.15
+        #ds[VAR_NAME] = ds['timeMonthly_avg_iceAreaCell'] * \
+        #    (dsIn.timeMonthly_avg_surfaceTemperatureCell + 273.15)
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
 
-    ds = mpas.add_si_mask(ds, cellMask2D, ds.siconc)
-    ds['cellMask'] = ds.siconc * ds.cellMask
+    ds = mpas.add_si_mask(ds, cellMask2D, ds.timeMonthly_avg_iceAreaCell)
+    ds['cellMask'] = ds.timeMonthly_avg_iceAreaCell * ds.cellMask
     ds.compute()
 
     ds = mpas.remap(ds, 'mpasseaice', mappingFileName)
@@ -86,9 +87,8 @@ def handle(infiles, tables, user_input_path, **kwargs):
              'units': 'degrees_east',
              'coord_vals': ds.lon.values,
              'cell_bounds': ds.lon_bnds.values}]
-
     try:
         mpas.write_cmor(axes, ds, VAR_NAME, VAR_UNITS)
-    except Exception:
-        return ""
+    except Exception, as err:
+        print_message(err)
     return VAR_NAME
