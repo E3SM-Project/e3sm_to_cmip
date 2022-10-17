@@ -5,11 +5,13 @@ Surface temperature of sea ice, sitemptop
 
 from __future__ import absolute_import, division, print_function
 
-import xarray
 import logging
+
+import xarray
 
 from e3sm_to_cmip import mpas
 from e3sm_to_cmip.util import print_message
+
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ['MPASSI', 'MPAS_mesh', 'MPAS_map']
 
@@ -44,7 +46,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         msg = f"{VAR_NAME} is not supported for simple conversion"
         print_message(msg)
         return
-        
+
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
 
@@ -89,6 +91,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
              'cell_bounds': ds.lon_bnds.values}]
     try:
         mpas.write_cmor(axes, ds, VAR_NAME, VAR_UNITS)
-    except Exception, as err:
+    except Exception as err:
         print_message(err)
     return VAR_NAME
