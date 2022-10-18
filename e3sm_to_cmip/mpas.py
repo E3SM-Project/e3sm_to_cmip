@@ -49,10 +49,10 @@ def remap_seaice_sgs(inFileName,outFileName,mappingFileName):
         '--no_cll_msr', '--no_frm_trm', '--rnr_thr=0.05', f'--map={mappingFileName}', f'{outFilePath}/temp_in{t_index}.nc', f'{outFilePath}/temp_out{t_index}.nc']
         run_ncremap_cmd(args, env)
     # With  data_vars='minimal', only data variables in which the dimension already appears are included.
-    ds_out_all = xarray.open_mfdataset(f'{outFilePath}/temp_out*nc', data_vars='minimal')
-    ds_out_all =ds_out_all.drop('timeMonthly_avg_iceAreaCell')
-    # With encoding option, time units won't automatically re-calculated by xarray.
-    ds_out_all.to_netcdf(outFileName,encoding={'time':{'units': ds_in.time.units}})
+    ds_out_all = xarray.open_mfdataset(f'{outFilePath}/temp_out*nc', data_vars='minimal', decode_times=False)
+    ds_out_all = ds_out_all.drop('timeMonthly_avg_iceAreaCell')
+    ds_out_all.to_netcdf(outFileName)
+    # TODO remove tmp path
     #os.rmdir(outFilePath)
 
 
