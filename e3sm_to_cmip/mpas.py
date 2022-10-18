@@ -41,13 +41,12 @@ def remap_seaice_sgs(inFileName,outFileName,mappingFileName):
     ds_in = xarray.open_dataset(inFileName, decode_times=False)
     outFilePath = f'{outFileName}sub'
     os.makedirs(outFilePath)
-    outFile_path=outFileName
     for t_index in range(ds_in.sizes['time']):
         print(t_index,'t_index')
         ds_slice = ds_in.isel(time = slice(t_index,t_index+1))
         ds_slice.to_netcdf(f'{outFilePath}/temp_in{t_index}.nc')
         args = ['ncremap', '-P', 'mpasseaice', '-7', '--dfl_lvl=1', '--no_stdin',
-        '--no_cll_msr', '--no_frm_trm', f'--map={mappingFileName}', f'{outFilePath}/temp_in{t_index}.nc', f'{outFilePath}/temp_out{t_index}.nc']
+        '--no_cll_msr', '--no_frm_trm', '--rnr_thr=0.05', f'--map={mappingFileName}', f'{outFilePath}/temp_in{t_index}.nc', f'{outFilePath}/temp_out{t_index}.nc']
         run_ncremap_cmd(args, env)
     # With  data_vars='minimal', only data variables in which the dimension already appears are included.
     ds_out_all = xarray.open_mfdataset(f'{outFilePath}/temp_out*nc', data_vars='minimal')
