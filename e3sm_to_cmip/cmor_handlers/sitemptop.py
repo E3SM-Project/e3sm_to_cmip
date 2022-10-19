@@ -65,14 +65,8 @@ def handle(infiles, tables, user_input_path, **kwargs):
     with mpas.open_mfdataset(timeSeriesFiles, variableList) as dsIn:
         ds['timeMonthly_avg_iceAreaCell'] = dsIn.timeMonthly_avg_iceAreaCell
         ds[VAR_NAME] = dsIn.timeMonthly_avg_surfaceTemperatureCell + 273.15
-        #ds[VAR_NAME] = ds['timeMonthly_avg_iceAreaCell'] * \
-        #    (dsIn.timeMonthly_avg_surfaceTemperatureCell + 273.15)
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
-
-    ds = mpas.add_si_mask(ds, cellMask2D, ds.timeMonthly_avg_iceAreaCell)
-    ds['cellMask'] = ds.timeMonthly_avg_iceAreaCell * ds.cellMask
-    ds.compute()
 
     ds = mpas.remap(ds, 'mpasseaice', mappingFileName)
 
