@@ -10,11 +10,10 @@ requirements:
 inputs:
 
   lnd_data_path: string
-  lnd_destination_grid: string
-  lnd_source_grid: string
   frequency: int
   num_workers: int
 
+  hrz_atm_map_path: string
   metadata_path: string
   tables_path: string
 
@@ -24,8 +23,6 @@ inputs:
   account: string
   partition: string
   timeout: string
-
-  one_land_file: string
 
 outputs: 
   cmorized:
@@ -78,14 +75,12 @@ steps:
     run:
       ncremap_lnd.cwl
     in:
-      destination_grid: lnd_destination_grid
-      source_grid: lnd_source_grid
+      remapfile: hrz_atm_map_path
       lnd_files: step_discover_lnd_files/lnd_files
       account: account
       partition: partition
       timeout: timeout
       var_list: lnd_var_list
-      one_land_file: one_land_file
     scatter:
       - lnd_files
     out:

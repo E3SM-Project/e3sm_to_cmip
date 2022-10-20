@@ -38,6 +38,8 @@ arguments:
   - --no_cll_msr
   - -a
   - sdd
+  - -P
+  - "elm"
   - -v
   - $(inputs.variable_name.join(' ')) 
   - -c

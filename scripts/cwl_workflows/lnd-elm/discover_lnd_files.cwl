@@ -36,7 +36,6 @@ requirements:
               start = int(_args.start_year)
               end = int(_args.end_year)
 
-              #lnd_pattern = 'clm2.h0'
               lnd_pattern = 'elm.h0'
               lnd_files = list()
 
