@@ -52,8 +52,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
     mappingFileName = infiles['MPAS_map']
     timeSeriesFiles = infiles['MPASSI']
 
-    dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
-    cellMask2D = mpas.get_mpassi_cell_mask(dsMesh)
 
     variableList = ['timeMonthly_avg_iceAreaCell',
                     'timeMonthly_avg_iceVolumeCell',
@@ -62,13 +60,9 @@ def handle(infiles, tables, user_input_path, **kwargs):
     ds = xarray.Dataset()
     with mpas.open_mfdataset(timeSeriesFiles, variableList) as dsIn:
         ds[VAR_NAME] = dsIn.timeMonthly_avg_iceVolumeCell
-        ds['siconc'] = dsIn.timeMonthly_avg_iceAreaCell
+        ds['timeMonthly_avg_iceAreaCell'] = dsIn.timeMonthly_avg_iceAreaCell
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
-
-    ds = mpas.add_si_mask(ds, cellMask2D, ds.siconc)
-    ds['cellMask'] = ds.siconc * ds.cellMask
-    ds.compute()
 
     ds = mpas.remap(ds, 'mpasseaice', mappingFileName)
 
@@ -88,6 +82,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     try:
         mpas.write_cmor(axes, ds, VAR_NAME, VAR_UNITS)
-    except Exception:
-        return ""
+    except Exception as err:
+        print_message(err)
     return VAR_NAME

@@ -54,9 +54,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
     mappingFileName = infiles['MPAS_map']
     timeSeriesFiles = infiles['MPASSI']
 
-    dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
-    cellMask2D = mpas.get_mpassi_cell_mask(dsMesh)
-
     variableList = ['timeMonthly_avg_iceAreaCell',
                     'timeMonthly_avg_surfaceTemperatureCell',
                     'xtime_startMonthly', 'xtime_endMonthly']
