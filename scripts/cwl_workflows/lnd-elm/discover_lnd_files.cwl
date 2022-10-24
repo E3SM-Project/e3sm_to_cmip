@@ -27,6 +27,8 @@ requirements:
               parser.add_argument(
                   '-i', '--input', help="root input path")
               parser.add_argument(
+                  '-f', '--fpatt', help="file match pattern")
+              parser.add_argument(
                   '-s', '--start-year', help="start year")
               parser.add_argument(
                   '-e', '--end-year', help="end year")
@@ -35,8 +37,8 @@ requirements:
               inpath = _args.input
               start = int(_args.start_year)
               end = int(_args.end_year)
+              lnd_pattern = _args.fpatt
 
-              lnd_pattern = 'elm.h0'
               lnd_files = list()
 
               num_files_expected = 12 * (end - start + 1)
@@ -69,6 +71,10 @@ inputs:
     type: string
     inputBinding:
       prefix: --input
+  fpatt:
+    type: string
+    inputBinding:
+      prefix: --fpatt
   start:
     type: int
     inputBinding:

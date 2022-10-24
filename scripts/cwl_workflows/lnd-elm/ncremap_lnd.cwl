@@ -13,12 +13,16 @@ arguments:
   - -t
   - $(inputs.timeout)
   - ncremap
+  - '-7'
+  - --dfl_lvl=1
   - -P
-  - "elm"
+  - elm
   - -m
   - $(inputs.remapfile)
   - -v
   - $(inputs.var_list.join(','))
+
+stdin: $(inputs.lnd_files.path)
 
 inputs:
   lnd_files:
@@ -33,9 +37,6 @@ inputs:
     type: string
   var_list:
     type: string[]
-
-stdin: $(inputs.lnd_files.path)
-
 
 outputs:
   remaped_lnd_files:

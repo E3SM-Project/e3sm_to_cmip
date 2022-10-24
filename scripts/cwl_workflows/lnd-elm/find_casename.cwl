@@ -15,9 +15,11 @@ requirements:
           def main():
               p = argparse.ArgumentParser()
               p.add_argument('--data-path')
+              p.add_argument('--find-patt', help="file match pattern")
+
               args = p.parse_args()
               filename = os.listdir(args.data_path)[0]
-              i = filename.index('.elm.h0')
+              i = filename.index(args.find_patt)
               if i == -1:
                   return -1
               with open("cwl.output.json", "w") as output:
@@ -30,6 +32,10 @@ inputs:
     type: string
     inputBinding:
       prefix: --data-path
+  find_patt:
+    type: string
+    inputBinding:
+      prefix: --find-patt
 
 outputs:
   casename:
