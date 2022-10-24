@@ -58,7 +58,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     gravity = 9.80616
 
     dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
-    cellMask2D, cellMask3D = mpas.get_cell_masks(dsMesh)
+    cellMask2D, cellMask3D = mpas.get_mpaso_cell_masks(dsMesh)
 
     variableList = ['timeMonthly_avg_pressureAdjustedSSH',
                     'timeMonthly_avg_ssh', 'timeMonthly_avg_layerThickness',
@@ -75,7 +75,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
 
-    ds = mpas.remap(ds, mappingFileName)
+    ds = mpas.remap(ds, 'mpasocean', mappingFileName)
 
     with xarray.open_mfdataset(pslFileNames, concat_dim='time') as dsIn:
         ds[VAR_NAME] = ds[VAR_NAME] + dsIn.PSL.values

@@ -52,7 +52,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     timeSeriesFiles = infiles['MPASO']
 
     dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
-    cellMask2D, _ = mpas.get_cell_masks(dsMesh)
+    cellMask2D, _ = mpas.get_mpaso_cell_masks(dsMesh)
     areaCell = dsMesh.areaCell.where(cellMask2D)
 
     variableList = ['timeMonthly_avg_pressureAdjustedSSH',
@@ -67,7 +67,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
 
-    ds = mpas.remap(ds, mappingFileName)
+    ds = mpas.remap(ds, 'mpasocean', mappingFileName)
 
     mpas.setup_cmor(VAR_NAME, tables, user_input_path, component='ocean')
 

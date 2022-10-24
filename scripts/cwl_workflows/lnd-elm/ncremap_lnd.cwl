@@ -13,21 +13,18 @@ arguments:
   - -t
   - $(inputs.timeout)
   - ncremap
+  - '-7'
+  - --dfl_lvl=1
   - -P
-  - "elm"
-  - -s
-  - $(inputs.source_grid)
-  - --sgs_frc=$(inputs.one_land_file)/landfrac
-  - -g
-  - $(inputs.destination_grid)
+  - elm
+  - -m
+  - $(inputs.remapfile)
   - -v
   - $(inputs.var_list.join(','))
 
+stdin: $(inputs.lnd_files.path)
+
 inputs:
-  source_grid:
-    type: string
-  destination_grid:
-    type: string
   lnd_files:
     type: File
   account:
@@ -36,13 +33,10 @@ inputs:
     type: string
   timeout:
     type: string
+  remapfile:
+    type: string
   var_list:
     type: string[]
-  one_land_file:
-    type: string
-
-stdin: $(inputs.lnd_files.path)
-
 
 outputs:
   remaped_lnd_files:

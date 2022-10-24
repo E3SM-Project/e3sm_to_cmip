@@ -48,11 +48,11 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
     earth_radius = dsMesh.attrs['sphere_radius']
-    cellMask2D, _ = mpas.get_cell_masks(dsMesh)
+    cellMask2D, _ = mpas.get_mpaso_cell_masks(dsMesh)
 
     ds = xarray.Dataset()
     ds[VAR_NAME] = ('nCells', cellMask2D.astype(float))
-    ds = mpas.remap(ds, mappingFileName)
+    ds = mpas.remap(ds, 'mpasocean', mappingFileName)
 
     # the result above is just a mask of area fraction.  We need to multiply
     # by the area on the output grid

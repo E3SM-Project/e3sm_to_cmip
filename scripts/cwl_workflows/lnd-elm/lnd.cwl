@@ -10,22 +10,21 @@ requirements:
 inputs:
 
   lnd_data_path: string
-  lnd_destination_grid: string
-  lnd_source_grid: string
   frequency: int
   num_workers: int
 
+  hrz_atm_map_path: string
   metadata_path: string
   tables_path: string
 
   lnd_var_list: string[]
   cmor_var_list: string[]
 
+  find_pattern: string
+
   account: string
   partition: string
   timeout: string
-
-  one_land_file: string
 
 outputs: 
   cmorized:
@@ -39,6 +38,7 @@ steps:
     run: find_casename.cwl
     in:
       data_path: lnd_data_path
+      find_patt: find_pattern
     out:
       - casename
   
@@ -64,6 +64,7 @@ steps:
     run: discover_lnd_files.cwl
     in:
       input: lnd_data_path
+      fpatt: find_pattern
       start: step_segments/segments_start
       end: step_segments/segments_end
     scatter:
@@ -78,14 +79,12 @@ steps:
     run:
       ncremap_lnd.cwl
     in:
-      destination_grid: lnd_destination_grid
-      source_grid: lnd_source_grid
+      remapfile: hrz_atm_map_path
       lnd_files: step_discover_lnd_files/lnd_files
       account: account
       partition: partition
       timeout: timeout
       var_list: lnd_var_list
-      one_land_file: one_land_file
     scatter:
       - lnd_files
     out:

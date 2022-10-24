@@ -56,7 +56,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     config_density0 = float(namelist['config_density0'])
 
     dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
-    _, cellMask3D = mpas.get_cell_masks(dsMesh)
+    _, cellMask3D = mpas.get_mpaso_cell_masks(dsMesh)
 
     variableList = ['timeMonthly_avg_layerThickness', 'xtime_startMonthly',
                     'xtime_endMonthly']
@@ -71,7 +71,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     ds = mpas.add_depth(ds, dsMesh)
     ds.compute()
 
-    ds = mpas.remap(ds, mappingFileName)
+    ds = mpas.remap(ds, 'mpasocean', mappingFileName)
 
     # set masked values (where there are no MPAS grid cells) to zero
     ds[VAR_NAME] = ds[VAR_NAME].where(

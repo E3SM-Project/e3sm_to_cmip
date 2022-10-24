@@ -55,7 +55,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     rhos = 330.0
 
     dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
-    cellMask2D, _ = mpas.get_cell_masks(dsMesh)
+    cellMask2D = mpas.get_mpassi_cell_mask(dsMesh)
 
     variableList = ['timeMonthly_avg_iceAreaCell',
                     'timeMonthly_avg_snowVolumeCell',
@@ -72,7 +72,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     ds['cellMask'] = ds.siconc * ds.cellMask
     ds.compute()
 
-    ds = mpas.remap(ds, mappingFileName)
+    ds = mpas.remap(ds, 'mpasseaice', mappingFileName)
 
     mpas.setup_cmor(VAR_NAME, tables, user_input_path, component='seaice')
 

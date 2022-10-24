@@ -51,7 +51,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     timeSeriesFiles = infiles['MPASO']
 
     dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
-    _, cellMask3D = mpas.get_cell_masks(dsMesh)
+    _, cellMask3D = mpas.get_mpaso_cell_masks(dsMesh)
 
     variableList = ['timeMonthly_avg_activeTracers_temperature',
                     'xtime_startMonthly', 'xtime_endMonthly']
@@ -65,7 +65,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     ds = mpas.add_depth(ds, dsMesh)
     ds.compute()
 
-    ds = mpas.remap(ds, mappingFileName)
+    ds = mpas.remap(ds, 'mpasocean', mappingFileName)
 
     mpas.setup_cmor(VAR_NAME, tables, user_input_path, component='ocean')
 

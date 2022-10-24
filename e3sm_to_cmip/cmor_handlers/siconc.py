@@ -52,7 +52,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     timeSeriesFiles = infiles['MPASSI']
 
     dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
-    cellMask2D, _ = mpas.get_cell_masks(dsMesh)
+    cellMask2D = mpas.get_mpassi_cell_mask(dsMesh)
 
     variableList = ['timeMonthly_avg_iceAreaCell', 'xtime_startMonthly',
                     'xtime_endMonthly']
@@ -66,7 +66,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     ds = mpas.add_mask(ds, cellMask2D)
     ds.compute()
 
-    ds = mpas.remap(ds, mappingFileName)
+    ds = mpas.remap(ds, 'mpasseaice', mappingFileName)
 
     mpas.setup_cmor(VAR_NAME, tables, user_input_path, component='seaice')
 

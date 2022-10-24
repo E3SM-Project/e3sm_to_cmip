@@ -1,6 +1,7 @@
 # Conda e3sm_to_cmip development environment
 name: e3sm_to_cmip_dev
 channels:
+  - conda-forge/label/nco_dev
   - conda-forge
   - defaults
 dependencies:
@@ -8,7 +9,7 @@ dependencies:
   # ==================
   - python=3.9.10
   - pip=21.2.4
-  - nco=5.0.6
+  - nco=5.1.1alpha13
   - cmor=3.6.1
   - tqdm=4.62.3
   - pyyaml=6.0

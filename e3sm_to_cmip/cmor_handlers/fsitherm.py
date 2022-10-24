@@ -58,7 +58,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
 
-    ds = mpas.remap(ds, mappingFileName)
+    ds = mpas.remap(ds, 'mpasocean', mappingFileName)
 
     mpas.setup_cmor(VAR_NAME, tables, user_input_path, component='ocean')
 
