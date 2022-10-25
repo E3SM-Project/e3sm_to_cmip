@@ -5,7 +5,9 @@ from datetime import datetime
 from pytz import UTC
 
 
-def _setup_custom_logger(name: str, propagate: bool = False) -> logging.Logger:  # pragma: no cover
+def _setup_custom_logger(
+    name: str, propagate: bool = False
+) -> logging.Logger:  # pragma: no cover
     """Sets up a custom logger.
     Parameters
     ----------
@@ -20,11 +22,11 @@ def _setup_custom_logger(name: str, propagate: bool = False) -> logging.Logger: 
     """
     # Setup
     log_name = name + "-" + UTC.localize(datetime.utcnow()).strftime("%Y%m%d_%H%M%S_%f")
-    log_format = '%(asctime)s_%(msecs)03d:%(levelname)s:%(funcName)s:%(message)s'
+    log_format = "%(asctime)s_%(msecs)03d:%(levelname)s:%(funcName)s:%(message)s"
     logging.basicConfig(
         filename=log_name,
         format=log_format,
-        datefmt='%Y%m%d_%H%M%S',
+        datefmt="%Y%m%d_%H%M%S",
         level=logging.INFO,
     )
     logging.Formatter.converter = time.gmtime

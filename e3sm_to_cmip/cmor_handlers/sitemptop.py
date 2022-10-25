@@ -5,11 +5,13 @@ Surface temperature of sea ice, sitemptop
 
 from __future__ import absolute_import, division, print_function
 
-import xarray
 import logging
+
+import xarray
 
 from e3sm_to_cmip import mpas
 from e3sm_to_cmip.util import print_message
+
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ['MPASSI', 'MPAS_mesh', 'MPAS_map']
 
@@ -44,7 +46,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         msg = f"{VAR_NAME} is not supported for simple conversion"
         print_message(msg)
         return
-        
+
     msg = 'Starting {name}'.format(name=__name__)
     logging.info(msg)
 
@@ -52,24 +54,16 @@ def handle(infiles, tables, user_input_path, **kwargs):
     mappingFileName = infiles['MPAS_map']
     timeSeriesFiles = infiles['MPASSI']
 
-    dsMesh = xarray.open_dataset(meshFileName, mask_and_scale=False)
-    cellMask2D = mpas.get_mpassi_cell_mask(dsMesh)
-
     variableList = ['timeMonthly_avg_iceAreaCell',
                     'timeMonthly_avg_surfaceTemperatureCell',
                     'xtime_startMonthly', 'xtime_endMonthly']
 
     ds = xarray.Dataset()
     with mpas.open_mfdataset(timeSeriesFiles, variableList) as dsIn:
-        ds['siconc'] = dsIn.timeMonthly_avg_iceAreaCell
-        ds[VAR_NAME] = ds['siconc'] * \
-            (dsIn.timeMonthly_avg_surfaceTemperatureCell + 273.15)
+        ds['timeMonthly_avg_iceAreaCell'] = dsIn.timeMonthly_avg_iceAreaCell
+        ds[VAR_NAME] = dsIn.timeMonthly_avg_surfaceTemperatureCell + 273.15
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
-
-    ds = mpas.add_si_mask(ds, cellMask2D, ds.siconc)
-    ds['cellMask'] = ds.siconc * ds.cellMask
-    ds.compute()
 
     ds = mpas.remap(ds, 'mpasseaice', mappingFileName)
 
@@ -86,9 +80,8 @@ def handle(infiles, tables, user_input_path, **kwargs):
              'units': 'degrees_east',
              'coord_vals': ds.lon.values,
              'cell_bounds': ds.lon_bnds.values}]
-
     try:
         mpas.write_cmor(axes, ds, VAR_NAME, VAR_UNITS)
-    except Exception:
-        return ""
+    except Exception as err:
+        print_message(err)
     return VAR_NAME
