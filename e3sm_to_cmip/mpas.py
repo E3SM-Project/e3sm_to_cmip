@@ -96,7 +96,7 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
             f"Mapping file: {mappingFileName} with *sgs* is no longer supported! Subgrid-scale field is now handled by ncremp -P, please use a standard MPAS mapping file instead."
         )
 
-    if pcode == "mpaso":
+    if pcode == "mpasocean":
         args = [
             "ncremap",
             "-P",
@@ -117,7 +117,7 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
             inFileName, outFileName, mappingFileName, renorm_threshold=threshold
         )
     else:
-        raise ValueError("pcode: {pcode} is not supported.")
+        raise ValueError(f"pcode: {pcode} is not supported.")
 
     ds = xarray.open_dataset(outFileName, decode_times=False)
 
