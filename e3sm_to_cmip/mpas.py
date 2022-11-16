@@ -84,7 +84,7 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
     if "depth" in ds.dims:
         ds = ds.transpose("time", "depth", "nCells", "nbnd")
 
-    write_netcdf(ds, inFileName)
+    write_netcdf(ds, inFileName, unlimited = "time")
 
     # set an environment variable to make sure we're not using czender's
     # local version of NCO instead of one we have intentionally loaded
