@@ -106,6 +106,7 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
             "--no_stdin",
             "--no_cll_msr",
             "--no_frm_trm",
+            "--no_permute",
             f"--map={mappingFileName}",
             inFileName,
             outFileName,
