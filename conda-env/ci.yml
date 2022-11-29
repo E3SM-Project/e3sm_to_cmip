@@ -6,22 +6,19 @@ channels:
 dependencies:
   # Base
   # ==================
-  - python>=3.8
+  - python>=3.9
   - pip
-  - nco
   - cmor>=3.6.0
-  - tqdm
-  - pyyaml
-  - xarray
-  - netcdf4
   - dask
-  - scipy
+  - nco
+  - netcdf4
+  - numpy
+  - pyyaml
+  - tqdm
+  - xarray
   # Required for phalf and pfull handlers.
   - cdms2=3.1.5
   - cdutil=8.2.1
-  # Required for CWL workflows.
-  - cwltool
-  - nodejs
   # Testing
   # ==================
   - pytest

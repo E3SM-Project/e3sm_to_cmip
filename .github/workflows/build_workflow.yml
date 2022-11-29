@@ -23,7 +23,7 @@ jobs:
         shell: bash -l {0}
     strategy:
       matrix:
-        python-version: ["3.8", "3.9"]
+        python-version: ["3.9", "3.10"]
     steps:
       - id: skip_check
         uses: fkirc/skip-duplicate-actions@master
@@ -33,11 +33,11 @@ jobs:
           do_not_skip: '["push", "workflow_dispatch"]'
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Cache Conda
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           # Increase this value to reset cache if conda-env/ci.yml has not changed in the workflow
           CACHE_NUMBER: 0
@@ -68,7 +68,7 @@ jobs:
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Upload Coverage Report
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           file: "tests_coverage_reports/coverage.xml"
           fail_ci_if_error: true
