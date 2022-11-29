@@ -31,6 +31,7 @@ dependencies:
   - isort=5.10.1
   - mypy=0.991
   - pre-commit=2.20.0
+  - types-PyYAML=6.0.11
   # Testing
   # ==================
   - pytest=7.2.0
