@@ -149,7 +149,7 @@ def print_var_info(  # noqa: C901
         for handler in handlers:
             table_info = _get_table_info(tables, handler["table"])
             if handler["name"] not in table_info["variable_entry"]:
-                msg = f"Variable {handler['name']} is not included in the table {handler['table']}"
+                msg = f"Variable {handler['name']} is not included in the table {handler['table']}"  # type: ignore
                 print_message(msg, status="error")
                 continue
             else:
@@ -171,7 +171,7 @@ def print_var_info(  # noqa: C901
         with xr.open_dataset(file_path) as ds:
             for handler in handlers:
 
-                table_info = _get_table_info(tables, handler["table"])  # type: ignore
+                table_info = _get_table_info(tables, handler["table"])
                 if handler["name"] not in table_info["variable_entry"]:
                     continue
 
@@ -630,17 +630,17 @@ def get_years_from_raw(path, realm, var):
         )
         p = var + r"\d{6}_\d{6}.nc"
         s = re.match(pattern=p, string=contents[0])
-        start = int(contents[0][s.start() : s.start() + 4])
+        start = int(contents[0][s.start() : s.start() + 4])  # type: ignore
         s = re.search(pattern=p, string=contents[-1])
-        end = int(contents[-1][s.start() : s.start() + 4])
+        end = int(contents[-1][s.start() : s.start() + 4])  # type: ignore
     elif realm in ["mpassi", "mpaso"]:
 
         files = sorted(find_mpas_files(realm, path))
         p = r"\d{4}-\d{2}-\d{2}.nc"
         s = re.search(pattern=p, string=files[0])
-        start = int(files[0][s.start() : s.start() + 4])
+        start = int(files[0][s.start() : s.start() + 4])  # type: ignore
         s = re.search(pattern=p, string=files[1])
-        end = int(files[-1][s.start() : s.start() + 4])
+        end = int(files[-1][s.start() : s.start() + 4])  # type: ignore
 
     else:
         raise ValueError("Invalid realm")

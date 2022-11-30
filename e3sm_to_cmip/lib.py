@@ -129,7 +129,7 @@ def run_parallel(
 # ------------------------------------------------------------------
 
 
-def run_serial(
+def run_serial(  # noqa: C901
     handlers,
     input_path,
     tables_path,
@@ -242,7 +242,7 @@ def run_serial(
 # ------------------------------------------------------------------
 
 
-def handle_simple(
+def handle_simple(  # noqa: C901
     infiles,
     raw_variables,
     write_data,
@@ -427,7 +427,7 @@ def var_has_time(table_path, variable):
     return False
 
 
-def handle_variables(
+def handle_variables(  # noqa: C901
     infiles,
     raw_variables,
     write_data,
@@ -527,20 +527,21 @@ def handle_variables(
             data.update(new_data)
             get_dims = False
 
-            if simple and not loaded_one:
-                loaded_one = True
+            # FIXME: undefined name 'loaded_one' flake8(F821)
+            if simple and not loaded_one:  # type: ignore # noqa: F821
+                loaded_one = True  # noqa: F841
 
                 # new data set
                 ds = xr.Dataset()
                 if timename:
                     dims = (timename, "lat", "lon")
                 else:
-                    dims = ("lat", "lon")
+                    dims = ("lat", "lon")  # type: ignore
 
                 if "lev" in new_data.keys():
-                    dims = (timename, "lev", "lat", "lon")
+                    dims = (timename, "lev", "lat", "lon")  # type: ignore
                 elif "plev" in new_data.keys():
-                    dims = (timename, "plev", "lat", "lon")
+                    dims = (timename, "plev", "lat", "lon")  # type: ignore
                 ds[outvar_name] = (dims, new_data[var_name])
                 for d in dims:
                     ds.coords[d] = new_data[d][:]
@@ -604,7 +605,7 @@ def handle_variables(
 # ------------------------------------------------------------------
 
 
-def get_dimension_data(filename, variable, levels=None, get_dims=False):
+def get_dimension_data(filename, variable, levels=None, get_dims=False):  # noqa: C901
     """
     Returns a list of data, along with the dimension and dimension bounds
     for a given lis of variables, with the option for vertical levels.

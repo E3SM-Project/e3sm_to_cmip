@@ -36,8 +36,8 @@ def run_ncremap_cmd(args, env):
     if proc.returncode:
         print("Error running ncremap command: {}".format(" ".join(args)))
         print(err.decode("utf-8"))
-        raise subprocess.CalledProcessError(
-            "ncremap returned {}".format(proc.returncode)
+        raise subprocess.CalledProcessError(  # type: ignore
+            "ncremap returned {}".format(proc.returncode)  # type: ignore
         )
 
 
@@ -84,7 +84,7 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
     if "depth" in ds.dims:
         ds = ds.transpose("time", "depth", "nCells", "nbnd")
 
-    write_netcdf(ds, inFileName, unlimited = "time")
+    write_netcdf(ds, inFileName, unlimited="time")
 
     # set an environment variable to make sure we're not using czender's
     # local version of NCO instead of one we have intentionally loaded
@@ -449,7 +449,7 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
             )
     except Exception as error:
         logging.exception(f"Error in cmor.write for {varname}")
-        raise
+        raise Exception(error)
     finally:
         cmor.close(varid)
 
@@ -594,7 +594,7 @@ def interp_vertex_to_cell(varOnVertices, dsMesh):
             mask = np.logical_and(mask1, mask2)
             weights[:, iVertex] += mask * kiteAreas[vertices, iCell]
 
-    weights = xarray.DataArray.from_dict(
+    weights = xarray.DataArray.from_dict(  # type: ignore
         {"dims": ("nCells", "maxEdges"), "data": weights}
     )
 
@@ -747,8 +747,8 @@ def _compute_moc_time_series(
     lat_bnds[:, 1] = lat[1:]
     lat = 0.5 * (lat_bnds[:, 0] + lat_bnds[:, 1])
 
-    lat_bnds = xarray.DataArray(lat_bnds, dims=("lat", "nbnd"))
-    lat = xarray.DataArray(lat, dims=("lat",))
+    lat_bnds = xarray.DataArray(lat_bnds, dims=("lat", "nbnd"))  # type: ignore
+    lat = xarray.DataArray(lat, dims=("lat",))  # type: ignore
 
     depth, depth_bnds = _compute_depth(dsMesh.refBottomDepth)
 
@@ -794,10 +794,10 @@ def _compute_moc_time_series(
         mocSlice = np.zeros((nTime, nVertLevels + 1))
         mocSlice[:, 1:] = transport[regionName].cumsum(dim="nVertLevels").values
 
-        mocSlice = xarray.DataArray(mocSlice, dims=("Time", "nVertLevelsP1"))
+        mocSlice = xarray.DataArray(mocSlice, dims=("Time", "nVertLevelsP1"))  # type: ignore
         mocSlices = [mocSlice]
         binCounts = []
-        for iLat in range(lat_bnds.sizes["lat"]):
+        for iLat in range(lat_bnds.sizes["lat"]):  # type: ignore
             mask = np.logical_and(
                 np.logical_and(
                     cellMasks[regionName] == 1, latCell >= lat_bnds[iLat, 0]
@@ -810,24 +810,24 @@ def _compute_moc_time_series(
             ).sum(dim="nCells")
             mocSlices.append(mocTop)
 
-        moc = xarray.concat(mocSlices, dim="lat")
-        moc = moc.transpose("Time", "nVertLevelsP1", "lat")
+        moc = xarray.concat(mocSlices, dim="lat")  # type: ignore
+        moc = moc.transpose("Time", "nVertLevelsP1", "lat")  # type: ignore
         # average to bin and level centers
         moc = 0.25 * (
             moc[:, 0:-1, 0:-1] + moc[:, 0:-1, 1:] + moc[:, 1:, 0:-1] + moc[:, 1:, 1:]
         )
-        moc = moc.rename({"nVertLevelsP1": "depth"})
-        binCounts = xarray.DataArray(binCounts, dims=("lat"))
-        moc = moc.where(binCounts > 0)
+        moc = moc.rename({"nVertLevelsP1": "depth"})  # type: ignore
+        binCounts = xarray.DataArray(binCounts, dims=("lat"))  # type: ignore
+        moc = moc.where(binCounts > 0)  # type: ignore
 
         _compute_dask(moc, showProgress, "Computing {} MOC".format(regionName))
 
         mocs[regionName] = moc
 
-    mocs = xarray.concat(mocs.values(), dim="basin")
-    mocs = mocs.transpose("Time", "basin", "depth", "lat")
+    mocs = xarray.concat(mocs.values(), dim="basin")  # type: ignore
+    mocs = mocs.transpose("Time", "basin", "depth", "lat")  # type: ignore
 
-    regionNames = xarray.DataArray(regionNames, dims=("basin",))
+    regionNames = xarray.DataArray(regionNames, dims=("basin",))  # type: ignore
 
     coords = dict(
         lat=lat,

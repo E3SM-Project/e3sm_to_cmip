@@ -73,6 +73,19 @@ class TestVarHandler:
             unit_conversion="1-to-%",
         )
 
+    def test__init__raises_error_unit_conversion_and_formula_are_both_defined(self):
+        with pytest.raises(ValueError):
+            VarHandler(
+                name="pr",
+                units="kg m-2 s-1",
+                raw_variables=["PRECC", "PRECL"],
+                table="CMIP6_Amon.json",
+                unit_conversion="g to kg",
+                formula="(PRECC + PRECL) * 1000.0",
+                positive=None,
+                levels=None,
+            )
+
     def test___init__raises_error_if_formula_attr_is_set_but_no_formula_method_is_found(
         self,
     ):
@@ -165,6 +178,10 @@ class TestVarHandler:
             "units: '1'\n  e3sm_axis_name: lev\n  e3sm_axis_bnds: ilev\n  "
             "time_name: time2\noutput_data: null\n"
         )
+
+    @pytest.mark.xfail
+    def test__update_table_ref_updates_table_attr(self):
+        assert 0
 
 
 class TestCmorizeMethod:

@@ -1,7 +1,7 @@
 import abc
 from typing import Any, Dict, List, Literal, Optional, TypedDict, Union
 
-import cmor  # type: ignore
+import cmor
 import numpy as np
 import xarray as xr
 import yaml
@@ -85,13 +85,19 @@ class VarHandler(BaseVarHandler):
         # Example: "FSNTOA - FSNT + FLNT" for "rlut" variable
         self.formula = formula
 
-        if formula is not None:
+        if self.unit_conversion is not None and self.formula is not None:
+            raise ValueError(
+                f"'{self.name}' handler has `unit_conversion` and `formula` attributes "
+                "defined, but only one should be defined."
+            )
+
+        if self.formula is not None:
             try:
                 self.formula_method = getattr(_formulas, self.name)
             except AttributeError:
                 raise AttributeError(
                     f"The formula method for the '{self.name}' VarHandler "
-                    "is not defined. Define a function of the same name to the "
+                    "is not defined. Define a function of the same name in the "
                     "`_formulas.py` file."
                 )
 
@@ -146,33 +152,6 @@ class VarHandler(BaseVarHandler):
         # objects instead of its dictionary representation.
         return {**self.__dict__, "method": self.cmorize}
 
-    def cmorize_default(
-        self, infiles: List[str], tables: str, user_input_path: str, **kwargs
-    ):
-        # TODO: This should come from e3sm_to_cmip.default.default_handler()
-        # TODO: Replace **kwargs with these parameterized kwargs
-        # NOTE: The only difference with this method and cmorize() is that it
-        # applies the unit conversion.
-        # -------------------------------------------------
-        # serial=None,  # command-line arg (--serial)
-        # logdir=None,  # command-line arg (--logdir)
-        # simple=False,  # command-line arg (--simple)
-        # outpath=None,  # command-line arg (--output-path)
-        return default_handler(
-            infiles,
-            tables=tables,
-            user_input_path=user_input_path,
-            raw_variables=self.raw_variables,
-            name=self.name,
-            units=self.units,
-            table=kwargs.get("table", self.table),
-            unit_conversion=self.unit_conversion,
-            serial=kwargs.get("serial"),
-            logdir=kwargs.get("logdir"),
-            simple=kwargs.get("simple"),
-            outpath=kwargs.get("outpath"),
-        )
-
     def cmorize(
         self,
         infiles: List[str],  # command-line arg (--input-path)
@@ -180,30 +159,46 @@ class VarHandler(BaseVarHandler):
         user_input_path: str,  # command-line arg (--user-metadata)
         **kwargs,
     ):
-        # TODO: Implement logic using `e3sm_to_cmip.util.handle_variables()`.
+        # TODO: Refactor calls to `default_handler()` and `handle_variables()`
         # TODO: Replace **kwargs with explicit method parameters.
         # -------------------------------------------------
         # serial=None,  # command-line arg (--serial)
         # logdir=None,  # command-line arg (--logdir)
         # simple=False,  # command-line arg (--simple)
         # outpath=None,  # command-line arg (--output-path)
-        return handle_variables(
-            infiles=infiles,
-            raw_variables=self.raw_variables,
-            write_data=self._write_data,
-            outvar_name=self.name,
-            outvar_units=self.units,
-            table=kwargs.get("table", self.table),
-            tables=tables,
-            metadata_path=user_input_path,
-            serial=kwargs.get("serial"),
-            positive=self.positive,
-            levels=self.levels,
-            axis=kwargs.get("axis"),
-            logdir=kwargs.get("logdir"),
-            simple=kwargs.get("simple"),
-            outpath=kwargs.get("outpath"),
-        )
+        if self.unit_conversion is not None:
+            return default_handler(
+                infiles,
+                tables=tables,
+                user_input_path=user_input_path,
+                raw_variables=self.raw_variables,
+                name=self.name,
+                units=self.units,
+                table=kwargs.get("table", self.table),
+                unit_conversion=self.unit_conversion,
+                serial=kwargs.get("serial"),
+                logdir=kwargs.get("logdir"),
+                simple=kwargs.get("simple"),
+                outpath=kwargs.get("outpath"),
+            )
+        elif self.formula is not None:
+            return handle_variables(
+                infiles=infiles,
+                raw_variables=self.raw_variables,
+                write_data=self._write_data,
+                outvar_name=self.name,
+                outvar_units=self.units,
+                table=kwargs.get("table", self.table),
+                tables=tables,
+                metadata_path=user_input_path,
+                serial=kwargs.get("serial"),
+                positive=self.positive,
+                levels=self.levels,
+                axis=kwargs.get("axis"),
+                logdir=kwargs.get("logdir"),
+                simple=kwargs.get("simple"),
+                outpath=kwargs.get("outpath"),
+            )
 
     def _write_data(
         self,
