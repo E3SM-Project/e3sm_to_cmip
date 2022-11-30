@@ -100,6 +100,11 @@ def handle(infiles, tables, user_input_path, **kwargs):
         tau[-1] = 100.0
         tau_bnds = ds['cosp_tau_bnds'].values
         tau_bnds[-1] = [60.0, 100000.0]
+        
+        # Units of cosp_pr changed from hPa to Pa
+        unit_conv_fact = 1
+        if ds['cosp_prs'].units == 'hPa':
+            unit_conv_fact = 100
 
         # load
         data = {
@@ -110,8 +115,8 @@ def handle(infiles, tables, user_input_path, **kwargs):
             'lon_bnds': ds['lon_bnds'],
             'time': ds['time'].values,
             'time_bnds': ds['time_bnds'].values,
-            'plev7c': ds['cosp_prs'].values * 100.0,
-            'plev7c_bnds': ds['cosp_prs_bnds'].values * 100.0,
+            'plev7c': ds['cosp_prs'].values * unit_conv_fact,
+            'plev7c_bnds': ds['cosp_prs_bnds'].values * unit_conv_fact,
             'tau': tau,
             'tau_bnds': tau_bnds
         }
