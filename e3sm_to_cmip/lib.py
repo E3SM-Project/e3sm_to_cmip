@@ -736,7 +736,7 @@ def load_axis(data, levels=None, has_time=True):
         axis_bnds = levels.get("e3sm_axis_bnds")
         if axis_bnds:
             lev = cmor.axis(
-                name, units=units, cell_bounds=data[axis_bnds], coord_vals=coord_vals
+                name, units=units, cell_bounds=data[axis_bnds].values, coord_vals=coord_vals.values
             )
         else:
             lev = cmor.axis(name, units=units, coord_vals=coord_vals.values)
