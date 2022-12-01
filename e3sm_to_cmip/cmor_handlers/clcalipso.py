@@ -24,7 +24,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
     clcalipso = CLD_CAL with alt40 levels
     """
     if kwargs.get('simple'):
-        return data[ RAW_VARIABLES[0] ][index, :].values
+        return data[RAW_VARIABLES[0]][index, :].values
     cmor.write(
         varid,
         data[RAW_VARIABLES[0]][index, :].values,
