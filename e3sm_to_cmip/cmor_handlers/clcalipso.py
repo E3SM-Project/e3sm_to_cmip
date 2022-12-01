@@ -30,7 +30,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
         data[RAW_VARIABLES[0]][index, :].values,
         time_vals=timeval,
         time_bnds=timebnds)
-    return data[ RAW_VARIABLES[0] ][index, :].values
+    return data[RAW_VARIABLES[0]][index, :].values
 # ------------------------------------------------------------------
 
 
