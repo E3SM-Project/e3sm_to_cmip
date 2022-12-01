@@ -736,7 +736,7 @@ def load_axis(data, levels=None, has_time=True):
         axis_bnds = levels.get("e3sm_axis_bnds")
         if axis_bnds:
             cell_bounds = data[axis_bnds]
-            # i.g. handler clcalipso returns xarray dataarray
+            # i.g. handler cl, cli, clw returns xarray dataarray
             if not isinstance(data[axis_bnds], np.ndarray):
                 cell_bounds = data[axis_bnds].values
                 coord_vals = coord_vals.values
