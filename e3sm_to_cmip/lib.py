@@ -735,8 +735,14 @@ def load_axis(data, levels=None, has_time=True):
 
         axis_bnds = levels.get("e3sm_axis_bnds")
         if axis_bnds:
+            cell_bounds = data[axis_bnds]
+            # i.g. handler clcalipso returns xarray dataarray
+            if not isinstance(data[axis_bnds], np.ndarray):
+                cell_bounds = data[axis_bnds].values
+                coord_vals = coord_vals.values
+                 
             lev = cmor.axis(
-                name, units=units, cell_bounds=data[axis_bnds].values, coord_vals=coord_vals.values
+                name, units=units, cell_bounds=cell_bounds, coord_vals=coord_vals
             )
         else:
             lev = cmor.axis(name, units=units, coord_vals=coord_vals.values)
