@@ -51,7 +51,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
     cellMask2D, _ = mpas.get_mpaso_cell_masks(dsMesh)
 
     ds = xarray.Dataset()
-    print(ds)
     ds[VAR_NAME] = ('nCells', cellMask2D.astype(float).data)
     ds = mpas.remap(ds, 'mpasocean', mappingFileName)
 
