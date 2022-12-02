@@ -526,6 +526,7 @@ def handle_variables(
             )
             data.update(new_data)
             get_dims = False
+
             if simple and not loaded_one:
                 loaded_one = True
 
@@ -728,18 +729,27 @@ def load_axis(data, levels=None, has_time=True):
         time = cmor.axis(has_time, units=data["time"].attrs["units"])
 
     # use whatever level name this handler requires
-    if levels:
+    if levels is not None:
         name = levels.get("name")
         units = levels.get("units")
         coord_vals = data[levels.get("e3sm_axis_name")]
-
         axis_bnds = levels.get("e3sm_axis_bnds")
-        if axis_bnds:
+
+        if isinstance(coord_vals, xr.DataArray):
+            coord_vals = coord_vals.values
+
+        if axis_bnds is not None:
+            cell_bounds = data[axis_bnds]
+
+            # i.g. handler cl, cli, clw returns xarray dataarray
+            if isinstance(cell_bounds, xr.DataArray):
+                cell_bounds = cell_bounds.values
+
             lev = cmor.axis(
-                name, units=units, cell_bounds=data[axis_bnds].values, coord_vals=coord_vals.values
+                name, units=units, cell_bounds=cell_bounds, coord_vals=coord_vals
             )
         else:
-            lev = cmor.axis(name, units=units, coord_vals=coord_vals.values)
+            lev = cmor.axis(name, units=units, coord_vals=coord_vals)
 
     # add lon/lat
     lat = cmor.axis(
