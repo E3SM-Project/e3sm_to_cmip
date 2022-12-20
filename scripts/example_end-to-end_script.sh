@@ -88,7 +88,7 @@ cmip_var_list="pr"
 ncclimo -P eam -j 1 --map=${map_file} --start=$start --end=$end --ypf=$ypf --split -c $caseid -o ${native_dir} -O ${rgr_dir} -v ${raw_var_list} -i ${input_path} ${flags}
 
 # CMORIZE Atmosphere 3hrly variables
-e3sm_to_cmip --freq 3hr -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t /home/zhang40/cmip6-cmor-tables/Tables/ -u ${metadata_path}
+e3sm_to_cmip --freq 3hr -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t --tables-path ${resource_path}/cmor/cmip6-cmor-tables/Tables -u ${metadata_path}
 
 ## land monthly h0
 input_path=${model_data}/v2.elm_input/
@@ -105,14 +105,14 @@ ncclimo -P elm -j 1 --var_xtr=landfrac --map=${map_file} --start=$start --end=$e
 #raw_var_list_elm_bgc="TOTLITC,CWDC,TOTPRODC,SOIL1C,SOIL2C,SOIL3C,^SOIL4C$,COL_FIRE_CLOSS,WOOD_HARVESTC,TOTVEGC,NBP,GPP,AR,HR"
 
 # CMORIZE Land Monthly variables 
-e3sm_to_cmip -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t /home/zhang40/cmip6-cmor-tables/Tables/ -u ${metadata_path}
+e3sm_to_cmip -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t --tables-path ${resource_path}/cmor/cmip6-cmor-tables/Tables -u ${metadata_path}
 
 # CMORIZE Sea-ice Monthly variables 
-e3sm_to_cmip -s --realm SImon --var-list siconc, sitemptop, sisnmass, sitimefrac, siu, siv, sithick, sisnthick, simass --map ${resource_path}/maps/map_EC30to60E2r2_to_cmip6_180x360_aave.20220301.nc --input-path ${model_data}/v2.mpassi_input/ --output-path ${result_dir} --user-metadata ${metadata_path}  --tables-path /p/user_pub/e3sm/staging/resource/cmor/cmip6-cmor-tables/Tables
+e3sm_to_cmip -s --realm SImon --var-list siconc, sitemptop, sisnmass, sitimefrac, siu, siv, sithick, sisnthick, simass --map ${resource_path}/maps/map_EC30to60E2r2_to_cmip6_180x360_aave.20220301.nc --input-path ${model_data}/v2.mpassi_input/ --output-path ${result_dir} --user-metadata ${metadata_path}  --tables-path ${resource_path}/cmor/cmip6-cmor-tables/Tables
 
 
 # CMORIZE Ocean Monthly variables 
-e3sm_to_cmip -s --realm Omon --var-list areacello, fsitherm, hfds, masso, mlotst, sfdsi, sob, soga, sos, sosga, tauuo, tauvo, thetaoga, tob, tos, tosga, volo, wfo, zos, thetaoga, hfsifrazil, masscello, so, thetao, thkcello, uo, vo, volcello, wo zhalfo --map ${resource_path}/maps/map_EC30to60E2r2_to_cmip6_180x360_aave.20220301.nc --input-path ${model_data}/v2.mpaso_input/ --output-path ${result_dir} --user-metadata ${metadata_path} --tables-path ${resource_path/cmor/cmip6-cmor-tables/Tables
+e3sm_to_cmip -s --realm Omon --var-list areacello, fsitherm, hfds, masso, mlotst, sfdsi, sob, soga, sos, sosga, tauuo, tauvo, thetaoga, tob, tos, tosga, volo, wfo, zos, thetaoga, hfsifrazil, masscello, so, thetao, thkcello, uo, vo, volcello, wo zhalfo --map ${resource_path}/maps/map_EC30to60E2r2_to_cmip6_180x360_aave.20220301.nc --input-path ${model_data}/v2.mpaso_input/ --output-path ${result_dir} --user-metadata ${metadata_path} --tables-path ${resource_path}/cmor/cmip6-cmor-tables/Tables
 
 exit
 
