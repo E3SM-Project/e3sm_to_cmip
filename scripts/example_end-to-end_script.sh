@@ -115,7 +115,7 @@ e3sm_to_cmip -s --realm SImon --var-list siconc, sitemptop, sisnmass, sitimefrac
 
 # CMORIZE Ocean Monthly variables 
 # Note the input folder for mpas ocean files requires:
-# 1. History files: i.g.,v2.LR.historical_0101.mpaso.hist.am.timeSeriesStatsMonthly.1850-01-01.nc
+# 1. History files: e.g.,v2.LR.historical_0101.mpaso.hist.am.timeSeriesStatsMonthly.1850-01-01.nc
 # 2. The namelist file for constants: mpaso_in
 #    masso, masscello, msftmz, pbo, and pso require 'config_density0'
 #    hfsifrazil requires 'config_density0' and 'config_frazil_heat_of_fusion'
