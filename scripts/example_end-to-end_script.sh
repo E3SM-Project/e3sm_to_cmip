@@ -109,7 +109,7 @@ e3sm_to_cmip -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t --tables-path 
 # CMORIZE Sea-ice Monthly variables 
 # Note the input folder for mpas sea ice files requires:
 # 1. History files: i.g.,v2.LR.historical_0101.mpassi.hist.am.timeSeriesStatsMonthly.1850-01-01.nc
-# 2. A restart file for meshes: can use the mpaso restart i.g., v2.LR.historical_0101.mpaso.rst.1855-01-01_00000.nc
+# 2. A restart file for meshes: can use the mpaso restart e.g., v2.LR.historical_0101.mpaso.rst.1855-01-01_00000.nc
 e3sm_to_cmip -s --realm SImon --var-list siconc, sitemptop, sisnmass, sitimefrac, siu, siv, sithick, sisnthick, simass --map ${e2c_path}/maps/map_EC30to60E2r2_to_cmip6_180x360_aave.20220301.nc --input-path ${model_data}/v2.mpassi_input/ --output-path ${result_dir} --user-metadata ${metadata_path}  --tables-path ${e2c_path}/cmor/cmip6-cmor-tables/Tables
 
 
