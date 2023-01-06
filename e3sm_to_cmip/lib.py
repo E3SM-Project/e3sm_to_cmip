@@ -526,6 +526,7 @@ def handle_variables(
             )
             data.update(new_data)
             get_dims = False
+            print_message(new_data.keys(),"debug")
 
             if simple and not loaded_one:
                 loaded_one = True
@@ -539,8 +540,10 @@ def handle_variables(
 
                 if "lev" in new_data.keys():
                     dims = (timename, "lev", "lat", "lon")
-                elif "plev" in new_data.keys():
+                elif "plev" in new_data.keys() and "lon" in new_data.keys():
                     dims = (timename, "plev", "lat", "lon")
+                else:
+                    dims = (timename, "plev", "lat")
                 ds[outvar_name] = (dims, new_data[var_name])
                 for d in dims:
                     ds.coords[d] = new_data[d][:]
@@ -651,15 +654,24 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
 
     # load the lon and lat and time info & bounds
     if get_dims:
-        data.update(
-            {
-                "lat": ds["lat"],
-                "lon": ds["lon"],
-                "lat_bnds": ds["lat_bnds"],
-                "lon_bnds": ds["lon_bnds"],
-                "time": ds["time"],
-            }
-        )
+        try:
+            data.update(
+                {
+                    "lat": ds["lat"],
+                    "lon": ds["lon"],
+                    "lat_bnds": ds["lat_bnds"],
+                    "lon_bnds": ds["lon_bnds"],
+                    "time": ds["time"],
+                }
+            )
+        except:
+            data.update(
+                {
+                    "lat": ds["lat"],
+                    "lat_bnds": ds["lat_bnds"],
+                    "time": ds["time"],
+                }
+            )
         try:
             time2 = ds["time2"]
         except KeyError:
@@ -752,19 +764,21 @@ def load_axis(data, levels=None, has_time=True):
             lev = cmor.axis(name, units=units, coord_vals=coord_vals)
 
     # add lon/lat
-    lat = cmor.axis(
-        "latitude",
-        units=data["lat"].units,
-        coord_vals=data["lat"].values,
-        cell_bounds=data["lat_bnds"].values,
-    )
+    if data["lat"]:
+        lat = cmor.axis(
+            "latitude",
+            units=data["lat"].units,
+            coord_vals=data["lat"].values,
+            cell_bounds=data["lat_bnds"].values,
+        )
 
-    lon = cmor.axis(
-        "longitude",
-        units=data["lon"].units,
-        coord_vals=data["lon"].values,
-        cell_bounds=data["lon_bnds"].values,
-    )
+    if data["lon"]:
+        lon = cmor.axis(
+            "longitude",
+            units=data["lon"].units,
+            coord_vals=data["lon"].values,
+            cell_bounds=data["lon_bnds"].values,
+        )
 
     if levels and time is not None:
         axes = [time, lev, lat, lon]
