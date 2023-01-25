@@ -35,6 +35,12 @@ ATMOS_TABLES = [
     "CMIP6_CF3hr.json",
     "CMIP6_CFday.json",
     "CMIP6_fx.json",
+    "QBOi_monZ.json",
+    "QBOi_mon.json",
+    "QBOi_dayZ.json",
+    "QBOi_day.json",
+    "QBOi_6hrPt.json",
+    "QBOi_3hr.json",
 ]
 
 LAND_TABLES = ["CMIP6_Lmon.json", "CMIP6_LImon.json"]
