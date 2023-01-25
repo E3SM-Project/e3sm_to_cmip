@@ -34,7 +34,7 @@ First, clone the repo and set up the conda dev environment:
 ```
 git clone https://github.com/E3SM-Project/e3sm_to_cmip.git
 cd e3sm_to_cmip
-conda env create -f conda/dev.yml
+conda env create -f conda-env/dev.yml
 conda activate e3sm_to_cmip_dev
 ```
 
