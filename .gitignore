@@ -113,5 +113,5 @@ docs/_build/
 # Repository specific
 qa/
 tests_coverage_reports/
-logs/
-
+logs/*
+!logs/README.md
