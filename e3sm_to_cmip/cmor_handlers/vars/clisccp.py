@@ -5,13 +5,15 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import logging
 import os
+from typing import Dict, Union
 
 import cmor
+import numpy as np
 import xarray as xr
 from tqdm import tqdm
 
 from e3sm_to_cmip._logger import _setup_custom_logger
-from e3sm_to_cmip.util import print_message, setup_cmor
+from e3sm_to_cmip.util import print_message
 
 logger = _setup_custom_logger(__name__)
 
@@ -34,7 +36,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
 # ------------------------------------------------------------------
 
 
-def handle(infiles, tables, user_input_path, **kwargs):
+def handle(infiles, tables, user_input_path, **kwargs):  # noqa: C901
     """
     Transform E3SM.TS into CMIP.ts
 
@@ -83,7 +85,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     msg = f"{VAR_NAME}: CMOR setup complete"
     logger.info(msg)
 
-    data = {}
+    data: Dict[str, Union[np.ndarray, xr.DataArray]] = {}
 
     # assuming all year ranges are the same for every variable
     num_files_per_variable = len(infiles["FISCCP1_COSP"])
@@ -100,6 +102,11 @@ def handle(infiles, tables, user_input_path, **kwargs):
         tau_bnds = ds["cosp_tau_bnds"].values
         tau_bnds[-1] = [60.0, 100000.0]
 
+        # Units of cosp_pr changed from hPa to Pa
+        unit_conv_fact = 1
+        if ds["cosp_prs"].units == "hPa":
+            unit_conv_fact = 100
+
         # load
         data = {
             "FISCCP1_COSP": ds["FISCCP1_COSP"].values,
@@ -109,8 +116,8 @@ def handle(infiles, tables, user_input_path, **kwargs):
             "lon_bnds": ds["lon_bnds"],
             "time": ds["time"].values,
             "time_bnds": ds["time_bnds"].values,
-            "plev7c": ds["cosp_prs"].values * 100.0,
-            "plev7c_bnds": ds["cosp_prs_bnds"].values * 100.0,
+            "plev7c": ds["cosp_prs"].values * unit_conv_fact,
+            "plev7c_bnds": ds["cosp_prs_bnds"].values * unit_conv_fact,
             "tau": tau,
             "tau_bnds": tau_bnds,
         }
@@ -133,14 +140,14 @@ def handle(infiles, tables, user_input_path, **kwargs):
             {
                 str("table_entry"): str("latitude"),
                 str("units"): ds["lat"].units,
-                str("coord_vals"): data["lat"].values,
-                str("cell_bounds"): data["lat_bnds"].values,
+                str("coord_vals"): data["lat"].values,  # type: ignore
+                str("cell_bounds"): data["lat_bnds"].values,  # type: ignore
             },
             {
                 str("table_entry"): str("longitude"),
                 str("units"): ds["lon"].units,
-                str("coord_vals"): data["lon"].values,
-                str("cell_bounds"): data["lon_bnds"].values,
+                str("coord_vals"): data["lon"].values,  # type: ignore
+                str("cell_bounds"): data["lon_bnds"].values,  # type: ignore
             },
         ]
 
