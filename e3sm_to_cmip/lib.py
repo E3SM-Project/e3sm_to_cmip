@@ -1,10 +1,20 @@
+# Import the needed `cmor` modules individually, otherwise the error
+# `Can't pickle <class '_cmor.CMORError'>: import of module '_cmor' failed`
+# is raised when running `e3sm_to_cmip`` in parallel. Further investigation is
+# needed to figure out why this happens (maybe a circular or non-existent import
+# of CMORError`).
 import json
 import logging
 import os
 
-import cmor
 import numpy as np
 import xarray as xr
+from cmor import CMOR_REPLACE, axis
+from cmor import close as cmor_close
+from cmor import dataset_json, load_table
+from cmor import setup as cmor_setup
+from cmor import variable as cmor_var
+from cmor import zfactor
 from tqdm import tqdm
 
 from e3sm_to_cmip import resources
@@ -490,10 +500,10 @@ def handle_variables(  # noqa: C901
 
     logfile = os.path.join(logpath, outvar_name + ".log")
 
-    cmor.setup(inpath=tables, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
+    cmor_setup(inpath=tables, netcdf_file_action=CMOR_REPLACE, logfile=logfile)
 
-    cmor.dataset_json(str(metadata_path))
-    cmor.load_table(str(table))
+    dataset_json(str(metadata_path))
+    load_table(str(table))
 
     msg = f"{outvar_name}: CMOR setup complete"
     logging.info(msg)
@@ -555,11 +565,9 @@ def handle_variables(  # noqa: C901
             data["ips"] = ips
 
         if positive:
-            varid = cmor.variable(
-                outvar_name, outvar_units, axis_ids, positive=positive
-            )
+            varid = cmor_var(outvar_name, outvar_units, axis_ids, positive=positive)
         else:
-            varid = cmor.variable(outvar_name, outvar_units, axis_ids)
+            varid = cmor_var(outvar_name, outvar_units, axis_ids)
 
         # write out the data
         msg = f"{outvar_name}: time {data['time_bnds'].values[0][0]:1.1f} - {data['time_bnds'].values[-1][-1]:1.1f}"
@@ -594,7 +602,7 @@ def handle_variables(  # noqa: C901
 
     msg = f"{outvar_name}: write complete, closing"
     logger.debug(msg)
-    cmor.close()
+    cmor_close()
 
     msg = f"{outvar_name}: file close complete"
     logger.debug(msg)
@@ -724,10 +732,10 @@ def load_axis(data, levels=None, has_time=True):
     if levels and levels.get("time_name"):
         name = levels.get("time_name")
         units = data[levels.get("time_name")].units
-        time = cmor.axis(name, units=units)
+        time = axis(name, units=units)
     # else add the normal time name
     elif has_time:
-        time = cmor.axis(has_time, units=data["time"].attrs["units"])
+        time = axis(has_time, units=data["time"].attrs["units"])
 
     # use whatever level name this handler requires
     if levels is not None:
@@ -746,21 +754,21 @@ def load_axis(data, levels=None, has_time=True):
             if isinstance(cell_bounds, xr.DataArray):
                 cell_bounds = cell_bounds.values
 
-            lev = cmor.axis(
+            lev = axis(
                 name, units=units, cell_bounds=cell_bounds, coord_vals=coord_vals
             )
         else:
-            lev = cmor.axis(name, units=units, coord_vals=coord_vals)
+            lev = axis(name, units=units, coord_vals=coord_vals)
 
     # add lon/lat
-    lat = cmor.axis(
+    lat = axis(
         "latitude",
         units=data["lat"].units,
         coord_vals=data["lat"].values,
         cell_bounds=data["lat_bnds"].values,
     )
 
-    lon = cmor.axis(
+    lon = axis(
         "longitude",
         units=data["lon"].units,
         coord_vals=data["lon"].values,
@@ -780,7 +788,7 @@ def load_axis(data, levels=None, has_time=True):
         "standard_hybrid_sigma",
         "standard_hybrid_sigma_half",
     ]:
-        cmor.zfactor(
+        zfactor(
             zaxis_id=lev,
             zfactor_name="a",
             axis_ids=[
@@ -789,7 +797,7 @@ def load_axis(data, levels=None, has_time=True):
             zfactor_values=data["hyam"].values,
             zfactor_bounds=data["hyai"].values,
         )
-        cmor.zfactor(
+        zfactor(
             zaxis_id=lev,
             zfactor_name="b",
             axis_ids=[
@@ -798,10 +806,8 @@ def load_axis(data, levels=None, has_time=True):
             zfactor_values=data["hybm"].values,
             zfactor_bounds=data["hybi"].values,
         )
-        cmor.zfactor(
-            zaxis_id=lev, zfactor_name="p0", units="Pa", zfactor_values=data["p0"]
-        )
-        ips = cmor.zfactor(
+        zfactor(zaxis_id=lev, zfactor_name="p0", units="Pa", zfactor_values=data["p0"])
+        ips = zfactor(
             zaxis_id=lev, zfactor_name="ps", axis_ids=[time, lat, lon], units="Pa"
         )
 
