@@ -264,11 +264,7 @@ class E3SMtoCMIP:
         paths: List[str] = []
         e3sm_vars: List[str] = []
 
-        for root, dirs, files in os.walk(input_path):
-            if not files:
-                continue
-            if dirs:
-                continue
+        for root, _, files in os.walk(input_path):
             for filename in files:
                 if ".nc" in filename:
                     paths.append(str(Path(root, filename).absolute()))

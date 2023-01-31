@@ -184,9 +184,9 @@ def _derive_handler(
 
     if matching_handler is None:
         raise KeyError(
-            f"A '{cmip_var} handler could not be derived using the variables from the "
+            f"A '{cmip_var}' handler could not be derived using the variables from the "
             "input dataset(s). Check the E3SM variables from the input dataset(s) "
-            "align with the '{cmip_var} handler(s) defined in `handlers.yaml`."
+            f"align with the '{cmip_var}` handler(s) defined in `handlers.yaml`."
         )
 
     return matching_handler
