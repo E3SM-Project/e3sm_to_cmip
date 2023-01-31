@@ -18,6 +18,7 @@ from cmor import zfactor
 from tqdm import tqdm
 
 from e3sm_to_cmip import resources
+from e3sm_to_cmip._logger import _setup_custom_logger
 from e3sm_to_cmip.mpas import write_netcdf
 from e3sm_to_cmip.util import (
     find_atm_files,
@@ -28,7 +29,7 @@ from e3sm_to_cmip.util import (
     terminate,
 )
 
-logger = logging.getLogger()
+logger = _setup_custom_logger(__name__)
 
 
 def run_parallel(
@@ -269,8 +270,6 @@ def handle_simple(  # noqa: C901
 ):
     from e3sm_to_cmip.util import print_message
 
-    logger = logging.getLogger()
-
     logger.info(f"{outvar_name}: Starting")
 
     # check that we have some input files for every variable
@@ -474,8 +473,6 @@ def handle_variables(  # noqa: C901
         )
 
     from e3sm_to_cmip.util import print_message
-
-    logger = logging.getLogger()
 
     logger.info(f"{outvar_name}: Starting")
 
