@@ -166,22 +166,7 @@ class VarHandler(BaseVarHandler):
         # logdir=None,  # command-line arg (--logdir)
         # simple=False,  # command-line arg (--simple)
         # outpath=None,  # command-line arg (--output-path)
-        if self.unit_conversion is not None:
-            return default_handler(
-                infiles,
-                tables=tables,
-                user_input_path=user_input_path,
-                raw_variables=self.raw_variables,
-                name=self.name,
-                units=self.units,
-                table=kwargs.get("table", self.table),
-                unit_conversion=self.unit_conversion,
-                serial=kwargs.get("serial"),
-                logdir=kwargs.get("logdir"),
-                simple=kwargs.get("simple"),
-                outpath=kwargs.get("outpath"),
-            )
-        elif self.formula is not None:
+        if self.unit_conversion is None:
             return handle_variables(
                 infiles=infiles,
                 raw_variables=self.raw_variables,
@@ -199,6 +184,22 @@ class VarHandler(BaseVarHandler):
                 simple=kwargs.get("simple"),
                 outpath=kwargs.get("outpath"),
             )
+
+        return default_handler(
+            infiles,
+            tables=tables,
+            user_input_path=user_input_path,
+            raw_variables=self.raw_variables,
+            name=self.name,
+            units=self.units,
+            table=kwargs.get("table", self.table),
+            unit_conversion=self.unit_conversion,
+            serial=kwargs.get("serial"),
+            positive=self.positive,
+            logdir=kwargs.get("logdir"),
+            simple=kwargs.get("simple"),
+            outpath=kwargs.get("outpath"),
+        )
 
     def _write_data(
         self,
