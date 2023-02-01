@@ -1,8 +1,15 @@
 #!/bin/bash
 
+# Conda Environment
+# -----------------
+# Either comment out the lines below to use the E3SM Unified environment
+# or use a local environment.
 #source /usr/local/e3sm_unified/envs/load_latest_e3sm_unified_acme1.sh
 #conda activate e2c_nco511_13
 
+# -----------------
+# SETUP
+# -----------------
 #historical
 exp=historical
 #expshort=hist-nat
@@ -12,9 +19,11 @@ start=1850
 end=1850
 ypf=1
 
+# -----------------
+# PATHS
+# -----------------
 e2c_path=/p/user_pub/e3sm/zhang40/e3sm_to_cmip_data
 model_data=$e2c_path/model-output
-
 result_dir=${e2c_path}/reference
 
 rgr_dir=${result_dir}/rgr
@@ -26,29 +35,33 @@ map_file=${e2c_path}/maps/map_ne30pg2_to_cmip6_180x360_aave.20200201.nc
 tables_path=${e2c_path}/cmor/cmip6-cmor-tables/Tables/
 metadata_path=${e2c_path}/user_metadata.json
 
-# note: space is not accepted in nco var list
-
-## atm monthly h0 
+# NOTE: Space is not accepted in nco var list
+## ------------------------------------------------------
+## TEST CASE - atm monthly h0
+## ------------------------------------------------------
 input_path=${model_data}/v2.eam_input
 flags='-7 --dfl_lvl=1 --no_cll_msr'
 raw_var_list="ICEFRAC,OCNFRAC,LANDFRAC,PHIS,hyam,hybm,hyai,hybi,TREFHT,TS,PSL,PS,U10,QREFHT,PRECC,PRECL,PRECSC,PRECSL,QFLX,TAUX,TAUY,LHFLX,CLDTOT,FLDS,FLNS,FSDS,FSNS,SHFLX,CLOUD,CLDICE,TGCLDIWP,CLDLIQ,TGCLDCWP,TMQ,FLNSC,FSNTOA,FSNT,FLNT,FLUTC,FSDSC,SOLIN,FSNSC,FSUTOA,FSUTOAC,AODABS,AODVIS,AREL,TREFMNAV,TREFMXAV,FISCCP1_COSP,CLDTOT_ISCCP,MEANCLDALB_ISCCP,MEANPTOP_ISCCP,CLD_CAL,CLDTOT_CAL,CLDLOW_CAL,CLDMED_CAL,CLDHGH_CAL"
-# atm 2D variables
+
+# 1. atm 2D variables
+#--------------------------
 cmip_var_list="pfull, phalf, tas, ts, psl, ps, sfcWind, huss, pr, prc, prsn, evspsbl, tauu, tauv, hfls, clt, rlds, rlus, rsds, rsus, hfss, cl, clw, cli, clivi, clwvi, prw, rldscs, rlut, rlutcs, rsdt, rsuscs, rsut, rsutcs, rtmt, abs550aer, od550aer, rsdscs, tasmax, tasmin, clisccp, cltisccp, albisccp, pctisccp, clcalipso, cltcalipso, cllcalipso, clmcalipso, clhcalipso"
-
 ncclimo -P eam -j 1 --map=${map_file} --start=$start --end=$end --ypf=$ypf --split -c $caseid -o ${native_dir} -O ${rgr_dir} -v ${raw_var_list} -i ${input_path} ${flags}
-
 # CMORIZE Atmosphere monthly variables: 2D and model level 3D variables (CLOUD,CLDICE,CLDLIQ)
 e3sm_to_cmip -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t $tables_path -u ${metadata_path}
-#
-# atm fixed variables
+
+# 2. atm fixed variables
+#--------------------------
 raw_var_list="area,PHIS,LANDFRAC"
 cmip_var_list="area, sftlf, orog"
-ncremap --map=${map_file} -v area,PHIS,LANDFRAC -I ${input_path} -O ${rgr_dir}/fixed_vars 
+ncremap --map=${map_file} -v area,PHIS,LANDFRAC -I ${input_path} -O ${rgr_dir}/fixed_vars
 
 # CMORIZE Atmosphere fx variables
 e3sm_to_cmip --realm fx -i ${rgr_dir}/fixed_vars -o $result_dir  -v areacella, sftlf, orog  -t ${tables_path} -u ${metadata_path}
 
-# atm 3D variables
+## ------------------------------------------------------
+## TEST CASE - atm 3D variables
+## ------------------------------------------------------
 flags='-7 --dfl_lvl=1 --no_cll_msr'
 raw_var_list="Q,O3,T,U,V,Z3,RELHUM,OMEGA"
 cmip_var_list="hur, hus, ta, ua, va, wap, zg, o3"
@@ -64,8 +77,9 @@ done
 # CMORIZE Atmosphere monthly plev variables
 e3sm_to_cmip -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t ${tables_path} -u ${metadata_path}
 
-#
-# atm high freq daily h1+
+## ------------------------------------------------------
+## TEST CASE - atm high freq daily h1+
+## ------------------------------------------------------
 input_path=${model_data}/v2.eam.h1_input
 flags='-7 --dfl_lvl=1 --no_cll_msr --clm_md=hfs'
 raw_var_list="TREFHTMN,TREFHTMX,PRECT,TREFHT,FLUT,QREFHT"
@@ -76,8 +90,10 @@ ncclimo -P eam -j 1 --map=${map_file} --start=$start --end=$end --ypf=$ypf --spl
 
 # CMORIZE Atmosphere daily variables
 e3sm_to_cmip --freq day -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t ${tables_path} -u ${metadata_path}
-#
-# atm high freq 3hrly h1+
+
+## ------------------------------------------------------
+## TEST CASE - atm high freq 3hrly h1+
+## ------------------------------------------------------
 input_path=${model_data}/v2.eam.h4_input
 flags='-7 --dfl_lvl=1 --no_cll_msr --clm_md=hfs'
 raw_var_list="PRECT"
@@ -87,33 +103,34 @@ cmip_var_list="pr"
 ncclimo -P eam -j 1 --map=${map_file} --start=$start --end=$end --ypf=$ypf --split -c $caseid -o ${native_dir} -O ${rgr_dir} -v ${raw_var_list} -i ${input_path} ${flags}
 
 # CMORIZE Atmosphere 3hrly variables
-e3sm_to_cmip --freq 3hr -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t --tables-path ${e2c_path}/cmor/cmip6-cmor-tables/Tables -u ${metadata_path}
+e3sm_to_cmip --freq 3hr -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t ${tables_path} -u ${metadata_path}
 
-## land monthly h0
+## ------------------------------------------------------
+## TEST CASE - land monthly h0
+## ------------------------------------------------------
 input_path=${model_data}/v2.elm_input/
 flags='-7 --dfl_lvl=1 --no_cll_msr'
 raw_var_list="LAISHA,LAISUN,QINTR,QOVER,QRUNOFF,QSOIL,QVEGE,QVEGT,SOILICE,SOILLIQ,SOILWATER_10CM,TSA,TSOI,H2OSNO"
 cmip_var_list="mrsos, mrso, mrfso, mrros, mrro, prveg, evspsblveg, evspsblsoi, tran, tsl, lai"
 rgr_dir=${result_dir}/rgr_lnd
 native_dir=${result_dir}/native_lnd
+
 # Note either include the extra variable landfrac or specify the file that has landfrac for subgrid scale mode to work.
 ncclimo -P elm -j 1 --var_xtr=landfrac --map=${map_file} --start=$start --end=$end --ypf=$ypf --split -c $caseid -o ${native_dir} -O ${rgr_dir} -v ${raw_var_list} -i ${input_path} ${flags}
 # Alternative ncclimo invocation
 #ncclimo -P elm -j 1 --map=${map_file} --start=$start --end=$end --ypf=$ypf --split -c $caseid -o ${native_dir} -O ${rgr_dir} -v ${raw_var_list} -i ${input_path} ${flags} --sgs_frc=${input_path}/v2.LR.historical_0101.elm.h0.1850-01.nc/landfrac
 
 #raw_var_list_elm_bgc="TOTLITC,CWDC,TOTPRODC,SOIL1C,SOIL2C,SOIL3C,^SOIL4C$,COL_FIRE_CLOSS,WOOD_HARVESTC,TOTVEGC,NBP,GPP,AR,HR"
+# CMORIZE Land Monthly variables
+e3sm_to_cmip -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t ${tables_path} -u ${metadata_path}
 
-# CMORIZE Land Monthly variables 
-e3sm_to_cmip -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t --tables-path ${e2c_path}/cmor/cmip6-cmor-tables/Tables -u ${metadata_path}
-
-# CMORIZE Sea-ice Monthly variables 
+# CMORIZE Sea-ice Monthly variables
 # Note the input folder for mpas sea ice files requires:
 # 1. Monthly mean history files: e.g.,v2.LR.historical_0101.mpassi.hist.am.timeSeriesStatsMonthly.1850-01-01.nc
 # 2. A restart file for meshes: can use the mpaso restart e.g., v2.LR.historical_0101.mpaso.rst.1855-01-01_00000.nc
 e3sm_to_cmip -s --realm SImon --var-list siconc, sitemptop, sisnmass, sitimefrac, siu, siv, sithick, sisnthick, simass --map ${e2c_path}/maps/map_EC30to60E2r2_to_cmip6_180x360_aave.20220301.nc --input-path ${model_data}/v2.mpassi_input/ --output-path ${result_dir} --user-metadata ${metadata_path}  --tables-path ${e2c_path}/cmor/cmip6-cmor-tables/Tables
 
-
-# CMORIZE Ocean Monthly variables 
+# CMORIZE Ocean Monthly variables
 # Note the input folder for mpas ocean files requires:
 # 1. History files: e.g.,v2.LR.historical_0101.mpaso.hist.am.timeSeriesStatsMonthly.1850-01-01.nc
 # 2. The namelist file for constants: mpaso_in
@@ -124,4 +141,3 @@ e3sm_to_cmip -s --realm SImon --var-list siconc, sitemptop, sisnmass, sitimefrac
 e3sm_to_cmip -s --realm Omon --var-list areacello, fsitherm, hfds, masso, mlotst, sfdsi, sob, soga, sos, sosga, tauuo, tauvo, thetaoga, tob, tos, tosga, volo, wfo, zos, thetaoga, hfsifrazil, masscello, so, thetao, thkcello, uo, vo, volcello, wo zhalfo --map ${e2c_path}/maps/map_EC30to60E2r2_to_cmip6_180x360_aave.20220301.nc --input-path ${model_data}/v2.mpaso_input/ --output-path ${result_dir} --user-metadata ${metadata_path} --tables-path ${e2c_path}/cmor/cmip6-cmor-tables/Tables
 
 exit
-
