@@ -145,6 +145,8 @@ def mrso(data: Dict[str, np.ndarray], index: int) -> np.ndarray:
 def pr(data: Dict[str, np.ndarray], index: int) -> np.ndarray:
     """
     pr = (PRECC  + PRECL) * 1000.0
+
+    High frequency version:
     pr = PRECT * 1000.0
     """
     if all(key in data for key in ["PRECC", "PRECL"]):
@@ -180,8 +182,16 @@ def rldscs(data: Dict[str, np.ndarray], index: int) -> np.ndarray:
 def rlut(data: Dict[str, np.ndarray], index: int) -> np.ndarray:
     """
     rlut = FSNTOA - FSNT + FLNT
+
+    High frequency version:
+    rlut = FLUT
     """
-    outdata = data["FSNTOA"][index, :] - data["FSNT"][index, :] + data["FLNT"][index, :]
+    try:
+        outdata = (
+            data["FSNTOA"][index, :] - data["FSNT"][index, :] + data["FLNT"][index, :]
+        )
+    except KeyError:
+        outdata = data["FLUT"][index, :]
 
     return outdata
 
