@@ -46,10 +46,10 @@ class TestLoadAllHandlers:
 
     def test_raises_error_if_handler_is_not_defined_for_a_cmip_var_id(self):
         with pytest.raises(KeyError):
-            load_all_handlers(["undefined_handler"])
+            load_all_handlers("lnd", ["undefined_handler"])
 
     def test_updates_CMIP_table_for_variable_based_on_freq_param(self):
-        result = load_all_handlers(cmip_vars=["pr"])
+        result = load_all_handlers("lnd", cmip_vars=["pr"])
         expected = [
             dict(
                 name="pr",
@@ -85,8 +85,8 @@ class TestLoadAllHandlers:
 
         assert result == expected
 
-    def test_loads_handler_from_module(self):
-        result = load_all_handlers(cmip_vars=["pfull", "phalf"])
+    def test_loads_handler_from_module_for_lnd_realm(self):
+        result = load_all_handlers("lnd", cmip_vars=["pfull", "phalf"])
         expected = [
             {
                 "name": "pfull",
@@ -127,6 +127,64 @@ class TestLoadAllHandlers:
             handler["method"] = handler["method"].__name__
 
         assert result == expected
+
+    @pytest.mark.xfail
+    def test_loads_handler_from_module_for_mpas_realm(self):
+        result = load_all_handlers("Omon", cmip_vars=["pfull", "phalf"])
+        expected = [
+            {
+                "name": "pfull",
+                "units": "Pa",
+                "table": "CMIP6_Amon.json",
+                "method": pfull.handle.__name__,
+                "raw_variables": ["hybi", "hyai", "hyam", "hybm", "PS"],
+                "positive": None,
+                "levels": {
+                    "name": "standard_hybrid_sigma",
+                    "units": "1",
+                    "e3sm_axis_name": "lev",
+                    "e3sm_axis_bnds": "ilev",
+                    "time_name": "time2",
+                },
+            },
+            {
+                "name": "phalf",
+                "units": "Pa",
+                "table": "CMIP6_Amon.json",
+                "method": phalf.handle.__name__,
+                "raw_variables": ["hybi", "hyai", "hyam", "hybm", "PS"],
+                "positive": None,
+                "levels": {
+                    "name": "atmosphere_sigma_coordinate",
+                    "units": "1",
+                    "e3sm_axis_name": "lev",
+                    "e3sm_axis_bnds": "ilev",
+                    "time_name": "time2",
+                },
+            },
+        ]
+
+        # Update "method" value to the name of the method because the memory
+        # address changes with imports, so the handler dict won't align with the
+        # expected output.
+        for handler in result:
+            handler["method"] = handler["method"].__name__
+
+        assert result == expected
+
+
+class TestGetMPASHandlers:
+    @pytest.fixture(autouse=True)
+    def setup(self, tmp_path):
+        pass
+
+    @pytest.mark.xfail
+    def test_raises_error_if_handler_is_not_defined_for_a_variable(self):
+        pass
+
+    @pytest.mark.xfail
+    def test_returns_handler_objects_based_on_existing_e3sm_vars(self):
+        pass
 
 
 class TestDeriveHandlers:

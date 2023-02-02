@@ -19,12 +19,15 @@ import numpy as np
 import xarray as xr
 import yaml
 
-from e3sm_to_cmip import HANDLER_MODULES_PATH, __version__, resources
+from e3sm_to_cmip import HANDLERS_PATH, __version__, resources
 from e3sm_to_cmip._logger import _setup_custom_logger
 from e3sm_to_cmip.cmor_handlers.utils import (
+    MPAS_REALMS,
+    REALMS,
     Frequency,
     MPASRealm,
     Realm,
+    _get_mpas_handlers,
     derive_handlers,
     load_all_handlers,
 )
@@ -139,18 +142,32 @@ class E3SMtoCMIP:
         logger.info(f"CMIP6 variables to CMORize: \n{self.var_list}\n")
 
         if self.info_mode:
-            self.handlers = load_all_handlers(self.var_list)
+            self.handlers = load_all_handlers(self.realm, self.var_list)
         elif not self.info_mode and self.input_path is not None:
             e3sm_vars = self._get_e3sm_vars(self.input_path)
             logger.debug(f"Input dataset variables: {e3sm_vars}")
 
-            self.handlers = derive_handlers(
-                cmip_tables_path=self.tables_path,
-                cmip_vars=self.var_list,
-                e3sm_vars=e3sm_vars,
-                freq=self.freq,
-                realm=self.realm,
-            )
+            if self.realm in REALMS:
+                self.handlers = derive_handlers(
+                    cmip_tables_path=self.tables_path,
+                    cmip_vars=self.var_list,
+                    e3sm_vars=e3sm_vars,
+                    freq=self.freq,
+                    realm=self.realm,
+                )
+
+                # FIXME: Improve logging here
+                cmip_to_e3sm_vars = {
+                    handler["name"]: handler["raw_variables"]
+                    for handler in self.handlers
+                }
+
+                logger.info(
+                    "CMIP6 variable handlers derived using these input E3SM variables: "
+                    f"\n{cmip_to_e3sm_vars}\n"
+                )
+            elif self.realm in MPAS_REALMS:
+                self.handlers = _get_mpas_handlers(self.var_list)
 
             if len(self.handlers) == 0:
                 print_message(
@@ -158,15 +175,6 @@ class E3SMtoCMIP:
                     "input E3SM variables."
                 )
                 sys.exit(1)
-            else:
-                cmip_to_e3sm_vars = {
-                    handler["name"]: handler["raw_variables"]
-                    for handler in self.handlers
-                }
-                logger.info(
-                    "CMIP6 variable handlers derived using these input E3SM variables: "
-                    f"\n{cmip_to_e3sm_vars}\n"
-                )
 
     def run(self):
         # Setup logger information and print out e3sm_to_cmip CLI arguments.
@@ -240,11 +248,14 @@ class E3SMtoCMIP:
         return 0
 
     def _get_e3sm_vars(self, input_path: str) -> List[str]:
-        """Gets all of e3sm variables from the input files.
+        """Gets all E3SM variables from the input files to derive CMIP variables.
 
         This method walks through the input file path and reads each `.nc` file
         into a xr.Dataset to retrieve the `data_vars` keys. These `data_vars` keys
         are appended to a list, which is returned.
+
+        NOTE: This method is not used to derive CMIP variables from MPAS input
+        files.
 
         Parameters
         ----------
@@ -590,7 +601,7 @@ class E3SMtoCMIP:
 
     def _get_handlers_path(self, handlers_path: Optional[str]) -> str:
         if handlers_path is None:
-            return HANDLER_MODULES_PATH
+            return HANDLERS_PATH
 
         return os.path.abspath(handlers_path)
 

@@ -1,12 +1,12 @@
 import imp
 import os
 from collections import defaultdict
-from typing import Any, Dict, List, Literal, Union
+from typing import Any, Dict, List, Literal, Union, get_args
 
 import pandas as pd
 import yaml
 
-from e3sm_to_cmip import HANDLER_MODULES_PATH, HANDLER_YAML_PATH
+from e3sm_to_cmip import HANDLER_YAML_PATH, MPAS_VAR_HANDLER_PATHS, VAR_HANDLER_PATHS
 from e3sm_to_cmip._logger import _setup_custom_logger
 from e3sm_to_cmip.cmor_handlers.handler import VarHandler
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
@@ -15,13 +15,20 @@ logger = _setup_custom_logger(__name__)
 
 # Type aliases
 Frequency = Literal["mon", "day", "6hrLev", "6hrPlev", "6hrPlevPt", "3hr", "1hr"]
-Realm = Literal["atm", "lnd"]
-MPASRealm = Literal["mpaso", "mpassi"]
+
+Realm = Literal["atm", "lnd", "fx"]
+REALMS = get_args(Realm)
+
+MPASRealm = Literal["mpaso", "mpassi", "SImon", "Omon"]
+MPAS_REALMS = get_args(MPASRealm)
+
 # Used by areacella.py
 RADIUS = 6.37122e6
 
 
-def load_all_handlers(cmip_vars: List[str]) -> List[Dict[str, Any]]:
+def load_all_handlers(
+    realm: Union[Realm, MPASRealm], cmip_vars: List[str]
+) -> List[Dict[str, Any]]:
     """Loads variable handlers based on a list of variable names.
 
     This function is used specifically for printing out the handler information
@@ -29,8 +36,12 @@ def load_all_handlers(cmip_vars: List[str]) -> List[Dict[str, Any]]:
 
     Parameters
     ----------
+    realm: Union[Realm, MPASRealm]
+        The realm.
     cmip_vars : List[str]
         The list of CMIP6 variables to CMORize.
+
+
 
     Returns
     -------
@@ -44,19 +55,56 @@ def load_all_handlers(cmip_vars: List[str]) -> List[Dict[str, Any]]:
     """
     handlers_by_var: Dict[str, List[Dict[str, Any]]] = _get_handlers_by_var()
 
-    handlers_to_load: List[Dict[str, Any]] = []
+    if realm in REALMS:
+        handlers: List[Dict[str, Any]] = []
+
+        for var in cmip_vars:
+            try:
+                var_handlers = handlers_by_var[var]
+            except KeyError:
+                raise KeyError(
+                    f"No variable handlers are defined for '{var}'. Make sure a "
+                    "variable handler(s) in `handlers.yaml`."
+                )
+
+            handlers = handlers + var_handlers
+    else:
+        handlers = _get_mpas_handlers(cmip_vars)
+
+    return handlers
+
+
+def _get_mpas_handlers(cmip_vars: List[str]):
+    """Get MPAS variable handlers using the list of CMIP variables.
+
+    All current MPAS variable handlers are defined as modules and there is only
+    1 handler module defined per variable.
+
+    Parameters
+    ----------
+    cmip_vars : List[str]
+        The list of CMIP6 variables to CMORize.
+
+    Returns
+    -------
+    KeyError
+        If no handlers are defined for the MPAS CMIP6 variable.
+    """
+    handlers = _get_handlers_from_modules(MPAS_VAR_HANDLER_PATHS)
+
+    derived_handlers: List[Dict[str, Any]] = []
     for var in cmip_vars:
         try:
-            var_handlers = handlers_by_var[var]
+            var_handler = handlers[var]
         except KeyError:
             raise KeyError(
                 f"No variable handlers are defined for '{var}'. Make sure a "
-                "variable handler(s) in `handlers.yaml`."
+                f"variable handler is defined for '{var}' in {MPAS_VAR_HANDLER_PATHS}."
             )
 
-        handlers_to_load = handlers_to_load + var_handlers
+        derived_handlers.append(var_handler[0])
 
-    return handlers_to_load
+    return derived_handlers
 
 
 def derive_handlers(
@@ -110,8 +158,8 @@ def derive_handlers(
     """
     # TODO: Refactor the function parameters.
     handlers_by_var: Dict[str, List[Dict[str, Any]]] = _get_handlers_by_var()
-
     derived_handlers: List[Dict[str, Any]] = []
+
     for var in cmip_vars:
         # Get all handlers defined in `handlers.yaml` for the variable.
         try:
@@ -194,7 +242,7 @@ def _derive_handler(
 
 def _get_handlers_by_var() -> Dict[str, List[Dict[str, Any]]]:
     handlers_from_yaml = _get_handlers_from_yaml()
-    handlers_from_modules = _get_handlers_from_modules()
+    handlers_from_modules = _get_handlers_from_modules(VAR_HANDLER_PATHS)
     all_handlers = {**handlers_from_yaml, **handlers_from_modules}
 
     return all_handlers
@@ -231,7 +279,7 @@ def _get_handlers_from_yaml() -> Dict[str, List[Dict[str, Any]]]:
     return dict(handlers)
 
 
-def _get_handlers_from_modules() -> Dict[str, List[Dict[str, Any]]]:
+def _get_handlers_from_modules(path: str) -> Dict[str, List[Dict[str, Any]]]:
     """Gets variable handlers defined in Python modules.
 
     A Python module variable handler defines information about a variable,
@@ -264,6 +312,11 @@ def _get_handlers_from_modules() -> Dict[str, List[Dict[str, Any]]]:
         }
     }
 
+    Parameters
+    ----------
+    path: str
+        Path to the handler modules.
+
     Returns
     -------
     Dict[str, List[Dict[str, Any]]]
@@ -272,9 +325,8 @@ def _get_handlers_from_modules() -> Dict[str, List[Dict[str, Any]]]:
     """
     handlers = {}
 
-    for root, _, files in os.walk(HANDLER_MODULES_PATH):
+    for root, _, files in os.walk(path):
         for file in files:
-
             # FIXME: Checking the file should be done dynamically because static
             # references are fragile. Filename changes won't be picked up here
             # automatically.

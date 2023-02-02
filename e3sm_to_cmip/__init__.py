@@ -12,4 +12,7 @@ resources_path = os.path.split(os.path.abspath(resources.__file__))[0]
 HANDLER_YAML_PATH = os.path.join(resources_path, "handlers.yaml")
 
 # Handlers defined as Python modules (e.g., MPAS var handlers).
-HANDLER_MODULES_PATH = os.path.split(os.path.abspath(cmor_handlers.__file__))[0]
+HANDLERS_PATH = os.path.split(os.path.abspath(cmor_handlers.__file__))[0]
+
+VAR_HANDLER_PATHS = f"{HANDLERS_PATH}/vars"
+MPAS_VAR_HANDLER_PATHS = f"{HANDLERS_PATH}/mpas_vars"
