@@ -17,6 +17,7 @@ from e3sm_to_cmip.cmor_handlers._formulas import (
     pr,
     prsn,
     rldscs,
+    rlus,
     rlut,
     rsus,
     rsuscs,
@@ -248,6 +249,21 @@ def test_rlut():
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
         rlut({}, index=1)
+
+
+def test_rlus():
+    data = {
+        "FLDS": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
+        "FLNS": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
+    }
+
+    result = rlus(data, index=1)
+    expected = np.array([0, 2, 4])
+    np.testing.assert_allclose(result, expected)
+
+    # Test when required variable keys are NOT in the data dictionary.
+    with pytest.raises(KeyError):
+        rlus({}, index=1)
 
 
 def test_rsus():

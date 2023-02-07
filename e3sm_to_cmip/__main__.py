@@ -19,7 +19,7 @@ import numpy as np
 import xarray as xr
 import yaml
 
-from e3sm_to_cmip import HANDLERS_PATH, __version__, resources
+from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
 from e3sm_to_cmip._logger import _setup_custom_logger
 from e3sm_to_cmip.cmor_handlers.utils import (
     MPAS_REALMS,
@@ -601,7 +601,7 @@ class E3SMtoCMIP:
 
     def _get_handlers_path(self, handlers_path: Optional[str]) -> str:
         if handlers_path is None:
-            return HANDLERS_PATH
+            return ROOT_HANDLERS_DIR
 
         return os.path.abspath(handlers_path)
 

@@ -6,7 +6,11 @@ from typing import Any, Dict, List, Literal, Union, get_args
 import pandas as pd
 import yaml
 
-from e3sm_to_cmip import HANDLER_YAML_PATH, MPAS_VAR_HANDLER_PATHS, VAR_HANDLER_PATHS
+from e3sm_to_cmip import (
+    HANDLER_DEFINITIONS_PATH,
+    LEGACY_HANDLER_DIR_PATH,
+    MPAS_HANDLER_DIR_PATH,
+)
 from e3sm_to_cmip._logger import _setup_custom_logger
 from e3sm_to_cmip.cmor_handlers.handler import VarHandler
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
@@ -90,7 +94,7 @@ def _get_mpas_handlers(cmip_vars: List[str]):
     KeyError
         If no handlers are defined for the MPAS CMIP6 variable.
     """
-    handlers = _get_handlers_from_modules(MPAS_VAR_HANDLER_PATHS)
+    handlers = _get_handlers_from_modules(MPAS_HANDLER_DIR_PATH)
 
     derived_handlers: List[Dict[str, Any]] = []
     for var in cmip_vars:
@@ -99,7 +103,7 @@ def _get_mpas_handlers(cmip_vars: List[str]):
         except KeyError:
             raise KeyError(
                 f"No variable handlers are defined for '{var}'. Make sure a "
-                f"variable handler is defined for '{var}' in {MPAS_VAR_HANDLER_PATHS}."
+                f"variable handler is defined for '{var}' in {MPAS_HANDLER_DIR_PATH}."
             )
 
         derived_handlers.append(var_handler[0])
@@ -242,7 +246,7 @@ def _derive_handler(
 
 def _get_handlers_by_var() -> Dict[str, List[Dict[str, Any]]]:
     handlers_from_yaml = _get_handlers_from_yaml()
-    handlers_from_modules = _get_handlers_from_modules(VAR_HANDLER_PATHS)
+    handlers_from_modules = _get_handlers_from_modules(LEGACY_HANDLER_DIR_PATH)
     all_handlers = {**handlers_from_yaml, **handlers_from_modules}
 
     return all_handlers
@@ -257,7 +261,7 @@ def _get_handlers_from_yaml() -> Dict[str, List[Dict[str, Any]]]:
         A dictionary, with the key being the CMIP6 variable ID and the value
         being a list of VarHandler objects.
     """
-    with open(HANDLER_YAML_PATH, "r") as infile:
+    with open(HANDLER_DEFINITIONS_PATH, "r") as infile:
         handlers_file = yaml.load(infile, yaml.SafeLoader)
 
     df_in = pd.DataFrame.from_dict(handlers_file)

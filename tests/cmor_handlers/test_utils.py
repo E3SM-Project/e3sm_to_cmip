@@ -4,6 +4,7 @@ import pytest
 
 from e3sm_to_cmip.cmor_handlers import _formulas
 from e3sm_to_cmip.cmor_handlers.handler import VarHandler
+from e3sm_to_cmip.cmor_handlers.mpas_vars import so, uo
 from e3sm_to_cmip.cmor_handlers.utils import derive_handlers, load_all_handlers
 from e3sm_to_cmip.cmor_handlers.vars import pfull, phalf
 
@@ -44,9 +45,13 @@ class TestLoadAllHandlers:
                 json_file,
             )
 
-    def test_raises_error_if_handler_is_not_defined_for_a_cmip_var_id(self):
+    def test_raises_error_if_handler_does_not_exist_for_var(self):
         with pytest.raises(KeyError):
-            load_all_handlers("lnd", ["undefined_handler"])
+            load_all_handlers("lnd", ["invalid_var"])
+
+    def test_raises_error_if_mpas_handler_does_not_exist_for_var(self):
+        with pytest.raises(KeyError):
+            load_all_handlers("mpaso", cmip_vars=["invalid_var"])
 
     def test_updates_CMIP_table_for_variable_based_on_freq_param(self):
         result = load_all_handlers("lnd", cmip_vars=["pr"])
@@ -85,7 +90,7 @@ class TestLoadAllHandlers:
 
         assert result == expected
 
-    def test_loads_handler_from_module_for_lnd_realm(self):
+    def test_returns_handlers_based_on_var_list(self):
         result = load_all_handlers("lnd", cmip_vars=["pfull", "phalf"])
         expected = [
             {
@@ -128,39 +133,26 @@ class TestLoadAllHandlers:
 
         assert result == expected
 
-    @pytest.mark.xfail
-    def test_loads_handler_from_module_for_mpas_realm(self):
-        result = load_all_handlers("Omon", cmip_vars=["pfull", "phalf"])
+    def test_returns_mpas_var_handlers_based_on_var_list(self):
+        result = load_all_handlers("Omon", cmip_vars=["so", "uo"])
         expected = [
             {
-                "name": "pfull",
-                "units": "Pa",
-                "table": "CMIP6_Amon.json",
-                "method": pfull.handle.__name__,
-                "raw_variables": ["hybi", "hyai", "hyam", "hybm", "PS"],
+                "name": "so",
+                "units": "0.001",
+                "table": "CMIP6_Omon.json",
+                "method": so.handle.__name__,
+                "raw_variables": ["MPASO", "MPAS_mesh", "MPAS_map"],
                 "positive": None,
-                "levels": {
-                    "name": "standard_hybrid_sigma",
-                    "units": "1",
-                    "e3sm_axis_name": "lev",
-                    "e3sm_axis_bnds": "ilev",
-                    "time_name": "time2",
-                },
+                "levels": None,
             },
             {
-                "name": "phalf",
-                "units": "Pa",
-                "table": "CMIP6_Amon.json",
-                "method": phalf.handle.__name__,
-                "raw_variables": ["hybi", "hyai", "hyam", "hybm", "PS"],
+                "name": "uo",
+                "units": "m s-1",
+                "table": "CMIP6_Omon.json",
+                "method": uo.handle.__name__,
+                "raw_variables": ["MPASO", "MPAS_mesh", "MPAS_map"],
                 "positive": None,
-                "levels": {
-                    "name": "atmosphere_sigma_coordinate",
-                    "units": "1",
-                    "e3sm_axis_name": "lev",
-                    "e3sm_axis_bnds": "ilev",
-                    "time_name": "time2",
-                },
+                "levels": None,
             },
         ]
 
@@ -171,20 +163,6 @@ class TestLoadAllHandlers:
             handler["method"] = handler["method"].__name__
 
         assert result == expected
-
-
-class TestGetMPASHandlers:
-    @pytest.fixture(autouse=True)
-    def setup(self, tmp_path):
-        pass
-
-    @pytest.mark.xfail
-    def test_raises_error_if_handler_is_not_defined_for_a_variable(self):
-        pass
-
-    @pytest.mark.xfail
-    def test_returns_handler_objects_based_on_existing_e3sm_vars(self):
-        pass
 
 
 class TestDeriveHandlers:

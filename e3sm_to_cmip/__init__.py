@@ -4,15 +4,18 @@ __version__ = "1.9.1"  # pragma: no cover
 
 import os
 
-from e3sm_to_cmip import cmor_handlers, resources
+from e3sm_to_cmip import cmor_handlers
 
-resources_path = os.path.split(os.path.abspath(resources.__file__))[0]
+# Path to the root directory for all handler related files.
+ROOT_HANDLERS_DIR = os.path.split(os.path.abspath(cmor_handlers.__file__))[0]
 
-# Handlers defined as yaml file entries.
-HANDLER_YAML_PATH = os.path.join(resources_path, "handlers.yaml")
+# Path to the yaml file where handlers are defined.
+HANDLER_DEFINITIONS_PATH = os.path.join(ROOT_HANDLERS_DIR, "handlers.yaml")
 
-# Handlers defined as Python modules (e.g., MPAS var handlers).
-HANDLERS_PATH = os.path.split(os.path.abspath(cmor_handlers.__file__))[0]
+# Path to the directory where legacy handlers are defined.
+# TODO: The handlers defined here need to be refactored and moved to `handlers.yaml`.
+LEGACY_HANDLER_DIR_PATH = f"{ROOT_HANDLERS_DIR}/vars"
 
-VAR_HANDLER_PATHS = f"{HANDLERS_PATH}/vars"
-MPAS_VAR_HANDLER_PATHS = f"{HANDLERS_PATH}/mpas_vars"
+# Path to the directory where MPAS handlers are defined.
+# TODO: MPAS handlers should eventually be refactored to `handlers.yaml` too.
+MPAS_HANDLER_DIR_PATH = f"{ROOT_HANDLERS_DIR}/mpas_vars"
