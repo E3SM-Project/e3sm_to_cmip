@@ -510,7 +510,7 @@
     raw_variables: [FLDS, FLNS]
     table: CMIP6_Amon.json
     unit_conversion: null
-    formula: null
+    formula: FLDS + FLNS
     positive: up
     levels: null
 -   name: rlut

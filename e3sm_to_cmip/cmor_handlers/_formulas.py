@@ -196,6 +196,15 @@ def rlut(data: Dict[str, np.ndarray], index: int) -> np.ndarray:
     return outdata
 
 
+def rlus(data: Dict[str, np.ndarray], index: int) -> np.ndarray:
+    """
+    rlus = FLDS + FLNS
+    """
+    outdata = data["FLDS"][index, :] + data["FLNS"][index, :]
+
+    return outdata
+
+
 def rsus(data: Dict[str, np.ndarray], index: int) -> np.ndarray:
     """
     rsus = FSDS - FSNS

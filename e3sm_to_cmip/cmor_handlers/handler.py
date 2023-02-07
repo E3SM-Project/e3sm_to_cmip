@@ -232,7 +232,7 @@ class VarHandler(BaseVarHandler):
 
         cmor.write(varid, outdata, time_vals=timeval, time_bnds=timebnds)
 
-        if self.levels and self.levels.get("name") in [
+        if self.levels is not None and self.levels.get("name") in [
             "standard_hybrid_sigma",
             "standard_hybrid_sigma_half",
         ]:
