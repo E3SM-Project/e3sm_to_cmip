@@ -136,60 +136,21 @@ class E3SMtoCMIP:
         if self.precheck_path is not None:
             self._run_precheck()
 
-        # ======================================================================
-        # Load handlers.
-        # ======================================================================
-        logger.info(f"CMIP6 variables to CMORize: \n{self.var_list}\n")
+        logger.info("--------------------------------------")
+        logger.info("| E3SM to CMIP Configuration")
+        logger.info("--------------------------------------")
+        logger.info(f"    * var_list='{self.var_list}'")
+        logger.info(f"    * input_path='{self.input_path}'")
+        logger.info(f"    * output_path='{self.output_path}'")
+        logger.info(f"    * precheck_path='{self.precheck_path}'")
+        logger.info(f"    * freq='{self.freq}'")
+        logger.info(f"    * realm='{self.realm}'")
 
-        if self.info_mode:
-            self.handlers = load_all_handlers(self.realm, self.var_list)
-        elif not self.info_mode and self.input_path is not None:
-            e3sm_vars = self._get_e3sm_vars(self.input_path)
-            logger.debug(f"Input dataset variables: {e3sm_vars}")
-
-            if self.realm in REALMS:
-                self.handlers = derive_handlers(
-                    cmip_tables_path=self.tables_path,
-                    cmip_vars=self.var_list,
-                    e3sm_vars=e3sm_vars,
-                    freq=self.freq,
-                    realm=self.realm,
-                )
-
-                # FIXME: Improve logging here
-                cmip_to_e3sm_vars = {
-                    handler["name"]: handler["raw_variables"]
-                    for handler in self.handlers
-                }
-
-                logger.info(
-                    "CMIP6 variable handlers derived using these input E3SM variables: "
-                    f"\n{cmip_to_e3sm_vars}\n"
-                )
-            elif self.realm in MPAS_REALMS:
-                self.handlers = _get_mpas_handlers(self.var_list)
-
-            if len(self.handlers) == 0:
-                print_message(
-                    "No CMIP6 variable handlers were successfully derived using the "
-                    "input E3SM variables."
-                )
-                sys.exit(1)
+        self.handlers = self._get_handlers()
 
     def run(self):
         # Setup logger information and print out e3sm_to_cmip CLI arguments.
         # ======================================================================
-        logger = _setup_custom_logger(f"{self.cmor_log_dir}/e3sm_to_cmip.log", True)
-
-        logger.info("-------------------------------------")
-        logger.info("Run Settings")
-        logger.info("-------------------------------------")
-        logger.info(
-            f"\ninput_path='{self.input_path}'\n output_path='{self.output_path}'\n "
-            f"precheck_path='{self.precheck_path}'\n freq='{self.freq}'\n "
-            f"realm='{self.realm}' "
-        )
-
         if self.output_path is not None:
             logging_path = os.path.join(self.output_path, "converter.log")
             logger.debug(f"Writing log output to: {logging_path}")
@@ -205,9 +166,9 @@ class E3SMtoCMIP:
         # Run e3sm_to_cmip with info mode.
         # ======================================================================
         if self.info_mode:
-            logger.info("\n-------------------")
-            logger.info("Running Info Mode")
-            logger.info("-------------------")
+            logger.info("--------------------------------------")
+            logger.info("| Running E3SM to CMIP in Info Mode")
+            logger.info("--------------------------------------")
             self._run_info_mode()
             sys.exit(0)
 
@@ -219,14 +180,14 @@ class E3SMtoCMIP:
             timer.start()
 
         if self.serial_mode:
-            logger.info("\n-------------------------------------")
-            logger.info("Running E3SM to CMIP in Serial")
-            logger.info("-------------------------------------")
+            logger.info("--------------------------------------")
+            logger.info("| Running E3SM to CMIP in Serial")
+            logger.info("--------------------------------------")
             status = self._run_serial()
         else:
-            logger.info("\n-------------------------------------")
-            logger.info("Running E3SM to CMIP in Parallel")
-            logger.info("-------------------------------------")
+            logger.info("--------------------------------------")
+            logger.info("| Running E3SM to CMIP in Parallel")
+            logger.info("--------------------------------------")
             status = self._run_parallel()
 
         if status != 0:
@@ -246,6 +207,44 @@ class E3SMtoCMIP:
             timer.cancel()
 
         return 0
+
+    def _get_handlers(self):
+        if self.info_mode:
+            handlers = load_all_handlers(self.realm, self.var_list)
+        elif not self.info_mode and self.input_path is not None:
+            e3sm_vars = self._get_e3sm_vars(self.input_path)
+            logger.debug(f"Input dataset variables: {e3sm_vars}")
+
+            if self.realm in REALMS:
+                handlers = derive_handlers(
+                    cmip_tables_path=self.tables_path,
+                    cmip_vars=self.var_list,
+                    e3sm_vars=e3sm_vars,
+                    freq=self.freq,
+                    realm=self.realm,
+                )
+
+                cmip_to_e3sm_vars = {
+                    handler["name"]: handler["raw_variables"] for handler in handlers
+                }
+
+                logger.info("--------------------------------------")
+                logger.info("| Derived CMIP6 Variable Handlers")
+                logger.info("--------------------------------------")
+                for k, v in cmip_to_e3sm_vars.items():
+                    logger.info(f"    * '{k}' -> {v}")
+
+            elif self.realm in MPAS_REALMS:
+                handlers = _get_mpas_handlers(self.var_list)
+
+            if len(handlers) == 0:
+                logger.error(
+                    "No CMIP6 variable handlers were derived from the variables found "
+                    "in using the E3SM input datasets."
+                )
+                sys.exit(1)
+
+        return handlers
 
     def _get_e3sm_vars(self, input_path: str) -> List[str]:
         """Gets all E3SM variables from the input files to derive CMIP variables.

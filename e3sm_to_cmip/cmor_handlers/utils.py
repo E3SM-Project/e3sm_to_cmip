@@ -1,7 +1,7 @@
 import imp
 import os
 from collections import defaultdict
-from typing import Any, Dict, List, Literal, Union, get_args
+from typing import Any, Dict, List, Literal, Optional, Union, get_args
 
 import pandas as pd
 import yaml
@@ -59,19 +59,26 @@ def load_all_handlers(
     """
     handlers_by_var: Dict[str, List[Dict[str, Any]]] = _get_handlers_by_var()
 
+    missing_handlers: List[str] = []
+
     if realm in REALMS:
         handlers: List[Dict[str, Any]] = []
 
         for var in cmip_vars:
-            try:
-                var_handlers = handlers_by_var[var]
-            except KeyError:
-                raise KeyError(
-                    f"No variable handlers are defined for '{var}'. Make sure a "
-                    "variable handler(s) in `handlers.yaml`."
-                )
+            var_handler = handlers_by_var.get(var)
 
-            handlers = handlers + var_handlers
+            if var_handler is None:
+                missing_handlers.append(var)
+                continue
+
+            handlers = handlers + var_handler
+
+        if len(missing_handlers) > 0:
+            raise KeyError(
+                f"No handlers are defined for the variables: {missing_handlers}. "
+                "Make sure at least one variable handler is defined for each of these "
+                f"variables in `{HANDLER_DEFINITIONS_PATH}`."
+            )
     else:
         handlers = _get_mpas_handlers(cmip_vars)
 
@@ -97,16 +104,23 @@ def _get_mpas_handlers(cmip_vars: List[str]):
     handlers = _get_handlers_from_modules(MPAS_HANDLER_DIR_PATH)
 
     derived_handlers: List[Dict[str, Any]] = []
+    missing_handlers: List[str] = []
+
     for var in cmip_vars:
-        try:
-            var_handler = handlers[var]
-        except KeyError:
-            raise KeyError(
-                f"No variable handlers are defined for '{var}'. Make sure a "
-                f"variable handler is defined for '{var}' in {MPAS_HANDLER_DIR_PATH}."
-            )
+        var_handler = handlers.get(var)
+
+        if var_handler is None:
+            missing_handlers.append(var)
+            continue
 
         derived_handlers.append(var_handler[0])
+
+    if len(missing_handlers) > 0:
+        raise KeyError(
+            f"No variable handlers are defined for {missing_handlers}. Make sure at "
+            "least one variable handler is defined for each of these variables in "
+            f"`{MPAS_HANDLER_DIR_PATH}`."
+        )
 
     return derived_handlers
 
@@ -164,19 +178,24 @@ def derive_handlers(
     handlers_by_var: Dict[str, List[Dict[str, Any]]] = _get_handlers_by_var()
     derived_handlers: List[Dict[str, Any]] = []
 
-    for var in cmip_vars:
-        # Get all handlers defined in `handlers.yaml` for the variable.
-        try:
-            var_handlers = handlers_by_var[var]
-        except KeyError:
-            raise KeyError(
-                f"No variable handlers are defined for '{var}'. Make sure a "
-                "variable handler(s) in `handlers.yaml`."
-            )
+    # Stores variable names that are missing handlers or the handler cannot
+    # be derived using the input E3SM variables.
+    missing_handlers: List[str] = []
+    cannot_derive: List[str] = []
 
-        # Derive the appropriate handler to use for the variable based on
-        # the E3SM variables on the dataset.
+    for var in cmip_vars:
+        # Try to get all matching handlers for a variable.
+        var_handlers = handlers_by_var.get(var)
+        if var_handlers is None:
+            missing_handlers.append(var)
+            continue
+
+        # Try to derive the variable handler using the E3SM variables from
+        # the input dataset(s).
         derived_handler = _derive_handler(var, e3sm_vars, var_handlers)
+        if derived_handler is None:
+            cannot_derive.append(var)
+            continue
 
         # Update which CMIP table to use for lookup if a custom frequency is
         # passed.
@@ -191,15 +210,25 @@ def derive_handlers(
 
         derived_handlers.append(derived_handler)
 
+    if len(missing_handlers) > 0:
+        raise KeyError(
+            f"No handlers are defined for the variables: {missing_handlers}. "
+            "Make sure handlers are defined for these variables in `handlers.yaml`."
+        )
+
+    if len(cannot_derive) > 0:
+        raise KeyError(
+            f"No handlers could be derived for the variables: {cannot_derive}. "
+            "Make sure the input E3SM datasets have the variables needed derivation."
+        )
+
     return derived_handlers
 
 
 def _derive_handler(
     cmip_var: str, e3sm_vars: List[str], handlers: List[Dict[str, Any]]
-) -> Dict[str, Any]:
-    """
-    Derives a VarHandler object for a CMIP variable based on the existing E3SM
-    variables.
+) -> Optional[Dict[str, Any]]:
+    """Derives a handler a CMIP variable based on the input E3SM variables.
 
     This function loops through a list of VarHandler objects defined for a
     CMIP6 variable. It checks if any of the handler's raw E3SM variables exist
@@ -218,8 +247,8 @@ def _derive_handler(
 
     Returns
     -------
-    Dict[str, Any]
-        The matching handler.
+    Optional[Dict[str, Any]]
+        A derived handler.
 
     Raises
     ------
@@ -233,13 +262,6 @@ def _derive_handler(
         if all(var in e3sm_vars for var in handler["raw_variables"]):
             matching_handler = handler
             break
-
-    if matching_handler is None:
-        raise KeyError(
-            f"A '{cmip_var}' handler could not be derived using the variables from the "
-            "input dataset(s). Check the E3SM variables from the input dataset(s) "
-            f"align with the '{cmip_var}` handler(s) defined in `handlers.yaml`."
-        )
 
     return matching_handler
 

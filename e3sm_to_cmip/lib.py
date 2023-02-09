@@ -26,6 +26,7 @@ from e3sm_to_cmip.util import (
     get_levgrnd_bnds,
     print_debug,
     print_message,
+    style_message,
     terminate,
 )
 
@@ -57,15 +58,14 @@ def run_parallel(
     --------
         returns 1 if an error occurs, else 0
     """
-
     pool_res = list()
     will_run = []
+
     for idx, handler in enumerate(handlers):
         handler_method = handler["method"]
         handler_variables = handler["raw_variables"]
         # find the input files this handler needs
         if realm in ["atm", "lnd"]:
-
             input_paths = {
                 var: [
                     os.path.join(input_path, x) for x in find_atm_files(var, input_path)
@@ -87,7 +87,7 @@ def run_parallel(
                 for var in handler_variables
             }
 
-        # setup the input args for the handler
+        # Setup the input args for the handler.
         _kwargs = {
             "table": handler.get("table"),
             "raw_variables": handler.get("raw_variables"),
@@ -121,7 +121,7 @@ def run_parallel(
                 msg = f"Finished {out}, {idx + 1}/{num_handlers} jobs complete"
             else:
                 msg = f'Error running handler {handlers[idx]["name"]}'
-                print_message(msg, "error")
+                logger.error(style_message(msg, "error"))
 
             logger.info(msg)
         except Exception as e:
@@ -130,14 +130,17 @@ def run_parallel(
 
     pbar.close()
     terminate(pool)
-    print_message(f"{num_success} of {num_handlers} handlers complete", "ok")
+
+    msg = style_message(f"{num_success} of {num_handlers} handlers complete", "ok")
+    logger.info(msg)
+
     failed = set(will_run) - set(finished_success)
     if failed:
         print_message(f"{', '.join(list(failed))} failed to complete")
+        msg = style_message(msg, "error")
+        logger.error(msg)
+
     return 0
-
-
-# ------------------------------------------------------------------
 
 
 def run_serial(  # noqa: C901
@@ -206,7 +209,7 @@ def run_serial(  # noqa: C901
                     for var in handler_variables
                 }
 
-            msg = f"trying handler: {handler}"
+            msg = f"Trying to CMORize with handler: {handler}"
             logger.info(msg)
 
             try:
@@ -232,10 +235,12 @@ def run_serial(  # noqa: C901
             if name is not None:
                 num_success += 1
                 msg = f"Finished {name}, {num_success}/{num_handlers} jobs complete"
+                msg = style_message(msg, status="ok")
+                logger.info(msg)
             else:
-                msg = f'Error running handler {handler["name"]}'
-                print_message(msg, status="error")
-            logger.info(msg)
+                msg = f"Error running handler {handler['name']}"
+                msg = style_message(msg, status="error")
+                logger.info(msg)
 
             if realm != "atm":
                 pbar.update(1)
@@ -246,7 +251,9 @@ def run_serial(  # noqa: C901
         print_debug(error)
         return 1
     else:
-        print_message(f"{num_success} of {num_handlers} handlers complete", "ok")
+        msg = style_message(f"{num_success} of {num_handlers} handlers complete", "ok")
+        logger.info(msg)
+
         return 0
 
 
@@ -268,8 +275,6 @@ def handle_simple(  # noqa: C901
     table="Amon",
     has_time=True,
 ):
-    from e3sm_to_cmip.util import print_message
-
     logger.info(f"{outvar_name}: Starting")
 
     # check that we have some input files for every variable
@@ -277,8 +282,7 @@ def handle_simple(  # noqa: C901
     for variable in raw_variables:
         if len(infiles[variable]) == 0:
             msg = f"{outvar_name}: Unable to find input files for {variable}"
-            print_message(msg)
-            logging.error(msg)
+            logging.error(style_message(msg, "error"))
             zerofiles = True
     if zerofiles:
         return None
@@ -472,8 +476,6 @@ def handle_variables(  # noqa: C901
             has_time=timename,
         )
 
-    from e3sm_to_cmip.util import print_message
-
     logger.info(f"{outvar_name}: Starting")
 
     # check that we have some input files for every variable
@@ -481,9 +483,9 @@ def handle_variables(  # noqa: C901
     for variable in raw_variables:
         if len(infiles[variable]) == 0:
             msg = f"{outvar_name}: Unable to find input files for {variable}"
-            print_message(msg)
-            logging.error(msg)
+            logging.error(style_message(msg, "error"))
             zerofiles = True
+
     if zerofiles:
         return None
 

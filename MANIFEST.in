@@ -1,4 +1,5 @@
 include README.md
 include LICENSE
+include e3sm_to_cmip/cmor_handlers/handlers.yaml
 
 recursive-include e3sm_to_cmip/resources *

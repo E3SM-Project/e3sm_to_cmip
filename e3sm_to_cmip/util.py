@@ -7,7 +7,7 @@ import sys
 import traceback
 from pathlib import Path
 from pprint import pprint
-from typing import Optional
+from typing import Literal, Optional
 
 import cmor
 import xarray as xr
@@ -94,6 +94,33 @@ def print_message(message, status="error"):
             + str(message)
             + colors.OKBLUE
             + colors.ENDC
+        )
+
+
+def style_message(message: str, status: Literal["error", "ok", "debug"]) -> str:
+    """Styles a message with either a green + or a red -
+
+    Parameters
+    ----------
+    message : str
+        The message
+    status : Literal[&quot;error&quot;, &quot;ok&quot;, &quot;debug&quot;]
+        The message type.
+
+    Returns
+    -------
+    str
+        The styled message.
+    """
+    if status == "error":
+        return str(
+            colors.FAIL + "[-] " + colors.ENDC + colors.BOLD + message + colors.ENDC
+        )
+    elif status == "ok":
+        return str(colors.OKGREEN + "[+] " + colors.ENDC + message)
+    elif status == "debug":
+        return str(
+            colors.OKBLUE + "[*] " + colors.ENDC + message + colors.OKBLUE + colors.ENDC
         )
 
 
