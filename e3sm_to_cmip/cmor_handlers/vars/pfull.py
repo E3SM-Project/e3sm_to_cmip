@@ -9,7 +9,7 @@ import os
 import cmor
 from tqdm import tqdm
 
-from e3sm_to_cmip._logger import _setup_custom_logger
+from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.util import print_message
 
 try:
@@ -19,7 +19,7 @@ except ImportError as e:
     print("The pfull variable handler requires both cdms2 and cdutil")
     raise e
 
-logger = _setup_custom_logger(__name__)
+logger = _setup_logger(__name__)
 
 # list of raw variable names needed
 RAW_VARIABLES = [str("hybi"), str("hyai"), str("hyam"), str("hybm"), str("PS")]
@@ -49,7 +49,7 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
 # ------------------------------------------------------------------
 
 
-def handle(infiles, tables, user_input_path, **kwargs):
+def handle(infiles, tables, user_input_path, **kwargs):  # noqa: C901
     msg = "{}: Starting".format(VAR_NAME)
     logger.info(msg)
 
@@ -99,7 +99,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
     for var_name in RAW_VARIABLES:
         infiles[var_name].sort()
 
-    loaded = False
     for index in range(num_files_per_variable):
 
         # load data for each variable

@@ -12,10 +12,10 @@ import numpy as np
 import xarray as xr
 from tqdm import tqdm
 
-from e3sm_to_cmip._logger import _setup_custom_logger
+from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.util import print_message
 
-logger = _setup_custom_logger(__name__)
+logger = _setup_logger(__name__)
 
 # list of raw variable names needed
 RAW_VARIABLES = [str("FISCCP1_COSP")]

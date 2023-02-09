@@ -20,7 +20,7 @@ import xarray as xr
 import yaml
 
 from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
-from e3sm_to_cmip._logger import _setup_custom_logger
+from e3sm_to_cmip._logger import _setup_logger, _setup_root_logger
 from e3sm_to_cmip.cmor_handlers.utils import (
     MPAS_REALMS,
     REALMS,
@@ -48,7 +48,9 @@ os.environ["CDAT_ANONYMOUS_LOG"] = "false"
 np.warnings.filterwarnings("ignore")  # type: ignore
 
 
-logger = _setup_custom_logger(__name__)
+# Setup the root logger and this module's logger.
+log_filename = _setup_root_logger()
+logger = _setup_logger(__name__, propagate=True)
 
 
 @dataclass
@@ -145,6 +147,7 @@ class E3SMtoCMIP:
         logger.info(f"    * precheck_path='{self.precheck_path}'")
         logger.info(f"    * freq='{self.freq}'")
         logger.info(f"    * realm='{self.realm}'")
+        logger.info(f"    * Writing log output file to: {log_filename}")
 
         self.handlers = self._get_handlers()
 
@@ -152,9 +155,6 @@ class E3SMtoCMIP:
         # Setup logger information and print out e3sm_to_cmip CLI arguments.
         # ======================================================================
         if self.output_path is not None:
-            logging_path = os.path.join(self.output_path, "converter.log")
-            logger.debug(f"Writing log output to: {logging_path}")
-
             self.new_metadata_path = os.path.join(
                 self.output_path, "user_metadata.json"
             )

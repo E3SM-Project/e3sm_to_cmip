@@ -18,7 +18,7 @@ from cmor import zfactor
 from tqdm import tqdm
 
 from e3sm_to_cmip import resources
-from e3sm_to_cmip._logger import _setup_custom_logger
+from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.mpas import write_netcdf
 from e3sm_to_cmip.util import (
     find_atm_files,
@@ -26,11 +26,10 @@ from e3sm_to_cmip.util import (
     get_levgrnd_bnds,
     print_debug,
     print_message,
-    style_message,
     terminate,
 )
 
-logger = _setup_custom_logger(__name__)
+logger = _setup_logger(__name__)
 
 
 def run_parallel(
@@ -121,7 +120,7 @@ def run_parallel(
                 msg = f"Finished {out}, {idx + 1}/{num_handlers} jobs complete"
             else:
                 msg = f'Error running handler {handlers[idx]["name"]}'
-                logger.error(style_message(msg, "error"))
+                logger.error(msg)
 
             logger.info(msg)
         except Exception as e:
@@ -131,13 +130,12 @@ def run_parallel(
     pbar.close()
     terminate(pool)
 
-    msg = style_message(f"{num_success} of {num_handlers} handlers complete", "ok")
+    msg = f"{num_success} of {num_handlers} handlers complete"
     logger.info(msg)
 
     failed = set(will_run) - set(finished_success)
     if failed:
-        print_message(f"{', '.join(list(failed))} failed to complete")
-        msg = style_message(msg, "error")
+        logger.error(f"{', '.join(list(failed))} failed to complete")
         logger.error(msg)
 
     return 0
@@ -235,11 +233,9 @@ def run_serial(  # noqa: C901
             if name is not None:
                 num_success += 1
                 msg = f"Finished {name}, {num_success}/{num_handlers} jobs complete"
-                msg = style_message(msg, status="ok")
                 logger.info(msg)
             else:
                 msg = f"Error running handler {handler['name']}"
-                msg = style_message(msg, status="error")
                 logger.info(msg)
 
             if realm != "atm":
@@ -251,7 +247,7 @@ def run_serial(  # noqa: C901
         print_debug(error)
         return 1
     else:
-        msg = style_message(f"{num_success} of {num_handlers} handlers complete", "ok")
+        msg = f"{num_success} of {num_handlers} handlers complete"
         logger.info(msg)
 
         return 0
@@ -282,7 +278,7 @@ def handle_simple(  # noqa: C901
     for variable in raw_variables:
         if len(infiles[variable]) == 0:
             msg = f"{outvar_name}: Unable to find input files for {variable}"
-            logging.error(style_message(msg, "error"))
+            logging.error(msg)
             zerofiles = True
     if zerofiles:
         return None
@@ -483,7 +479,7 @@ def handle_variables(  # noqa: C901
     for variable in raw_variables:
         if len(infiles[variable]) == 0:
             msg = f"{outvar_name}: Unable to find input files for {variable}"
-            logging.error(style_message(msg, "error"))
+            logging.error(msg)
             zerofiles = True
 
     if zerofiles:

@@ -12,12 +12,11 @@ import numpy as np
 import xarray as xr
 
 from e3sm_to_cmip import resources
-from e3sm_to_cmip._logger import _setup_custom_logger
-from e3sm_to_cmip.lib import handle_variables
+from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.mpas import write_netcdf
 from e3sm_to_cmip.util import print_message
 
-logger = _setup_custom_logger(__name__)
+logger = _setup_logger(__name__)
 
 # list of raw variable names needed
 RAW_VARIABLES = [str("PHIS")]
@@ -107,9 +106,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
         raise IOError("File not found: {}".format(filename))
 
     ds = xr.open_dataset(filename, decode_times=False)
-
-    # load the data for each variable
-    variable_data = ds["PHIS"]
 
     # load the lon and lat info & bounds
     data = {
