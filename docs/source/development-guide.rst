@@ -6,7 +6,7 @@ Testing changes and debugging in Python
 
 In older versions of ``e3sm_to_cmip``, the only way to test changes was to run ``e3sm_to_cmip`` directly on the command line. This debugging process often involves adding ``print`` or ``ipdb`` statements throughout the codebase, which generally isn't good practice because it is inefficient and developers might forget to delete those statements.
 
-As of ``e3sm_to_cmip > 1.91``,  ``e3sm_to_cmip`` can now be executed through a Python script Advantages of using this approach include:
+As of ``e3sm_to_cmip > 1.91``,  ``e3sm_to_cmip`` can now be executed through a Python script. Advantages of using this approach include:
 
 - Testing and debugging changes are significantly more efficient, which shortens the debugging cycle.
 - Leverage IDEs to set breakpoints in IDEs and step through the call stack at runtime.
@@ -52,7 +52,7 @@ CLI Execution
 
 .. code-block:: bash
 
-    e3sm_to_cmip --info -v all --input /p/user_pub/work/E3SM/1_0/historical/1deg_atm_60-30km_ocean/atmos/native/model-output/day/ens1/v1/ --tables /home/vo13/PCMDI/cmip6-cmor-tables/Tables/
+    e3sm_to_cmip --info -v prw, pr --input /p/user_pub/work/E3SM/1_0/historical/1deg_atm_60-30km_ocean/atmos/native/model-output/day/ens1/v1/ --tables /home/vo13/PCMDI/cmip6-cmor-tables/Tables/
 
 Python Execution
 
@@ -63,7 +63,7 @@ Python Execution
     args = [
         "--info",
         "-v",
-        "prw pr",
+        "prw, pr",
         "--input",
         "/p/user_pub/work/E3SM/1_0/historical/1deg_atm_60-30km_ocean/atmos/native/model-output/day/ens1/v1/",
         "--output",
