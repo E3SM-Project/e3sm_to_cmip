@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import argparse
-import imp
 import json
 import os
 import re
@@ -9,17 +7,17 @@ import sys
 import traceback
 from pathlib import Path
 from pprint import pprint
-from typing import Any, Dict, List
+from typing import Optional
 
 import cmor
 import xarray as xr
 import yaml
 from tqdm import tqdm
 
-from e3sm_to_cmip import __version__, resources
-from e3sm_to_cmip._logger import _setup_custom_logger
+from e3sm_to_cmip._logger import _setup_logger
 
-logger = _setup_custom_logger(__name__)
+logger = _setup_logger(__name__)
+
 
 ATMOS_TABLES = [
     "CMIP6_Amon.json",
@@ -126,163 +124,9 @@ def setup_cmor(var_name, table_path, table_name, user_input_path):
 # ------------------------------------------------------------------
 
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(
-        description="Convert ESM model output into CMIP compatible format",
-        prog="e3sm_to_cmip",
-        usage="%(prog)s [-h]",
-    )
-    # TODO: Add a check for valid variables
-    parser.add_argument(
-        "-v",
-        "--var-list",
-        nargs="+",
-        required=True,
-        metavar="",
-        help="Space separated list of variables to convert from e3sm to cmip. Use 'all' to convert all variables or the name of a CMIP6 table to run all handlers from that table.",
-    )
-    parser.add_argument(
-        "-i",
-        "--input-path",
-        metavar="",
-        help="Path to directory containing e3sm time series data files. Additionally namelist, restart, and 'region' files if handling MPAS data. \
-            Region files are available from https://web.lcrc.anl.gov/public/e3sm/inputdata/ocn/mpas-o/<mpas_mesh_name>.",
-    )
-    parser.add_argument(
-        "-o", "--output-path", metavar="", help="Where to store cmorized output."
-    )
-    parser.add_argument(
-        "--simple",
-        help="Perform a simple translation of the E3SM output to CMIP format, but without the CMIP6 metadata checks.",
-        action="store_true",
-    )
-    parser.add_argument(
-        "-f",
-        "--freq",
-        help="The frequency of the data (default is monthly). Accepted values are mon, day, 6hrLev, 6hrPlev, 6hrPlevPt, 3hr, 1hr.",
-        default="mon",
-    )
-    parser.add_argument(
-        "-u",
-        "--user-metadata",
-        metavar="<user_input_json_path>",
-        help="Path to user json file for CMIP6 metadata, required unless the --simple flag is used.",
-    )
-    parser.add_argument(
-        "-t",
-        "--tables-path",
-        metavar="<tables-path>",
-        help="Path to directory containing CMOR Tables directory, required unless the --simple flag is used.",
-    )
-    parser.add_argument(
-        "--map",
-        metavar="<map_mpas_to_std_grid>",
-        help="The path to an mpas remapping file. Required if realm is mpaso or mpassi.  Available from https://web.lcrc.anl.gov/public/e3sm/mapping/maps/.",
-    )
-    parser.add_argument(
-        "-n",
-        "--num-proc",
-        metavar="<nproc>",
-        default=6,
-        type=int,
-        help="optional: number of processes, default = 6.",
-    )
-    parser.add_argument(
-        "-H",
-        "--handlers",
-        metavar="<handler_path>",
-        default=None,
-        help="Path to cmor handlers directory, default is the (built-in) 'e3sm_to_cmip/cmor_handlers'.",
-    )
-    parser.add_argument(
-        "--custom-metadata",
-        help="the path to a json file with additional custom metadata to add to the output files.",
-    )
-    parser.add_argument(
-        "-s",
-        "--serial",
-        help="Run in serial mode, useful for debugging purposes.",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--debug", help="Set output level to debug.", action="store_true"
-    )
-    parser.add_argument(
-        "--realm",
-        metavar="<realm>",
-        default="atm",
-        help="The realm to process. Must be atm, lnd, mpaso or mpassi. Default is atm.",
-    )
-    parser.add_argument(
-        "--logdir",
-        default="./cmor_logs",
-        help="Where to put the logging output from CMOR.",
-    )
-    parser.add_argument(
-        "--timeout",
-        help="Exit with code -1 if execution time exceeds given time in seconds.",
-    )
-    parser.add_argument(
-        "--precheck",
-        type=str,
-        help="Check for each variable if it's already in the output CMIP6 directory, only run variables that don't have pre-existing CMIP6 output.",
-    )
-    parser.add_argument(
-        "--info",
-        action="store_true",
-        help="""Print information about the variables passed in the --var-list argument and exit without doing any processing.
-There are three modes for getting the info, if you just pass the --info flag with the --var-list then it will print out the information for the requested variable.
-If the --freq <frequency> is passed along with the --tables-path, then the CMIP6 tables will get checked to see if the requested variables are present in the CMIP6 table matching the freq.
-If the --freq <freq> is passed with the --tables-path, and the --input-path, and the input-path points to raw unprocessed E3SM files, then an additional check will me made for if the required raw
-variables are present in the E3SM output.""",
-    )
-    parser.add_argument(
-        "--info-out",
-        type=str,
-        help="If passed with the --info flag, will cause the variable info to be written out to the specified file path as yaml.",
-    )
-    parser.add_argument(
-        "--version",
-        help="Print the version number and exit.",
-        action="version",
-        version="%(prog)s {}".format(__version__),
-    )
-    try:
-        _args = sys.argv[1:]
-    except (Exception, BaseException):
-        parser.print_help()
-        sys.exit(1)
-    else:
-        _args = parser.parse_args(_args)
-        if _args.realm == "mpaso" and not _args.map:
-            raise ValueError("MPAS ocean handling requires a map file")
-        if _args.realm == "mpassi" and not _args.map:
-            raise ValueError("MPAS sea-ice handling requires a map file")
-        if not _args.simple and not _args.tables_path and not _args.info:
-            raise ValueError(
-                "Running without the --simple flag requires CMIP6 tables path"
-            )
-        if (not _args.input_path or not _args.output_path) and not _args.info:
-            raise ValueError("Input and output paths required")
-        if not _args.simple and not _args.user_metadata and not _args.info:
-            raise ValueError(
-                "Running without the --simple flag requires CMIP6 metadata json file"
-            )
-
-        valid_freqs = [freq for freq_type in FREQUENCIES.values() for freq in freq_type]
-        if _args.freq and _args.freq not in valid_freqs:
-            raise ValueError(
-                f"Frequency set to {_args.freq} which is not in the set of allowed "
-                "frequencies: {', '.join(valid_freqs)}"
-            )
-
-    return _args
-
-
-# ------------------------------------------------------------------
-
-
-def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
+def print_var_info(  # noqa: C901
+    handlers, freq=None, inpath=None, tables=None, outpath=None
+):
     messages = []
 
     # if the user just asked for the handler info
@@ -306,7 +150,7 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
         for handler in handlers:
             table_info = _get_table_info(tables, handler["table"])
             if handler["name"] not in table_info["variable_entry"]:
-                msg = f"Variable {handler['name']} is not included in the table {handler['table']}"
+                msg = f"Variable {handler['name']} is not included in the table {handler['table']}"  # type: ignore
                 print_message(msg, status="error")
                 continue
             else:
@@ -353,7 +197,7 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
 
                     if raw_var not in ds.data_vars:
                         has_vars = False
-                        msg = f"Variable {handler['name']} is not present in the input dataset"
+                        msg = f"Variable {handler['name']} is not present in the input dataset"  # type: ignore
                         print_message(msg, status="error")
                         break
                 if not has_vars:
@@ -365,235 +209,6 @@ def print_var_info(handlers, freq=None, inpath=None, tables=None, outpath=None):
             yaml.dump(messages, outstream)
     else:
         pprint(messages)
-
-
-def _load_handlers(
-    handlers_path: str,
-    tables_path: str,
-    var_list: List[str],
-    freq: str = "mon",
-    realm: str = "atm",
-) -> List[Dict[str, Any]]:
-    """Loads variable handlers based on a list of variable names.
-
-    The CMIP table used for the handler is based on the frequency that is
-    passed. If `freq="mon"`, then the base table is used (usually monthly).
-    For other frequencies such as "day", the table is derived using the
-    base table as the starting point.
-
-    Parameters
-    ----------
-    handlers_path : str
-        The path to the Python module handlers.
-    tables_path : str
-        The path to the CMIP6 tables.
-    var_list : List[str]
-        The list of variables to CMOR-ize.
-    freq : str, optional
-        The frequency, by default "mon".
-    realm : str, optional
-        The realm, by default "atm".
-
-    Returns
-    -------
-    List[Dict[str, str]]:
-        A list of dictionaries, with each dictionary storing information related
-        to the CMOR handler of each variable.
-    """
-    available_handlers = _get_available_handlers(handlers_path)
-    chosen_handlers: List[Dict[str, Any]] = []
-
-    if "all" in var_list:
-        for key, handler in available_handlers.items():
-            # Update the handler's "table" if the frequency is not monthly.
-            if freq != "mon":
-                available_handlers[key]["table"] = _get_table_for_non_monthly_freq(
-                    handler["name"], handler["table"], freq, realm, tables_path
-                )
-
-        print_message(
-            f"Loaded all available handlers with a frequency of {freq}.",
-            "debug",
-        )
-        chosen_handlers = [handler for handler in available_handlers.values()]
-
-        return chosen_handlers
-
-    for var in var_list:
-        # Use the high frequency version of a variable handler based on the
-        # specified frequency. For example, for "pr" with a frequency of "day"
-        # or "3hr, use "pr_highfreq.py" instead of "pr.py".
-        # TODO: Once the handler modules are refactored using classes, we can
-        # update this check to something more sophisticated.
-        if _use_highfreq_handler(var, freq):
-            var += "_highfreq"
-
-        handler = available_handlers.get(var)
-        if handler is None:
-            raise KeyError(
-                f"Variable '{var}' failed to load. Either an entry is not defined in "
-                "the handlers yaml file, or a Python module with the name of the "
-                "variable does not exist."
-            )
-
-        # Update the handler's "table" if the frequency is not monthly.
-        if freq != "mon":
-            handler["table"] = _get_table_for_non_monthly_freq(
-                handler["name"], handler["table"], freq, realm, tables_path
-            )
-
-        chosen_handlers.append(handler)
-        print_message(
-            f"Loaded `{var}` handler for variable `{handler['name']}`.", "debug"
-        )
-
-    return chosen_handlers
-
-
-def _get_available_handlers(handlers_path: str) -> Dict[str, Dict[str, str]]:
-    """Loads handlers based on a list of variable names.
-
-    Parameters
-    ----------
-    handlers_path : str
-        The path to the Python module handlers.
-
-    Returns
-    -------
-    Dict[str, Dict[str, str]]
-        A dictionary of dictionaries, with each dictionary storing information
-        for a variable handler.
-    """
-    handlers_from_yaml = _get_handlers_from_yaml()
-    handlers_from_modules = _get_handlers_from_modules(handlers_path)
-    all_handlers = {**handlers_from_yaml, **handlers_from_modules}
-
-    return all_handlers
-
-
-def _get_handlers_from_yaml() -> Dict[str, Dict[str, str]]:
-    """Get variable handlers from a yaml file.
-
-    The handler yaml file (`default_handler_info.yaml`) defines handlers for
-    variables with information including `cmip_name`, `e3sm_name`, `units`,
-    `table`, `positive` (optional), and `unit_conversion` (optional).
-
-    The output of this function is a dictionary. The parent key is the CMIP
-    name of the variable, and the value is a nested dictionary storing
-    key/value pairs for "name", "units", "table", "method", "raw_variables",
-    and "unit_conversion" (optional).
-
-    Example output:
-    ---------------
-    {
-        "abs550aer": {
-            "name": "abs550aer",
-            "units": "1",
-            "table": "CMIP6_AERmon.json",
-            "method": <function e3sm_to_cmip.default.default_handler(infiles, tables, user_input_path, **kwargs)>
-            "raw_variables": ["AODABS"],
-        },
-    }
-
-    Returns
-    -------
-    Dict[str, Dict[str, str]]
-        A dictionary of dictionaries, with each dictionary storing the
-        information for a handler.
-    """
-    # FIXME: Imports should be at the module level. However, moving this to the
-    # module level results in a circular import.
-    from e3sm_to_cmip.default import default_handler
-
-    resources_path = os.path.split(os.path.abspath(resources.__file__))[0]
-    defaults_path = os.path.join(resources_path, "default_handler_info.yaml")
-
-    with open(defaults_path, "r") as infile:
-        handlers = yaml.load(infile, Loader=yaml.SafeLoader)
-
-    # Convert the list of dicts to a nested dict, with the key being the
-    # "cmip_name" (cmip variable name).
-    handlers = {handler["cmip_name"]: handler for handler in handlers}
-
-    # Post-process the loaded handlers to align with the example dictionary
-    # structure.
-    for key in handlers.keys():
-        # Add a "method" key with a value of default_handler to each nested dict.
-        handlers[key]["method"] = default_handler
-        # The "raw_variables" entry should be a list of strings.
-        handlers[key]["raw_variables"] = [handlers[key].pop("e3sm_name")]
-        # Rename "cmip_name" key to "name"
-        handlers[key]["name"] = handlers[key].pop("cmip_name")
-
-    return handlers
-
-
-def _get_handlers_from_modules(handlers_path: str) -> Dict[str, Dict[str, str]]:
-    """Gets variable handlers defined in Python modules.
-
-    A Python module variable handler defines information about a variable,
-    including `RAW_VARIABLES`, `VAR_NAME`, `VAR_UNITS`, `TABLE`, the `handler()`
-    function, `positive` (bool, optional), and `levels` (dictionary, optional).
-    It also has a `write_data()` function, where additional processing may or
-    may not be performed.
-
-    The output of this function is a dictionary. The parent key is the CMIP name
-    of the variable, and the value is a nested dictionary storing key/value
-    pairs for "name", "units", "table", "method", "raw_variables", "positive"
-    (optional), and "levels" (optional).
-
-    Example output:
-    ---------------
-    {
-        "cesm_mmrbc": {
-            "name": "mmrbc",
-            "units": "kg kg-1",
-            "table": "CMIP6_AERmon.json",
-            "method": "<function cesm_mmrbc.handle(infiles, tables, user_input_path, **kwargs)>",
-            "raw_variables": ["bc_a1", "bc_a4", "bc_c1", "bc_c4"],
-            "positive": None,
-            "levels": {
-                "name": "standard_hybrid_sigma",
-                "units": "1",
-                "e3sm_axis_name": "lev",
-                "e3sm_axis_bnds": "ilev",
-            },
-        }
-    }
-
-    Parameters
-    ----------
-    handlers_path : str
-        The path to the Python module handlers.
-
-    Returns
-    -------
-    Dict[str, Dict[str, str]]
-        A dictionary of dictionaries, with each dictionary storing the
-        information for a handler.
-    """
-    handlers = {}
-
-    for root, _, files in os.walk(handlers_path):
-        for file in files:
-            if file.endswith(".py") and file != "__init__.py":
-                var = file.split(".")[0]
-                filepath = os.path.join(root, file)
-                module = imp.load_source(var, filepath)
-
-                handlers[var] = {
-                    "name": module.VAR_NAME,
-                    "units": module.VAR_UNITS,
-                    "table": module.TABLE,
-                    "method": module.handle,
-                    "raw_variables": module.RAW_VARIABLES,
-                    "positive": module.POSITIVE
-                    if hasattr(module, "POSITIVE")
-                    else None,
-                    "levels": module.LEVELS if hasattr(module, "LEVELS") else None,
-                }
-
-    return handlers
 
 
 def _get_table_for_non_monthly_freq(
@@ -656,7 +271,7 @@ def _get_table_for_non_monthly_freq(
     # Check that the variable is included in the table.
     table_data = _get_table_info(tables_path, table_for_freq)
     if var not in table_data["variable_entry"].keys():
-        raise KeyError(f"Variable {var} is not included in table `{table}`.")
+        raise KeyError(f"Variable '{var}' is not included in table `{table}`.")
 
     # Check if the table is supported by the realm.
     if not _is_table_supported_by_realm(table, realm):
@@ -665,7 +280,7 @@ def _get_table_for_non_monthly_freq(
     return table
 
 
-def _get_table_for_freq(base_table: str, freq: str) -> str:
+def _get_table_for_freq(base_table: str, freq: str) -> Optional[str]:
     """Get the table for the frequency.
 
     Parameters
@@ -831,7 +446,7 @@ def add_metadata(file_path, var_list, metadata_path):
 
 def find_atm_files(var, path):
     """
-    Looks in the given path for all files that match that match VAR_\d{6}_\d{6}.nc
+    Looks in the given path for all files that match that match VAR_\d{6}_\d{6}.nc  # noqa: W605
 
     Params:
     -------
@@ -850,7 +465,7 @@ def find_atm_files(var, path):
 # ------------------------------------------------------------------
 
 
-def find_mpas_files(component, path, map_path=None):
+def find_mpas_files(component, path, map_path=None):  # noqa: C901
     """
     Looks in the path given for MPAS monthly-averaged files
 
@@ -1016,17 +631,17 @@ def get_years_from_raw(path, realm, var):
         )
         p = var + r"\d{6}_\d{6}.nc"
         s = re.match(pattern=p, string=contents[0])
-        start = int(contents[0][s.start() : s.start() + 4])
+        start = int(contents[0][s.start() : s.start() + 4])  # type: ignore
         s = re.search(pattern=p, string=contents[-1])
-        end = int(contents[-1][s.start() : s.start() + 4])
+        end = int(contents[-1][s.start() : s.start() + 4])  # type: ignore
     elif realm in ["mpassi", "mpaso"]:
 
         files = sorted(find_mpas_files(realm, path))
         p = r"\d{4}-\d{2}-\d{2}.nc"
         s = re.search(pattern=p, string=files[0])
-        start = int(files[0][s.start() : s.start() + 4])
+        start = int(files[0][s.start() : s.start() + 4])  # type: ignore
         s = re.search(pattern=p, string=files[1])
-        end = int(files[-1][s.start() : s.start() + 4])
+        end = int(files[-1][s.start() : s.start() + 4])  # type: ignore
 
     else:
         raise ValueError("Invalid realm")
@@ -1080,7 +695,7 @@ def precheck(inpath, precheck_path, variables, realm):
                         logger.info(f"found file: {f}")
                         val["found"] = True
                         break
-                if val["found"] == True:
+                if val["found"] is True:
                     break
 
     return [x["name"] for x in var_map if not x["found"]]

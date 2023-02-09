@@ -4,8 +4,6 @@
 Examples
 ********
 
-
-
 Simple atmosphere variable example
 ==================================
 
@@ -63,7 +61,7 @@ This example uses files which look like "20191204.BDRD_CNPCTC_SSP585_OIBGC.ne30_
     Completed 1-year climatology operations for dataset with caseid = 20191204.BDRD_CNPCTC_SSP585_OIBGC.ne30_oECv3.compy at Tue Nov 24 15:05:22 PST 2020
     Elapsed time 0m2s
 
-The next step is to call the e3sm_to_cmip package and use the time-series files as input: 
+The next step is to call the e3sm_to_cmip package and use the time-series files as input:
 
 .. code-block:: bash
 
@@ -80,7 +78,7 @@ and produces output files that are very close to the CMIP6 requirements, but wit
 
     >> python -m e3sm_to_cmip -i regrid -o cmip_output -v prc, clt --simple
     [*] Writing log output to: cmip_output/converter.log
-    [+] Running CMOR handlers in parallel       
+    [+] Running CMOR handlers in parallel
     [+] writing out variable to file /cmip_output/prc_CMIP6_Amon_201501-201512.nc                                                                                                                                                                                                                                              | 0/2 [00:00<?, ?it/s][+] writing out variable to file /p/user_pub/e3sm/baldwin32/workshop/ssp585/ssp585/output/pp/cmor/ssp585/2015_2100/cmip_output/prc_CMIP6_Amon_201501-201512.nc
     [+] writing out variable to file /cmip_output/clt_CMIP6_Amon_201501-201512.nc
     100%|███████████████████████████████████████| 2/2 [00:00<00:00,  6.79it/s]
@@ -91,7 +89,7 @@ and produces output files that are very close to the CMIP6 requirements, but wit
 Plev atmosphere variable example
 ================================
 
-Some 3D atmosphere CMIP6 variables are on the plev19 vertical levels instead of the model and require remapping from the default model levels to the plev19 levels. 
+Some 3D atmosphere CMIP6 variables are on the plev19 vertical levels instead of the model and require remapping from the default model levels to the plev19 levels.
 These variables can be distinguished from model-level variables by the ``Levels`` field in their info having the name ``plev19``.
 
 An example us the ``hus`` variable
@@ -106,14 +104,14 @@ An example us the ``hus`` variable
     E3SM Variables: Q
     Levels: {'name': 'plev19', 'units': 'Pa', 'e3sm_axis_name': 'plev'}
 
-Before performing the horizontal remapping, the raw files must first be vertically remapped using the following command and the 
+Before performing the horizontal remapping, the raw files must first be vertically remapped using the following command and the
 plev19 vertical remapping file `which can be found here <https://github.com/E3SM-Project/e3sm_to_cmip/blob/master/e3sm_to_cmip/resources/vrt_remap_plev19.nc?raw=true>`_
 
 .. code-block:: bash
 
     mkdir vrt_regrid
     for file in `ls atm-input`
-    do 
+    do
       ncks --rgr xtr_mth=mss_val --vrt_fl=vrt_remap_plev19.nc ./atm-input/$file ./vrt_regrid/$file
     done
 
@@ -157,9 +155,9 @@ things, the frequency of data we want to convert, the input path to the raw data
     E3SM Variables: FLUT
 
 
-The next step is to find and setup the corresponding CWL workflow, in this case since we're processing daily data we want to use the "atm-day" workflow under 
+The next step is to find and setup the corresponding CWL workflow, in this case since we're processing daily data we want to use the "atm-day" workflow under
 e3sm_to_cmip/scripts/cwl_workflows `which you can find here <https://github.com/E3SM-Project/e3sm_to_cmip/tree/master/scripts/cwl_workflows/atm-day>`_. The CWL parameter
-file atm-day-job.yaml needs to be edited with the values for our case. We need to take the E3SM variable names given by the "--info" request earler and put them into the 
+file atm-day-job.yaml needs to be edited with the values for our case. We need to take the E3SM variable names given by the "--info" request earler and put them into the
 ``std_var_list`` parameter, and take the CMIP6 variable names and put them into the ``std_cmor_list`` parameter. Create a new directory to hold your output, and place
 the new parameter file there.
 
@@ -208,7 +206,7 @@ And startup the CWL workflow
 
     >> cwltool --tmpdir-prefix=$TMPDIR --preserve-environment UDUNITS2_XML_PATH ~/projects/e3sm_to_cmip/scripts/cwl_workflows/atm-day/atm-day.cwl historical-atm-day-ens1.yaml
 
-This will launch a fairly long running job as it steps through all the parts of the workflow. If you're running a very large set of data, it can help to use the ``nohup`` tool to 
+This will launch a fairly long running job as it steps through all the parts of the workflow. If you're running a very large set of data, it can help to use the ``nohup`` tool to
 wrap the command so it doesnt get interupted by logging out.
 
 
@@ -221,7 +219,8 @@ Unlike Atmos and Land data, e3sm_to_cmip can work directly with the native MPAS 
 The command line requires the following inputs (example for variable "thetao"):
 
 .. code-block:: bash
-       --realm mpaso
+
+    --realm mpaso
     -v thetao
     --input The path to your input directory. [Raw MPAS ocean datafiles, plus namelist, restart, and mappings files[*]]
     --map The path to an mpas remapping file. [Required for realm mpaso and mpassi.  Available from https://web.lcrc.anl.gov/public/e3sm/mapping/maps/

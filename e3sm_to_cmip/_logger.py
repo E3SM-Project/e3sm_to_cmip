@@ -5,39 +5,59 @@ from datetime import datetime
 from pytz import UTC
 
 
-def _setup_custom_logger(
-    name: str, propagate: bool = False
-) -> logging.Logger:  # pragma: no cover
-    """Sets up a custom logger.
+def _setup_root_logger() -> str:  # pragma: no cover
+    """Sets up the root logger.
+
+    The logger module will write to a log file and stream the console
+    simultaneously.
+
+    Returns
+    -------
+    str
+        The name of the logfile.
+    """
+    filename = f'logs/{UTC.localize(datetime.utcnow()).strftime("%Y%m%d_%H%M%S_%f")}'
+    log_format = "%(asctime)s_%(msecs)03d:%(levelname)s:%(funcName)s:%(message)s"
+
+    # Setup the logging module.
+    logging.basicConfig(
+        filename=filename,
+        format=log_format,
+        datefmt="%Y%m%d_%H%M%S",
+        level=logging.DEBUG,
+    )
+    logging.captureWarnings(True)
+    logging.Formatter.converter = time.gmtime
+
+    # Configure and add a console stream handler.
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    log_formatter = logging.Formatter(log_format)
+    console_handler.setFormatter(log_formatter)
+    logging.getLogger().addHandler(console_handler)
+
+    return filename
+
+
+def _setup_logger(name, propagate=True) -> logging.Logger:
+    """Sets up a logger object.
+
+    This function is intended to be used at the top-level of a module.
+
     Parameters
     ----------
     name : str
         Name of the file where this function is called.
     propagate : bool, optional
-        Whether to propagate logger messages or not, by default False
+        Propogate this logger module's messages to the root logger or not, by
+        default True.
+
     Returns
     -------
     logging.Logger
         The logger.
     """
-    # Setup
-    log_name = name + "-" + UTC.localize(datetime.utcnow()).strftime("%Y%m%d_%H%M%S_%f")
-    log_format = "%(asctime)s_%(msecs)03d:%(levelname)s:%(funcName)s:%(message)s"
-    logging.basicConfig(
-        filename=log_name,
-        format=log_format,
-        datefmt="%Y%m%d_%H%M%S",
-        level=logging.INFO,
-    )
-    logging.Formatter.converter = time.gmtime
-
-    logger = logging.getLogger(log_name)
+    logger = logging.getLogger(name)
     logger.propagate = propagate
-
-    # Console output
-    consoleHandler = logging.StreamHandler()
-    logFormatter = logging.Formatter(log_format)
-    consoleHandler.setFormatter(logFormatter)
-    logger.addHandler(consoleHandler)
 
     return logger

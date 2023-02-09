@@ -1,13 +1,24 @@
+# Import the needed `cmor` modules individually, otherwise the error
+# `Can't pickle <class '_cmor.CMORError'>: import of module '_cmor' failed`
+# is raised when running `e3sm_to_cmip`` in parallel. Further investigation is
+# needed to figure out why this happens (maybe a circular or non-existent import
+# of CMORError`).
 import json
 import logging
 import os
 
-import cmor
 import numpy as np
 import xarray as xr
+from cmor import CMOR_REPLACE, axis
+from cmor import close as cmor_close
+from cmor import dataset_json, load_table
+from cmor import setup as cmor_setup
+from cmor import variable as cmor_var
+from cmor import zfactor
 from tqdm import tqdm
 
 from e3sm_to_cmip import resources
+from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.mpas import write_netcdf
 from e3sm_to_cmip.util import (
     find_atm_files,
@@ -18,7 +29,7 @@ from e3sm_to_cmip.util import (
     terminate,
 )
 
-logger = logging.getLogger()
+logger = _setup_logger(__name__)
 
 
 def run_parallel(
@@ -46,15 +57,14 @@ def run_parallel(
     --------
         returns 1 if an error occurs, else 0
     """
-
     pool_res = list()
     will_run = []
+
     for idx, handler in enumerate(handlers):
         handler_method = handler["method"]
         handler_variables = handler["raw_variables"]
         # find the input files this handler needs
         if realm in ["atm", "lnd"]:
-
             input_paths = {
                 var: [
                     os.path.join(input_path, x) for x in find_atm_files(var, input_path)
@@ -76,7 +86,7 @@ def run_parallel(
                 for var in handler_variables
             }
 
-        # setup the input args for the handler
+        # Setup the input args for the handler.
         _kwargs = {
             "table": handler.get("table"),
             "raw_variables": handler.get("raw_variables"),
@@ -110,7 +120,7 @@ def run_parallel(
                 msg = f"Finished {out}, {idx + 1}/{num_handlers} jobs complete"
             else:
                 msg = f'Error running handler {handlers[idx]["name"]}'
-                print_message(msg, "error")
+                logger.error(msg)
 
             logger.info(msg)
         except Exception as e:
@@ -119,17 +129,19 @@ def run_parallel(
 
     pbar.close()
     terminate(pool)
-    print_message(f"{num_success} of {num_handlers} handlers complete", "ok")
+
+    msg = f"{num_success} of {num_handlers} handlers complete"
+    logger.info(msg)
+
     failed = set(will_run) - set(finished_success)
     if failed:
-        print_message(f"{', '.join(list(failed))} failed to complete")
+        logger.error(f"{', '.join(list(failed))} failed to complete")
+        logger.error(msg)
+
     return 0
 
 
-# ------------------------------------------------------------------
-
-
-def run_serial(
+def run_serial(  # noqa: C901
     handlers,
     input_path,
     tables_path,
@@ -195,7 +207,7 @@ def run_serial(
                     for var in handler_variables
                 }
 
-            msg = f"trying handler: {handler}"
+            msg = f"Trying to CMORize with handler: {handler}"
             logger.info(msg)
 
             try:
@@ -221,10 +233,10 @@ def run_serial(
             if name is not None:
                 num_success += 1
                 msg = f"Finished {name}, {num_success}/{num_handlers} jobs complete"
+                logger.info(msg)
             else:
-                msg = f'Error running handler {handler["name"]}'
-                print_message(msg, status="error")
-            logger.info(msg)
+                msg = f"Error running handler {handler['name']}"
+                logger.info(msg)
 
             if realm != "atm":
                 pbar.update(1)
@@ -235,14 +247,16 @@ def run_serial(
         print_debug(error)
         return 1
     else:
-        print_message(f"{num_success} of {num_handlers} handlers complete", "ok")
+        msg = f"{num_success} of {num_handlers} handlers complete"
+        logger.info(msg)
+
         return 0
 
 
 # ------------------------------------------------------------------
 
 
-def handle_simple(
+def handle_simple(  # noqa: C901
     infiles,
     raw_variables,
     write_data,
@@ -257,10 +271,6 @@ def handle_simple(
     table="Amon",
     has_time=True,
 ):
-    from e3sm_to_cmip.util import print_message
-
-    logger = logging.getLogger()
-
     logger.info(f"{outvar_name}: Starting")
 
     # check that we have some input files for every variable
@@ -268,7 +278,6 @@ def handle_simple(
     for variable in raw_variables:
         if len(infiles[variable]) == 0:
             msg = f"{outvar_name}: Unable to find input files for {variable}"
-            print_message(msg)
             logging.error(msg)
             zerofiles = True
     if zerofiles:
@@ -427,7 +436,7 @@ def var_has_time(table_path, variable):
     return False
 
 
-def handle_variables(
+def handle_variables(  # noqa: C901
     infiles,
     raw_variables,
     write_data,
@@ -463,10 +472,6 @@ def handle_variables(
             has_time=timename,
         )
 
-    from e3sm_to_cmip.util import print_message
-
-    logger = logging.getLogger()
-
     logger.info(f"{outvar_name}: Starting")
 
     # check that we have some input files for every variable
@@ -474,9 +479,9 @@ def handle_variables(
     for variable in raw_variables:
         if len(infiles[variable]) == 0:
             msg = f"{outvar_name}: Unable to find input files for {variable}"
-            print_message(msg)
             logging.error(msg)
             zerofiles = True
+
     if zerofiles:
         return None
 
@@ -490,10 +495,10 @@ def handle_variables(
 
     logfile = os.path.join(logpath, outvar_name + ".log")
 
-    cmor.setup(inpath=tables, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
+    cmor_setup(inpath=tables, netcdf_file_action=CMOR_REPLACE, logfile=logfile)
 
-    cmor.dataset_json(str(metadata_path))
-    cmor.load_table(str(table))
+    dataset_json(str(metadata_path))
+    load_table(str(table))
 
     msg = f"{outvar_name}: CMOR setup complete"
     logging.info(msg)
@@ -527,20 +532,21 @@ def handle_variables(
             data.update(new_data)
             get_dims = False
 
-            if simple and not loaded_one:
-                loaded_one = True
+            # FIXME: undefined name 'loaded_one' flake8(F821)
+            if simple and not loaded_one:  # type: ignore # noqa: F821
+                loaded_one = True  # noqa: F841
 
                 # new data set
                 ds = xr.Dataset()
                 if timename:
                     dims = (timename, "lat", "lon")
                 else:
-                    dims = ("lat", "lon")
+                    dims = ("lat", "lon")  # type: ignore
 
                 if "lev" in new_data.keys():
-                    dims = (timename, "lev", "lat", "lon")
+                    dims = (timename, "lev", "lat", "lon")  # type: ignore
                 elif "plev" in new_data.keys():
-                    dims = (timename, "plev", "lat", "lon")
+                    dims = (timename, "plev", "lat", "lon")  # type: ignore
                 ds[outvar_name] = (dims, new_data[var_name])
                 for d in dims:
                     ds.coords[d] = new_data[d][:]
@@ -554,11 +560,9 @@ def handle_variables(
             data["ips"] = ips
 
         if positive:
-            varid = cmor.variable(
-                outvar_name, outvar_units, axis_ids, positive=positive
-            )
+            varid = cmor_var(outvar_name, outvar_units, axis_ids, positive=positive)
         else:
-            varid = cmor.variable(outvar_name, outvar_units, axis_ids)
+            varid = cmor_var(outvar_name, outvar_units, axis_ids)
 
         # write out the data
         msg = f"{outvar_name}: time {data['time_bnds'].values[0][0]:1.1f} - {data['time_bnds'].values[-1][-1]:1.1f}"
@@ -593,7 +597,7 @@ def handle_variables(
 
     msg = f"{outvar_name}: write complete, closing"
     logger.debug(msg)
-    cmor.close()
+    cmor_close()
 
     msg = f"{outvar_name}: file close complete"
     logger.debug(msg)
@@ -604,7 +608,7 @@ def handle_variables(
 # ------------------------------------------------------------------
 
 
-def get_dimension_data(filename, variable, levels=None, get_dims=False):
+def get_dimension_data(filename, variable, levels=None, get_dims=False):  # noqa: C901
     """
     Returns a list of data, along with the dimension and dimension bounds
     for a given lis of variables, with the option for vertical levels.
@@ -723,10 +727,10 @@ def load_axis(data, levels=None, has_time=True):
     if levels and levels.get("time_name"):
         name = levels.get("time_name")
         units = data[levels.get("time_name")].units
-        time = cmor.axis(name, units=units)
+        time = axis(name, units=units)
     # else add the normal time name
     elif has_time:
-        time = cmor.axis(has_time, units=data["time"].attrs["units"])
+        time = axis(has_time, units=data["time"].attrs["units"])
 
     # use whatever level name this handler requires
     if levels is not None:
@@ -745,21 +749,21 @@ def load_axis(data, levels=None, has_time=True):
             if isinstance(cell_bounds, xr.DataArray):
                 cell_bounds = cell_bounds.values
 
-            lev = cmor.axis(
+            lev = axis(
                 name, units=units, cell_bounds=cell_bounds, coord_vals=coord_vals
             )
         else:
-            lev = cmor.axis(name, units=units, coord_vals=coord_vals)
+            lev = axis(name, units=units, coord_vals=coord_vals)
 
     # add lon/lat
-    lat = cmor.axis(
+    lat = axis(
         "latitude",
         units=data["lat"].units,
         coord_vals=data["lat"].values,
         cell_bounds=data["lat_bnds"].values,
     )
 
-    lon = cmor.axis(
+    lon = axis(
         "longitude",
         units=data["lon"].units,
         coord_vals=data["lon"].values,
@@ -779,7 +783,7 @@ def load_axis(data, levels=None, has_time=True):
         "standard_hybrid_sigma",
         "standard_hybrid_sigma_half",
     ]:
-        cmor.zfactor(
+        zfactor(
             zaxis_id=lev,
             zfactor_name="a",
             axis_ids=[
@@ -788,7 +792,7 @@ def load_axis(data, levels=None, has_time=True):
             zfactor_values=data["hyam"].values,
             zfactor_bounds=data["hyai"].values,
         )
-        cmor.zfactor(
+        zfactor(
             zaxis_id=lev,
             zfactor_name="b",
             axis_ids=[
@@ -797,10 +801,8 @@ def load_axis(data, levels=None, has_time=True):
             zfactor_values=data["hybm"].values,
             zfactor_bounds=data["hybi"].values,
         )
-        cmor.zfactor(
-            zaxis_id=lev, zfactor_name="p0", units="Pa", zfactor_values=data["p0"]
-        )
-        ips = cmor.zfactor(
+        zfactor(zaxis_id=lev, zfactor_name="p0", units="Pa", zfactor_values=data["p0"])
+        ips = zfactor(
             zaxis_id=lev, zfactor_name="ps", axis_ids=[time, lat, lon], units="Pa"
         )
 

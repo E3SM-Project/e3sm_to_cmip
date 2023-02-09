@@ -4,6 +4,8 @@
 CWL Workflows
 *************
 
+There is a set of CWL workflow scripts in the repository (``/scripts/cwl_workflows``) for each realm. Each workflow breaks the input files up into manageable segment size and perform all the required input processing needed before invoking ``e3sm_to_cmip``. These scripts have been designed to run on a SLURM cluster in parallel and will process an arbitrarily large set of simulation data in whatever chunk size required.
+
 
 Setting up your CWL environment
 ###############################
@@ -23,8 +25,7 @@ Using the CWL Workflows
 #######################
 
 Each of the directories under ``scripts/cwl_workflows`` holds a single self-contained workflow.
-The name of the workflow matches the name of the directory, for example under the mpaso directory is a 
-file named ``mpaso.cwl`` which contains the workflow.
+The name of the workflow matches the name of the directory, for example under the mpaso directory is a file named ``mpaso.cwl`` which contains the workflow.
 
 The beginning of each workflow contains an ``inputs`` section which defines the required parameters, for example
 
