@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from datetime import datetime
 
@@ -11,11 +12,15 @@ def _setup_root_logger() -> str:  # pragma: no cover
     The logger module will write to a log file and stream the console
     simultaneously.
 
+    The log files are saved in a `/logs` directory relative to where
+    `e3sm_to_cmip` is executed.
+
     Returns
     -------
     str
         The name of the logfile.
     """
+    os.makedirs("logs", exist_ok=True)
     filename = f'logs/{UTC.localize(datetime.utcnow()).strftime("%Y%m%d_%H%M%S_%f")}'
     log_format = "%(asctime)s_%(msecs)03d:%(levelname)s:%(funcName)s:%(message)s"
 
