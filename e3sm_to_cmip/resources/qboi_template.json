@@ -1,0 +1,111 @@
+{
+  "#note_source_type": "explanation of what source_type is goes here",
+
+  "contact":"Jinbo Xie, xie7@llnl.gov",
+
+  "source_type": "AGCM",
+
+  "#note_experiment_id": "QBOi valid experiment_ids are found in QBOi_CV.json",
+
+  "experiment":"Climate run with zonal-mean tropical stratosphere nudged to reanalysis",
+
+  "experiment_id": "QBOiExp1-ObsQBO",
+
+  "activity_id": "QBOi",
+
+  "sub_experiment": "none",
+
+  "sub_experiment_id": "none",
+
+  "realization_index": "1",
+
+  "initialization_index": "1",
+
+  "physics_index": "1",
+
+  "forcing_index": "1",
+
+  "#note_run_variant": "Text stored in attribute variant_info (recommended, not required description of run variant)",
+
+  "run_variant": "",
+
+  "parent_experiment_id": "no parent",
+
+  "parent_activity_id": "QBOi",
+
+  "parent_source_id": "E3SM-2-0",
+
+  "parent_variant_label": "r1i1p1f1",
+
+  "parent_time_units": "no parent",
+
+  "branch_method": "standard",
+
+  "branch_time_in_child": 0.0,
+
+  "branch_time_in_parent": 0.0,
+
+  "#note_institution_id": "institution_id must be registered at https://github.com/WCRP-CMIP/QBOi_CVs/issues/new ",
+
+  "institution_id": "E3SM-Project",
+
+  "#note_source_id": "source_id (model name) must be registered at https://github.com/WCRP-CMIP/QBOi_CVs/issues/new ",
+
+  "source_id": "E3SM-2-0",
+
+  "calendar": "noleap",
+
+  "grid": "data regridded to a QBOi standard 1x1 degree lonxlat grid from the native grid using an area-average preserving method.",
+
+  "grid_label": "gr",
+
+  "nominal_resolution": "100 km",
+
+  "license":"QBOi model data produced by E3SM is licensed under a Creative Commons Attribution ShareAlike 4.0 International License .https://creativecommons.org/licenses). Consult https://pcmdi.llnl.gov/CMIP6/TermsOfUse for terms of use governing QBOi output, including citation requirements and proper acknowledgment. The data producers and data providers make no warranty, either express or implied, including, but not limited to, warranties of merchantability and fitness for a particular purpose. All liabilities arising from the supply of the information (including any liability arising in negligence) are excluded to the fullest extent permitted by law.",
+
+  "#output": "Root directory for output (can be either a relative or full path)",
+
+  "outpath": "QBOi",
+
+  "#note_optional": " **** The following descriptors are optional and may be set to an empty string ",
+
+  "project PI": "Dave Bader (bader2@llnl.gov)",
+
+  "data contact": "E3SM-DATA-SUPPORT@LISTSERV.LLNL.GOV",
+
+  "history": "Output from v2.QBOI.amip_0101_ObsQBO. resolution=ne30pg2_EC30to60E2r2.  compset = F20TR",
+
+  "comment": "This is the default metadata file, any data  should only be used for testing purposes",
+
+  "references": "Golaz, J.-C., Van Roekel, L. P., Zheng, X., Roberts, A. F., Wolfe, J. D., Lin, W., et al. (2022). The DOE E3SM Model version 2: Overview of the physical model and initial model evaluation. Journal of Advances in Modeling Earth Systems, 14, e2022MS003156. https://doi.org/10.1029/2022MS003156",
+
+  "#note_CV": " **** The following will be obtained from the CV and do not need to be defined here",
+
+  "institution": "E3SM-Project",
+
+  "source": "E3SM 2.0 (2020)",
+
+  "#note_QBOi": " **** The following are set correctly for QBOi and should not normally need editing",
+
+  "_control_vocabulary_file": "QBOi_CV.json",
+
+  "_AXIS_ENTRY_FILE": "QBOi_coordinate.json",
+
+  "_FORMULA_VAR_FILE": "QBOi_formula_terms.json",
+
+  "#_cmip6_option": "QBOi",
+
+  "mip_era": "QBOi",
+
+  "parent_mip_era": "QBOi",
+
+  "tracking_prefix": "hdl:21.14100",
+
+  "_history_template": "%s ;rewrote data to be consistent with <activity_id> for variable <variable_id> found in table <table_id>.",
+
+  "#output_path_template": "Template for output path directory using tables keys or global attributes, these should follow the relevant data reference syntax",
+
+  "output_path_template": "<mip_era><activity_id><institution_id><source_id><experiment_id><_member_id><table><variable_id><grid_label><version>",
+
+  "output_file_template": "<variable_id><table><source_id><experiment_id><_member_id><grid_label>"
+}

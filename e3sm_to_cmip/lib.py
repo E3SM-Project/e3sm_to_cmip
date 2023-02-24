@@ -46,7 +46,13 @@ def run_parallel(
     --------
         returns 1 if an error occurs, else 0
     """
-
+    #print("Jinbo Xie")
+    #print(pool)
+    #print(handlers)
+    #print(input_path)
+    #print(tables_path)
+    #print(metadata_path)
+    #exit
     pool_res = list()
     will_run = []
     for idx, handler in enumerate(handlers):
@@ -156,7 +162,6 @@ def run_serial(
         returns 1 if an error occurs, else 0
     """
     try:
-
         num_handlers = len(handlers)
         num_success = 0
         name = None
