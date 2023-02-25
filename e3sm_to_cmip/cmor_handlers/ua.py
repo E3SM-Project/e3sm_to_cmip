@@ -12,11 +12,11 @@ from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 RAW_VARIABLES = [str('U')]
 VAR_NAME = str('ua')
 VAR_UNITS = str("m s-1")
-TABLE = str('CMIP6_Amon.json')
+TABLE = str('QBOi_mon.json')
 LEVELS = {
-    'name': str('plev19'),
+    'name': str('qboi30'),
     'units': str('Pa'),
-    'e3sm_axis_name': 'plev'
+    'e3sm_axis_name': 'qboi30'
 }
 
 

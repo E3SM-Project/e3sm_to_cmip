@@ -331,7 +331,7 @@ def handle_simple(
                 else:
                     dims = ["lat", "lon"]
 
-                for depth_dim in ["lev", "plev", "levgrnd"]:
+                for depth_dim in ["lev", "qboi30", "levgrnd"]:
                     if depth_dim in new_data.keys():
                         dims.insert(1, depth_dim)
 
@@ -529,6 +529,7 @@ def handle_variables(
                 levels=levels,
                 get_dims=get_dims,
             )
+
             data.update(new_data)
             get_dims = False
             if simple and not loaded_one:
@@ -543,8 +544,11 @@ def handle_variables(
 
                 if "lev" in new_data.keys():
                     dims = (timename, "lev", "lat", "lon")
-                elif "plev" in new_data.keys():
-                    dims = (timename, "plev", "lat", "lon")
+                elif "qboi30" in new_data.keys() and "lon" in new_data.keys():
+                #Jinbo Xie
+                    dims = (timename, "qboi30", "lat", "lon")
+                else:
+                    dims = (timename, "qboi30", "lat")
                 ds[outvar_name] = (dims, new_data[var_name])
                 for d in dims:
                     ds.coords[d] = new_data[d][:]
@@ -553,6 +557,7 @@ def handle_variables(
 
         # create the cmor variable and axis
         axis_ids, ips = load_axis(data=data, levels=levels, has_time=timename)
+        #print("after load_axis")
 
         if ips:
             data["ips"] = ips
@@ -589,15 +594,24 @@ def handle_variables(
             except Exception as e:
                 print(e)
         else:
+            #print("in else")
             write_data(
                 varid=varid, data=data, raw_variables=raw_variables, simple=False
             )
+        #print("after write_data")
+
+
         if serial:
             pbar.close()
+    
+    #print("before write complete")
+
 
     msg = f"{outvar_name}: write complete, closing"
     logger.debug(msg)
     cmor.close()
+
+    #print("before file complete")
 
     msg = f"{outvar_name}: file close complete"
     logger.debug(msg)
@@ -633,6 +647,8 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     """
     # extract data from the input file
     data = dict()
+    #print("Jinbo Xie 1evel")
+    #print(levels)
 
     if not os.path.exists(filename):
         raise IOError(f"File not found: {filename}")
@@ -643,7 +659,7 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     variable_data = ds[variable]
 
     # load
-    if "plev" in ds.dims or "lev" in ds.dims:
+    if "qboi30" in ds.dims or "lev" in ds.dims:
         data[variable] = variable_data.values
     else:
         data[variable] = variable_data
@@ -652,18 +668,29 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     time_bounds_name = (
         "time_bnds" if "time_bnds" in ds.data_vars.keys() else "time_bounds"
     )
+    #print("Jinbo Xie 1evel")
+    #print(levels)
 
     # load the lon and lat and time info & bounds
     if get_dims:
-        data.update(
-            {
-                "lat": ds["lat"],
-                "lon": ds["lon"],
-                "lat_bnds": ds["lat_bnds"],
-                "lon_bnds": ds["lon_bnds"],
-                "time": ds["time"],
-            }
-        )
+        try:
+            data.update(
+                {
+                    "lat": ds["lat"],
+                    "lon": ds["lon"],
+                    "lat_bnds": ds["lat_bnds"],
+                    "lon_bnds": ds["lon_bnds"],
+                    "time": ds["time"],
+                }
+            )
+        except:
+            data.update(
+                {   
+                    "lat": ds["lat"],
+                    "lat_bnds": ds["lat_bnds"],
+                    "time": ds["time"],
+                }
+            )
         try:
             time2 = ds["time2"]
         except KeyError:
@@ -677,9 +704,13 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
                 time_bnds = time_bnds.reshape(1, 2)
             data["time_bnds"] = time_bnds
 
-        # load level and level bounds
         if levels is not None:
+            #print("before levels11")
+            #quit()
             name = levels.get("name")
+            #print("Jinbo Xie")
+            #print(name)
+            #exit
             if name == "standard_hybrid_sigma" or name == "standard_hybrid_sigma_half":
                 data.update(
                     {
@@ -702,6 +733,11 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
                 )
             else:
                 name = levels.get("e3sm_axis_name")
+                #print("Jinbo Xie here")
+                #print(name)
+                #print(ds.coords)
+                #print(ds.data_vars)
+
                 if name in ds.data_vars or name in ds.coords:
                     data[name] = ds[name]
                 else:
@@ -710,6 +746,8 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
                     )
 
                 bnds = levels.get("e3sm_axis_bnds")
+                #print("Jinbo Xie")
+                #print(bnds)
                 if bnds:
                     if bnds in ds.dims or bnds in ds.data_vars:
                         data[bnds] = ds[bnds]
@@ -753,16 +791,24 @@ def load_axis(data, levels=None, has_time=True):
         coord_vals=data["lat"].values,
         cell_bounds=data["lat_bnds"].values,
     )
-
-    lon = cmor.axis(
-        "longitude",
-        units=data["lon"].units,
-        coord_vals=data["lon"].values,
-        cell_bounds=data["lon_bnds"].values,
-    )
+    #set lon as None Jinbo Xie
+    lon=None
+    try:
+        lon = cmor.axis(
+            "longitude",
+            units=data["lon"].units,
+            coord_vals=data["lon"].values,
+            cell_bounds=data["lon_bnds"].values,
+        )
+    except:
+        pass
 
     if levels and time is not None:
-        axes = [time, lev, lat, lon]
+        print()
+        if lon is None:
+            axes = [time, lev, lat]
+        else:
+            axes = [time, lev, lat, lon]
     elif time is not None:
         axes = [time, lat, lon]
     else:
