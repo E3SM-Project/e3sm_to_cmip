@@ -1,0 +1,27 @@
+e3sm_to_cmip -i /global/cscratch1/sd/xie7/forJill/   -o /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/new/e3sm_to_cmip/tests   -v      ua      -t /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/e3sm_to_cmip/e3sm_to_cmip/resources  -u /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/e3sm_to_cmip/e3sm_to_cmip/resources/CMIP6_Amon.json
+
+
+e3sm_to_cmip -i /global/cscratch1/sd/xie7/forJill/	 -o /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/new/e3sm_to_cmip/tests 	-v	ua      -t /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/new/e3sm_to_cmip/tables/cmip6-cmor-tables/Tables	-u /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/e3sm_to_cmip/e3sm_to_cmip/resources/CMIP6_Amon.json
+#/global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/new/e3sm_to_cmip/tables/cmip6-cmor-tables/Tables
+#
+e3sm_to_cmip -i /global/cscratch1/sd/xie7/forJill/       -o /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/new/e3sm_to_cmip/tests      -v      ua      -t /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/new/e3sm_to_cmip/tables/cmip6-cmor-tables/Tables     -u 	/global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/e3sm_to_cmip/e3sm_to_cmip/resources/default_metadata.json
+
+e3sm_to_cmip -i /global/cscratch1/sd/xie7/forJill/       -o /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/new/e3sm_to_cmip/tests      -v	tas            -t /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/new/e3sm_to_cmip/tables/cmip6-cmor-tables/Tables     -u /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/e3sm_to_cmip/e3sm_to_cmip/resources/default_metadata.json
+
+
+
+
+e3sm_to_cmip -i /global/cscratch1/sd/xie7/forJill/       -o /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/new/e3sm_to_cmip/tests      -v      tas            -t /global/cscratch1/sd/xie7/forJill/qboi-cmor-tables-master/Tables	-u /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/new/e3sm_to_cmip/e3sm_to_cmip/resources/qboi_template.json
+
+
+
+e3sm_to_cmip -i /global/cscratch1/sd/xie7/forJill/       -o /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/new/e3sm_to_cmip/tests      -v      utendogw            -t /global/cscratch1/sd/xie7/forJill/qboi-cmor-tables-master/Tables      -u /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/new/e3sm_to_cmip/e3sm_to_cmip/resources/qboi_template.json
+
+
+
+e3sm_to_cmip -i	/global/cscratch1/sd/xie7/qboi/TEM_calculate/med/	-o /global/cscratch1/sd/xie7/qboi/TEM_calculate/med/	-v utendogw	-t /global/cscratch1/sd/xie7/forJill/qboi-cmor-tables-master/Tables	-u /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/new/e3sm_to_cmip/e3sm_to_cmip/resources/qboi_template.json
+
+
+/global/cscratch1/sd/xie7/qboi/TEM_calculate/med/qboi_ts/obsqboi_01/var_h0/UTGWORO/post/atm/180x360_aave/ts/monthly/36yr
+
+e3sm_to_cmip -i /global/cscratch1/sd/xie7/qboi/TEM_calculate/med/qboi_ts/obsqboi_01/var_h0/UTGWORO/post/atm/180x360_aave/ts/monthly/36yr  /global/cscratch1/sd/xie7/qboi/TEM_calculate/med/qboi_ts/obsqboi_01/var_h0/UTGWSPEC/post/atm/180x360_aave/ts/monthly/36yr   /global/cscratch1/sd/xie7/qboi/TEM_calculate/med/qboi_ts/obsqboi_01/var_h0/BUTGWSPEC/post/atm/180x360_aave/ts/monthly/36yr  -o /global/cscratch1/sd/xie7/qboi/TEM_calculate/med/    -v utendogw     -t /global/cscratch1/sd/xie7/forJill/qboi-cmor-tables-master/Tables     -u /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/new/e3sm_to_cmip/e3sm_to_cmip/resources/qboi_template.json

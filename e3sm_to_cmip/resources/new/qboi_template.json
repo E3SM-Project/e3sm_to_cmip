@@ -61,7 +61,7 @@
 
   "nominal_resolution": "100 km",
 
-  "license":"QBOi model data produced by E3SM is licensed under a Creative Commons Attribution ShareAlike 4.0 International License .https://creativecommons.org/licenses). Consult https://pcmdi.llnl.gov/QBOi/TermsOfUse for terms of use governing QBOi output, including citation requirements and proper acknowledgment. The data producers and data providers make no warranty, either express or implied, including, but not limited to, warranties of merchantability and fitness for a particular purpose. All liabilities arising from the supply of the information (including any liability arising in negligence) are excluded to the fullest extent permitted by law.",
+  "license":"QBOi model data produced by E3SM is licensed under a Creative Commons Attribution ShareAlike 4.0 International License .https://creativecommons.org/licenses). Consult https://pcmdi.llnl.gov/CMIP6/TermsOfUse for terms of use governing QBOi output, including citation requirements and proper acknowledgment. The data producers and data providers make no warranty, either express or implied, including, but not limited to, warranties of merchantability and fitness for a particular purpose. All liabilities arising from the supply of the information (including any liability arising in negligence) are excluded to the fullest extent permitted by law.",
 
   "#output": "Root directory for output (can be either a relative or full path)",
 
@@ -73,21 +73,21 @@
 
   "data contact": "E3SM-DATA-SUPPORT@LISTSERV.LLNL.GOV",
 
-  "history": "Output from v2.QBOI.amip_0101_ObsQBO. resolution=ne30pg2_EC30to60E2r2.  compset = F20TR",
+  "history": "Output from 20180129.DECKv1b_piControl.ne30_oEC.edison. compset = A_WCYCL1850S_QBOi",
 
   "comment": "This is the default metadata file, any data  should only be used for testing purposes",
 
-  "references": "Golaz, J.-C., Van Roekel, L. P., Zheng, X., Roberts, A. F., Wolfe, J. D., Lin, W., et al. (2022). The DOE E3SM Model version 2: Overview of the physical model and initial model evaluation. Journal of Advances in Modeling Earth Systems, 14, e2022MS003156. https://doi.org/10.1029/2022MS003156",
+  "references": "Golaz, J.-C., P. M. Caldwell, L. P. Van Roekel and co-authors, 2019: The DOE E3SM coupled model version 1: Overview and evaluation at standard resolution. JAMES, doi: 10.1029/2018MS001603; http://e3sm.org'",
 
   "#note_CV": " **** The following will be obtained from the CV and do not need to be defined here",
 
   "institution": "E3SM-Project",
 
-  "source": "E3SM 2.0 (2022)",
+  "source": "E3SM 1.0 (2018)",
 
   "#note_QBOi": " **** The following are set correctly for QBOi and should not normally need editing",
 
-  "_controlled_vocabulary_file": "QBOi_CV.json",
+  "_control_vocabulary_file": "QBOi_CV.json",
 
   "_AXIS_ENTRY_FILE": "QBOi_coordinate.json",
 
