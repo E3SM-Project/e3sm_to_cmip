@@ -15,17 +15,10 @@ Usage
 
 First, follow the :ref:`Getting Started <getting started>` page for how to access ``e3sm_to_cmip`` in an Anaconda environment.
 
-Afterwards, there are two main ways to run ``e3sm_to_cmip``:
-
-1. Invoking the ``e3sm_to_cmip`` package directly on the appropriately pre-processed input files
+To invoke ``e3sm_to_cmip`` package directly on appropriately pre-processed input files:
 
    - :ref:`Usage Guide<usage>`
    - :ref:`Examples<examples>`
-
-
-2. Using the automated CWL workflows provided in the ``scripts/cwl_workflows`` directory in the repository.
-
-   - :ref:`Leveraging CWL Workflows <CWL Workflows>`
 
 .. toctree::
    :maxdepth: 2
@@ -36,7 +29,6 @@ Afterwards, there are two main ways to run ``e3sm_to_cmip``:
    Preprocessing Data by Realm <preprocessing>
    Usage Guide <usage>
    Examples <examples>
-   Leverage CWL Workflows <cwl>
 
 .. toctree::
    :maxdepth: 2
