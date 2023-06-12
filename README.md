@@ -40,8 +40,8 @@ conda activate e3sm_to_cmip_dev
 
 Once you have dev environment setup, simply run:
 
-```
-python setup.py install
+```bash
+python -m pip install .
 ```
 
 ## Example
