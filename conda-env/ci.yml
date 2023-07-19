@@ -1,26 +1,28 @@
-# Conda e3sm_to_cmip CI/CD environment (used in GH Actions)
+# Conda e3sm_to_cmip CI/CD environment (used in GH Actions).
 name: e3sm_to_cmip_ci
 channels:
   - conda-forge
   - defaults
 dependencies:
-  # Base
-  # ==================
-  - python>=3.9
-  - pip
-  - cmor>=3.6.0
-  - dask
-  - nco
-  - netcdf4
-  - numpy
-  - pyyaml
-  - tqdm
-  - xarray
-  # Required for phalf and pfull handlers.
+  # Base - required for building the repository as an Anaconda package
+  # ====================
+  - python >=3.9
   - cdms2=3.1.5
   - cdutil=8.2.1
+  - cmor >=3.7.0
+  - dask
+  - nco >=5.1.4
+  - netcdf4
+  - numpy >=1.23.0 # This version of numpy includes support for Python 3.11.
+  - pyyaml
+  - tqdm
+  - xarray >=2022.02.0 # This version of Xarray drops support for Python 3.8.
   # Testing
   # ==================
   - pytest
   - pytest-cov
+  # Documentation
+  # =================
+  - sphinx
+  - sphinx_rtd_theme
 prefix: /opt/miniconda3/envs/e3sm_to_cmip_ci
