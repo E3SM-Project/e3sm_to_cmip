@@ -36,31 +36,60 @@ jobs:
         uses: actions/checkout@v3
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
-        name: Cache Conda
-        uses: actions/cache@v3
-        env:
-          # Increase this value to reset cache if conda-env/ci.yml has not changed in the workflow
-          CACHE_NUMBER: 0
-        with:
-          path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-${{ matrix.python-version }}-conda-${{ env.CACHE_NUMBER }}
-
-      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Set up Conda Environment
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: "e3sm_to_cmip_ci"
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
+          use-mamba: true
+          mamba-version: "*"
           environment-file: conda-env/ci.yml
           channel-priority: strict
           auto-update-conda: true
-          # IMPORTANT: This needs to be set for caching to work properly!
-          use-only-tar-bz2: true
           python-version: ${{ matrix.python-version }}
 
-      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
-        name: Install e3sm_to_cmip
+      # Refresh the cache every 24 hours to avoid inconsistencies of package versions
+      # between the CI pipeline and local installations.
+      - if: ${{ steps.skip_check.outputs.should_skip == 'false' }}
+        id: get-date
+        name: Get Date
+        run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - if: ${{ steps.skip_check.outputs.should_skip == 'false' }}
+        id: cache
+        name: Cache Conda env
+        uses: actions/cache@v3
+        with:
+            path: ${{ env.CONDA }}/envs
+            key:
+                conda-${{ runner.os }}-${{ runner.arch }}-${{ matrix.python-version }}-${{
+                steps.get-date.outputs.today }}-${{hashFiles('conda-env/ci.yml') }}-${{ env.CACHE_NUMBER}}
+        env:
+            # Increase this value to reset cache if conda-env/ci.yml has not changed in the workflow
+            CACHE_NUMBER: 0
+
+      - if: |
+            steps.skip_check.outputs.should_skip == 'false' &&
+            steps.cache.outputs.cache-hit == 'false'
+        name: Update environment
         run: |
-          python -m pip install .
+            mamba env update -n e3sm_to_cmip_ci -f conda-env/ci.yml
+            # Make sure the Python version in the env matches the current matrix version.
+            mamba install -c conda-forge python=${{ matrix.python-version }}
+
+      - if: ${{ steps.skip_check.outputs.should_skip == 'false' }}
+        name: Install e3sm_to_cmip
+        # Source: https://github.com/conda/conda-build/issues/4251#issuecomment-1053460542
+        run: |
+            python -m pip install --no-build-isolation --no-deps -e .
+
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        name: Check conda env
+        run: |
+          mamba list
+          mamba info
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Run Tests
