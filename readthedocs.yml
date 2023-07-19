@@ -19,4 +19,4 @@ formats:
     - pdf
 
 conda:
-    environment: conda-env/readthedocs.yml
+    environment: conda-env/ci.yml
