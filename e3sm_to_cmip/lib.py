@@ -57,6 +57,9 @@ def run_parallel(
     --------
         returns 1 if an error occurs, else 0
     """
+
+    do_pbar = False #tonyb_hack
+
     pool_res = list()
     will_run = []
 
@@ -107,7 +110,9 @@ def run_parallel(
         )
 
     # wait for each result to complete
-    pbar = tqdm(total=len(pool_res))
+    if do_pbar:
+        pbar = tqdm(total=len(pool_res))
+
     num_success = 0
     num_handlers = len(handlers)
     finished_success = []
@@ -125,9 +130,11 @@ def run_parallel(
             logger.info(msg)
         except Exception as e:
             print_debug(e)
-        pbar.update(1)
+        if do_pbar:
+            pbar.update(1)
 
-    pbar.close()
+    if do_pbar:
+        pbar.close()
     terminate(pool)
 
     msg = f"{num_success} of {num_handlers} handlers complete"
@@ -167,13 +174,16 @@ def run_serial(  # noqa: C901
     --------
         returns 1 if an error occurs, else 0
     """
+
+    do_pbar = False # tonyb_hack
+
     try:
 
         num_handlers = len(handlers)
         num_success = 0
         name = None
 
-        if realm != "atm":
+        if realm != "atm" and do_pbar:
             pbar = tqdm(total=len(handlers))
 
         for _, handler in enumerate(handlers):
@@ -238,9 +248,9 @@ def run_serial(  # noqa: C901
                 msg = f"Error running handler {handler['name']}"
                 logger.info(msg)
 
-            if realm != "atm":
+            if realm != "atm" and do_pbar:
                 pbar.update(1)
-        if realm != "atm":
+        if realm != "atm" and do_pbar:
             pbar.close()
 
     except Exception as error:
@@ -271,6 +281,9 @@ def handle_simple(  # noqa: C901
     table="Amon",
     has_time=True,
 ):
+
+    do_pbar = False # tonyb_hack
+
     logger.info(f"{outvar_name}: Starting")
 
     # check that we have some input files for every variable
@@ -348,7 +361,7 @@ def handle_simple(  # noqa: C901
 
         logger.info(msg)
 
-        if serial:
+        if serial and do_pbar:
             pbar = tqdm(total=len(data["time"]))
             pbar.set_description(msg)
 
@@ -364,10 +377,10 @@ def handle_simple(  # noqa: C901
                 simple=True,
             )
             ds[outvar_name][time_index] = outdata
-            if serial:
+            if serial and do_pbar:
                 pbar.update(1)
 
-        if serial:
+        if serial and do_pbar:
             pbar.close()
 
     with xr.open_dataset(
@@ -568,7 +581,7 @@ def handle_variables(  # noqa: C901
         msg = f"{outvar_name}: time {data['time_bnds'].values[0][0]:1.1f} - {data['time_bnds'].values[-1][-1]:1.1f}"
         logger.info(msg)
 
-        if serial:
+        if serial and do_pbar:
             pbar = tqdm(total=data["time"].shape[0])
             pbar.set_description(msg)
 
@@ -584,7 +597,7 @@ def handle_variables(  # noqa: C901
                         raw_variables=raw_variables,
                         simple=False,
                     )
-                    if serial:
+                    if serial and do_pbar:
                         pbar.update(1)
             except Exception as e:
                 print(e)
@@ -592,7 +605,7 @@ def handle_variables(  # noqa: C901
             write_data(
                 varid=varid, data=data, raw_variables=raw_variables, simple=False
             )
-        if serial:
+        if serial and do_pbar:
             pbar.close()
 
     msg = f"{outvar_name}: write complete, closing"
