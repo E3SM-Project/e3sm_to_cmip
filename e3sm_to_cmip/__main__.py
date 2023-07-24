@@ -714,12 +714,17 @@ class E3SMtoCMIP:
                     raw_vars = []
                     raw_vars.extend(handler["raw_variables"])
 
+                    allpass = True
                     for raw_var in raw_vars:
                         if raw_var in ds.data_vars:
-                            stat_msg = f"Table={handler['table']}:Variable={handler['name']}:DataSupport=TRUE"
-                        else:
-                            stat_msg = f"Table={handler['table']}:Variable={handler['name']}:DataSupport=FALSE"
-                        print_message(stat_msg, status="info")
+                            continue
+                        allpass = False
+
+                    if allpass:
+                        stat_msg = f"Table={handler['table']}:Variable={handler['name']}:DataSupport=TRUE"
+                    else:
+                        stat_msg = f"Table={handler['table']}:Variable={handler['name']}:DataSupport=FALSE"
+                    print_message(stat_msg, status="info")
 
         if self.info_out_path is not None:
             with open(self.info_out_path, "w") as outstream:
