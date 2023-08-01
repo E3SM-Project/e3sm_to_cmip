@@ -71,6 +71,8 @@ def remap_seaice_sgs(inFileName, outFileName, mappingFileName, renorm_threshold=
     ds_out_all = ds_out_all.drop("timeMonthly_avg_iceAreaCell")
     ds_out_all.to_netcdf(outFileName)
 
+    shutil.rmtree(outFilePath, ignore_errors=True)
+
 
 def remap(ds, pcode, mappingFileName, threshold=0.0):
     """Use ncreamp to remap the xarray Dataset to a new target grid"""
@@ -127,6 +129,7 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
 
     # remove the temporary files
     os.remove(inFileName)
+    os.remove(outFileName)
 
     return ds
 
