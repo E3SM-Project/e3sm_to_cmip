@@ -70,9 +70,6 @@ def remap_seaice_sgs(inFileName, outFileName, mappingFileName, renorm_threshold=
     )
     ds_out_all = ds_out_all.drop("timeMonthly_avg_iceAreaCell")
     ds_out_all.to_netcdf(outFileName)
-    print('****',outFileName)
-
-    #shutil.rmtree(outFilePath, ignore_errors=True)
 
 
 def remap(ds, pcode, mappingFileName, threshold=0.0):
@@ -130,7 +127,6 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
 
     # remove the temporary files
     os.remove(inFileName)
-    #os.remove(outFileName)
 
     return ds
 
