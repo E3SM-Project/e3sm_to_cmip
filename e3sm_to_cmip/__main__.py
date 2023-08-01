@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import argparse
 import os
+import warnings
 import signal
 import sys
 import tempfile
@@ -44,8 +45,7 @@ from e3sm_to_cmip.util import (
 
 os.environ["CDAT_ANONYMOUS_LOG"] = "false"
 
-# FIXME: Module has no attribute "warnings" mypy(error)
-np.warnings.filterwarnings("ignore")  # type: ignore
+warnings.filterwarnings("ignore")  # type: ignore
 
 
 # Setup the root logger and this module's logger.
