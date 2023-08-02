@@ -45,13 +45,17 @@ class TestLoadAllHandlers:
                 json_file,
             )
 
-    def test_raises_error_if_handler_does_not_exist_for_var(self):
-        with pytest.raises(KeyError):
-            load_all_handlers("lnd", ["invalid_var"])
+    def test_prints_logger_warning_if_handler_does_not_exist_for_var(self, caplog):
+        load_all_handlers("lnd", ["invalid_var"])
 
-    def test_raises_error_if_mpas_handler_does_not_exist_for_var(self):
-        with pytest.raises(KeyError):
-            load_all_handlers("mpaso", cmip_vars=["invalid_var"])
+        for record in caplog.records:
+            assert record.levelname == "WARNING"
+
+    def test_prints_logger_warning_if_mpas_handler_does_not_exist_for_var(self, caplog):
+        load_all_handlers("mpaso", cmip_vars=["invalid_var"])
+
+        for record in caplog.records:
+            assert record.levelname == "WARNING"
 
     def test_updates_CMIP_table_for_variable_based_on_freq_param(self):
         result = load_all_handlers("lnd", cmip_vars=["pr"])
@@ -201,19 +205,27 @@ class TestDeriveHandlers:
                 json_file,
             )
 
-    def test_raises_error_if_handler_is_not_defined_for_a_variable(self):
-        with pytest.raises(KeyError):
-            derive_handlers(
-                self.tables_path,
-                cmip_vars=["undefined_var"],
-                e3sm_vars=["incorrect_e3sm_var"],
-            )
+    def test_prints_logger_warning_if_handler_is_not_defined_for_a_variable(
+        self, caplog
+    ):
+        derive_handlers(
+            self.tables_path,
+            cmip_vars=["undefined_var"],
+            e3sm_vars=["incorrect_e3sm_var"],
+        )
 
-    def test_raises_error_if_handler_cannot_be_derived_from_input_e3sm_vars(self):
-        with pytest.raises(KeyError):
-            derive_handlers(
-                self.tables_path, cmip_vars=["pr"], e3sm_vars=["incorrect_e3sm_var"]
-            )
+        for record in caplog.records:
+            assert record.levelname == "WARNING"
+
+    def test_prints_logger_warning_if_handler_cannot_be_derived_from_input_e3sm_vars(
+        self, caplog
+    ):
+        derive_handlers(
+            self.tables_path, cmip_vars=["pr"], e3sm_vars=["incorrect_e3sm_var"]
+        )
+
+        for record in caplog.records:
+            assert record.levelname == "WARNING"
 
     def test_raises_error_if_CMIP6_table_entry_for_variable_and_freq_arg(self):
         with pytest.raises(KeyError):
