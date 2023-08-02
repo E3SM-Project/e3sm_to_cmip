@@ -74,7 +74,7 @@ def load_all_handlers(
             handlers = handlers + var_handler
 
         if len(missing_handlers) > 0:
-            raise KeyError(
+            logger.warning(
                 f"No handlers are defined for the variables: {missing_handlers}. "
                 "Make sure at least one variable handler is defined for each of these "
                 f"variables in `{HANDLER_DEFINITIONS_PATH}`."
@@ -116,7 +116,7 @@ def _get_mpas_handlers(cmip_vars: List[str]):
         derived_handlers.append(var_handler[0])
 
     if len(missing_handlers) > 0:
-        raise KeyError(
+        logger.warning(
             f"No variable handlers are defined for {missing_handlers}. Make sure at "
             "least one variable handler is defined for each of these variables in "
             f"`{MPAS_HANDLER_DIR_PATH}`."
@@ -211,13 +211,13 @@ def derive_handlers(
         derived_handlers.append(derived_handler)
 
     if len(missing_handlers) > 0:
-        raise KeyError(
+        logger.warning(
             f"No handlers are defined for the variables: {missing_handlers}. "
             "Make sure handlers are defined for these variables in `handlers.yaml`."
         )
 
     if len(cannot_derive) > 0:
-        raise KeyError(
+        logger.warning(
             f"No handlers could be derived for the variables: {cannot_derive}. "
             "Make sure the input E3SM datasets have the variables needed derivation."
         )
