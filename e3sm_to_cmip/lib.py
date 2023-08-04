@@ -467,6 +467,8 @@ def handle_variables(  # noqa: C901
     outpath=None,
 ):
 
+    do_pbar = False #tonyb_hack
+
     timename = var_has_time(os.path.join(tables, table), outvar_name)
     if simple:
         return handle_simple(
