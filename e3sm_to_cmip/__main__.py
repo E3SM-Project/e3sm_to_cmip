@@ -669,10 +669,10 @@ class E3SMtoCMIP:
         return msg
         
     def _run_info_mode(self):  # noqa: C901
-        messages = []
 
         # if the user just asked for the handler info
         if self.freq == "mon" and not self.input_path and not self.tables_path:
+            messages = []
             for handler in self.handlers:
                 hand_msg = get_handler_info_msg(handler)
                 messages.append(hand_msg)
@@ -680,6 +680,7 @@ class E3SMtoCMIP:
         # if the user asked if the variable is included in the table
         # but didnt ask about the files in the inpath
         elif self.freq and self.tables_path and not self.input_path:
+            messages = []
             for handler in self.handlers:
                 table_info = _get_table_info(self.tables_path, handler["table"])
                 if handler["name"] not in table_info["variable_entry"]:
@@ -691,20 +692,21 @@ class E3SMtoCMIP:
                     messages.append(hand_msg)
 
         elif self.freq and self.tables_path and self.input_path:
+            print(f"DEBUG: InfoMode3: self.freq = {self.freq}")
             file_path = next(Path(self.input_path).glob("*.nc"))
 
+            messages = []
             with xr.open_dataset(file_path) as ds:
                 for handler in self.handlers:
 
+                    print(f"DEBUG: InfoMode3: Trying handler[table] {handler['table']}")
                     table_info = _get_table_info(self.tables_path, handler["table"])
                     if handler["name"] not in table_info["variable_entry"]:
                         continue
 
+                    print(f"DEBUG: InfoMode3: Found handler[name] {handler['name']} in table_info['variable_entry'] = {table_info['variable_entry']}")
                     hand_msg = None
                     stat_msg = None
-
-                    hand_msg = get_handler_info_msg(handler)
-                    messages.append(hand_msg)
 
                     if handler['table'] in [ "CMIP6_Omon.json", "CMIP6_SImon.json" ]:
                         stat_msg = f"Cannot presently test for variable support in MPAS files"
@@ -722,6 +724,8 @@ class E3SMtoCMIP:
 
                     if allpass:
                         stat_msg = f"Table={handler['table']}:Variable={handler['name']}:DataSupport=TRUE"
+                        hand_msg = get_handler_info_msg(handler)
+                        messages.append(hand_msg)
                     else:
                         stat_msg = f"Table={handler['table']}:Variable={handler['name']}:DataSupport=FALSE"
                     print_message(stat_msg, status="info")
