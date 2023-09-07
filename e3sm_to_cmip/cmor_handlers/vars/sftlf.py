@@ -20,7 +20,7 @@ logger = _setup_logger(__name__)
 
 # list of raw variable names needed
 RAW_VARIABLES = [str("LANDFRAC")]
-VAR_NAME = str("orog")
+VAR_NAME = str("sftlf")
 VAR_UNITS = str("%")
 TABLE = str("CMIP6_fx.json")
 
