@@ -609,14 +609,6 @@
     formula: null
     positive: null
     levels: null
--   name: sftlf
-    units: '%'
-    raw_variables: [LANDFRAC]
-    table: CMIP6_fx.json
-    unit_conversion: 1-to-%
-    formula: null
-    positive: null
-    levels: null
 -   name: snw
     units: kg m-2
     raw_variables: [H2OSNO]
