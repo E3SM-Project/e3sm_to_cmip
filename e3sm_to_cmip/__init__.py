@@ -1,6 +1,6 @@
 """Top-level package for e3sm_to_cmip."""
 
-__version__ = "1.10.0rc3"  # pragma: no cover
+__version__ = "1.10.0"  # pragma: no cover
 
 import os
 
