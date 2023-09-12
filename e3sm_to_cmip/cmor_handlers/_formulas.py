@@ -223,6 +223,40 @@ def rsuscs(data: Dict[str, np.ndarray], index: int) -> np.ndarray:
     return outdata
 
 
+def rsut(data: Dict[str, np.ndarray], index: int) -> np.ndarray:
+    """
+    rsut = SOLIN - FSNTOA
+
+    pre v3 version:
+    rsut = FSUTOA
+    """
+    try:
+        outdata = (
+            data["SOLIN"][index, :] - data["FSNTOA"][index, :]
+        )
+    except KeyError:
+        outdata = data["FSUTOA"][index, :]
+
+    return outdata
+
+
+def rsutcs(data: Dict[str, np.ndarray], index: int) -> np.ndarray:
+    """
+    rsutcs = SOLIN - FSNTOAC
+
+    pre v3 version:
+    rsutcs = FSUTOAC
+    """
+    try:
+        outdata = (
+            data["SOLIN"][index, :] - data["FSNTOAC"][index, :]
+        )
+    except KeyError:
+        outdata = data["FSUTOAC"][index, :]
+
+    return outdata
+
+
 def rtmt(data: Dict[str, np.ndarray], index: int) -> np.ndarray:
     """
     rtmt = FSNT - FLNT
