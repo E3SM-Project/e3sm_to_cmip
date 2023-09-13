@@ -692,26 +692,33 @@ class E3SMtoCMIP:
                     messages.append(hand_msg)
 
         elif self.freq and self.tables_path and self.input_path:
-            print(f"DEBUG: InfoMode3: self.freq = {self.freq}")
+
             file_path = next(Path(self.input_path).glob("*.nc"))
 
             messages = []
             with xr.open_dataset(file_path) as ds:
                 for handler in self.handlers:
 
-                    print(f"DEBUG: InfoMode3: Trying handler[table] {handler['table']}")
                     table_info = _get_table_info(self.tables_path, handler["table"])
                     if handler["name"] not in table_info["variable_entry"]:
                         continue
-
-                    print(f"DEBUG: InfoMode3: Found handler[name] {handler['name']} in table_info['variable_entry'] = {table_info['variable_entry']}")
-                    hand_msg = None
-                    stat_msg = None
 
                     if handler['table'] in [ "CMIP6_Omon.json", "CMIP6_SImon.json" ]:
                         stat_msg = f"Cannot presently test for variable support in MPAS files"
                         print_message(stat_msg, status="info")
                         continue
+
+                    # We test here against the input "freq", because atmos mon data satisfies BOTH
+                    # CMIP6_day.json AND CMIP6_mon.json, but we only want the latter in the "hand_msg" output.
+                    # The variables-check below is insufficient as vars "hass" and "rlut" have multiple freqs.
+
+                    if self.freq == "mon" and handler['table'] == "CMIP6_day.json":
+                        continue
+                    if self.freq == "day" and handler['table'] == "CMIP6_Amon.json":
+                        continue
+
+                    hand_msg = None
+                    stat_msg = None
 
                     raw_vars = []
                     raw_vars.extend(handler["raw_variables"])
