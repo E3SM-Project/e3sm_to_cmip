@@ -5,20 +5,20 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import argparse
 import os
-import warnings
 import signal
 import sys
 import tempfile
 import threading
+import warnings
 from concurrent.futures import ProcessPoolExecutor as Pool
 from dataclasses import dataclass
 from pathlib import Path
 from pprint import pprint
 from typing import List, Optional, Union
 
-import numpy as np
 import xarray as xr
 import yaml
+from tqdm import tqdm
 
 from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
 from e3sm_to_cmip._logger import _setup_logger, _setup_root_logger
@@ -32,12 +32,13 @@ from e3sm_to_cmip.cmor_handlers.utils import (
     derive_handlers,
     load_all_handlers,
 )
-from e3sm_to_cmip.lib import run_parallel, run_serial
 from e3sm_to_cmip.util import (
     FREQUENCIES,
     _get_table_info,
     add_metadata,
     copy_user_metadata,
+    find_atm_files,
+    find_mpas_files,
     precheck,
     print_debug,
     print_message,
@@ -45,7 +46,7 @@ from e3sm_to_cmip.util import (
 
 os.environ["CDAT_ANONYMOUS_LOG"] = "false"
 
-warnings.filterwarnings("ignore")  # type: ignore
+warnings.filterwarnings("ignore")
 
 
 # Setup the root logger and this module's logger.
@@ -166,9 +167,6 @@ class E3SMtoCMIP:
         # Run e3sm_to_cmip with info mode.
         # ======================================================================
         if self.info_mode:
-            logger.info("--------------------------------------")
-            logger.info("| Running E3SM to CMIP in Info Mode")
-            logger.info("--------------------------------------")
             self._run_info_mode()
             sys.exit(0)
 
@@ -179,16 +177,7 @@ class E3SMtoCMIP:
             timer = threading.Timer(self.timeout, self._timeout_exit)
             timer.start()
 
-        if self.serial_mode:
-            logger.info("--------------------------------------")
-            logger.info("| Running E3SM to CMIP in Serial")
-            logger.info("--------------------------------------")
-            status = self._run_serial()
-        else:
-            logger.info("--------------------------------------")
-            logger.info("| Running E3SM to CMIP in Parallel")
-            logger.info("--------------------------------------")
-            status = self._run_parallel()
+        status = self._run()
 
         if status != 0:
             print_message(
@@ -644,7 +633,6 @@ class E3SMtoCMIP:
         # Setup temp storage directory
         temp_path = os.environ.get("TMPDIR")
         if temp_path is None:
-
             temp_path = f"{self.output_path}/tmp"
             if not os.path.exists(temp_path):
                 os.makedirs(temp_path)
@@ -652,6 +640,10 @@ class E3SMtoCMIP:
         tempfile.tempdir = temp_path
 
     def _run_info_mode(self):  # noqa: C901
+        logger.info("--------------------------------------")
+        logger.info("| Running E3SM to CMIP in Info Mode")
+        logger.info("--------------------------------------")
+
         messages = []
 
         # if the user just asked for the handler info
@@ -696,7 +688,6 @@ class E3SMtoCMIP:
 
             with xr.open_dataset(file_path) as ds:
                 for handler in self.handlers:
-
                     table_info = _get_table_info(self.tables_path, handler["table"])
                     if handler["name"] not in table_info["variable_entry"]:
                         continue
@@ -719,7 +710,6 @@ class E3SMtoCMIP:
 
                     has_vars = True
                     for raw_var in raw_vars:
-
                         if raw_var not in ds.data_vars:
                             has_vars = False
                             msg = f"Variable {handler['name']} is not present in the input dataset"  # type: ignore
@@ -735,20 +725,19 @@ class E3SMtoCMIP:
         else:
             pprint(messages)
 
-    def _run_serial(self):
+    def _run(self):
+        if self.serial_mode:
+            mode_str = "Serial"
+            run_func = self._run_serial
+        else:
+            mode_str = "Parallel"
+            run_func = self._run_parallel
+
         try:
-            status = run_serial(
-                handlers=self.handlers,
-                input_path=self.input_path,
-                tables_path=self.tables_path,
-                metadata_path=self.new_metadata_path,
-                map_path=self.map_path,
-                realm=self.realm,
-                logdir=self.cmor_log_dir,
-                simple=self.simple_mode,
-                outpath=self.output_path,
-                freq=self.freq,
-            )
+            logger.info("--------------------------------------")
+            logger.info(f"| Running E3SM to CMIP in {mode_str}")
+            logger.info("--------------------------------------")
+            status = run_func()
         except KeyboardInterrupt:
             print_message(" -- keyboard interrupt -- ", "error")
             return 1
@@ -758,30 +747,194 @@ class E3SMtoCMIP:
 
         return status
 
-    def _run_parallel(self):
+    def _run_serial(self) -> int:  # noqa: C901
+        """Run each of the handlers one at a time on the main process
+
+        Returns
+        -------
+        int
+            1 if an error occurs, else 0
+        """
         try:
-            pool = Pool(max_workers=self.num_proc)
-            status = run_parallel(
-                pool=pool,
-                handlers=self.handlers,
-                input_path=self.input_path,
-                tables_path=self.tables_path,
-                metadata_path=self.new_metadata_path,
-                map_path=self.map_path,
-                realm=self.realm,
-                logdir=self.cmor_log_dir,
-                simple=self.simple_mode,
-                outpath=self.output_path,
-                freq=self.freq,
-            )
-        except KeyboardInterrupt:
-            print_message(" -- keyboard interrupt -- ", "error")
-            return 1
+            num_handlers = len(self.handlers)
+            num_success = 0
+            name = None
+
+            if self.realm != "atm":
+                pbar = tqdm(total=len(self.handlers))
+
+            for _, handler in enumerate(self.handlers):
+                handler_method = handler["method"]
+                handler_variables = handler["raw_variables"]
+                table = handler["table"]
+
+                # find the input files this handler needs
+                if self.realm in ["atm", "lnd"]:
+                    vars_to_filepaths = {
+                        var: [
+                            os.path.join(self.input_path, x)  # type: ignore
+                            for x in find_atm_files(var, self.input_path)
+                        ]
+                        for var in handler_variables
+                    }
+                elif self.realm == "fx":
+                    vars_to_filepaths = {
+                        var: [
+                            os.path.join(self.input_path, x)  # type: ignore
+                            for x in os.listdir(self.input_path)
+                            if x[-3:] == ".nc"
+                        ]
+                        for var in handler_variables
+                    }
+                else:
+                    vars_to_filepaths = {
+                        var: find_mpas_files(var, self.input_path, self.map_path)
+                        for var in handler_variables
+                    }
+
+                msg = f"Trying to CMORize with handler: {handler}"
+                logger.info(msg)
+
+                # NOTE: We need a try and except statement here for TypeError because
+                # the VarHandler.cmorize method does not use **kwargs, while the handle
+                # method for MPAS still does.
+                try:
+                    name = handler_method(
+                        vars_to_filepaths,
+                        self.tables_path,
+                        self.new_metadata_path,
+                        table,
+                        self.cmor_log_dir,
+                    )
+                except TypeError:
+                    name = handler_method(
+                        vars_to_filepaths,
+                        self.tables_path,
+                        self.new_metadata_path,
+                    )
+                except Exception as e:
+                    print_debug(e)
+
+                if name is not None:
+                    num_success += 1
+                    msg = f"Finished {name}, {num_success}/{num_handlers} jobs complete"
+                    logger.info(msg)
+                else:
+                    msg = f"Error running handler {handler['name']}"
+                    logger.info(msg)
+
+                if self.realm != "atm":
+                    pbar.update(1)
+            if self.realm != "atm":
+                pbar.close()
+
         except Exception as error:
             print_debug(error)
             return 1
+        else:
+            msg = f"{num_success} of {num_handlers} handlers complete"
+            logger.info(msg)
 
-        return status
+            return 0
+
+    def _run_parallel(self) -> int:  # noqa: C901
+        """Run all the handlers in parallel using multiprocessing.Pool.
+
+        Returns
+        --------
+        int
+            1 if an error occurs, else 0
+        """
+        pool = Pool(max_workers=self.num_proc)
+        pool_res = list()
+        will_run = []
+
+        for idx, handler in enumerate(self.handlers):
+            handler_method = handler["method"]
+            handler_variables = handler["raw_variables"]
+            table = handler["table"]
+
+            # find the input files this handler needs
+            if self.realm in ["atm", "lnd"]:
+                vars_to_filepaths = {
+                    var: [
+                        os.path.join(self.input_path, x)  # type: ignore
+                        for x in find_atm_files(var, self.input_path)
+                    ]
+                    for var in handler_variables
+                }
+            elif self.realm == "fx":
+                vars_to_filepaths = {
+                    var: [
+                        os.path.join(self.input_path, x)  # type: ignore
+                        for x in os.listdir(self.input_path)
+                        if x[-3:] == ".nc"
+                    ]
+                    for var in handler_variables
+                }
+            else:
+                vars_to_filepaths = {
+                    var: find_mpas_files(var, self.input_path, self.map_path)
+                    for var in handler_variables
+                }
+
+            will_run.append(handler.get("name"))
+
+            # NOTE: We need a try and except statement here for TypeError because
+            # the VarHandler.cmorize method does not use **kwargs, while the handle
+            # method for MPAS still does.
+            try:
+                res = pool.submit(
+                    handler_method,
+                    vars_to_filepaths,
+                    self.tables_path,
+                    self.new_metadata_path,
+                    table,
+                    self.cmor_log_dir,
+                )
+            except TypeError:
+                res = pool.submit(
+                    handler_method,
+                    vars_to_filepaths,
+                    self.tables_path,
+                    self.new_metadata_path,
+                )
+
+            pool_res.append(res)
+
+        # wait for each result to complete
+        pbar = tqdm(total=len(pool_res))
+        num_success = 0
+        num_handlers = len(self.handlers)
+        finished_success = []
+        for idx, res in enumerate(pool_res):
+            try:
+                out = res.result()
+                finished_success.append(out)
+                if out:
+                    num_success += 1
+                    msg = f"Finished {out}, {idx + 1}/{num_handlers} jobs complete"
+                else:
+                    msg = f'Error running handler {self.handlers[idx]["name"]}'
+                    logger.error(msg)
+
+                logger.info(msg)
+            except Exception as e:
+                print_debug(e)
+            pbar.update(1)
+
+        pbar.close()
+        pool.shutdown()
+
+        msg = f"{num_success} of {num_handlers} handlers complete"
+        logger.info(msg)
+
+        failed = set(will_run) - set(finished_success)
+        if failed:
+            logger.error(f"{', '.join(list(failed))} failed to complete")
+            logger.error(msg)
+
+        return 0
 
     def _timeout_exit(self):
         print_message("Hit timeout limit, exiting")

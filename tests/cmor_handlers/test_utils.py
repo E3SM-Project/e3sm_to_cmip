@@ -6,7 +6,7 @@ from e3sm_to_cmip.cmor_handlers import _formulas
 from e3sm_to_cmip.cmor_handlers.handler import VarHandler
 from e3sm_to_cmip.cmor_handlers.mpas_vars import so, uo
 from e3sm_to_cmip.cmor_handlers.utils import derive_handlers, load_all_handlers
-from e3sm_to_cmip.cmor_handlers.vars import pfull, phalf
+from e3sm_to_cmip.cmor_handlers.vars import orog, sftlf
 
 
 class TestLoadAllHandlers:
@@ -95,37 +95,25 @@ class TestLoadAllHandlers:
         assert result == expected
 
     def test_returns_handlers_based_on_var_list(self):
-        result = load_all_handlers("lnd", cmip_vars=["pfull", "phalf"])
+        result = load_all_handlers("lnd", cmip_vars=["orog", "sftlf"])
         expected = [
             {
-                "name": "pfull",
-                "units": "Pa",
-                "table": "CMIP6_Amon.json",
-                "method": pfull.handle.__name__,
-                "raw_variables": ["hybi", "hyai", "hyam", "hybm", "PS"],
+                "name": "orog",
+                "units": "m",
+                "table": "CMIP6_fx.json",
+                "method": orog.handle.__name__,
+                "raw_variables": ["PHIS"],
                 "positive": None,
-                "levels": {
-                    "name": "standard_hybrid_sigma",
-                    "units": "1",
-                    "e3sm_axis_name": "lev",
-                    "e3sm_axis_bnds": "ilev",
-                    "time_name": "time2",
-                },
+                "levels": None,
             },
             {
-                "name": "phalf",
-                "units": "Pa",
-                "table": "CMIP6_Amon.json",
-                "method": phalf.handle.__name__,
-                "raw_variables": ["hybi", "hyai", "hyam", "hybm", "PS"],
+                "name": "sftlf",
+                "units": "%",
+                "table": "CMIP6_fx.json",
+                "method": sftlf.handle.__name__,
+                "raw_variables": ["LANDFRAC"],
                 "positive": None,
-                "levels": {
-                    "name": "atmosphere_sigma_coordinate",
-                    "units": "1",
-                    "e3sm_axis_name": "lev",
-                    "e3sm_axis_bnds": "ilev",
-                    "time_name": "time2",
-                },
+                "levels": None,
             },
         ]
 
@@ -321,39 +309,27 @@ class TestDeriveHandlers:
     def test_loads_handler_from_module(self):
         result = derive_handlers(
             self.tables_path,
-            cmip_vars=["pfull", "phalf"],
-            e3sm_vars=["hybi", "hyai", "hyam", "hybm", "PS"],
+            cmip_vars=["orog", "sftlf"],
+            e3sm_vars=["PHIS", "LANDFRAC"],
         )
         expected = [
             {
-                "name": "pfull",
-                "units": "Pa",
-                "table": "CMIP6_Amon.json",
-                "method": pfull.handle.__name__,
-                "raw_variables": ["hybi", "hyai", "hyam", "hybm", "PS"],
+                "name": "orog",
+                "units": "m",
+                "table": "CMIP6_fx.json",
+                "method": orog.handle.__name__,
+                "raw_variables": ["PHIS"],
                 "positive": None,
-                "levels": {
-                    "name": "standard_hybrid_sigma",
-                    "units": "1",
-                    "e3sm_axis_name": "lev",
-                    "e3sm_axis_bnds": "ilev",
-                    "time_name": "time2",
-                },
+                "levels": None,
             },
             {
-                "name": "phalf",
-                "units": "Pa",
-                "table": "CMIP6_Amon.json",
-                "method": phalf.handle.__name__,
-                "raw_variables": ["hybi", "hyai", "hyam", "hybm", "PS"],
+                "name": "sftlf",
+                "units": "%",
+                "table": "CMIP6_fx.json",
+                "method": sftlf.handle.__name__,
+                "raw_variables": ["LANDFRAC"],
                 "positive": None,
-                "levels": {
-                    "name": "atmosphere_sigma_coordinate",
-                    "units": "1",
-                    "e3sm_axis_name": "lev",
-                    "e3sm_axis_bnds": "ilev",
-                    "time_name": "time2",
-                },
+                "levels": None,
             },
         ]
 
