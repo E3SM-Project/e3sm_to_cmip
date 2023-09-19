@@ -154,7 +154,7 @@ class VarHandler(BaseVarHandler):
 
     def cmorize(
         self,
-        infiles: List[str],  # command-line arg (--input-path)
+        var_to_filepaths: Dict[str, List[str]],  # command-line arg (--input-path)
         tables: str,  # command-line arg (--tables-path)
         user_input_path: str,  # command-line arg (--user-metadata)
         **kwargs,
@@ -168,7 +168,7 @@ class VarHandler(BaseVarHandler):
         # outpath=None,  # command-line arg (--output-path)
         if self.unit_conversion is None:
             return handle_variables(
-                infiles=infiles,
+                var_to_filepaths=var_to_filepaths,
                 raw_variables=self.raw_variables,
                 write_data=self._write_data,
                 outvar_name=self.name,
@@ -186,7 +186,7 @@ class VarHandler(BaseVarHandler):
             )
 
         return default_handler(
-            infiles,
+            var_to_filepaths,
             tables=tables,
             user_input_path=user_input_path,
             raw_variables=self.raw_variables,

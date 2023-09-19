@@ -3,18 +3,16 @@
 # is raised when running `e3sm_to_cmip`` in parallel. Further investigation is
 # needed to figure out why this happens (maybe a circular or non-existent import
 # of CMORError`).
+from __future__ import annotations
+
 import json
 import logging
 import os
+from typing import Callable, Dict, List, TypedDict, no_type_check
 
+import cmor
 import numpy as np
 import xarray as xr
-from cmor import CMOR_REPLACE, axis
-from cmor import close as cmor_close
-from cmor import dataset_json, load_table
-from cmor import setup as cmor_setup
-from cmor import variable as cmor_var
-from cmor import zfactor
 from tqdm import tqdm
 
 from e3sm_to_cmip import resources
@@ -30,6 +28,26 @@ from e3sm_to_cmip.util import (
 )
 
 logger = _setup_logger(__name__)
+
+
+LEVEL_NAMES = [
+    "atmosphere_sigma_coordinate",
+    "standard_hybrid_sigma",
+    "standard_hybrid_sigma_half",
+]
+
+# A type annotation for a dictionary with each component of a variable.
+# For example, a key can be the name of the axis such as "lat" and the
+# value is the data represented as either a `np.ndarray` or `xr.DataArray`.
+VarDataDict = Dict[str, np.ndarray | xr.DataArray]
+
+
+class Levels(TypedDict):
+    name: str
+    units: str
+    e3sm_axis_name: str
+    e3sm_axis_bnds: str | None
+    time_name: str | None
 
 
 def run_parallel(
@@ -65,14 +83,14 @@ def run_parallel(
         handler_variables = handler["raw_variables"]
         # find the input files this handler needs
         if realm in ["atm", "lnd"]:
-            input_paths = {
+            var_to_filepaths = {
                 var: [
                     os.path.join(input_path, x) for x in find_atm_files(var, input_path)
                 ]
                 for var in handler_variables
             }
         elif realm == "fx":
-            input_paths = {
+            var_to_filepaths = {
                 var: [
                     os.path.join(input_path, x)
                     for x in os.listdir(input_path)
@@ -81,7 +99,7 @@ def run_parallel(
                 for var in handler_variables
             }
         else:
-            input_paths = {
+            var_to_filepaths = {
                 var: find_mpas_files(var, input_path, map_path)
                 for var in handler_variables
             }
@@ -102,7 +120,7 @@ def run_parallel(
 
         pool_res.append(
             pool.submit(
-                handler_method, input_paths, tables_path, metadata_path, **_kwargs
+                handler_method, var_to_filepaths, tables_path, metadata_path, **_kwargs
             )
         )
 
@@ -168,7 +186,6 @@ def run_serial(  # noqa: C901
         returns 1 if an error occurs, else 0
     """
     try:
-
         num_handlers = len(handlers)
         num_success = 0
         name = None
@@ -177,15 +194,13 @@ def run_serial(  # noqa: C901
             pbar = tqdm(total=len(handlers))
 
         for _, handler in enumerate(handlers):
-
             handler_method = handler["method"]
             handler_variables = handler["raw_variables"]
             unit_conversion = handler.get("unit_conversion")
 
             # find the input files this handler needs
             if realm in ["atm", "lnd"]:
-
-                input_paths = {
+                var_to_filepaths = {
                     var: [
                         os.path.join(input_path, x)
                         for x in find_atm_files(var, input_path)
@@ -193,7 +208,7 @@ def run_serial(  # noqa: C901
                     for var in handler_variables
                 }
             elif realm == "fx":
-                input_paths = {
+                var_to_filepaths = {
                     var: [
                         os.path.join(input_path, x)
                         for x in os.listdir(input_path)
@@ -202,7 +217,7 @@ def run_serial(  # noqa: C901
                     for var in handler_variables
                 }
             else:
-                input_paths = {
+                var_to_filepaths = {
                     var: find_mpas_files(var, input_path, map_path)
                     for var in handler_variables
                 }
@@ -212,7 +227,7 @@ def run_serial(  # noqa: C901
 
             try:
                 name = handler_method(
-                    input_paths,
+                    var_to_filepaths,
                     tables_path,
                     metadata_path,
                     raw_variables=handler.get("raw_variables"),
@@ -256,7 +271,8 @@ def run_serial(  # noqa: C901
 # ------------------------------------------------------------------
 
 
-def handle_simple(  # noqa: C901
+@no_type_check
+def handle_simple(  # noqa: C901 # type: ignore
     infiles,
     raw_variables,
     write_data,
@@ -269,8 +285,11 @@ def handle_simple(  # noqa: C901
     logdir=None,
     outpath=None,
     table="Amon",
-    has_time=True,
+    time_name=None,
 ):
+    # TODO: This function needs to be refactored. There is a lot of redundant
+    # code that is copied and pasted from `handle_variables()`. This
+    # function is also broken somewhere.
     logger.info(f"{outvar_name}: Starting")
 
     # check that we have some input files for every variable
@@ -313,11 +332,10 @@ def handle_simple(  # noqa: C901
 
         # load data for each variables
         for var_name in raw_variables:
-
             # extract data from the input file
             logger.info(f"{outvar_name}: loading {var_name}")
 
-            new_data = get_dimension_data(
+            new_data = _get_var_data_dict(
                 filename=infiles[var_name][file_index],
                 variable=var_name,
                 levels=levels,
@@ -330,7 +348,7 @@ def handle_simple(  # noqa: C901
 
                 # new data set
                 ds = xr.Dataset()
-                if has_time:
+                if time_name is not None:
                     dims = ["time", "lat", "lon"]
                 else:
                     dims = ["lat", "lon"]
@@ -353,7 +371,6 @@ def handle_simple(  # noqa: C901
             pbar.set_description(msg)
 
         for time_index, val in enumerate(data["time"]):
-
             outdata = write_data(
                 varid=0,
                 data=data,
@@ -421,30 +438,15 @@ def handle_simple(  # noqa: C901
     return outvar_name
 
 
-# ------------------------------------------------------------------
-
-
-def var_has_time(table_path, variable):
-    with open(table_path, "r") as inputstream:
-        table_info = json.load(inputstream)
-
-    axis_info = table_info["variable_entry"][variable]["dimensions"].split(" ")
-    if "time" in axis_info:
-        return "time"
-    elif "time1" in axis_info:
-        return "time1"
-    return False
-
-
 def handle_variables(  # noqa: C901
-    infiles,
-    raw_variables,
-    write_data,
-    outvar_name,
-    outvar_units,
-    table,
-    tables,
-    metadata_path,
+    var_to_filepaths: Dict[str, List[str]],
+    raw_variables: List[str],
+    write_data: Callable,
+    outvar_name: str,
+    outvar_units: str,
+    table: str,
+    tables: str,
+    metadata_path: str,
     serial=None,
     positive=None,
     levels=None,
@@ -453,11 +455,14 @@ def handle_variables(  # noqa: C901
     simple=False,
     outpath=None,
 ):
+    # TODO: Move this function to `handler.VarHandler` once all legacy handlers
+    # are refactored.
+    table_abs_path = os.path.join(tables, table)
+    time_name: str | None = _get_var_time_name(table_abs_path, outvar_name)
 
-    timename = var_has_time(os.path.join(tables, table), outvar_name)
     if simple:
         return handle_simple(
-            infiles,
+            var_to_filepaths,
             raw_variables,
             write_data,
             outvar_name,
@@ -469,156 +474,180 @@ def handle_variables(  # noqa: C901
             axis=axis,
             logdir=logdir,
             outpath=outpath,
-            has_time=timename,
+            time_name=time_name,
         )
 
     logger.info(f"{outvar_name}: Starting")
 
-    # check that we have some input files for every variable
+    # Check that we have some input files for every variable
+    # --------------------------------------------------------------------------
     zerofiles = False
+
     for variable in raw_variables:
-        if len(infiles[variable]) == 0:
-            msg = f"{outvar_name}: Unable to find input files for {variable}"
-            logging.error(msg)
+        if len(var_to_filepaths[variable]) == 0:
+            logging.error(f"{outvar_name}: Unable to find input files for {variable}")
             zerofiles = True
 
     if zerofiles:
         return None
 
-    # Create the logging directory and setup cmor
-    if logdir:
-        logpath = logdir
-    else:
-        outpath, _ = os.path.split(logger.__dict__["handlers"][0].baseFilename)
-        logpath = os.path.join(outpath, "cmor_logs")
-    os.makedirs(logpath, exist_ok=True)
+    # Create the logging directory and setup CMOR
+    # --------------------------------------------------------------------------
+    _setup_cmor_module(outvar_name, table, tables, metadata_path, logdir)
 
-    logfile = os.path.join(logpath, outvar_name + ".log")
+    # Loop over variable files and CMORize
+    # --------------------------------------------------------------------------
+    # A dictionary, with the key representing the axis and the value being
+    # an array for the axis data.
+    var_data_dict: VarDataDict = {}
 
-    cmor_setup(inpath=tables, netcdf_file_action=CMOR_REPLACE, logfile=logfile)
+    # Assuming all year ranges are the same for every variable
+    num_files_per_variable = len(var_to_filepaths[raw_variables[0]])
 
-    dataset_json(str(metadata_path))
-    load_table(str(table))
-
-    msg = f"{outvar_name}: CMOR setup complete"
-    logging.info(msg)
-
-    data = {}
-
-    # assuming all year ranges are the same for every variable
-    num_files_per_variable = len(infiles[raw_variables[0]])
-
-    # sort the input files for each variable
+    # Sort the input files for each variable to ensure axis data is in correct
+    # order.
     for var_name in raw_variables:
-        infiles[var_name].sort()
+        var_to_filepaths[var_name].sort()
 
     for index in range(num_files_per_variable):
-
-        # reload the dimensions for each time slice
+        # Reload the dimensions for each time slice
         get_dims = True
 
-        # load data for each variable
+        # Get the axis data for each variable
         for var_name in raw_variables:
-
-            # extract data from the input file
             logger.info(f"{outvar_name}: loading {var_name}")
 
-            new_data = get_dimension_data(
-                filename=infiles[var_name][index],
+            new_data_dict = _get_var_data_dict(
+                filename=var_to_filepaths[var_name][index],
                 variable=var_name,
                 levels=levels,
                 get_dims=get_dims,
             )
-            data.update(new_data)
+            var_data_dict.update(new_data_dict)
             get_dims = False
-
-            # FIXME: undefined name 'loaded_one' flake8(F821)
-            if simple and not loaded_one:  # type: ignore # noqa: F821
-                loaded_one = True  # noqa: F841
-
-                # new data set
-                ds = xr.Dataset()
-                if timename:
-                    dims = (timename, "lat", "lon")
-                else:
-                    dims = ("lat", "lon")  # type: ignore
-
-                if "lev" in new_data.keys():
-                    dims = (timename, "lev", "lat", "lon")  # type: ignore
-                elif "plev" in new_data.keys():
-                    dims = (timename, "plev", "lat", "lon")  # type: ignore
-                ds[outvar_name] = (dims, new_data[var_name])
-                for d in dims:
-                    ds.coords[d] = new_data[d][:]
 
         logger.info(f"{outvar_name}: loading axes")
 
-        # create the cmor variable and axis
-        axis_ids, ips = load_axis(data=data, levels=levels, has_time=timename)
+        # Create the base CMOR Variable
+        # ----------------------------------------------------------------------
+        cmor_axes, ips = _get_cmor_axes_and_ips(
+            data=var_data_dict, levels=levels, time_name=time_name
+        )
+        cmor_var = cmor.variable(
+            outvar_name, outvar_units, cmor_axes, positive=positive
+        )
 
-        if ips:
-            data["ips"] = ips
+        if ips is not None:
+            var_data_dict["ips"] = ips
 
-        if positive:
-            varid = cmor_var(outvar_name, outvar_units, axis_ids, positive=positive)
-        else:
-            varid = cmor_var(outvar_name, outvar_units, axis_ids)
+        # CMORize the variable.
+        # ----------------------------------------------------------------------
+        time_bnds_data = var_data_dict["time_bnds"].values  # type: ignore
+        logger_msg = (
+            f"{outvar_name}: time {time_bnds_data[0][0]:1.1f} - "
+            f"{time_bnds_data[-1][-1]:1.1f}"
+        )
+        logger.info(logger_msg)
 
-        # write out the data
-        msg = f"{outvar_name}: time {data['time_bnds'].values[0][0]:1.1f} - {data['time_bnds'].values[-1][-1]:1.1f}"
-        logger.info(msg)
+        if time_name is not None:
+            if serial:
+                pbar = tqdm(total=var_data_dict["time"].shape[0])
+                pbar.set_description(logger_msg)
 
-        if serial:
-            pbar = tqdm(total=data["time"].shape[0])
-            pbar.set_description(msg)
-
-        if timename:
             try:
-                for index, val in enumerate(data["time"].values):
+                time_data = var_data_dict["time"].values  # type: ignore
+                for index, val in enumerate(time_data):
                     write_data(
-                        varid=varid,
-                        data=data,
+                        varid=cmor_var,
+                        data=var_data_dict,
                         timeval=val,
-                        timebnds=[data["time_bnds"].values[index, :]],
+                        timebnds=[time_bnds_data[index, :]],
                         index=index,
                         raw_variables=raw_variables,
-                        simple=False,
                     )
+
                     if serial:
                         pbar.update(1)
             except Exception as e:
-                print(e)
+                logger.error(e)
+
+            if serial:
+                pbar.close()
         else:
-            write_data(
-                varid=varid, data=data, raw_variables=raw_variables, simple=False
-            )
-        if serial:
-            pbar.close()
+            write_data(varid=cmor_var, data=var_data_dict, raw_variables=raw_variables)
 
-    msg = f"{outvar_name}: write complete, closing"
-    logger.debug(msg)
-    cmor_close()
-
-    msg = f"{outvar_name}: file close complete"
-    logger.debug(msg)
+    logger.debug(f"{outvar_name}: write complete, closing")
+    cmor.close()
+    logger.debug(f"{outvar_name}: file close complete")
 
     return outvar_name
 
 
-# ------------------------------------------------------------------
+def _get_var_time_name(table_path: str, variable: str) -> str | None:
+    with open(table_path, "r") as inputstream:
+        table_info = json.load(inputstream)
+
+    axis_info = table_info["variable_entry"][variable]["dimensions"].split(" ")
+
+    if "time" in axis_info:
+        return "time"
+    elif "time1" in axis_info:
+        return "time1"
+
+    return None
 
 
-def get_dimension_data(filename, variable, levels=None, get_dims=False):  # noqa: C901
+def _setup_cmor_module(
+    var_name: str,
+    table: str,
+    tables_path: str,
+    metadata_path: str,
+    log_dir: str | None,
+):
+    """Set up the CMOR module before CMORzing variables.
+
+    Parameters
+    ----------
+    var_name : str
+        The name of the variable.
+    table : str
+        The table filename.
+    tables_path : str
+        The tables path.
+    metadata_path : str
+        The metadata path.
+    logdir : str | None
+        The optional log directory.
     """
-    Returns a list of data, along with the dimension and dimension bounds
-    for a given lis of variables, with the option for vertical levels.
-    Params:
-    -------
-        filename: the netCDF file to look inside
-        variable: (str): then name of the variable to load
-        levels (bool): return verticle information
-        get_dims (bool): is dimension data should be loaded too
-    Returns:
+    if log_dir:
+        logpath = log_dir
+    else:
+        outpath, _ = os.path.split(logger.__dict__["handlers"][0].baseFilename)
+        logpath = os.path.join(outpath, "cmor_logs")
+
+    os.makedirs(logpath, exist_ok=True)
+    logfile = os.path.join(logpath, var_name + ".log")
+
+    cmor.setup(
+        inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile
+    )
+    cmor.dataset_json(metadata_path)
+    cmor.load_table(table)
+
+    logging.info(f"{var_name}: CMOR setup complete")
+
+
+def _get_var_data_dict(  # noqa: C901
+    filename: str, variable: str, levels: Levels | None, get_dims: bool = False
+) -> VarDataDict:
+    """Get the variable's data dictionary.
+
+    This function creates the variable's data dictionary by opening up a netCDF
+    file as an `xr.Dataset` and extracting information such as the axes data,
+    levels, etc.
+
+    # TODO: Fill out below example.
+    Example output:
         {
             data: xarray Dataset from the file
             lat: numpy array of lat midpoints,
@@ -627,35 +656,60 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):  # noqa
             lon_bnds: numpy array of lon edge points,
             time: array of time points,
             time_bdns: array of time bounds
+            <OPTIONAL, for 3D variables>
+            lev:
+            ilev:
+            ps:
+            p0:
+            hyam:
+            hyai:
+            hybm:
+            hybi:
         }
-        optionally for 3d:
-        lev, ilev, ps, p0, hyam, hyai, hybm, hybi
-    """
-    # extract data from the input file
-    data = dict()
 
+    Parameters
+    ----------
+    filename : str
+        The name of the netCDF dataset containing the variable.
+    variable : str
+        The name of the variable.
+    levels : Levels | None
+        The optional levels dictionary.
+    get_dims : bool, optional
+        Whether to get the dimensions or not, by default False
+
+    Returns
+    -------
+    VarDataDict
+        A dictionary with the key being a component of the variable (e.g., axis)
+        and the value being data represented as `nd.array` or `xr.DataArray`.
+
+    Raises
+    ------
+    IOError
+        _description_
+    KeyError
+        _description_
+    KeyError
+        _description_
+    """
     if not os.path.exists(filename):
         raise IOError(f"File not found: {filename}")
 
-    ds = xr.open_dataset(filename, decode_times=False)
+    ds: xr.Dataset = xr.open_dataset(filename, decode_times=False)
+    da_var: xr.DataArray = ds[variable]
 
-    # load the data for each variable
-    variable_data = ds[variable]
+    var_data_dict: VarDataDict = {}
 
-    # load
+    # The `np.ndarray` of plev and lev are extracted from the xr.DataArray.
     if "plev" in ds.dims or "lev" in ds.dims:
-        data[variable] = variable_data.values
+        var_data_dict[variable] = da_var.values
     else:
-        data[variable] = variable_data
-
-    # atm uses "time_bnds" but the lnd component uses "time_bounds"
-    time_bounds_name = (
-        "time_bnds" if "time_bnds" in ds.data_vars.keys() else "time_bounds"
-    )
+        var_data_dict[variable] = da_var
 
     # load the lon and lat and time info & bounds
     if get_dims:
-        data.update(
+        var_data_dict.update(
             {
                 "lat": ds["lat"],
                 "lon": ds["lon"],
@@ -664,24 +718,33 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):  # noqa
                 "time": ds["time"],
             }
         )
+
         try:
             time2 = ds["time2"]
         except KeyError:
             pass
         else:
-            data["time2"] = time2
+            var_data_dict["time2"] = time2
+
+        # NOTE: atm uses "time_bnds" but the lnd component uses "time_bounds"
+        time_bounds_name = (
+            "time_bnds" if "time_bnds" in ds.data_vars.keys() else "time_bounds"
+        )
 
         if time_bounds_name in ds.data_vars:
             time_bnds = ds[time_bounds_name]
+
             if len(time_bnds.shape) == 1:
                 time_bnds = time_bnds.reshape(1, 2)
-            data["time_bnds"] = time_bnds
+
+            var_data_dict["time_bnds"] = time_bnds
 
         # load level and level bounds
         if levels is not None:
             name = levels.get("name")
-            if name == "standard_hybrid_sigma" or name == "standard_hybrid_sigma_half":
-                data.update(
+
+            if name in LEVEL_NAMES:
+                var_data_dict.update(
                     {
                         "lev": ds["lev"].values / 1000,
                         "ilev": ds["ilev"].values / 1000,
@@ -694,119 +757,147 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):  # noqa
                     }
                 )
             elif name == "sdepth":
-                data.update(
+                var_data_dict.update(
                     {
                         "levgrnd": ds["levgrnd"].values,
                         "levgrnd_bnds": get_levgrnd_bnds(),
                     }
                 )
             else:
-                name = levels.get("e3sm_axis_name")
-                if name in ds.data_vars or name in ds.coords:
-                    data[name] = ds[name]
-                else:
+                e3sm_axis_name = levels.get("e3sm_axis_name", None)
+                if e3sm_axis_name is None:
                     raise KeyError(
-                        f"Unable to find they 'e3sm_axis_name' key {(name)}) in the dataset."
+                        "No 'e3sm_axis_name' key is defined in the handler for "
+                        f"'{variable}'."
                     )
 
-                bnds = levels.get("e3sm_axis_bnds")
-                if bnds:
-                    if bnds in ds.dims or bnds in ds.data_vars:
-                        data[bnds] = ds[bnds]
+                if e3sm_axis_name in ds.data_vars or e3sm_axis_name in ds.coords:
+                    var_data_dict[e3sm_axis_name] = ds[e3sm_axis_name]
+                else:
+                    raise KeyError(
+                        f"Unable to find they 'e3sm_axis_name' key ({e3sm_axis_name}) "
+                        "in the dataset for '{variable}'."
+                    )
+
+                e3sm_axis_bnds = levels.get("e3sm_axis_bnds")
+
+                if e3sm_axis_bnds is not None:
+                    if e3sm_axis_bnds in ds.dims or e3sm_axis_bnds in ds.data_vars:
+                        var_data_dict[e3sm_axis_bnds] = ds[e3sm_axis_bnds]
                     else:
-                        raise IOError("Unable to find e3sm_axis_bnds")
-    return data
+                        raise KeyError(
+                            "Unable to find 'e3sm_axis_bnds' key in the dataset for "
+                            f"'{variable}'."
+                        )
+    return var_data_dict
 
 
-# ------------------------------------------------------------------
-
-
-def load_axis(data, levels=None, has_time=True):
-    time = None
-    # use the special name for time if it exists
-    if levels and levels.get("time_name"):
-        name = levels.get("time_name")
-        units = data[levels.get("time_name")].units
-        time = axis(name, units=units)
-    # else add the normal time name
-    elif has_time:
-        time = axis(has_time, units=data["time"].attrs["units"])
-
-    # use whatever level name this handler requires
-    if levels is not None:
-        name = levels.get("name")
-        units = levels.get("units")
-        coord_vals = data[levels.get("e3sm_axis_name")]
-        axis_bnds = levels.get("e3sm_axis_bnds")
-
-        if isinstance(coord_vals, xr.DataArray):
-            coord_vals = coord_vals.values
-
-        if axis_bnds is not None:
-            cell_bounds = data[axis_bnds]
-
-            # i.g. handler cl, cli, clw returns xarray dataarray
-            if isinstance(cell_bounds, xr.DataArray):
-                cell_bounds = cell_bounds.values
-
-            lev = axis(
-                name, units=units, cell_bounds=cell_bounds, coord_vals=coord_vals
-            )
-        else:
-            lev = axis(name, units=units, coord_vals=coord_vals)
-
-    # add lon/lat
-    lat = axis(
+def _get_cmor_axes_and_ips(
+    data: Dict[str, np.ndarray | xr.DataArray],
+    levels: Levels | None = None,
+    time_name: str | None = None,
+):
+    # Create the CMOR lat and lon axis objects, which always exist.
+    lat = cmor.axis(
         "latitude",
-        units=data["lat"].units,
-        coord_vals=data["lat"].values,
-        cell_bounds=data["lat_bnds"].values,
+        units=data["lat"].units,  # type: ignore
+        coord_vals=data["lat"].values,  # type: ignore
+        cell_bounds=data["lat_bnds"].values,  # type: ignore
     )
 
-    lon = axis(
+    lon = cmor.axis(
         "longitude",
-        units=data["lon"].units,
-        coord_vals=data["lon"].values,
-        cell_bounds=data["lon_bnds"].values,
+        units=data["lon"].units,  # type: ignore
+        coord_vals=data["lon"].values,  # type: ignore
+        cell_bounds=data["lon_bnds"].values,  # type: ignore
     )
 
-    if levels and time is not None:
-        axes = [time, lev, lat, lon]
-    elif time is not None:
-        axes = [time, lat, lon]
+    # Create the list of CMOR axes to return.
+    cmor_axes = [lat, lon]
+
+    # Create the lev CMOR axis.
+    lev = None
+    if levels is not None:
+        lev = _get_lev_axis(levels, data)
+        cmor_axes.insert(0, lev)
+
+    # # Create the time CMOR axis.
+    # Use either the special name for time if it exists or the normal time.
+    time = None
+    if levels is not None:
+        levels_time_name = levels.get("time_name", None)
+
+        if levels_time_name is not None:
+            units = data[levels_time_name].units  # type: ignore
+            time = cmor.axis(levels_time_name, units=units)
+            cmor_axes.insert(0, time)
+
+    elif time_name is not None:
+        time = cmor.axis(time_name, units=data["time"].attrs["units"])  # type: ignore
+
+        cmor_axes.insert(0, time)
+
+    if levels is not None and levels.get("name") in LEVEL_NAMES:
+        ips = _get_hybrid_level_formula_terms(data, time, lev, lat, lon)
     else:
-        axes = [lat, lon]
+        ips = None
 
-    ips = None
-    # add hybrid level formula terms
-    if levels and levels.get("name") in [
-        "standard_hybrid_sigma",
-        "standard_hybrid_sigma_half",
-    ]:
-        zfactor(
-            zaxis_id=lev,
-            zfactor_name="a",
-            axis_ids=[
-                lev,
-            ],
-            zfactor_values=data["hyam"].values,
-            zfactor_bounds=data["hyai"].values,
+    return cmor_axes, ips
+
+
+def _get_lev_axis(levels, data):
+    name = levels.get("name")
+    units = levels.get("units")
+    e3sm_axis_name = levels["e3sm_axis_name"]
+
+    coord_vals = data[e3sm_axis_name]
+
+    if isinstance(coord_vals, xr.DataArray):
+        coord_vals = coord_vals.values
+
+    axis_bnds = levels.get("e3sm_axis_bnds")
+
+    if axis_bnds is not None:
+        cell_bounds = data[axis_bnds]
+
+        # i.g. handler cl, cli, clw returns xarray dataarray
+        if isinstance(cell_bounds, xr.DataArray):
+            cell_bounds = cell_bounds.values
+
+        lev = cmor.axis(
+            name, units=units, coord_vals=coord_vals, cell_bounds=cell_bounds
         )
-        zfactor(
-            zaxis_id=lev,
-            zfactor_name="b",
-            axis_ids=[
-                lev,
-            ],
-            zfactor_values=data["hybm"].values,
-            zfactor_bounds=data["hybi"].values,
-        )
-        zfactor(zaxis_id=lev, zfactor_name="p0", units="Pa", zfactor_values=data["p0"])
-        ips = zfactor(
-            zaxis_id=lev, zfactor_name="ps", axis_ids=[time, lat, lon], units="Pa"
-        )
+    else:
+        lev = cmor.axis(name, units=units, coord_vals=coord_vals)
 
-    return axes, ips
+    return lev
 
 
-# ------------------------------------------------------------------
+def _get_hybrid_level_formula_terms(data, time, lev, lat, lon) -> cmor.zfactor:
+    cmor.zfactor(
+        zaxis_id=lev,
+        zfactor_name="a",
+        axis_ids=[
+            lev,
+        ],
+        zfactor_values=data["hyam"].values,
+        zfactor_bounds=data["hyai"].values,
+    )
+
+    cmor.zfactor(
+        zaxis_id=lev,
+        zfactor_name="b",
+        axis_ids=[
+            lev,
+        ],
+        zfactor_values=data["hybm"].values,
+        zfactor_bounds=data["hybi"].values,
+    )
+
+    cmor.zfactor(zaxis_id=lev, zfactor_name="p0", units="Pa", zfactor_values=data["p0"])
+
+    ips = cmor.zfactor(
+        zaxis_id=lev, zfactor_name="ps", axis_ids=[time, lat, lon], units="Pa"
+    )
+
+    return ips

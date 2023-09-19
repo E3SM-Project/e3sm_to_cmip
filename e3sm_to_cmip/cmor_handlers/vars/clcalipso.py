@@ -54,7 +54,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         metadata_path=user_input_path,
         tables=tables,
         table=kwargs.get("table", TABLE),
-        infiles=infiles,
+        var_to_filepaths=infiles,
         raw_variables=RAW_VARIABLES,
         write_data=write_data,
         outvar_name=VAR_NAME,

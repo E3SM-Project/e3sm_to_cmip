@@ -6,13 +6,11 @@ import numpy as np
 from e3sm_to_cmip.lib import handle_variables
 
 
-def default_handler(infiles, tables, user_input_path, **kwargs):
-
+def default_handler(var_to_filepaths, tables, user_input_path, **kwargs):  # noqa: C901
     RAW_VARIABLES = kwargs["raw_variables"]
     unit_conversion = kwargs.get("unit_conversion")
 
     def write_data(varid, data, timeval=None, timebnds=None, index=None, **kwargs):
-
         if timeval is not None:
             if unit_conversion is not None:
                 if unit_conversion == "g-to-kg":
@@ -62,7 +60,7 @@ def default_handler(infiles, tables, user_input_path, **kwargs):
         metadata_path=user_input_path,
         tables=tables,
         table=kwargs["table"],
-        infiles=infiles,
+        var_to_filepaths=var_to_filepaths,
         raw_variables=RAW_VARIABLES,
         write_data=write_data,
         outvar_name=kwargs["name"],
