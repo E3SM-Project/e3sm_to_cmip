@@ -34,9 +34,11 @@ dependencies:
   - isort=5.12.0
   - mypy=1.4.1
   - pre-commit=3.3.3
-  - types-pytz=2023.3.0.0
-  - types-PyYAML=6.0.12
+  - types-pytz
+  - types-PyYAML
+  - types-tqdm
   # Developer Tools
   # ==================
   - tbump=6.9.0
+  - ipykernel
 prefix: /opt/miniconda3/envs/e3sm_to_cmip_dev
