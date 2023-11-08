@@ -224,7 +224,7 @@ def pfull(ds: xr.Dataset):
     """
     result = ds["hyam"] * P0_VALUE + ds["hybm"] * ds["PS"]
 
-    # After Xarray broadcasting, the dimensions need to reordered from
+    # After Xarray broadcasting, the dimensions need to be reordered from
     # ["lev", "time2", "lat", "lon"] to ["time2", "lev", "lat", "lon"].
     result = result.transpose("time2", "lev", "lat", "lon")
 
@@ -260,9 +260,9 @@ def phalf(ds: xr.Dataset):
     """
     result = ds["hyai"] * P0_VALUE + ds["hybi"] * ds["PS"]
 
-    # After Xarray broadcasting, the dimensions need to reordered from
+    # After Xarray broadcasting, the dimensions need to be reordered from
     # ["ilev", "time2", "lat", "lon"] to ["time2", "ilev", "lat", "lon"].
-    result = result.transpose("time2", "lev", "lat", "lon")
+    result = result.transpose("time2", "ilev", "lat", "lon")
 
     return result
 
