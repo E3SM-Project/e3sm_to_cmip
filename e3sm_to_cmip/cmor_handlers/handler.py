@@ -354,6 +354,7 @@ class VarHandler(BaseVarHandler):
         Parameters
         ----------
         vars_to_filepaths : Dict[str, List[str]]
+            A dictionary mapping E3SM raw variables to a list of filepath(s).
         index : int
             The index representing the time range for the file.
             For example, with this list:
@@ -363,7 +364,6 @@ class VarHandler(BaseVarHandler):
                     ...
                 ]
             the value at index 0 is v2.LR.historical_0101.eam.h0.1850-01.nc.
-
         time_dim : str | None
             Whether or not the output CMIP variable has a time dimension.
 
