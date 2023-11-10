@@ -435,10 +435,6 @@ class VarHandler(BaseVarHandler):
 
         return None
 
-    def _reshape_single_time_bnd(self, ds):
-        # TODO: Reshape time bounds if it exists and has a length of 1: https://github.com/E3SM-Project/e3sm_to_cmip/blob/8c818fcb6d51cc0555f62b8058eee539b69a9579/e3sm_to_cmip/lib.py#L674-L678C42
-        pass
-
     def _get_cmor_axis_ids_and_ips_id(
         self, ds: xr.Dataset, time_dim: str | None
     ) -> Tuple[Dict[str, int], int | None]:
