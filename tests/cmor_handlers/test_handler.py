@@ -202,5 +202,9 @@ class TestCmorizeMethod:
         assert 0
 
     @pytest.mark.xfail
+    def test_regrids_hybrid_to_pressure_level(self):
+        assert 0
+
+    @pytest.mark.xfail
     def test_updates_table_reference_based_on_input_freq_and_realm(self):
         assert 0

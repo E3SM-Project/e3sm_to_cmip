@@ -7,10 +7,10 @@ import json
 import logging
 import os
 
-import cmor
 import numpy as np
 import xarray as xr
 
+import cmor
 from e3sm_to_cmip import resources
 from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.mpas import write_netcdf
@@ -35,7 +35,6 @@ def handle_simple(infiles):
     ds = xr.Dataset()
     outname = f"{VAR_NAME}_fx.nc"
     with xr.open_dataset(infiles[RAW_VARIABLES[0]][0]) as inputds:
-
         ds["lat"] = inputds["lat"]
         ds["lat_bnds"] = inputds["lat_bnds"]
         ds["lon"] = inputds["lon"]
@@ -56,9 +55,7 @@ def handle_simple(infiles):
     write_netcdf(ds, outname, fillValues=fillVals, unlimited=["time"])
 
 
-def handle(infiles, tables, user_input_path, **kwargs):
-    simple = kwargs.get("simple")
-
+def handle(infiles, tables, user_input_path, table, logdir):
     msg = "{}: Starting".format(VAR_NAME)
     logger.info(msg)
 
@@ -73,12 +70,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     if zerofiles:
         return None
 
-    if simple:
-        handle_simple(infiles)
-        return VAR_NAME
-
     # Create the logging directory and setup cmor
-    logdir = kwargs.get("logdir")
     if logdir:
         logpath = logdir
     else:

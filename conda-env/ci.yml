@@ -7,8 +7,6 @@ dependencies:
   # Base - required for building the repository as an Anaconda package
   # ====================
   - python >=3.9
-  - cdms2=3.1.5
-  - cdutil=8.2.1
   - cmor >=3.7.0
   - dask
   - nco >=5.1.4

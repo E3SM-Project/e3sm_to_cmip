@@ -22,9 +22,9 @@ ypf=1
 # -----------------
 # PATHS
 # -----------------
-e2c_path=/p/user_pub/e3sm/zhang40/e3sm_to_cmip_data
+e2c_path=/p/user_pub/e3sm/zhang40/e3sm_to_cmip_data/
 model_data=$e2c_path/model-output
-result_dir=${e2c_path}/reference
+result_dir=/p/user_pub/e3sm/e3sm_to_cmip/test-cases/master
 
 rgr_dir=${result_dir}/rgr
 rgr_dir_vert=${result_dir}/rgr_vert
@@ -115,10 +115,10 @@ cmip_var_list="mrsos, mrso, mrfso, mrros, mrro, prveg, evspsblveg, evspsblsoi, t
 rgr_dir=${result_dir}/rgr_lnd
 native_dir=${result_dir}/native_lnd
 
-# Note either include the extra variable landfrac or specify the file that has landfrac for subgrid scale mode to work.
+Note either include the extra variable landfrac or specify the file that has landfrac for subgrid scale mode to work.
 ncclimo -P elm -j 1 --var_xtr=landfrac --map=${map_file} --start=$start --end=$end --ypf=$ypf --split -c $caseid -o ${native_dir} -O ${rgr_dir} -v ${raw_var_list} -i ${input_path} ${flags}
-# Alternative ncclimo invocation
-#ncclimo -P elm -j 1 --map=${map_file} --start=$start --end=$end --ypf=$ypf --split -c $caseid -o ${native_dir} -O ${rgr_dir} -v ${raw_var_list} -i ${input_path} ${flags} --sgs_frc=${input_path}/v2.LR.historical_0101.elm.h0.1850-01.nc/landfrac
+Alternative ncclimo invocation
+ncclimo -P elm -j 1 --map=${map_file} --start=$start --end=$end --ypf=$ypf --split -c $caseid -o ${native_dir} -O ${rgr_dir} -v ${raw_var_list} -i ${input_path} ${flags} --sgs_frc=${input_path}/v2.LR.historical_0101.elm.h0.1850-01.nc/landfrac
 
 #raw_var_list_elm_bgc="TOTLITC,CWDC,TOTPRODC,SOIL1C,SOIL2C,SOIL3C,^SOIL4C$,COL_FIRE_CLOSS,WOOD_HARVESTC,TOTVEGC,NBP,GPP,AR,HR"
 # CMORIZE Land Monthly variables

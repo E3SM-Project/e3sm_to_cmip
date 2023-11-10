@@ -1,18 +1,32 @@
-import abc
-from typing import Any, Dict, List, Literal, Optional, TypedDict, Union
+from __future__ import annotations
 
-import cmor
+import abc
+import json
+import logging
+import os
+from typing import Any, Dict, KeysView, List, Literal, Optional, Tuple, TypedDict
+
 import numpy as np
 import xarray as xr
 import yaml
 
+import cmor
+from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE, _formulas
-from e3sm_to_cmip.default import default_handler
-from e3sm_to_cmip.lib import handle_variables
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
 
-# Used by areacella.py
-RADIUS = 6.37122e6
+logger = _setup_logger(__name__)
+
+# The names for valid hybrid sigma levels.
+HYBRID_SIGMA_LEVEL_NAMES = [
+    "standard_hybrid_sigma",
+    "standard_hybrid_sigma_half",
+]
+# A list of valid time dimension names, which is used to check if
+# a output CMIP variable has a time dimension based on the CMOR table. If the
+# CMIP variable does have a time dimension, subsequent CMOR operations are
+# handled appropriately.
+TIME_DIMS = ["time", "time1", "time2"]
 
 
 class BaseVarHandler(abc.ABC):
@@ -59,8 +73,8 @@ class VarHandler(BaseVarHandler):
         name: str
         units: str
         e3sm_axis_name: str
-        e3sm_axis_bnds: Optional[str]
-        time_name: Optional[str]
+        e3sm_axis_bnds: str | None
+        time_name: str | None
 
     def __init__(
         self,
@@ -78,6 +92,15 @@ class VarHandler(BaseVarHandler):
         # An optional unit conversion formula of the final output data.
         # Example: "g-to-kg"
         self.unit_conversion = unit_conversion
+
+        # If unit_conversion is specified, then there should be a single
+        # E3SM raw variable to convert units for.
+        if self.unit_conversion is not None and len(self.raw_variables) > 1:
+            raise ValueError(
+                f"The handler for {self.name} has a unit_conversion specified ",
+                f"({self.unit_conversion}) and should only have on raw_variable "
+                f"defined. More than one raw_variable defined ({self.raw_variables})",
+            )
 
         # An optional conversion formula for calculating the final output data.
         # Usually this is defined if is arithmetic involving more than one raw
@@ -154,95 +177,540 @@ class VarHandler(BaseVarHandler):
 
     def cmorize(
         self,
-        infiles: List[str],  # command-line arg (--input-path)
-        tables: str,  # command-line arg (--tables-path)
-        user_input_path: str,  # command-line arg (--user-metadata)
-        **kwargs,
-    ):
-        # TODO: Refactor calls to `default_handler()` and `handle_variables()`
-        # TODO: Replace **kwargs with explicit method parameters.
-        # -------------------------------------------------
-        # serial=None,  # command-line arg (--serial)
-        # logdir=None,  # command-line arg (--logdir)
-        # simple=False,  # command-line arg (--simple)
-        # outpath=None,  # command-line arg (--output-path)
-        if self.unit_conversion is None:
-            return handle_variables(
-                infiles=infiles,
-                raw_variables=self.raw_variables,
-                write_data=self._write_data,
-                outvar_name=self.name,
-                outvar_units=self.units,
-                table=kwargs.get("table", self.table),
-                tables=tables,
-                metadata_path=user_input_path,
-                serial=kwargs.get("serial"),
+        vars_to_filepaths: Dict[str, List[str]],
+        tables_path: str,
+        metadata_path: str,
+        table: str | None = None,
+        logdir: str | None = None,
+    ) -> str | None:
+        """CMORizes a list of E3SM raw variables to a CMIP variable.
+
+        Parameters
+        ----------
+        vars_to_filepaths : Dict[str, List[str]]
+            A dictionary mapping E3SM raw variables to a list of filepath(s).
+        tables_path : str
+            The path to directory containing CMOR Tables directory.
+        metadata_path : str
+            The path to user json file for CMIP6 metadata
+        table : str | None
+            The CMOR table filename, derived from a custom `freq`, by default
+            None.
+        logdir : str | None, optional
+            The optional CMOR logging directory, by default None
+
+        Returns
+        -------
+        str | None
+            If CMORizing was successful, return the output CMIP variable name
+            to indicate success. If failed, return None.
+        """
+        logger.info(f"{self.name}: Starting CMORizing")
+
+        if table is not None:
+            self.table = table
+
+        # If at least one E3SM raw variable has no file(s) found, return None to
+        # represent a failed operation.
+        if not self._all_vars_have_filepaths(vars_to_filepaths):
+            return None
+
+        # Create the logging directory and setup the CMOR module globally before
+        # running any CMOR functions.
+        # ----------------------------------------------------------------------
+        self._setup_cmor_module(self.name, tables_path, metadata_path, logdir)
+
+        # Get parameters for running CMOR operations
+        # ----------------------------------------------------------------------
+        # Check if the output CMIP variable has a time dimension, which determines
+        # how to handle downstream operations such writing files out with CMOR
+        # with or without a time axis.
+        table_abs_path = os.path.join(tables_path, self.table)
+        time_dim: str | None = self._get_var_time_dim(table_abs_path)
+
+        # Assuming all year ranges are the same for every variable.
+        # TODO: Is this a good keep this legacy assumption?
+        num_files_per_variable = len(list(vars_to_filepaths.values())[0])
+
+        # CMORize and write out via cmor.write.
+        # ----------------------------------------------------------------------
+        for index in range(num_files_per_variable):
+            logger.info(
+                f"{self.name}: loading E3SM variables {vars_to_filepaths.keys()}"
+            )
+            ds = self._get_mfdataset(vars_to_filepaths, index, time_dim)
+            time_bnds_key = self._get_time_bnds_key(ds.data_vars.keys())
+
+            # Create the base CMOR variable object using CMOR axis objects,
+            # which are all set globally in the CMOR module with unique IDs (later
+            # referenced when writing out to a file with cmor.write()).
+            logger.info(f"{self.name}: creating CMOR variable with CMOR axis objects.")
+            cmor_axis_id_map, cmor_ips_id = self._get_cmor_axis_ids_and_ips_id(
+                ds=ds, time_dim=time_dim
+            )
+            cmor_axis_ids = list(cmor_axis_id_map.values())
+            cmor_var_id = cmor.variable(
+                self.name,
+                units=self.units,
+                axis_ids=cmor_axis_ids,
                 positive=self.positive,
-                levels=self.levels,
-                axis=kwargs.get("axis"),
-                logdir=kwargs.get("logdir"),
-                simple=kwargs.get("simple"),
-                outpath=kwargs.get("outpath"),
             )
 
-        return default_handler(
-            infiles,
-            tables=tables,
-            user_input_path=user_input_path,
-            raw_variables=self.raw_variables,
-            name=self.name,
-            units=self.units,
-            table=kwargs.get("table", self.table),
-            unit_conversion=self.unit_conversion,
-            serial=kwargs.get("serial"),
-            positive=self.positive,
-            logdir=kwargs.get("logdir"),
-            simple=kwargs.get("simple"),
-            outpath=kwargs.get("outpath"),
+            self._cmor_write(ds, cmor_var_id, cmor_ips_id, time_dim, time_bnds_key)
+
+        return self.name
+
+    def _all_vars_have_filepaths(
+        self, vars_to_filespaths: Dict[str, List[str]]
+    ) -> bool:
+        """Checks if all raw variables have filepaths found.
+
+        Parameters
+        ----------
+        vars_to_filespaths : Dict[str, List[str]]
+            A dictionary of raw variables to filepaths.
+
+        Returns
+        -------
+        bool
+            True if all variables have filepaths, else False.
+        """
+        for var, filepaths in vars_to_filespaths.items():
+            if len(filepaths) == 0:
+                logging.error(f"{var}: Unable to find input files for {var}")
+                return False
+
+        return True
+
+    def _setup_cmor_module(
+        self,
+        var_name: str,
+        tables_path: str,
+        metadata_path: str,
+        log_dir: str | None,
+    ):
+        """Set up the CMOR module before CMORzing variables.
+
+        Parameters
+        ----------
+        var_name : str
+            The name of the variable.
+        table : str
+            The table filename.
+        tables_path : str
+            The tables path.
+        metadata_path : str
+            The metadata path.
+        logdir : str | None
+            The optional log directory.
+        """
+        if log_dir is not None:
+            logpath = log_dir
+        else:
+            cwd = os.getcwd()
+            logpath = os.path.join(cwd, "cmor_logs")
+
+        os.makedirs(logpath, exist_ok=True)
+        logfile = os.path.join(logpath, var_name + ".log")
+
+        cmor.setup(
+            inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile
+        )
+        cmor.dataset_json(metadata_path)
+        cmor.load_table(self.table)
+
+        logging.info(f"{var_name}: CMOR setup complete")
+
+    def _get_var_time_dim(self, table_path: str) -> str | None:
+        """Get the CMIP variable's time dimension, if it exists.
+
+        Parameters
+        ----------
+        table_path : str
+            The absolute path to the CMOR table.
+
+        Returns
+        -------
+        str | None
+            The optional name of the time dimension if it exists for the CMIP
+            variable defined in the CMOR table.
+        """
+        with open(table_path, "r") as inputstream:
+            table_info = json.load(inputstream)
+
+        axis_info = table_info["variable_entry"][self.name]["dimensions"].split(" ")
+
+        for dim in TIME_DIMS:
+            if dim in axis_info:
+                return dim
+
+        return None
+
+    def _get_mfdataset(
+        self, vars_to_filepaths: Dict[str, List[str]], index: int, time_dim: str | None
+    ) -> xr.Dataset:
+        """Get the xr.Dataset using the filepaths for all raw variables.
+
+        Parameters
+        ----------
+        vars_to_filepaths : Dict[str, List[str]]
+            A dictionary mapping E3SM raw variables to a list of filepath(s).
+        index : int
+            The index representing the time range for the file.
+            For example, with this list:
+                [
+                    v2.LR.historical_0101.eam.h0.1850-01.nc,
+                    v2.LR.historical_0101.eam.h0.1850-02.nc,
+                    ...
+                ]
+            the value at index 0 is v2.LR.historical_0101.eam.h0.1850-01.nc.
+        time_dim : str | None
+            Whether or not the output CMIP variable has a time dimension.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset containing all of the rwar variables.
+        """
+        # Sort the input filepath names for each variable to ensure time axis data
+        # is aligned and in order across variables.
+        sorted_v_to_fp: Dict[str, List[str]] = {
+            var: sorted(vars_to_filepaths[var]) for var in vars_to_filepaths
+        }
+
+        all_filepaths = []
+        for filepaths in sorted_v_to_fp.values():
+            filepath = filepaths[index]
+            all_filepaths.append(filepath)
+
+        ds = xr.open_mfdataset(
+            all_filepaths,
+            decode_times=False,
+            combine="nested",
+            data_vars="minimal",
+            coords="minimal",
+            parallel=True,
         )
 
-    def _write_data(
-        self,
-        varid: int,
-        data: Dict[str, Union[xr.DataArray, np.ndarray]],
-        timeval: float,
-        timebnds: List[List[float]],
-        index: int,
-        **kwargs,
-    ):
-        # TODO: Replace **kwargs with explicit method parameters.
+        # If the output CMIP variable has an alternative time dimension name (e.g.,
+        # "time2") add that to the xr.Dataset by copying the "time" dimension.
+        if time_dim is not None and time_dim != "time":
+            with xr.set_options(keep_attrs=True):
+                ds = ds.rename({"time": time_dim})
 
-        # Convert all variable arrays to np.ndarray to ensure compatibility with
-        # the CMOR library. For handlers that use `self.levels`, the array data
-        # structures are already `np.ndarray` due to additional processing.
-        for var in self.raw_variables:
-            if isinstance(data[var], xr.DataArray):
-                data[var] = data[var].values  # type: ignore
+        # Convert "lev" and "ilev" units from mb to Pa for downstream operations.
+        if "lev" in ds:
+            ds["lev"] = ds["lev"] / 1000
+        if "ilev" in ds:
+            ds["ilev"] = ds["ilev"] / 1000
 
-        if self.formula is not None:
-            outdata = self.formula_method(data, index)
+        # If the variable has levels for "sdepth", make sure it has bounds
+        # for the "levgrnd" axis using a statically defined list of bound
+        # values.
+        if self.levels is not None and self.levels["name"] == "sdepth":
+            ds["levgrnd_bnds"] = _formulas.LEVGRND_BNDS
+
+        return ds
+
+    def _get_time_bnds_key(self, data_vars: KeysView[Any]) -> str | None:
+        """Get the key for the time bounds.
+
+          * "atm" variables use "time_bnds"
+          * "lnd" variables use "time_bounds"
+
+        Parameters
+        ----------
+        data_vars : KeysView[Any]
+            A list of data_var keys in the xr.Dataset.
+
+        Returns
+        -------
+        str | None
+           The key of the time bounds, or None if it does not exist.
+        """
+        if "time_bnds" in data_vars:
+            return "time_bnds"
+        elif "time_bounds" in data_vars:
+            return "time_bounds"
+
+        return None
+
+    def _get_cmor_axis_ids_and_ips_id(
+        self, ds: xr.Dataset, time_dim: str | None
+    ) -> Tuple[Dict[str, int], int | None]:
+        """Create the CMOR axes objects, which are set globally in the CMOR module.
+
+        The CMOR ids for "time" and "lev" should be the starting elements of the
+        axis ID map to align with how they are defined in CMOR tables.
+        Otherwise, CMOR will need to reorder the dimensions and add the message
+        below to the "history" attribute of a variable: "2023-11-02T21:06:00Z
+        altered by CMOR: Reordered dimensions, original order: lat lon time.",
+        which can produce unwanted side-effects with the structure/shape of
+        the final array axes.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset containing axes information.
+        time_dim : str | None
+            An optional time dimension for the output CMIP variable (if set).
+
+        Returns
+        -------
+        Tuple[Dict[str, int], int | None]
+            A tuple with the first element being a dictionary (value is the
+            CMOR axis and key is the ID of the CMOR axis), and the second
+            element being the CMOR zfactor ID for ips if the dataset and handler
+            have hybrid sigma levels.
+
+            Example:
+                ({"time": 0, "lev": 1, "lat": 2, "lon": 3}, 4)
+        """
+        axis_id_map: Dict[str, int] = {}
+        cmor_ips_id = None
+
+        if time_dim is not None:
+            units = ds[time_dim].attrs["units"]
+            axis_id_map["time"] = cmor.axis(time_dim, units=units)
+
+        if self.levels is not None:
+            axis_id_map["lev"] = self._get_cmor_lev_axis_id(ds)
+
+        # Datasets will always have a "lat" and "lon" dimension.
+        axis_id_map["lat"] = cmor.axis(
+            "latitude",
+            units=ds["lat"].units,
+            coord_vals=ds["lat"].values,
+            cell_bounds=ds["lat_bnds"].values,
+        )
+        axis_id_map["lon"] = cmor.axis(
+            "longitude",
+            units=ds["lon"].units,
+            coord_vals=ds["lon"].values,
+            cell_bounds=ds["lon_bnds"].values,
+        )
+
+        if self._has_hybrid_sigma_levels(ds):
+            self._set_cmor_zfactor_for_hybrid_levels(ds, axis_id_map)
+
+            cmor_ips_id = self._set_and_get_cmor_zfactor_ips_id(axis_id_map)
+
+        return axis_id_map, cmor_ips_id
+
+    def _get_cmor_lev_axis_id(self, ds: xr.Dataset) -> cmor.axis:
+        """Get the CMOR lev axis using the xr.Dataset.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The xr.Dataset containing the `lev` axis data.
+
+        Returns
+        -------
+        int
+            The lev CMOR axis id.
+        """
+        axis_name = self.levels["e3sm_axis_name"]  # type: ignore
+        axis_bnds = self.levels.get("e3sm_axis_bnds")  # type: ignore
+
+        coord_vals = ds[axis_name].values
+
+        if axis_bnds is not None:
+            cell_bounds = ds[axis_bnds].values
         else:
-            outdata = data[self.raw_variables[0]][index, :]
+            cell_bounds = None
 
-        # Replace `np.nan` with static FILL_VALUE
-        outdata[np.isnan(outdata)] = FILL_VALUE
+        lev_id = cmor.axis(
+            table_entry=self.levels["name"],  # type: ignore
+            units=self.levels["units"],  # type: ignore
+            coord_vals=coord_vals,
+            cell_bounds=cell_bounds,
+        )
 
-        if kwargs["simple"]:
-            return outdata
+        return lev_id
 
-        cmor.write(varid, outdata, time_vals=timeval, time_bnds=timebnds)
+    def _has_hybrid_sigma_levels(self, ds: xr.Dataset):
+        hybrid_sigma_levels = ["PS", "hyai", "hybi", "hybm", "hyam"]
 
-        if self.levels is not None and self.levels.get("name") in [
-            "standard_hybrid_sigma",
-            "standard_hybrid_sigma_half",
-        ]:
-            cmor.write(
-                data["ips"],
-                data["ps"],
-                time_vals=timeval,
-                time_bnds=timebnds,
-                store_with=varid,
+        return set(hybrid_sigma_levels).issubset(ds.data_vars)
+
+    def _set_cmor_zfactor_for_hybrid_levels(
+        self, ds: xr.Dataset, cmor_axis_id_map: Dict[str, cmor.axis]
+    ):
+        lev_id = cmor_axis_id_map["lev"]
+        lev_name = self.levels["name"]  # type: ignore
+
+        if lev_name == "standard_hybrid_sigma":
+            a_name = "a"
+            b_name = "b"
+            a_bounds = ds["hyai"].values
+            b_bounds = ds["hybi"].values
+        elif lev_name == "standard_hybrid_sigma_half":
+            a_name = "a_half"
+            b_name = "b_half"
+            a_bounds = None
+            b_bounds = None
+
+        cmor.zfactor(
+            zaxis_id=lev_id,
+            zfactor_name=a_name,
+            axis_ids=[lev_id],
+            zfactor_values=ds["hyam"].values,
+            zfactor_bounds=a_bounds,
+        )
+
+        cmor.zfactor(
+            zaxis_id=lev_id,
+            zfactor_name=b_name,
+            axis_ids=[lev_id],
+            zfactor_values=ds["hybm"].values,
+            zfactor_bounds=b_bounds,
+        )
+
+        cmor.zfactor(
+            zaxis_id=lev_id,
+            zfactor_name="p0",
+            units="Pa",
+            zfactor_values=_formulas.P0_VALUE,
+        )
+
+    def _set_and_get_cmor_zfactor_ips_id(
+        self, cmor_axis_id_map: Dict[str, cmor.axis]
+    ) -> int:
+        """Creates ips as a cmor.zfactor and returns its global CMOR id.
+
+        Parameters
+        ----------
+        cmor_axis_id_map : Dict[str, cmor.axis]
+            A dictionary mapping the name of a CMOR axis set globally to its CMOR axis
+            ID.
+
+        Returns
+        -------
+        int
+            The ips CMOR axis id.
+        """
+        name = "ps"
+
+        # NOTE: This maintains the legacy name from pfull.py and phalf.py. I'm
+        # not sure why this is done and what the difference is with "ps".
+        if self.name in ["pfull", "phalf"]:
+            name = "ps2"
+
+        cmor_ips_id = cmor.zfactor(
+            zaxis_id=cmor_axis_id_map["lev"],
+            zfactor_name=name,
+            axis_ids=[
+                cmor_axis_id_map["time"],
+                cmor_axis_id_map["lat"],
+                cmor_axis_id_map["lon"],
+            ],
+            units="Pa",
+        )
+
+        return cmor_ips_id
+
+    def _cmor_write(
+        self,
+        ds: xr.Dataset,
+        cmor_var_id: int,
+        cmor_ips_id: int | None,
+        time_dim: str | None,
+        time_bnds_key: str | None,
+    ):
+        """Writes the output CMIP variable and IPS variable (if it exists).
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset containing the E3SM raw variable and axes info.
+        var_key : str
+            The key for the E3SM raw variable.
+        cmor_var_id : int
+            The CMOR variable ID.
+        cmor_ips_id : int
+            The CMOR zfactor ips ID.
+        time_dim : str | None
+            Whether or not the output CMIP variable has a time dimension.
+        time_bnds_key : str | None
+            The key of the time bounds if a `time_dim` exists.
+        """
+        output_data = self._get_output_data(ds)
+
+        if time_dim is None:
+            cmor.write(var_id=cmor_var_id, data=output_data)
+        else:
+            time_vals = ds[time_dim].values
+            time_bnds = ds[time_bnds_key].values
+
+            logger.info(
+                f"{self.name}: time span {time_bnds[0][0]:1.1f} - "
+                f"{time_bnds[-1][-1]:1.1f}"
             )
+            logger.info(f"{self.name}: Writing variable to file...")
+            try:
+                cmor.write(
+                    var_id=cmor_var_id,
+                    data=output_data,
+                    time_vals=time_vals,
+                    time_bnds=time_bnds,
+                )
+            except Exception as e:
+                logger.error(e)
+
+            if cmor_ips_id is not None:
+                logger.info(f"{self.name}: Writing IPS variable to file...")
+                try:
+                    cmor.write(
+                        var_id=cmor_ips_id,
+                        data=ds["PS"].values,
+                        time_vals=time_vals,
+                        time_bnds=time_bnds,
+                        store_with=cmor_var_id,
+                    )
+                except Exception as e:
+                    logger.error(e)
+
+        cmor.close()
+        logger.debug(
+            f"{self.name}: CMORized and file write complete, closing CMOR I/O."
+        )
+
+    def _get_output_data(self, ds: xr.Dataset) -> np.ndarray:
+        """Get the variable output data.
+
+        The variable output data is retrieved by:
+          1. Unit conversion (defined in handler)
+          2. Formula (defined in handler)
+          3. The first and only variable in the dataset.
+
+        Afterwards, the missing values represented by `np.nan` are replaced
+        with the E3SM defined `FILL_VALUE`, then the xr.DataArray is converted
+        to an `np.ndarray`. It is important that an `np.ndarray` is returned
+        because `cmor.write` does not support Xarray objects.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset containing the raw variables.
+
+        Returns
+        -------
+        np.ndarray
+            The final variable output data to pass to ``cmor.write``.
+        """
+        if self.unit_conversion is not None:
+            var = ds[self.raw_variables[0]]
+            da_output = _formulas.convert_units(var, self.unit_conversion)
+        elif self.formula is not None:
+            da_output = self.formula_method(ds)
+        else:
+            da_output = ds[self.raw_variables[0]]
+
+        da_output = da_output.fillna(FILL_VALUE)
+        output = da_output.values
+
+        return output
 
     def _update_table_ref(self, freq: str, realm: str, cmip_tables_path: str):
         """
