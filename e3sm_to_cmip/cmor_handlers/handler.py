@@ -416,7 +416,7 @@ class VarHandler(BaseVarHandler):
         """Get the key for the time bounds.
 
           * "atm" variables use "time_bnds"
-          * "ldn" variables use "time_bounds"
+          * "lnd" variables use "time_bounds"
 
         Parameters
         ----------
