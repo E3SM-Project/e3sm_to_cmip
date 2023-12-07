@@ -1,4 +1,4 @@
-import imp
+import importlib
 import os
 from collections import defaultdict
 from typing import Any, Dict, List, Literal, Optional, Union, get_args
@@ -44,8 +44,6 @@ def load_all_handlers(
         The realm.
     cmip_vars : List[str]
         The list of CMIP6 variables to CMORize.
-
-
 
     Returns
     -------
@@ -364,7 +362,7 @@ def _get_handlers_from_modules(path: str) -> Dict[str, List[Dict[str, Any]]]:
             ]:
                 var = file.split(".")[0]
                 filepath = os.path.join(root, file)
-                module = imp.load_source(var, filepath)
+                module = _get_handler_module(var, filepath)
 
                 # NOTE: The value is set to a list with a single dict entry
                 # so that it is compatible with the data structure for storing
@@ -385,3 +383,24 @@ def _get_handlers_from_modules(path: str) -> Dict[str, List[Dict[str, Any]]]:
                 ]
 
     return handlers
+
+
+def _get_handler_module(var: str, file_path: str):
+    """Get the variable handler Python module.
+
+    Parameters
+    ----------
+    var : str
+        The key of the variable (e.g., "orog").
+    file_path : str
+        The absolute path to the variable handler Python module.
+
+    Returns
+    -------
+    module
+        The module.
+    """
+    spec = importlib.util.spec_from_file_location(var, file_path)  # type: ignore
+    module = importlib.util.module_from_spec(spec)  # type: ignore
+
+    return module
