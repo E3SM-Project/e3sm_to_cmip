@@ -1,6 +1,6 @@
-import importlib
 import os
 from collections import defaultdict
+from importlib.machinery import SourceFileLoader
 from typing import Any, Dict, List, Literal, Optional, Union, get_args
 
 import pandas as pd
@@ -385,14 +385,15 @@ def _get_handlers_from_modules(path: str) -> Dict[str, List[Dict[str, Any]]]:
     return handlers
 
 
-def _get_handler_module(var: str, file_path: str):
+def _get_handler_module(module_name: str, module_path: str):
     """Get the variable handler Python module.
 
     Parameters
     ----------
-    var : str
-        The key of the variable (e.g., "orog").
-    file_path : str
+    module_name : str
+        The name of the module, which should be the key of the variable (e.g.,
+        "orog").
+    module_path : str
         The absolute path to the variable handler Python module.
 
     Returns
@@ -400,7 +401,6 @@ def _get_handler_module(var: str, file_path: str):
     module
         The module.
     """
-    spec = importlib.util.spec_from_file_location(var, file_path)  # type: ignore
-    module = importlib.util.module_from_spec(spec)  # type: ignore
+    module = SourceFileLoader(module_name, module_path).load_module()
 
     return module
