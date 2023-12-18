@@ -240,7 +240,6 @@ class VarHandler(BaseVarHandler):
                 f"{self.name}: loading E3SM variables {vars_to_filepaths.keys()}"
             )
             ds = self._get_mfdataset(vars_to_filepaths, index, time_dim)
-            time_bnds_key = self._get_time_bnds_key(ds.data_vars.keys())
 
             # Create the base CMOR variable object using CMOR axis objects,
             # which are all set globally in the CMOR module with unique IDs (later
@@ -257,7 +256,18 @@ class VarHandler(BaseVarHandler):
                 positive=self.positive,
             )
 
-            self._cmor_write(ds, cmor_var_id, cmor_ips_id, time_dim, time_bnds_key)
+            if time_dim is None:
+                self._cmor_write(ds, cmor_var_id)
+            else:
+                self._cmor_write_with_time(ds, cmor_var_id, time_dim, cmor_ips_id)
+
+        # NOTE: It is important to close the CMOR module AFTER CMORizing all of
+        # the variables. Otherwise, the IDs of cmor objects gets wiped after
+        # every loop.
+        cmor.close()
+        logger.debug(
+            f"{self.name}: CMORized and file write complete, closing CMOR I/O."
+        )
 
         return self.name
 
@@ -414,7 +424,7 @@ class VarHandler(BaseVarHandler):
 
         return ds
 
-    def _get_time_bnds_key(self, data_vars: KeysView[Any]) -> str | None:
+    def _get_time_bnds_key(self, data_vars: KeysView[Any]) -> str:
         """Get the key for the time bounds.
 
           * "atm" variables use "time_bnds"
@@ -427,15 +437,20 @@ class VarHandler(BaseVarHandler):
 
         Returns
         -------
-        str | None
+        str
            The key of the time bounds, or None if it does not exist.
+
+        Raises
+        ------
+        KeyError
+            If no matching time bounds key was found in the dataset.
         """
         if "time_bnds" in data_vars:
             return "time_bnds"
         elif "time_bounds" in data_vars:
             return "time_bounds"
 
-        return None
+        raise KeyError("No matching time bounds found in the dataset")
 
     def _get_cmor_axis_ids_and_ips_id(
         self, ds: xr.Dataset, time_dim: str | None
@@ -616,11 +631,8 @@ class VarHandler(BaseVarHandler):
         self,
         ds: xr.Dataset,
         cmor_var_id: int,
-        cmor_ips_id: int | None,
-        time_dim: str | None,
-        time_bnds_key: str | None,
     ):
-        """Writes the output CMIP variable and IPS variable (if it exists).
+        """Writes the output CMIP variable.
 
         Parameters
         ----------
@@ -630,53 +642,65 @@ class VarHandler(BaseVarHandler):
             The key for the E3SM raw variable.
         cmor_var_id : int
             The CMOR variable ID.
-        cmor_ips_id : int
-            The CMOR zfactor ips ID.
-        time_dim : str | None
-            Whether or not the output CMIP variable has a time dimension.
-        time_bnds_key : str | None
-            The key of the time bounds if a `time_dim` exists.
         """
         output_data = self._get_output_data(ds)
 
-        if time_dim is None:
-            cmor.write(var_id=cmor_var_id, data=output_data)
-        else:
-            time_vals = ds[time_dim].values
-            time_bnds = ds[time_bnds_key].values
+        cmor.write(var_id=cmor_var_id, data=output_data)
 
-            logger.info(
-                f"{self.name}: time span {time_bnds[0][0]:1.1f} - "
-                f"{time_bnds[-1][-1]:1.1f}"
+    def _cmor_write_with_time(
+        self,
+        ds: xr.Dataset,
+        cmor_var_id: int,
+        time_dim: str,
+        cmor_ips_id: int | None,
+    ):
+        """Writes the output CMIP variable and IPS variable (if it exists).
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset containing the E3SM raw variable and axes info.
+        cmor_var_id : int
+            The CMOR variable ID.
+        time_dim : str
+            The key of the time dimension.
+        cmor_ips_id : int | None
+            The optional CMOR zfactor ips ID.
+        """
+        output_data = self._get_output_data(ds)
+
+        time_vals = ds[time_dim].values
+        time_bnds_key = self._get_time_bnds_key(ds.data_vars.keys())
+        time_bnds = ds[time_bnds_key].values
+
+        logger.info(
+            f"{self.name}: time span {time_bnds[0][0]:1.1f} - "
+            f"{time_bnds[-1][-1]:1.1f}"
+        )
+        logger.info(f"{self.name}: Writing variable to file...")
+
+        try:
+            cmor.write(
+                var_id=cmor_var_id,
+                data=output_data,
+                time_vals=time_vals,
+                time_bnds=time_bnds,
             )
-            logger.info(f"{self.name}: Writing variable to file...")
+        except Exception as e:
+            logger.error(e)
+
+        if cmor_ips_id is not None:
+            logger.info(f"{self.name}: Writing IPS variable to file...")
             try:
                 cmor.write(
-                    var_id=cmor_var_id,
-                    data=output_data,
+                    var_id=cmor_ips_id,
+                    data=ds["PS"].values,
                     time_vals=time_vals,
                     time_bnds=time_bnds,
+                    store_with=cmor_var_id,
                 )
             except Exception as e:
                 logger.error(e)
-
-            if cmor_ips_id is not None:
-                logger.info(f"{self.name}: Writing IPS variable to file...")
-                try:
-                    cmor.write(
-                        var_id=cmor_ips_id,
-                        data=ds["PS"].values,
-                        time_vals=time_vals,
-                        time_bnds=time_bnds,
-                        store_with=cmor_var_id,
-                    )
-                except Exception as e:
-                    logger.error(e)
-
-        cmor.close()
-        logger.debug(
-            f"{self.name}: CMORized and file write complete, closing CMOR I/O."
-        )
 
     def _get_output_data(self, ds: xr.Dataset) -> np.ndarray:
         """Get the variable output data.
