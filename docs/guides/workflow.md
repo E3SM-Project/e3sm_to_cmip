@@ -27,7 +27,7 @@ Note that although the e3sm_to_cmip package itself can be installed via conda, t
 
 Processing data with CMOR requires a metadata json file containing all the information about the case being processed. Additionally your activities, sources, and institution must be registered with the CMIP6 project. For more information see the CMOR documentation here: https://cmor.llnl.gov/mydoc_cmor3_CV/
 
-A working example of the case metadata file is contained as part of the e3sm_to_cmip repo, and can be accessed here: https://raw.githubusercontent.com/E3SM-Project/e3sm_to_cmip/master/e3sm_user_config_picontrol.json
+A working example of the case metadata file (default_metadata.json) is contained as part of the e3sm_to_cmip repo, and can be accessed [here](https://github.com/E3SM-Project/e3sm_to_cmip/blob/master/e3sm_to_cmip/resources/default_metadata.json).
 
 
 ## CWL workflows
