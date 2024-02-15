@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 88
-target-version = ['py38', 'py39']
+target-version = ['py39', 'py310', 'py311']
 include = '\.pyi?$'
 exclude = '''
 (
@@ -21,3 +21,33 @@ exclude = '''
   )/
 )
 '''
+
+[tool.isort]
+# Docs: https://pycqa.github.io/isort/docs/configuration/options.html#example-pyprojecttoml_4
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 88
+
+[tool.pytest.ini_options]
+# Docs: https://docs.pytest.org/en/7.2.x/reference/customize.html#configuration
+junit_family = "xunit2"
+addopts = "--cov=e3sm_to_cmip --cov-report term --cov-report html:tests_coverage_reports/htmlcov --cov-report xml:tests_coverage_reports/coverage.xml -s"
+python_files = ["tests.py", "test_*.py"]
+
+[tool.mypy]
+# Docs: https://mypy.readthedocs.io/en/stable/config_file.html
+python_version = "3.10"
+check_untyped_defs = true
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+# cmor type stubs does not exist and there are no plans to add them.
+# netCDF4 type stubs has not been added yet (https://github.com/python/typeshed/issues/9545)
+module = ["cmor.*", "netCFD4.*"]
+follow_imports = "silent"
+follow_imports_for_stubs = true

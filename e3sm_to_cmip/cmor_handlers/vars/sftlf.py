@@ -1,5 +1,5 @@
 """
-PHIS to orog converter
+LANDFRAC to sftlf converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -19,11 +19,10 @@ from e3sm_to_cmip.util import print_message
 logger = _setup_logger(__name__)
 
 # list of raw variable names needed
-RAW_VARIABLES = [str("PHIS")]
-VAR_NAME = str("orog")
-VAR_UNITS = str("m")
+RAW_VARIABLES = [str("LANDFRAC")]
+VAR_NAME = str("sftlf")
+VAR_UNITS = str("%")
 TABLE = str("CMIP6_fx.json")
-GRAV = 9.80616
 
 
 def handle_simple(infiles):
@@ -39,7 +38,7 @@ def handle_simple(infiles):
         ds["lat_bnds"] = inputds["lat_bnds"]
         ds["lon"] = inputds["lon"]
         ds["lon_bnds"] = inputds["lon_bnds"]
-        outdata = inputds["PHIS"] / GRAV
+        outdata = inputds["LANDFRAC"] * 100.0
 
         for attr, val in inputds.attrs.items():
             ds.attrs[attr] = val
@@ -89,10 +88,10 @@ def handle(infiles, tables, user_input_path, table, logdir):
     logging.info(msg)
 
     # extract data from the input file
-    msg = "orog: loading PHIS"
+    msg = "sftlf: loading LANDFRAC"
     logger.info(msg)
 
-    filename = infiles["PHIS"][0]
+    filename = infiles["LANDFRAC"][0]
 
     if not os.path.exists(filename):
         raise IOError("File not found: {}".format(filename))
@@ -105,7 +104,7 @@ def handle(infiles, tables, user_input_path, table, logdir):
         "lon": ds["lon"],
         "lat_bnds": ds["lat_bnds"],
         "lon_bnds": ds["lon_bnds"],
-        "PHIS": ds["PHIS"],
+        "LANDFRAC": ds["LANDFRAC"],
     }
 
     msg = f"{VAR_NAME}: loading axes"
@@ -126,7 +125,7 @@ def handle(infiles, tables, user_input_path, table, logdir):
         },
     ]
 
-    msg = "orog: running CMOR"
+    msg = "sftlf: running CMOR"
     logging.info(msg)
 
     axis_ids = list()
@@ -136,7 +135,7 @@ def handle(infiles, tables, user_input_path, table, logdir):
 
     varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids)
 
-    outdata = data["PHIS"].values / GRAV
+    outdata = data["LANDFRAC"].values * 100.0
     cmor.write(varid, outdata)
 
     msg = "{}: write complete, closing".format(VAR_NAME)
@@ -147,4 +146,4 @@ def handle(infiles, tables, user_input_path, table, logdir):
     msg = "{}: file close complete".format(VAR_NAME)
     logger.debug(msg)
 
-    return "orog"
+    return "sftlf"

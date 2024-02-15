@@ -7,8 +7,6 @@ dependencies:
   # Base - required for building the repository as an Anaconda package
   # ====================
   - python >=3.9
-  - cdms2=3.1.5
-  - cdutil=8.2.1
   - cmor >=3.7.0
   - dask
   - nco >=5.1.4
@@ -17,6 +15,7 @@ dependencies:
   - pyyaml
   - tqdm
   - xarray >=2022.02.0 # This version of Xarray drops support for Python 3.8.
+  - xcdat >=0.6.0
   # Testing
   # ==================
   - pytest
@@ -34,9 +33,11 @@ dependencies:
   - isort=5.12.0
   - mypy=1.4.1
   - pre-commit=3.3.3
-  - types-pytz=2023.3.0.0
-  - types-PyYAML=6.0.12
+  - types-pytz
+  - types-PyYAML
+  - types-tqdm
   # Developer Tools
   # ==================
   - tbump=6.9.0
+  - ipykernel
 prefix: /opt/miniconda3/envs/e3sm_to_cmip_dev

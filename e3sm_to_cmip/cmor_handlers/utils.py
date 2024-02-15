@@ -1,6 +1,6 @@
-import imp
 import os
 from collections import defaultdict
+from importlib.machinery import SourceFileLoader
 from typing import Any, Dict, List, Literal, Optional, Union, get_args
 
 import pandas as pd
@@ -45,8 +45,6 @@ def load_all_handlers(
     cmip_vars : List[str]
         The list of CMIP6 variables to CMORize.
 
-
-
     Returns
     -------
     List[Dict[str, Any]]:
@@ -74,7 +72,7 @@ def load_all_handlers(
             handlers = handlers + var_handler
 
         if len(missing_handlers) > 0:
-            raise KeyError(
+            logger.warning(
                 f"No handlers are defined for the variables: {missing_handlers}. "
                 "Make sure at least one variable handler is defined for each of these "
                 f"variables in `{HANDLER_DEFINITIONS_PATH}`."
@@ -116,7 +114,7 @@ def _get_mpas_handlers(cmip_vars: List[str]):
         derived_handlers.append(var_handler[0])
 
     if len(missing_handlers) > 0:
-        raise KeyError(
+        logger.warning(
             f"No variable handlers are defined for {missing_handlers}. Make sure at "
             "least one variable handler is defined for each of these variables in "
             f"`{MPAS_HANDLER_DIR_PATH}`."
@@ -211,13 +209,13 @@ def derive_handlers(
         derived_handlers.append(derived_handler)
 
     if len(missing_handlers) > 0:
-        raise KeyError(
+        logger.warning(
             f"No handlers are defined for the variables: {missing_handlers}. "
             "Make sure handlers are defined for these variables in `handlers.yaml`."
         )
 
     if len(cannot_derive) > 0:
-        raise KeyError(
+        logger.warning(
             f"No handlers could be derived for the variables: {cannot_derive}. "
             "Make sure the input E3SM datasets have the variables needed derivation."
         )
@@ -364,7 +362,7 @@ def _get_handlers_from_modules(path: str) -> Dict[str, List[Dict[str, Any]]]:
             ]:
                 var = file.split(".")[0]
                 filepath = os.path.join(root, file)
-                module = imp.load_source(var, filepath)
+                module = _get_handler_module(var, filepath)
 
                 # NOTE: The value is set to a list with a single dict entry
                 # so that it is compatible with the data structure for storing
@@ -385,3 +383,24 @@ def _get_handlers_from_modules(path: str) -> Dict[str, List[Dict[str, Any]]]:
                 ]
 
     return handlers
+
+
+def _get_handler_module(module_name: str, module_path: str):
+    """Get the variable handler Python module.
+
+    Parameters
+    ----------
+    module_name : str
+        The name of the module, which should be the key of the variable (e.g.,
+        "orog").
+    module_path : str
+        The absolute path to the variable handler Python module.
+
+    Returns
+    -------
+    module
+        The module.
+    """
+    module = SourceFileLoader(module_name, module_path).load_module()
+
+    return module

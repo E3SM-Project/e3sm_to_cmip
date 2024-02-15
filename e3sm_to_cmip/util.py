@@ -173,7 +173,6 @@ def print_var_info(  # noqa: C901
 
         with xr.open_dataset(file_path) as ds:
             for handler in handlers:
-
                 table_info = _get_table_info(tables, handler["table"])
                 if handler["name"] not in table_info["variable_entry"]:
                     continue
@@ -196,7 +195,6 @@ def print_var_info(  # noqa: C901
 
                 has_vars = True
                 for raw_var in raw_vars:
-
                     if raw_var not in ds.data_vars:
                         has_vars = False
                         msg = f"Variable {handler['name']} is not present in the input dataset"  # type: ignore
@@ -497,7 +495,6 @@ def find_mpas_files(component, path, map_path=None):  # noqa: C901
     logger.info(f"find_mpas_files: component = {component}, path = {path}")
 
     if component == "mpaso":
-
         pattern = r".*mpaso.hist.am.timeSeriesStatsMonthly.\d{4}-\d{2}-\d{2}.nc"
         results = [
             os.path.join(path, x)
@@ -526,7 +523,6 @@ def find_mpas_files(component, path, map_path=None):  # noqa: C901
         raise IOError("Unable to find mpassi in the input directory")
 
     elif component == "mpaso_namelist":
-
         patterns = ["mpaso_in", "mpas-o_in"]
         for pattern in patterns:
             for infile in contents:
@@ -535,7 +531,6 @@ def find_mpas_files(component, path, map_path=None):  # noqa: C901
         raise IOError("Unable to find MPASO_namelist in the input directory")
 
     elif component == "mpassi_namelist":
-
         patterns = ["mpassi_in", "mpas-cice_in"]
         for pattern in patterns:
             for infile in contents:
@@ -544,7 +539,6 @@ def find_mpas_files(component, path, map_path=None):  # noqa: C901
         raise IOError("Unable to find MPASSI_namelist in the input directory")
 
     elif component == "mpas_mesh":
-
         pattern = r".*mpaso.rst.\d{4}-\d{2}-\d{2}_\d{5}.nc"
         for infile in contents:
             if re.match(pattern, infile):
@@ -563,7 +557,6 @@ def find_mpas_files(component, path, map_path=None):  # noqa: C901
             raise IOError("Unable to find mpas_map in the input directory")
 
     elif component == "mpaso_moc_regions":
-
         pattern_v1 = "_region_"
         pattern_v2 = "mocBasinsAndTransects"
         for infile in contents:
@@ -581,53 +574,6 @@ def find_mpas_files(component, path, map_path=None):  # noqa: C901
             raise ValueError(
                 f"Unrecognized component {component}, unable to find input files"
             )
-
-
-# ------------------------------------------------------------------
-
-
-def terminate(pool, debug=False):
-    """
-    Terminates the process pool
-
-    Params:
-    -------
-        pool (multiprocessing.Pool): the pool to shutdown
-        debug (bool): if we're running in debug mode
-    Returns:
-    --------
-        None
-    """
-    if debug:
-        print_message("Shutting down process pool", "debug")
-    pool.shutdown()
-
-
-# ------------------------------------------------------------------
-
-
-def get_levgrnd_bnds():
-    return [
-        0,
-        0.01751106046140194,
-        0.045087261125445366,
-        0.09055273048579693,
-        0.16551261954009533,
-        0.28910057805478573,
-        0.4928626772016287,
-        0.8288095649331808,
-        1.3826923426240683,
-        2.2958906944841146,
-        3.801500206813216,
-        6.28383076749742,
-        10.376501685008407,
-        17.124175196513534,
-        28.249208575114608,
-        42.098968505859375,
-    ]
-
-
-# ------------------------------------------------------------------
 
 
 def get_years_from_raw(path, realm, var):
@@ -650,7 +596,6 @@ def get_years_from_raw(path, realm, var):
         s = re.search(pattern=p, string=contents[-1])
         end = int(contents[-1][s.start() : s.start() + 4])  # type: ignore
     elif realm in ["mpassi", "mpaso"]:
-
         files = sorted(find_mpas_files(realm, path))
         p = r"\d{4}-\d{2}-\d{2}.nc"
         s = re.search(pattern=p, string=files[0])

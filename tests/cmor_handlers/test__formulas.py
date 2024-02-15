@@ -26,301 +26,373 @@ from e3sm_to_cmip.cmor_handlers._formulas import (
 )
 
 
-def test_cLitter():
-    data = {
-        "TOTLITC": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "CWDC": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+def _dummy_dataarray():
+    return xr.DataArray(
+        dims=["lat", "lon"],
+        data=np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
+    )
 
-    result = cLitter(data, index=1)
-    expected = np.array([0, 0.002, 0.004])
-    np.testing.assert_allclose(result, expected)
+
+def test_cLitter():
+    ds = xr.Dataset(
+        data_vars={"TOTLITC": _dummy_dataarray(), "CWDC": _dummy_dataarray()}
+    )
+
+    result = cLitter(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"],
+        data=(
+            np.array([[0.0, 0.002, 0.004], [0.0, 0.002, 0.004], [0.0, 0.002, 0.004]])
+        ),
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        cLitter({}, index=1)
+        cLitter(xr.Dataset())
 
 
 def test_cl():
-    data = {
-        "CLOUD": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(data_vars={"CLOUD": _dummy_dataarray()})
 
-    result = cl(data, index=1)
-    expected = np.array([0, 100, 200])
-    np.testing.assert_allclose(result, expected)
+    result = cl(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"],
+        data=np.array([[0, 100, 200], [0, 100, 200], [0, 100, 200]]),
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        cl({}, index=1)
+        cl(xr.Dataset())
 
 
 def test_emibc():
-    data = {
-        "SFbc_a4": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "bc_a4_CLXF": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(
+        data_vars={"SFbc_a4": _dummy_dataarray(), "bc_a4_CLXF": _dummy_dataarray()}
+    )
 
-    result = emibc(data, index=1)
-    expected = np.array([0, 1, 2])
-    np.testing.assert_allclose(result, expected)
+    result = emibc(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"], data=np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]])
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        emibc({}, index=1)
+        emibc(xr.Dataset())
 
 
 def test_emiso2():
-    data = {
-        "SFSO2": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "SO2_CLXF": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(
+        data_vars={"SFSO2": _dummy_dataarray(), "SO2_CLXF": _dummy_dataarray()}
+    )
 
-    result = emiso2(data, index=1)
-    expected = np.array([0, 1, 2])
-    np.testing.assert_allclose(result, expected)
+    result = emiso2(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"], data=np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]])
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        emiso2({}, index=1)
+        emiso2(xr.Dataset())
 
 
 def test_emiso4():
-    data = {
-        "SFso4_a1": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "SFso4_a2": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "so4_a1_CLXF": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "so4_a2_CLXF": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(
+        data_vars={
+            "SFso4_a1": _dummy_dataarray(),
+            "SFso4_a2": _dummy_dataarray(),
+            "so4_a1_CLXF": _dummy_dataarray(),
+            "so4_a2_CLXF": _dummy_dataarray(),
+        }
+    )
 
-    result = emiso4(data, index=1)
-    expected = np.array([0, 2, 4])
-    np.testing.assert_allclose(result, expected)
+    result = emiso4(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"], data=np.array([[0, 2, 4], [0, 2, 4], [0, 2, 4]])
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        emiso4({}, index=1)
+        emiso4(xr.Dataset())
 
 
 def test_lai():
-    data = {
-        "LAISHA": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "LAISUN": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(
+        data_vars={
+            "LAISHA": _dummy_dataarray(),
+            "LAISUN": _dummy_dataarray(),
+        }
+    )
 
-    result = lai(data, index=1)
-    expected = np.array([0, 2, 4])
-    np.testing.assert_allclose(result, expected)
+    result = lai(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"], data=np.array([[0, 2, 4], [0, 2, 4], [0, 2, 4]])
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        lai({}, index=1)
+        lai(xr.Dataset())
 
 
 def test_mmrbc():
-    data = {
-        "bc_a1": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "bc_a4": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "bc_c1": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "bc_c4": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(
+        data_vars={
+            "bc_a1": _dummy_dataarray(),
+            "bc_a4": _dummy_dataarray(),
+            "bc_c1": _dummy_dataarray(),
+            "bc_c4": _dummy_dataarray(),
+        }
+    )
 
-    result = mmrbc(data, index=1)
-    expected = np.array([0, 4, 8])
-    np.testing.assert_allclose(result, expected)
+    result = mmrbc(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"], data=np.array([[0, 4, 8], [0, 4, 8], [0, 4, 8]])
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        mmrbc({}, index=1)
+        mmrbc(xr.Dataset())
 
 
 def test_mmrso4():
-    data = {
-        "so4_a1": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "so4_c1": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "so4_a2": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "so4_c2": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "so4_a3": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "so4_c3": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(
+        data_vars={
+            "so4_a1": _dummy_dataarray(),
+            "so4_c1": _dummy_dataarray(),
+            "so4_a2": _dummy_dataarray(),
+            "so4_c2": _dummy_dataarray(),
+            "so4_a3": _dummy_dataarray(),
+            "so4_c3": _dummy_dataarray(),
+        }
+    )
 
-    result = mmrso4(data, index=1)
-    expected = np.array([0, 6, 12])
-    np.testing.assert_allclose(result, expected)
+    result = mmrso4(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"], data=np.array([[0, 6, 12], [0, 6, 12], [0, 6, 12]])
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        mmrso4({}, index=1)
+        mmrso4(xr.Dataset())
 
 
 def test_mrfso():
-    data = {
-        "SOILICE": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(
+        data_vars={
+            "SOILICE": xr.DataArray(
+                dims=["lat", "levgrnd"],
+                data=np.array(
+                    [[0, 1, 5000], [0, 1, 6000], [0, 1, 4000]], dtype="float64"
+                ),
+            )
+        }
+    )
 
-    result = mrfso(data, index=1)
-    expected = np.array([3, 3, 3])
-    np.testing.assert_allclose(result, expected)
+    result = mrfso(ds)
+    expected = xr.DataArray(
+        dims=["lat"], data=np.array([5000, 5000, 4001]), coords={"lat": [0, 1, 2]}
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        mrfso({}, index=1)
+        mrfso(xr.Dataset())
 
 
 def test_mrso():
-    data = {
-        "SOILICE": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "SOILLIQ": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(
+        data_vars={
+            "SOILICE": xr.DataArray(
+                dims=["lat", "levgrnd"],
+                data=np.array(
+                    [[0, 1, 5000], [0, 1, 6000], [0, 1, 4000]], dtype="float64"
+                ),
+            ),
+            "SOILLIQ": xr.DataArray(
+                dims=["lat", "levgrnd"],
+                data=np.array(
+                    [[0, 1, 5000], [0, 1, 6000], [0, 1, 4000]], dtype="float64"
+                ),
+            ),
+        }
+    )
 
-    result = mrso(data, index=1)
-    expected = np.array([6, 6, 6])
-    np.testing.assert_allclose(result, expected)
+    result = mrso(ds)
+    expected = xr.DataArray(dims=["lat"], data=np.array([5000, 5000, 5000]))
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        mrso({}, index=1)
+        mrso(xr.Dataset())
 
 
 def test_pr():
-    data = {
-        "PRECC": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "PRECL": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(
+        data_vars={"PRECC": _dummy_dataarray(), "PRECL": _dummy_dataarray()}
+    )
 
-    result = pr(data, index=1)
-    expected = np.array([0, 2000, 4000])
+    result = pr(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"],
+        data=np.array([[0, 2000, 4000], [0, 2000, 4000], [0, 2000, 4000]]),
+    )
 
     np.testing.assert_array_equal(result, expected)
 
-    data = {"PRECT": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64")}
-    result = pr(data, index=1)
-    expected = np.array([0, 1000, 2000])
+    ds = xr.Dataset(data_vars={"PRECT": _dummy_dataarray()})
+    result = pr(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"],
+        data=np.array([[0, 1000, 2000], [0, 1000, 2000], [0, 1000, 2000]]),
+    )
 
     np.testing.assert_array_equal(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        pr({}, index=1)
+        pr(xr.Dataset())
 
 
 def test_prsn():
-    data = {
-        "PRECSC": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "PRECSL": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(
+        data_vars={"PRECSC": _dummy_dataarray(), "PRECSL": _dummy_dataarray()}
+    )
 
-    result = prsn(data, index=1)
-    expected = np.array([0, 2000, 4000])
-    np.testing.assert_allclose(result, expected)
+    result = prsn(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"],
+        data=np.array([[0, 2000, 4000], [0, 2000, 4000], [0, 2000, 4000]]),
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        prsn({}, index=1)
+        prsn(xr.Dataset())
 
 
 def test_rldscs():
-    data = {
-        "FLDS": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "FLNS": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "FLNSC": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(
+        data_vars={
+            "FLDS": _dummy_dataarray(),
+            "FLNS": _dummy_dataarray(),
+            "FLNSC": _dummy_dataarray(),
+        }
+    )
 
-    result = rldscs(data, index=1)
-    expected = np.array([0, 1, 2])
-    np.testing.assert_allclose(result, expected)
+    result = rldscs(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"],
+        data=np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]]),
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        rldscs({}, index=1)
+        rldscs(xr.Dataset())
 
 
 def test_rlut():
-    data = {
-        "FSNTOA": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "FSNT": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "FLNT": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(
+        data_vars={
+            "FSNTOA": _dummy_dataarray(),
+            "FSNT": _dummy_dataarray(),
+            "FLNT": _dummy_dataarray(),
+        }
+    )
 
-    result = rlut(data, index=1)
-    expected = np.array([0, 1, 2])
-    np.testing.assert_allclose(result, expected)
+    result = rlut(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"],
+        data=np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]]),
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        rlut({}, index=1)
+        rlut(xr.Dataset())
 
 
 def test_rlus():
-    data = {
-        "FLDS": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "FLNS": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(data_vars={"FLDS": _dummy_dataarray(), "FLNS": _dummy_dataarray()})
 
-    result = rlus(data, index=1)
-    expected = np.array([0, 2, 4])
-    np.testing.assert_allclose(result, expected)
+    result = rlus(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"],
+        data=np.array([[0, 2, 4], [0, 2, 4], [0, 2, 4]]),
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        rlus({}, index=1)
+        rlus(xr.Dataset())
 
 
 def test_rsus():
-    data = {
-        "FSDS": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "FSNS": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(data_vars={"FSNS": _dummy_dataarray(), "FSDS": _dummy_dataarray()})
 
-    result = rsus(data, index=1)
-    expected = np.array([0, 0, 0])
-    np.testing.assert_allclose(result, expected)
+    result = rsus(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"],
+        data=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]),
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        rsus({}, index=1)
+        rsus(xr.Dataset())
 
 
 def test_rsuscs():
-    data = {
-        "FSDSC": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "FSNSC": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(
+        data_vars={"FSDSC": _dummy_dataarray(), "FSNSC": _dummy_dataarray()}
+    )
 
-    result = rsuscs(data, index=1)
-    expected = np.array([0, 0, 0])
-    np.testing.assert_allclose(result, expected)
+    result = rsuscs(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"],
+        data=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]),
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        rsuscs({}, index=1)
+        rsuscs(xr.Dataset())
 
 
 def test_rtmt():
-    data = {
-        "FSNT": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "FLNT": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(data_vars={"FSNT": _dummy_dataarray(), "FLNT": _dummy_dataarray()})
 
-    result = rtmt(data, index=1)
-    expected = np.array([0, 0, 0])
-    np.testing.assert_allclose(result, expected)
+    result = rtmt(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"],
+        data=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]),
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        rsuscs({}, index=1)
+        rsuscs(xr.Dataset())
 
 
 def test_tran():
-    data = {
-        "QSOIL": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-        "QVEGT": np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
-    }
+    ds = xr.Dataset(
+        data_vars={"QSOIL": _dummy_dataarray(), "QVEGT": _dummy_dataarray()}
+    )
 
-    result = tran(data, index=1)
-    expected = np.array([0, 2, 4])
-    np.testing.assert_allclose(result, expected)
+    result = tran(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"],
+        data=np.array([[0, 2, 4], [0, 2, 4], [0, 2, 4]]),
+    )
+    xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        rsuscs({}, index=1)
+        rsuscs(xr.Dataset())
