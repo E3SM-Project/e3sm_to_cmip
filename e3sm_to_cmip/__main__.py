@@ -35,6 +35,7 @@ from e3sm_to_cmip.cmor_handlers.utils import (
 from e3sm_to_cmip.util import (
     FREQUENCIES,
     _get_table_info,
+    get_handler_info_msg,
     add_metadata,
     copy_user_metadata,
     find_atm_files,
@@ -162,7 +163,8 @@ class E3SMtoCMIP:
 
         # Setup directories using the CLI argument paths (e.g., output dir).
         # ======================================================================
-        self._setup_dirs_with_paths()
+        if not self.info_mode:
+            self._setup_dirs_with_paths()
 
         # Run e3sm_to_cmip with info mode.
         # ======================================================================
@@ -346,17 +348,19 @@ class E3SMtoCMIP:
             "--info",
             action="store_true",
             help=(
-                "Print information about the variables passed in the --var-list "
+                "Produce information about the CMIP6 variables passed in the --var-list "
                 "argument and exit without doing any processing. There are three modes "
-                "for getting the info, if you just pass the --info flag with the "
-                "--var-list then it will print out the information for the requested "
-                "variable. \nIf the --freq <frequency> is passed along with the "
-                "--tables-path, then the CMIP6 tables will get checked to see if the "
-                "requested variables are present in the CMIP6 table matching the freq. "
-                "\nIf the --freq <freq> is passed with the --tables-path, and the "
+                "for getting the info. (Mode 1) If you just pass the --info flag with the "
+                "--var-list then it will print out the handler information as yaml data for "
+                "the requested variable to your default output path (or to a file designated "
+                "by the --info-out path). (Mode 2) If the --freq <frequency> is passed "
+                "along with the --tables-path, then the variable handler information will "
+                "only be output if the requested variables are present in the CMIP6 table matching the freq. "
+                "NOTE: For MPAS data, one must also include --realm mpaso (or mpassi) and --map no_map. "
+                "(Mode 3) For non-MPAS data, if the --freq <freq> is passed with the --tables-path, and the "
                 "--input-path, and the input-path points to raw unprocessed E3SM files, "
                 "then an additional check will me made for if the required raw "
-                "variables are present in the E3SM output. "
+                "variables are present in the E3SM native output. "
             ),
         )
         optional_mode.add_argument(
@@ -406,7 +410,7 @@ class E3SMtoCMIP:
             nargs="+",
             required=True,
             metavar="",
-            help=("Space separated list of variables to convert from E3SM to CMIP."),
+            help=("Space separated list of CMIP variables to convert from E3SM to CMIP."),
         )
         optional_run.add_argument(
             "--realm",
@@ -649,17 +653,8 @@ class E3SMtoCMIP:
         # if the user just asked for the handler info
         if self.freq == "mon" and not self.input_path and not self.tables_path:
             for handler in self.handlers:
-                msg = {
-                    "CMIP6 Name": handler["name"],
-                    "CMIP6 Table": handler["table"],
-                    "CMIP6 Units": handler["units"],
-                    "E3SM Variables": ", ".join(handler["raw_variables"]),
-                }
-                if handler.get("unit_conversion"):
-                    msg["Unit conversion"] = handler["unit_conversion"]
-                if handler.get("levels"):
-                    msg["Levels"] = handler["levels"]
-                messages.append(msg)
+                hand_msg = get_handler_info_msg(handler)
+                messages.append(hand_msg)
 
         # if the user asked if the variable is included in the table
         # but didnt ask about the files in the inpath
@@ -671,19 +666,11 @@ class E3SMtoCMIP:
                     print_message(msg, status="error")
                     continue
                 else:
-                    msg = {
-                        "CMIP6 Name": handler["name"],
-                        "CMIP6 Table": handler["table"],
-                        "CMIP6 Units": handler["units"],
-                        "E3SM Variables": ", ".join(handler["raw_variables"]),
-                    }
-                    if handler.get("unit_conversion"):
-                        msg["Unit conversion"] = handler["unit_conversion"]
-                    if handler.get("levels"):
-                        msg["Levels"] = handler["levels"]
-                    messages.append(msg)
+                    hand_msg = get_handler_info_msg(handler)
+                    messages.append(hand_msg)
 
         elif self.freq and self.tables_path and self.input_path:
+
             file_path = next(Path(self.input_path).glob("*.nc"))
 
             with xr.open_dataset(file_path) as ds:
@@ -717,9 +704,41 @@ class E3SMtoCMIP:
                             break
                     if not has_vars:
                         continue
-                    messages.append(msg)
 
-        if self.output_path is not None:
+                    # We test here against the input "freq", because
+                    #    atmos mon data satisfies BOTH CMIP6_day.json AND CMIP6_mon.json,
+                    #    but we only want the latter in the "hand_msg" output.
+                    #    The vars "hass" and "rlut" have multiple freqs.
+
+                    if self.freq == "mon" and handler['table'] == "CMIP6_day.json":
+                        continue
+                    if self.freq == "day" and handler['table'] == "CMIP6_Amon.json":
+                        continue
+
+                    hand_msg = None
+                    stat_msg = None
+
+                    raw_vars = []
+                    raw_vars.extend(handler["raw_variables"])
+
+                    allpass = True
+                    for raw_var in raw_vars:
+                        if raw_var in ds.data_vars:
+                            continue
+                        allpass = False
+
+                    if allpass:
+                        stat_msg = f"Table={handler['table']}:Variable={handler['name']}:DataSupport=TRUE"
+                        hand_msg = get_handler_info_msg(handler)
+                        messages.append(hand_msg)
+                    else:
+                        stat_msg = f"Table={handler['table']}:Variable={handler['name']}:DataSupport=FALSE"
+                    logger.info(stat_msg)
+
+        if self.info_out_path is not None:
+            with open(self.info_out_path, "w") as outstream:
+                yaml.dump(messages, outstream)
+        elif self.output_path is not None:
             with open(self.output_path, "w") as outstream:
                 yaml.dump(messages, outstream)
         else:

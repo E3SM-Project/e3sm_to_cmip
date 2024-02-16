@@ -87,6 +87,8 @@ def print_message(message, status="error"):
         )
     elif status == "ok":
         print(colors.OKGREEN + "[+] " + colors.ENDC + str(message))
+    elif status == "info":
+        print(str(message))
     elif status == "debug":
         print(
             colors.OKBLUE
@@ -312,6 +314,19 @@ def _get_table_info(tables, table):
         raise ValueError(f"CMIP6 table doesnt exist: {table}")
     with open(table, "r") as instream:
         return json.load(instream)
+
+def get_handler_info_msg(handler):
+    msg = {
+        "CMIP6 Name": handler["name"],
+        "CMIP6 Table": handler["table"],
+        "CMIP6 Units": handler["units"],
+        "E3SM Variables": ", ".join(handler["raw_variables"]),
+    }
+    if handler.get("unit_conversion"):
+        msg["Unit conversion"] = handler["unit_conversion"]
+    if handler.get("levels"):
+        msg["Levels"] = handler["levels"]
+    return msg
 
 
 def _use_highfreq_handler(var: str, freq: str) -> bool:
