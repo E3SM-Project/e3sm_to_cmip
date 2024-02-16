@@ -643,19 +643,6 @@ class E3SMtoCMIP:
 
         tempfile.tempdir = temp_path
 
-    def get_handler_info_msg(self, handler):
-        msg = {
-            "CMIP6 Name": handler["name"],
-            "CMIP6 Table": handler["table"],
-            "CMIP6 Units": handler["units"],
-            "E3SM Variables": ", ".join(handler["raw_variables"]),
-        }
-        if handler.get("unit_conversion"):
-            msg["Unit conversion"] = handler["unit_conversion"]
-        if handler.get("levels"):
-            msg["Levels"] = handler["levels"]
-        return msg
-        
     def _run_info_mode(self):  # noqa: C901
         logger.info("--------------------------------------")
         logger.info("| Running E3SM to CMIP in Info Mode")
@@ -665,7 +652,6 @@ class E3SMtoCMIP:
 
         # if the user just asked for the handler info
         if self.freq == "mon" and not self.input_path and not self.tables_path:
-            messages = []
             for handler in self.handlers:
                 hand_msg = get_handler_info_msg(handler)
                 messages.append(hand_msg)
@@ -673,7 +659,6 @@ class E3SMtoCMIP:
         # if the user asked if the variable is included in the table
         # but didnt ask about the files in the inpath
         elif self.freq and self.tables_path and not self.input_path:
-            messages = []
             for handler in self.handlers:
                 table_info = _get_table_info(self.tables_path, handler["table"])
                 if handler["name"] not in table_info["variable_entry"]:
@@ -688,7 +673,6 @@ class E3SMtoCMIP:
 
             file_path = next(Path(self.input_path).glob("*.nc"))
 
-            messages = []
             with xr.open_dataset(file_path) as ds:
                 for handler in self.handlers:
                     table_info = _get_table_info(self.tables_path, handler["table"])
@@ -721,9 +705,10 @@ class E3SMtoCMIP:
                     if not has_vars:
                         continue
 
-                    # We test here against the input "freq", because atmos mon data satisfies BOTH
-                    # CMIP6_day.json AND CMIP6_mon.json, but we only want the latter in the "hand_msg" output.
-                    # The variables-check below is insufficient as vars "hass" and "rlut" have multiple freqs.
+                    # We test here against the input "freq", because
+                    #    atmos mon data satisfies BOTH CMIP6_day.json AND CMIP6_mon.json,
+                    #    but we only want the latter in the "hand_msg" output.
+                    #    The vars "hass" and "rlut" have multiple freqs.
 
                     if self.freq == "mon" and handler['table'] == "CMIP6_day.json":
                         continue
@@ -748,7 +733,7 @@ class E3SMtoCMIP:
                         messages.append(hand_msg)
                     else:
                         stat_msg = f"Table={handler['table']}:Variable={handler['name']}:DataSupport=FALSE"
-                    print_message(stat_msg, status="info")
+                    logger.info(stat_msg)
 
         if self.info_out_path is not None:
             with open(self.info_out_path, "w") as outstream:
