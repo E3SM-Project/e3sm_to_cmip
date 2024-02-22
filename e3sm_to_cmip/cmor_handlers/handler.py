@@ -261,6 +261,8 @@ class VarHandler(BaseVarHandler):
             else:
                 self._cmor_write_with_time(ds, cmor_var_id, time_dim, cmor_ips_id)
 
+            ds.close()
+
         # NOTE: It is important to close the CMOR module AFTER CMORizing all of
         # the variables. Otherwise, the IDs of cmor objects gets wiped after
         # every loop.
