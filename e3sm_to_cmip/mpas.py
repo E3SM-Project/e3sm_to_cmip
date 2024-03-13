@@ -321,6 +321,7 @@ def open_mfdataset(
         concat_dim="Time",
         mask_and_scale=False,
         chunks=chunks,
+        lock=False,
     )
 
     if variableList is not None:
@@ -841,7 +842,6 @@ def _compute_moc_time_series(
 
 
 def _compute_dask(ds, showProgress, message):
-
     if showProgress:
         print(message)
         with ProgressBar():
