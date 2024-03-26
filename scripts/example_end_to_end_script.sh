@@ -55,7 +55,7 @@ e3sm_to_cmip -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t $tables_path -
 # 2. atm fixed variables
 #--------------------------
 raw_var_list="area,PHIS,LANDFRAC"
-cmip_var_list="area, sftlf, orog"
+cmip_var_list="areacella, sftlf, orog"
 ncremap --map=${map_file} -v area,PHIS,LANDFRAC -I ${input_path} -O ${rgr_dir}/fixed_vars
 
 # CMORIZE Atmosphere fx variables
@@ -140,6 +140,6 @@ e3sm_to_cmip -s --realm SImon --var-list siconc, sitemptop, sisnmass, sitimefrac
 #    hfsifrazil requires 'config_density0' and 'config_frazil_heat_of_fusion'
 # 3. A restart file for mesh: e.g., v2.LR.historical_0101.mpaso.rst.1855-01-01_00000.nc
 # 4. A region masks file for MOC regions: EC30to60E2r2_mocBasinsAndTransects20210623.nc (Needed for variable msftmz: Ocean Meridional Overturning Mass Streamfunction)
-e3sm_to_cmip -s --realm Omon --var-list areacello, fsitherm, hfds, masso, mlotst, sfdsi, sob, soga, sos, sosga, tauuo, tauvo, thetaoga, tob, tos, tosga, volo, wfo, zos, thetaoga, hfsifrazil, masscello, so, thetao, thkcello, uo, vo, volcello, wo zhalfo --map ${e2c_path}/maps/map_EC30to60E2r2_to_cmip6_180x360_aave.20220301.nc --input-path ${model_data}/v2.mpaso_input/ --output-path ${result_dir} --user-metadata ${metadata_path} --tables-path ${e2c_path}/cmor/cmip6-cmor-tables/Tables
+e3sm_to_cmip -s --realm Omon --var-list areacello, fsitherm, hfds, masso, mlotst, sfdsi, sob, soga, sos, sosga, tauuo, tauvo, thetaoga, tob, tos, tosga, volo, wfo, zos, thetaoga, hfsifrazil, masscello, so, thetao, thkcello, uo, vo, volcello, wo, zhalfo --map ${e2c_path}/maps/map_EC30to60E2r2_to_cmip6_180x360_aave.20220301.nc --input-path ${model_data}/v2.mpaso_input/ --output-path ${result_dir} --user-metadata ${metadata_path} --tables-path ${e2c_path}/cmor/cmip6-cmor-tables/Tables
 
 exit
