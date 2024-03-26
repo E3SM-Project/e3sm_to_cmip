@@ -658,7 +658,7 @@ class E3SMtoCMIP:
 
         # if the user asked if the variable is included in the table
         # but didnt ask about the files in the inpath
-        elif self.freq and self.tables_path and not self.input_path:
+        elif self.freq and self.tables_path and not self.input_path:    # info mode 2
             for handler in self.handlers:
                 table_info = _get_table_info(self.tables_path, handler["table"])
                 if handler["name"] not in table_info["variable_entry"]:
@@ -666,10 +666,14 @@ class E3SMtoCMIP:
                     print_message(msg, status="error")
                     continue
                 else:
+                    if self.freq == "mon" and handler['table'] == "CMIP6_day.json":
+                        continue
+                    if ( self.freq == "day" or self.freq == "3hr" ) and handler['table'] == "CMIP6_Amon.json":
+                        continue
                     hand_msg = get_handler_info_msg(handler)
                     messages.append(hand_msg)
 
-        elif self.freq and self.tables_path and self.input_path:
+        elif self.freq and self.tables_path and self.input_path:        # info mode 3
 
             file_path = next(Path(self.input_path).glob("*.nc"))
 
@@ -712,7 +716,7 @@ class E3SMtoCMIP:
 
                     if self.freq == "mon" and handler['table'] == "CMIP6_day.json":
                         continue
-                    if self.freq == "day" and handler['table'] == "CMIP6_Amon.json":
+                    if ( self.freq == "day" or self.freq == "3hr" ) and handler['table'] == "CMIP6_Amon.json":
                         continue
 
                     hand_msg = None
