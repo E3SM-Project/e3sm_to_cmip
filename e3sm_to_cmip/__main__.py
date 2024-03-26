@@ -651,8 +651,7 @@ class E3SMtoCMIP:
         messages = []
 
         # if the user just asked for the handler info
-        # TONY SAYS: Why does this mode even exist?  And why does it depend upon "freq = mon"?
-        if self.freq == "mon" and not self.input_path and not self.tables_path: # info mode 1
+        if self.freq == "mon" and not self.input_path and not self.tables_path:
             for handler in self.handlers:
                 hand_msg = get_handler_info_msg(handler)
                 messages.append(hand_msg)
