@@ -664,23 +664,15 @@
   levels: null
 - name: rsut
   units: W m-2
-  raw_variables: [FSUTOA]
-  table: CMIP6_Amon.json
-  unit_conversion: null
-  formula: null
-  positive: up
-  levels: null
-- name: rsut
-  units: W m-2
   raw_variables: [SOLIN, FSNTOA]
   table: CMIP6_Amon.json
   unit_conversion: null
   formula: SOLIN - FSNTOA
   positive: up
   levels: null
-- name: rsutcs
+- name: rsut
   units: W m-2
-  raw_variables: [FSUTOAC]
+  raw_variables: [FSUTOA]
   table: CMIP6_Amon.json
   unit_conversion: null
   formula: null
@@ -692,6 +684,14 @@
   table: CMIP6_Amon.json
   unit_conversion: null
   formula: SOLIN - FSNTOAC
+  positive: up
+  levels: null
+- name: rsutcs
+  units: W m-2
+  raw_variables: [FSUTOAC]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
   positive: up
   levels: null
 - name: rtmt
