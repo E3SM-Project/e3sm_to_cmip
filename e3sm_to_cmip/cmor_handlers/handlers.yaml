@@ -320,6 +320,14 @@
   formula: null
   positive: null
   levels: null
+- name: huss
+  units: "1"
+  raw_variables: [QREFHT]
+  table: CMIP6_day.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
 - name: lai
   units: "1"
   raw_variables: [LAISHA, LAISUN]
@@ -736,6 +744,14 @@
   units: K
   raw_variables: [TREFHT]
   table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+- name: tas
+  units: K
+  raw_variables: [TREFHT]
+  table: CMIP6_day.json
   unit_conversion: null
   formula: null
   positive: null
