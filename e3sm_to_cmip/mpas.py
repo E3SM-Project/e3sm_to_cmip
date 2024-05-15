@@ -321,7 +321,6 @@ def open_mfdataset(
         concat_dim="Time",
         mask_and_scale=False,
         chunks=chunks,
-        lock=False,
     )
 
     if variableList is not None:
