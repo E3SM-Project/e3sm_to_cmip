@@ -345,17 +345,22 @@ def open_mfdataset(
     return ds
 
 
-def write_netcdf(ds, fileName, fillValues=netCDF4.default_fillvals, unlimited=None):
+def write_netcdf(ds, fileName, fillValues=netCDF4.default_fillvals,
+                 unlimited=None):
     """Write an xarray Dataset with NetCDF4 fill values where needed"""
     encodingDict = {}
     variableNames = list(ds.data_vars.keys()) + list(ds.coords.keys())
     for variableName in variableNames:
+        if "_FillValue" in ds[variableName].attrs:
+            # There's already a fill value attribute so don't add a new one
+            continue
         isNumeric = np.issubdtype(ds[variableName].dtype, np.number)
         if isNumeric:
             dtype = ds[variableName].dtype
             for fillType in fillValues:
                 if dtype == np.dtype(fillType):
-                    encodingDict[variableName] = {"_FillValue": fillValues[fillType]}
+                    encodingDict[variableName] = \
+                        {"_FillValue": fillValues[fillType]}
                     break
         else:
             encodingDict[variableName] = {"_FillValue": None}
