@@ -5,10 +5,11 @@ compute 	Depth Below Geoid of Interfaces Between Ocean Layers, zhalfo
 from __future__ import absolute_import, division, print_function
 
 import xarray
-import logging
 import numpy
+from e3sm_to_cmip._logger import e2c_logger
+logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
 
-from e3sm_to_cmip import mpas
+from e3sm_to_cmip import mpas, util
 from e3sm_to_cmip.util import print_message
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ['MPASO', 'MPAS_mesh', 'MPAS_map']
@@ -45,7 +46,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         return
         
     msg = 'Starting {name}'.format(name=__name__)
-    logging.info(msg)
+    logger.info(msg)
 
     meshFileName = infiles['MPAS_mesh']
     mappingFileName = infiles['MPAS_map']
@@ -76,7 +77,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
             zLayerBot = (zLayerBot -
                          layerThickness.isel(nVertLevels=zIndex)).where(mask)
             zLayerBot.compute()
-            # print('done zLayerBot {}/{}'.format(zIndex+1, nVertLevels))
+            logger.info(f"done zLayerBot {zIndex+1}/{nVertLevels}")
             slices.append(zLayerBot)
             maskSlices.append(mask)
         ds[VAR_NAME] = xarray.concat(slices, dim='olevhalf')
@@ -85,12 +86,13 @@ def handle(infiles, tables, user_input_path, **kwargs):
         ds = ds.transpose('Time', 'olevhalf', 'nCells')
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
+        logger.info(f"returned from ds.compute()")
 
     ds = mpas.remap(ds, 'mpasocean', mappingFileName)
     depth_coord_half = numpy.zeros(nVertLevels+1)
     depth_coord_half[1:] = dsMesh.refBottomDepth.values
 
-    mpas.setup_cmor(VAR_NAME, tables, user_input_path, component='ocean')
+    util.setup_cmor(VAR_NAME, tables, TABLE, user_input_path)
 
     # create axes
     axes = [{'table_entry': 'time',

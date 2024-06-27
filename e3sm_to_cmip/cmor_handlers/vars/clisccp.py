@@ -5,7 +5,6 @@ formulas.py).
 """
 from __future__ import absolute_import, annotations, division, unicode_literals
 
-import logging
 import os
 from typing import Dict, List, Union
 
@@ -13,10 +12,10 @@ import numpy as np
 import xarray as xr
 
 import cmor
-from e3sm_to_cmip._logger import _setup_logger
-from e3sm_to_cmip.util import print_message
+from e3sm_to_cmip.util import setup_cmor, print_message
 
-logger = _setup_logger(__name__)
+from e3sm_to_cmip._logger import e2c_logger
+logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
 
 # list of raw variable names needed
 RAW_VARIABLES = [str("FISCCP1_COSP")]
@@ -59,35 +58,23 @@ def handle(  # noqa: C901
         If CMORizing was successful, return the output CMIP variable name
         to indicate success. If failed, return None
     ."""
-    logging.info(f"Starting {VAR_NAME}")
+    logger.info(f"Starting {VAR_NAME}")
 
     nonzero = False
     for variable in RAW_VARIABLES:
         if len(vars_to_filepaths[variable]) == 0:
             msg = f"{variable}: Unable to find input files for {RAW_VARIABLES}"
             print_message(msg)
-            logging.error(msg)
+            logger.error(msg)
             nonzero = True
     if nonzero:
         return None
 
-    msg = f"{VAR_NAME}: running with input files: {vars_to_filepaths}"
-    logger.debug(msg)
+    logger.debug(f"{VAR_NAME}: running with input files: {vars_to_filepaths}")
 
-    if logdir is not None:
-        logfile = logfile = os.path.join(logdir, VAR_NAME + ".log")
-    else:
-        logfile = os.path.join(os.getcwd(), "logs")
-        if not os.path.exists(logfile):
-            os.makedirs(logfile)
-        logfile = os.path.join(logfile, VAR_NAME + ".log")
+    setup_cmor(VAR_NAME, tables, TABLE, metadata_path)
 
-    cmor.setup(inpath=tables, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
-    cmor.dataset_json(metadata_path)
-    cmor.load_table(TABLE)
-
-    msg = f"{VAR_NAME}: CMOR setup complete"
-    logger.info(msg)
+    logger.info(f"{VAR_NAME}: CMOR setup complete")
 
     data: Dict[str, Union[np.ndarray, xr.DataArray]] = {}
 
@@ -164,8 +151,7 @@ def handle(  # noqa: C901
         varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids)
 
         # write out the data
-        msg = f"{VAR_NAME}: time {data['time_bnds'][0][0]:1.1f} - {data['time_bnds'][-1][-1]:1.1f}"
-        logger.info(msg)
+        logger.info(f"{VAR_NAME}: time {data['time_bnds'][0][0]:1.1f} - {data['time_bnds'][-1][-1]:1.1f}")
 
         cmor.write(
             varid,
@@ -174,11 +160,9 @@ def handle(  # noqa: C901
             time_bnds=data["time_bnds"],
         )
 
-    msg = f"{VAR_NAME}: write complete, closing"
-    logger.info(msg)
+    logger.info(f"{VAR_NAME}: write complete, closing")
 
     cmor.close()
-    msg = f"{VAR_NAME}: file close complete"
-    logger.info(msg)
+    logger.info(f"{VAR_NAME}: file close complete")
 
     return VAR_NAME

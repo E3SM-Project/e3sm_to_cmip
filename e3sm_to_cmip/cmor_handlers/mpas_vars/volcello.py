@@ -3,11 +3,12 @@ compute Ocean Grid-Cell Volume, volcello
 """
 
 import xarray
-import logging
 import netCDF4
+from e3sm_to_cmip._logger import e2c_logger
+logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
 
-from e3sm_to_cmip import mpas
-from e3sm_to_cmip.util import print_message, setup_cmor
+from e3sm_to_cmip import mpas, util
+from e3sm_to_cmip.util import print_message
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ['MPASO', 'MPAS_mesh', 'MPAS_map']
 
@@ -43,7 +44,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         return
 
     msg = 'Starting {name}'.format(name=__name__)
-    logging.info(msg)
+    logger.info(msg)
 
     meshFileName = infiles['MPAS_mesh']
     mappingFileName = infiles['MPAS_map']
@@ -85,8 +86,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     # multiply variables in this order so they don't get transposed
     ds[VAR_NAME] = ds[VAR_NAME]*earth_radius**2*area_b
 
-    setup_cmor(var_name=VAR_NAME, table_path=tables, table_name=TABLE,
-               user_input_path=user_input_path)
+    util.setup_cmor(VAR_NAME, tables, TABLE, user_input_path)
 
     # create axes
     axes = [{'table_entry': 'time',

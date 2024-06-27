@@ -4,7 +4,6 @@ LANDFRAC to sftlf converter
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import json
-import logging
 import os
 
 import numpy as np
@@ -12,11 +11,11 @@ import xarray as xr
 
 import cmor
 from e3sm_to_cmip import resources
-from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.mpas import write_netcdf
-from e3sm_to_cmip.util import print_message
+from e3sm_to_cmip.util import setup_cmor, print_message
 
-logger = _setup_logger(__name__)
+from e3sm_to_cmip._logger import e2c_logger
+logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
 
 # list of raw variable names needed
 RAW_VARIABLES = [str("LANDFRAC")]
@@ -55,8 +54,7 @@ def handle_simple(infiles):
 
 
 def handle(infiles, tables, user_input_path, table, logdir):
-    msg = f"{VAR_NAME}: Starting"
-    logger.info(msg)
+    logger.info(f"{VAR_NAME}: Starting")
 
     # check that we have some input files for every variable
     zerofiles = False
@@ -64,32 +62,17 @@ def handle(infiles, tables, user_input_path, table, logdir):
         if len(infiles[variable]) == 0:
             msg = f"{VAR_NAME}: Unable to find input files for {variable}"
             print_message(msg)
-            logging.error(msg)
+            logger.error(msg)
             zerofiles = True
     if zerofiles:
         return None
 
-    # Create the logging directory and setup cmor
-    if logdir:
-        logpath = logdir
-    else:
-        outpath, _ = os.path.split(logger.__dict__["handlers"][0].baseFilename)
-        logpath = os.path.join(outpath, "cmor_logs")
-    os.makedirs(logpath, exist_ok=True)
+    setup_cmor(VAR_NAME, tables, TABLE, user_input_path)
 
-    logfile = os.path.join(logpath, VAR_NAME + ".log")
-
-    cmor.setup(inpath=tables, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
-
-    cmor.dataset_json(str(user_input_path))
-    cmor.load_table(str(TABLE))
-
-    msg = "{}: CMOR setup complete".format(VAR_NAME)
-    logging.info(msg)
+    logger.info(f"{VAR_NAME}: CMOR setup complete")
 
     # extract data from the input file
-    msg = "sftlf: loading LANDFRAC"
-    logger.info(msg)
+    logger.info("sftlf: loading LANDFRAC")
 
     filename = infiles["LANDFRAC"][0]
 
@@ -107,8 +90,7 @@ def handle(infiles, tables, user_input_path, table, logdir):
         "LANDFRAC": ds["LANDFRAC"],
     }
 
-    msg = f"{VAR_NAME}: loading axes"
-    logger.info(msg)
+    logger.info(f"{VAR_NAME}: loading axes")
 
     axes = [
         {
@@ -125,8 +107,7 @@ def handle(infiles, tables, user_input_path, table, logdir):
         },
     ]
 
-    msg = "sftlf: running CMOR"
-    logging.info(msg)
+    logger.info(f"{VAR_NAME}: running CMOR")
 
     axis_ids = list()
     for axis in axes:
@@ -138,12 +119,10 @@ def handle(infiles, tables, user_input_path, table, logdir):
     outdata = data["LANDFRAC"].values * 100.0
     cmor.write(varid, outdata)
 
-    msg = "{}: write complete, closing".format(VAR_NAME)
-    logger.debug(msg)
+    logger.debug(f"{VAR_NAME}: write complete, closing")
 
     cmor.close()
 
-    msg = "{}: file close complete".format(VAR_NAME)
-    logger.debug(msg)
+    logger.debug(f"{VAR_NAME}: file close complete")
 
-    return "sftlf"
+    return VAR_NAME
