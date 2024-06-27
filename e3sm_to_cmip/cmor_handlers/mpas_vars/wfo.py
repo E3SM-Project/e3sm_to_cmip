@@ -5,9 +5,10 @@ compute Water Flux into Sea Water, wfo
 from __future__ import absolute_import, division, print_function
 
 import xarray
-import logging
+from e3sm_to_cmip._logger import e2c_logger
+logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
 
-from e3sm_to_cmip import mpas
+from e3sm_to_cmip import mpas, util
 from e3sm_to_cmip.util import print_message
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ['MPASO', 'MPAS_map']
@@ -46,7 +47,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         return
         
     msg = 'Starting {name}'.format(name=__name__)
-    logging.info(msg)
+    logger.info(msg)
 
     mappingFileName = infiles['MPAS_map']
     timeSeriesFiles = infiles['MPASO']
@@ -71,7 +72,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     ds = mpas.remap(ds, 'mpasocean', mappingFileName)
 
-    mpas.setup_cmor(VAR_NAME, tables, user_input_path, component='ocean')
+    util.setup_cmor(VAR_NAME, tables, TABLE, user_input_path)
 
     # create axes
     axes = [{'table_entry': 'time',

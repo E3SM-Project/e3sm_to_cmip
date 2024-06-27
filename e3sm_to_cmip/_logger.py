@@ -1,68 +1,66 @@
+import inspect
 import logging
 import os
-import time
-from datetime import datetime
+from datetime import datetime, timezone
 
-from pytz import UTC
+'''
+    ACCEPTS:
+        name=<anyname>
+        logfilename=<anypath/file>      [default = e2c_logs/dflt_log-{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}.log]
+        log_level=<level>               [default = DEBUG]
+        to_console=[True|False]         [default = False]
+        to_logfile=[True|False]         [default = False]
+        propagate=[True|False]          [default = False]
+'''
 
+default_log_dir = "e2c_logs"
+default_log = f"{default_log_dir}/e2c_root_log-{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}.log"
 
-def _setup_root_logger() -> str:  # pragma: no cover
-    """Sets up the root logger.
+def e2c_logger(name=None, logfilename=default_log, set_log_level=None, to_console=False, to_logfile=False, propagate=False):
 
-    The logger module will write to a log file and stream the console
-    simultaneously.
+    # print(f"DEBUG: _logger: entered e2c_logger at {datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')} called by {name}", flush=True)
 
-    The log files are saved in a `/logs` directory relative to where
-    `e3sm_to_cmip` is executed.
+    default_log_lvl = logging.DEBUG
 
-    Returns
-    -------
-    str
-        The name of the logfile.
-    """
-    os.makedirs("logs", exist_ok=True)
-    filename = f'logs/{UTC.localize(datetime.utcnow()).strftime("%Y%m%d_%H%M%S_%f")}'
-    log_format = "%(asctime)s_%(msecs)03d:%(levelname)s:%(funcName)s:%(message)s"
+    # create logging directory as required
 
-    # Setup the logging module.
-    logging.basicConfig(
-        filename=filename,
-        format=log_format,
-        datefmt="%Y%m%d_%H%M%S",
-        level=logging.DEBUG,
-    )
-    logging.captureWarnings(True)
-    logging.Formatter.converter = time.gmtime
+    if to_logfile:
+        dn = os.path.dirname(logfilename)
+        if len(dn) and not os.path.exists(dn):
+            os.makedirs(dn)
 
-    # Configure and add a console stream handler.
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    log_formatter = logging.Formatter(log_format)
-    console_handler.setFormatter(log_formatter)
-    logging.getLogger().addHandler(console_handler)
-
-    return filename
-
-
-def _setup_logger(name, propagate=True) -> logging.Logger:
-    """Sets up a logger object.
-
-    This function is intended to be used at the top-level of a module.
-
-    Parameters
-    ----------
-    name : str
-        Name of the file where this function is called.
-    propagate : bool, optional
-        Propogate this logger module's messages to the root logger or not, by
-        default True.
-
-    Returns
-    -------
-    logging.Logger
-        The logger.
-    """
     logger = logging.getLogger(name)
+    if name == None or name == "__main__":
+        logger = logger.root
+
     logger.propagate = propagate
 
+    if set_log_level == "None" or set_log_level == "DEBUG":
+        log_level = default_log_lvl
+    elif set_log_level == "INFO":
+        log_level = logging.INFO
+    elif set_log_level == "WARNING":
+        log_level = logging.WARNING
+    elif set_log_level == "ERROR":
+        log_level = logging.ERROR
+    elif set_log_level == "CRITICAL":
+        log_level = logging.CRITICAL
+    else: log_level = default_log_lvl
+
+    logger.setLevel(log_level)
+
+    logger.handlers = []
+
+    if to_console:
+        logStreamHandler = logging.StreamHandler()
+        logStreamHandler.setFormatter(logging.Formatter("%(asctime)s_%(msecs)03d:%(levelname)s:%(name)s:%(funcName)s:%(message)s",datefmt="%Y%m%d_%H%M%S"))
+        logger.addHandler(logStreamHandler)
+
+    if to_logfile:
+        logFileHandler = logging.FileHandler(logfilename)
+        logFileHandler.setFormatter(logging.Formatter("%(asctime)s_%(msecs)03d:%(levelname)s:%(name)s:%(funcName)s:%(message)s",datefmt="%Y%m%d_%H%M%S"))
+        logger.addHandler(logFileHandler)
+
     return logger
+
+

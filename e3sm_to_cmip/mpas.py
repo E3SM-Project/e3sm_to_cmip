@@ -5,7 +5,6 @@ Utilities related to converting MPAS-Ocean and MPAS-Seaice files to CMOR
 from __future__ import absolute_import, division, print_function
 
 import argparse
-import logging
 import multiprocessing
 import os
 import re
@@ -23,21 +22,22 @@ import numpy as np
 import xarray
 from dask.diagnostics import ProgressBar
 
+from e3sm_to_cmip._logger import e2c_logger
+logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
 
 def run_ncremap_cmd(args, env):
-    logtext = f"mpas.py: remap: ncremap args = {args}"
-    logging.info(logtext)
 
     proc = subprocess.Popen(
         args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env
     )
     (out, err) = proc.communicate()
-    logging.info(out)
+
     if proc.returncode:
-        print("Error running ncremap command: {}".format(" ".join(args)))
+        arglist = " ".join(args)
+        logger.error(f"Error running ncremap command: {arglist}")
         print(err.decode("utf-8"))
         raise subprocess.CalledProcessError(  # type: ignore
-            "ncremap returned {}".format(proc.returncode)  # type: ignore
+            f"ncremap returned {proc.returncode}"  # type: ignore
         )
 
 
@@ -46,6 +46,9 @@ def remap_seaice_sgs(inFileName, outFileName, mappingFileName, renorm_threshold=
     ds_in = xarray.open_dataset(inFileName, decode_times=False)
     outFilePath = f"{outFileName}sub"
     os.makedirs(outFilePath)
+
+    logger.info(f"Calling run_ncremap_cmd for each ds_slice in {range(ds_in.sizes['time'])}") 
+
     for t_index in range(ds_in.sizes["time"]):
         ds_slice = ds_in.isel(time=slice(t_index, t_index + 1))
         ds_slice.to_netcdf(f"{outFilePath}/temp_in{t_index}.nc")
@@ -77,13 +80,17 @@ def remap_seaice_sgs(inFileName, outFileName, mappingFileName, renorm_threshold=
 def remap(ds, pcode, mappingFileName, threshold=0.0):
     """Use ncreamp to remap the xarray Dataset to a new target grid"""
 
+    delete_tempfiles = True
+
     # write the dataset to a temp file
     inFileName = _get_temp_path()
     outFileName = _get_temp_path()
 
     if "depth" in ds.dims:
+        logger.info(f"Calling ds.transpose") 
         ds = ds.transpose("time", "depth", "nCells", "nbnd")
 
+    logger.info(f"Calling write_netcdf() (inFileName={inFileName})") 
     write_netcdf(ds, inFileName, unlimited="time")
 
     # set an environment variable to make sure we're not using czender's
@@ -111,6 +118,7 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
             inFileName,
             outFileName,
         ]
+        logger.info(f"Calling run_ncremap_cmd with args {args}") 
         run_ncremap_cmd(args, env)
     elif pcode == "mpasseaice":
         # MPAS-Seaice is a special case because the of the time-varying SGS field
@@ -127,9 +135,10 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
 
     ds.load()
 
-    # remove the temporary files
-    os.remove(inFileName)
-    os.remove(outFileName)
+    if delete_tempfiles:
+        # remove the temporary files
+        os.remove(inFileName)
+        os.remove(outFileName)
 
     return ds
 
@@ -321,7 +330,6 @@ def open_mfdataset(
         concat_dim="Time",
         mask_and_scale=False,
         chunks=chunks,
-        lock=False,
     )
 
     if variableList is not None:
@@ -351,6 +359,9 @@ def write_netcdf(ds, fileName, fillValues=netCDF4.default_fillvals, unlimited=No
     encodingDict = {}
     variableNames = list(ds.data_vars.keys()) + list(ds.coords.keys())
     for variableName in variableNames:
+        if "_FillValue" in ds[variableName].attrs:
+            # There's already a fill value attribute so don't add a new one
+            continue
         isNumeric = np.issubdtype(ds[variableName].dtype, np.number)
         if isNumeric:
             dtype = ds[variableName].dtype
@@ -395,29 +406,9 @@ def convert_namelist_to_dict(fileName):
     return nml
 
 
-def setup_cmor(varname, tables, user_input_path, component="ocean", table=None):
-    """Set up CMOR for MPAS-Ocean or MPAS-Seaice"""
-    logfile = os.path.join(os.getcwd(), "cmor_logs")
-    if not os.path.exists(logfile):
-        os.makedirs(logfile)
-    logfile = os.path.join(logfile, varname + ".log")
-    cmor.setup(inpath=tables, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
-    cmor.dataset_json(str(user_input_path))
-    if table is None:
-        if component == "ocean":
-            table = "CMIP6_Omon.json"
-        elif component == "seaice":
-            table = "CMIP6_SImon.json"
-        else:
-            raise ValueError("Unexpected component {}".format(component))
-    try:
-        cmor.load_table(table)
-    except Exception:
-        raise ValueError("Unable to load table from {}".format(varname))
-
-
 def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
     """Write a time series of a variable in the format expected by CMOR"""
+
     axis_ids = list()
     for axis in axes:
         axis_id = cmor.axis(**axis)
@@ -437,6 +428,10 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
         str(varname), str(varunits), axis_ids, missing_value=fillValue, **kwargs
     )
 
+    # adding "shuffle" reduced size on disk by 14%, need to test for performance impact.
+    # if varname not in [ "lat", "lev", "lon" ]:
+    #     cmor.set_deflate(varid, True, True, 1)
+
     # write out the data
     try:
         if "time" not in ds.dims:
@@ -449,7 +444,7 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
                 time_bnds=ds.time_bnds.values,
             )
     except Exception as error:
-        logging.exception(f"Error in cmor.write for {varname}")
+        logger.exception(f"Error in cmor.write for {varname}")
         raise Exception(error)
     finally:
         cmor.close(varid)

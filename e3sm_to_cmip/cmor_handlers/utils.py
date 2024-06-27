@@ -11,11 +11,16 @@ from e3sm_to_cmip import (
     LEGACY_HANDLER_DIR_PATH,
     MPAS_HANDLER_DIR_PATH,
 )
-from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.cmor_handlers.handler import VarHandler
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
 
-logger = _setup_logger(__name__)
+from e3sm_to_cmip._logger import e2c_logger
+
+def instantiate_h_utils_logger():
+    global logger
+
+    logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
+
 
 # Type aliases
 Frequency = Literal["mon", "day", "6hrLev", "6hrPlev", "6hrPlevPt", "3hr", "1hr"]
@@ -55,6 +60,7 @@ def load_all_handlers(
     KeyError
         If no handlers are defined for a CMIP6 variable in `handlers.yaml`.
     """
+
     handlers_by_var: Dict[str, List[Dict[str, Any]]] = _get_handlers_by_var()
 
     missing_handlers: List[str] = []
@@ -172,6 +178,7 @@ def derive_handlers(
         If a handler could not be derived for a CMIP6 variable using the existing
         E3SM variables.
     """
+
     # TODO: Refactor the function parameters.
     handlers_by_var: Dict[str, List[Dict[str, Any]]] = _get_handlers_by_var()
     derived_handlers: List[Dict[str, Any]] = []
@@ -360,15 +367,15 @@ def _get_handlers_from_modules(path: str) -> Dict[str, List[Dict[str, Any]]]:
                 "handler.py",
                 "utils.py",
             ]:
-                var = file.split(".")[0]
-                filepath = os.path.join(root, file)
-                module = _get_handler_module(var, filepath)
+                module_name = file.split(".")[0]
+                module_path = os.path.join(root, file)
+                module = SourceFileLoader(module_name, module_path).load_module()
 
                 # NOTE: The value is set to a list with a single dict entry
                 # so that it is compatible with the data structure for storing
                 # all var handlers (which can have multiple handlers per
                 # variable).
-                handlers[var] = [
+                handlers[module_name] = [
                     {
                         "name": module.VAR_NAME,
                         "units": module.VAR_UNITS,
@@ -385,22 +392,3 @@ def _get_handlers_from_modules(path: str) -> Dict[str, List[Dict[str, Any]]]:
     return handlers
 
 
-def _get_handler_module(module_name: str, module_path: str):
-    """Get the variable handler Python module.
-
-    Parameters
-    ----------
-    module_name : str
-        The name of the module, which should be the key of the variable (e.g.,
-        "orog").
-    module_path : str
-        The absolute path to the variable handler Python module.
-
-    Returns
-    -------
-    module
-        The module.
-    """
-    module = SourceFileLoader(module_name, module_path).load_module()
-
-    return module

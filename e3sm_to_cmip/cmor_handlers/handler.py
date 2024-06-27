@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import abc
 import json
-import logging
 import os
 from typing import Any, Dict, KeysView, List, Literal, Optional, Tuple, TypedDict
 
@@ -12,11 +11,17 @@ import xarray as xr
 import xcdat as xc
 import yaml
 
-from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE, _formulas
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
+from e3sm_to_cmip._logger import e2c_logger
 
-logger = _setup_logger(__name__)
+logger=None
+
+def instantiate_handler_logger():
+    global logger
+
+    logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=True)
+
 
 # The names for valid hybrid sigma levels.
 HYBRID_SIGMA_LEVEL_NAMES = [
@@ -267,7 +272,7 @@ class VarHandler(BaseVarHandler):
         # the variables. Otherwise, the IDs of cmor objects gets wiped after
         # every loop.
         cmor.close()
-        logger.debug(
+        logger.info(
             f"{self.name}: CMORized and file write complete, closing CMOR I/O."
         )
 
@@ -290,7 +295,7 @@ class VarHandler(BaseVarHandler):
         """
         for var, filepaths in vars_to_filespaths.items():
             if len(filepaths) == 0:
-                logging.error(f"{var}: Unable to find input files for {var}")
+                logger.error(f"{var}: Unable to find input files for {var}")
                 return False
 
         return True
@@ -317,22 +322,22 @@ class VarHandler(BaseVarHandler):
         logdir : str | None
             The optional log directory.
         """
-        if log_dir is not None:
-            logpath = log_dir
-        else:
-            cwd = os.getcwd()
-            logpath = os.path.join(cwd, "cmor_logs")
+        # if log_dir is not None:
+        #     logpath = log_dir
+        # else:
+        #     cwd = os.getcwd()
+        #     logpath = os.path.join(cwd, "cmor_logs")
 
-        os.makedirs(logpath, exist_ok=True)
-        logfile = os.path.join(logpath, var_name + ".log")
+        # os.makedirs(logpath, exist_ok=True)
+        # logfile = os.path.join(logpath, var_name + ".log")
 
-        cmor.setup(
-            inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile
-        )
+        print("DEBUG: EMPLOYED HANDLER.PY _setup_cmor_module()", flush=True)
+
+        cmor.setup(inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE,logfile="/dev/null")
         cmor.dataset_json(metadata_path)
         cmor.load_table(self.table)
 
-        logging.info(f"{var_name}: CMOR setup complete")
+        logger.info(f"{var_name}: CMOR setup complete")
 
     def _get_var_time_dim(self, table_path: str) -> str | None:
         """Get the CMIP variable's time dimension, if it exists.
