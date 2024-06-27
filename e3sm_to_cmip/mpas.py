@@ -80,6 +80,7 @@ def remap_seaice_sgs(inFileName, outFileName, mappingFileName, renorm_threshold=
 def remap(ds, pcode, mappingFileName, threshold=0.0):
     """Use ncreamp to remap the xarray Dataset to a new target grid"""
 
+    # TODO:  Make this a global commandline switch
     delete_tempfiles = True
 
     # write the dataset to a temp file
@@ -429,7 +430,8 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
     )
 
     # adding "shuffle" reduced size on disk by 14%, need to test for performance impact.
-    # if varname not in [ "lat", "lev", "lon" ]:
+    # TODO: Pass a commandline arg "--shuffle" down to this point.
+    # if do_shuffle and varname not in [ "lat", "lev", "lon" ]:
     #     cmor.set_deflate(varid, True, True, 1)
 
     # write out the data
