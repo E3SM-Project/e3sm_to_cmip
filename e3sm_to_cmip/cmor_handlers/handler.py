@@ -322,18 +322,18 @@ class VarHandler(BaseVarHandler):
         logdir : str | None
             The optional log directory.
         """
-        # if log_dir is not None:
-        #     logpath = log_dir
-        # else:
-        #     cwd = os.getcwd()
-        #     logpath = os.path.join(cwd, "cmor_logs")
+        if log_dir is not None:
+            logpath = log_dir
+        else:
+            cwd = os.getcwd()
+            logpath = os.path.join(cwd, "cmor_logs")
 
-        # os.makedirs(logpath, exist_ok=True)
-        # logfile = os.path.join(logpath, var_name + ".log")
+        os.makedirs(logpath, exist_ok=True)
+        logfile = os.path.join(logpath, var_name + ".log")
 
         print("DEBUG: EMPLOYED HANDLER.PY _setup_cmor_module()", flush=True)
 
-        cmor.setup(inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE,logfile="/dev/null")
+        cmor.setup(inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE,logfile=logfile)
         cmor.dataset_json(metadata_path)
         cmor.load_table(self.table)
 
