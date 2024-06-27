@@ -311,7 +311,8 @@ class E3SMtoCMIP:
             sys.exit(1)
 
         # Parse the arguments and perform validation.
-        parsed_args = argparser.parse_args(args_to_parse)   # (exits here if args == "-h" or "--help" or "--version")
+        # NOTE: exits here if args == "-h" or "--help" or "--version", else validate
+        parsed_args = argparser.parse_args(args_to_parse)
 
         self._validate_parsed_args(parsed_args)
 
@@ -785,7 +786,9 @@ class E3SMtoCMIP:
             1 if an error occurs, else 0
         """
 
+        # TODO: Make this a command-line flag.
         do_pbar = False
+
         try:
             num_handlers = len(self.handlers)
             num_success = 0
@@ -884,6 +887,7 @@ class E3SMtoCMIP:
         pool_res = list()
         will_run = []
 
+        # NOTE: Make this a command-line flag.
         do_pbar = False
 
         for idx, handler in enumerate(self.handlers):
@@ -992,8 +996,8 @@ def main(args: Optional[List[str]] = None):
 
     app = E3SMtoCMIP(args)
 
-    # These calls allow loggers that create default logfiles to avoid being 
-    # instantiated by arguments "--help" or "--version".
+    # These calls allow module loggers that create default logfiles to avoid being 
+    # instantiated by arguments "--help" or "--version" upon import.
     instantiate_util_logger()
     instantiate_h_utils_logger()
     instantiate_handler_logger()
