@@ -331,9 +331,7 @@ class VarHandler(BaseVarHandler):
         os.makedirs(logpath, exist_ok=True)
         logfile = os.path.join(logpath, var_name + ".log")
 
-        print("DEBUG: EMPLOYED HANDLER.PY _setup_cmor_module()", flush=True)
-
-        cmor.setup(inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE,logfile=logfile)
+        cmor.setup(inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
         cmor.dataset_json(metadata_path)
         cmor.load_table(self.table)
 
