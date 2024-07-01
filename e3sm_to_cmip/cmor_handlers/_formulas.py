@@ -130,25 +130,137 @@ def lai(ds: xr.Dataset) -> xr.DataArray:
 
 def mmrbc(ds: xr.Dataset) -> xr.DataArray:
     """
-    mmrbc = bc_a1+bc_a4+bc_c1+bc_c4
+    mmrbc = Mass_bc or bc_a1 + bc_a3 + bc_a4 + bc_c1 + bc_c3 + bc_c4
     """
-    result = ds["bc_a1"] + ds["bc_a4"] + ds["bc_c1"] + ds["bc_c4"]
+
+    if all(key in ds.data_vars for key in ["bc_a1", "bc_a3", "bc_a4",
+                                           "bc_c1", "bc_c3", "bc_c4"]):
+        result = ( ds["bc_a1"] + ds["bc_a3"] + ds["bc_a4"] +
+                   ds["bc_c1"] + ds["bc_c3"] + ds["bc_c4"] )
+    elif "Mass_bc" in ds:
+        result = ds["Mass_bc"]
+    else:
+        raise KeyError(
+            "No formula could be applied for 'mmrbc'. Check the handler entry for 'mmrbc' "
+            "and input file(s) contain either 'bc_a1', 'bc_a3', 'bc_a4', "
+            "'bc_c1', 'bc_c3', 'bc_c4', or 'Mass_bc'."
+        )
+
+    return result
+
+
+def mmrdust(ds: xr.Dataset) -> xr.DataArray:
+    """
+    mmrdust = Mass_dust or dst_a1 + dst_a3 + dst_c1 + dst_c3
+    """
+
+    if all(key in ds.data_vars for key in ["dst_a1", "dst_a3",
+                                           "dst_c1", "dst_c3"]):
+        result = ( ds["dst_a1"] + ds["dst_a3"] + 
+                   ds["dst_c1"] + ds["dst_c3"] )
+    elif "Mass_dust" in ds:
+        result = ds["Mass_dust"]
+    else:
+        raise KeyError(
+            "No formula could be applied for 'mmrdust'. Check the handler entry for 'mmrdust' "
+            "and input file(s) contain either 'dst_a1', 'dst_a3', "
+            "'dst_c1', 'dst_c3', or 'Mass_dust'."
+        )
+
+    return result
+
+
+def mmroa(ds: xr.Dataset) -> xr.DataArray:
+    """
+    mmroa = Mass_pom + Mass_soa or pom_a1 + pom_a3 + pom_a4 + pom_c1 + pom_c3 + pom_c4 +
+                                   soa_a1 + soa_a2 + soa_a3 + soa_c1 + soa_c2 + soa_c3
+    """
+
+    if all(key in ds.data_vars for key in ["pom_a1", "pom_a3", "pom_a4",
+                                           "pom_c1", "pom_c3", "pom_c4",
+                                           "soa_a1", "soa_a2", "soa_a3",
+                                           "soa_c1", "soa_c2", "soa_c3"]):
+        result = ( ds["pom_a1"] + ds["pom_a3"] + ds["pom_a4"] +
+                   ds["pom_c1"] + ds["pom_c3"] + ds["pom_c4"] +
+                   ds["soa_a1"] + ds["soa_a2"] + ds["soa_a3"] +
+                   ds["soa_c1"] + ds["soa_c2"] + ds["soa_c3"] )
+    elif all(key in ds.data_vars for key in ["Mass_pom", "Mass_soa"]):
+        result = ds["Mass_pom"] + ds["Mass_soa"]
+    else:
+        raise KeyError(
+            "No formula could be applied for 'mmroa'. Check the handler entry for 'mmroa' "
+            "and input file(s) contain either 'pom_a1', 'pom_a3', 'pom_a4', "
+            "'pom_c1', 'pom_c3', 'pom_c4', 'soa_a1', 'soa_a2', 'soa_a3', " 
+            "'soa_c1', 'soa_c2', 'soa_c3', or 'Mass_pom' and 'Mass_soa'."
+        )
+
+    return result
+
+
+def mmrsoa(ds: xr.Dataset) -> xr.DataArray:
+    """
+    mmrsoa = Mass_soa or soa_a1 + soa_a2 + soa_a3 + soa_c1 + soa_c2 + soa_c3
+    """
+
+    if all(key in ds.data_vars for key in ["soa_a1", "soa_a2", "soa_a3",
+                                           "soa_c1", "soa_c2", "soa_c3"]):
+        result = ( ds["soa_a1"] + ds["soa_a2"] + ds["soa_a3"] +
+                   ds["soa_c1"] + ds["soa_c2"] + ds["soa_c3"] )
+    elif "Mass_soa" in ds:
+        result = ds["Mass_soa"]
+    else:
+        raise KeyError(
+            "No formula could be applied for 'mmrsoa'. Check the handler entry for 'mmrsoa' "
+            "and input file(s) contain either 'soa_a1', 'soa_a2', 'soa_a3', "
+            "'soa_c1', 'soa_c2', 'soa_c3', or 'Mass_soa'."
+        )
+
+    return result
+
+
+def mmrss(ds: xr.Dataset) -> xr.DataArray:
+    """
+    mmrss = Mass_ncl or ncl_a1 + ncl_a2 + ncl_a3 + ncl_c1 + ncl_c2 + ncl_c3
+    """
+
+    if all(key in ds.data_vars for key in ["ncl_a1", "ncl_a2", "ncl_a3",
+                                           "ncl_c1", "ncl_c2", "ncl_c3"]):
+        result = ( ds["ncl_a1"] + ds["ncl_a2"] + ds["ncl_a3"] +
+                   ds["ncl_c1"] + ds["ncl_c2"] + ds["ncl_c3"] )
+    elif "Mass_ncl" in ds:
+        result = ds["Mass_ncl"]
+    else:
+        raise KeyError(
+            "No formula could be applied for 'mmrss'. Check the handler entry for 'mmrss' "
+            "and input file(s) contain either 'ncl_a1', 'ncl_a2', 'ncl_a3', "
+            "'ncl_c1', 'ncl_c2', 'ncl_c3', or 'Mass_ncl'."
+        )
 
     return result
 
 
 def mmrso4(ds: xr.Dataset) -> xr.DataArray:
     """
-    mmrso4 = so4_a1+so4_c1+so4_a2+so4_c2+so4_a3+so4_c3
+    mmrso4 = Mass_so4 or so4_a1+so4_c1+so4_a2+so4_c2+so4_a3+so4_c3 for MAM5
+    mmrso4 = Mass_so4 or so4_a1+so4_c1+so4_a2+so4_c2+so4_a3+so4_c3 for MAM4
     """
-    result = (
-        ds["so4_a1"]
-        + ds["so4_c1"]
-        + ds["so4_a2"]
-        + ds["so4_c2"]
-        + ds["so4_a3"]
-        + ds["so4_c3"]
-    )
+    
+    if all(key in ds.data_vars for key in ["so4_a1", "so4_a2", "so4_a3", "so4_a5",
+                                           "so4_c1", "so4_c2", "so4_c3", "so4_c5"]):
+        result = ( ds["so4_a1"] + ds["so4_a2"] + ds["so4_a3"] + ds["so4_a5"] +
+                   ds["so4_c1"] + ds["so4_c2"] + ds["so4_c3"] + ds["so4_c5"] ) * 96.0636 / 115.10734
+    elif all(key in ds.data_vars for key in ["so4_a1", "so4_a2", "so4_a3",
+                                             "so4_c1", "so4_c2", "so4_c3"]):
+        result = ( ds["so4_a1"] + ds["so4_a2"] + ds["so4_a3"] + 
+                   ds["so4_c1"] + ds["so4_c2"] + ds["so4_c3"] ) * 96.0636 / 115.10734
+    elif "Mass_so4" in ds:
+        result = ds["Mass_so4"] * * 96.0636 / 115.10734
+    else:
+        raise KeyError(
+            "No formula could be applied for 'mmrso4'. Check the handler entry for 'mmrso4' "
+            "and input file(s) contain either 'so4_a1', 'so4_a2', 'so4_a3', 'so4_a5', "
+            "'so4_c1', 'so4_c2', 'so4_c3', 'so4_c5', or 'Mass_so4'."
+        )
 
     return result
 
