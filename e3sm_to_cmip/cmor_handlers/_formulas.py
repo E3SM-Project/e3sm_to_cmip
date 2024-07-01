@@ -254,7 +254,7 @@ def mmrso4(ds: xr.Dataset) -> xr.DataArray:
         result = ( ds["so4_a1"] + ds["so4_a2"] + ds["so4_a3"] + 
                    ds["so4_c1"] + ds["so4_c2"] + ds["so4_c3"] ) * 96.0636 / 115.10734
     elif "Mass_so4" in ds:
-        result = ds["Mass_so4"] * * 96.0636 / 115.10734
+        result = ds["Mass_so4"] * 96.0636 / 115.10734
     else:
         raise KeyError(
             "No formula could be applied for 'mmrso4'. Check the handler entry for 'mmrso4' "
