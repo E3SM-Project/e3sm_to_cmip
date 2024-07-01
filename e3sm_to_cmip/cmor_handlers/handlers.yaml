@@ -366,10 +366,10 @@
     }
 - name: mmrdust
   units: kg kg-1
-  raw_variables: [Mass_dust]
+  raw_variables: [Mass_dst]
   table: CMIP6_AERmon.json
   unit_conversion: null
-  formula: Mass_dust
+  formula: Mass_dst
   positive: null
   levels:
     {

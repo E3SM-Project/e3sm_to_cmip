@@ -151,20 +151,20 @@ def mmrbc(ds: xr.Dataset) -> xr.DataArray:
 
 def mmrdust(ds: xr.Dataset) -> xr.DataArray:
     """
-    mmrdust = Mass_dust or dst_a1 + dst_a3 + dst_c1 + dst_c3
+    mmrdust = Mass_dst or dst_a1 + dst_a3 + dst_c1 + dst_c3
     """
 
     if all(key in ds.data_vars for key in ["dst_a1", "dst_a3",
                                            "dst_c1", "dst_c3"]):
         result = ( ds["dst_a1"] + ds["dst_a3"] + 
                    ds["dst_c1"] + ds["dst_c3"] )
-    elif "Mass_dust" in ds:
-        result = ds["Mass_dust"]
+    elif "Mass_dst" in ds:
+        result = ds["Mass_dst"]
     else:
         raise KeyError(
             "No formula could be applied for 'mmrdust'. Check the handler entry for 'mmrdust' "
             "and input file(s) contain either 'dst_a1', 'dst_a3', "
-            "'dst_c1', 'dst_c3', or 'Mass_dust'."
+            "'dst_c1', 'dst_c3', or 'Mass_dst'."
         )
 
     return result
