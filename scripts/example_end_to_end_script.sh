@@ -43,13 +43,11 @@ metadata_path=${e2c_path}/user_metadata.json
 ## ------------------------------------------------------
 input_path=${model_data}/v2.eam_input
 flags='-7 --dfl_lvl=1 --no_cll_msr'
-raw_var_list="ICEFRAC,OCNFRAC,LANDFRAC,PHIS,hyam,hybm,hyai,hybi,TREFHT,TS,PSL,PS,U10,QREFHT,PRECC,PRECL,PRECSC,PRECSL,QFLX,TAUX,TAUY,LHFLX,CLDTOT,FLDS,FLNS,FSDS,FSNS,SHFLX,CLOUD,CLDICE,TGCLDIWP,CLDLIQ,TGCLDCWP,TMQ,FLNSC,FSNTOA,FSNT,FLNT,FLUTC,FSDSC,SOLIN,FSNSC,FSUTOA,FSUTOAC,AODABS,AODVIS,AREL,TREFMNAV,TRE
-FMXAV,FISCCP1_COSP,CLDTOT_ISCCP,MEANCLDALB_ISCCP,MEANPTOP_ISCCP,CLD_CAL,CLDTOT_CAL,CLDLOW_CAL,CLDMED_CAL,CLDHGH_CAL"
+raw_var_list="ICEFRAC,OCNFRAC,LANDFRAC,PHIS,hyam,hybm,hyai,hybi,TREFHT,TS,PSL,PS,U10,QREFHT,PRECC,PRECL,PRECSC,PRECSL,QFLX,TAUX,TAUY,LHFLX,CLDTOT,FLDS,FLNS,FSDS,FSNS,SHFLX,CLOUD,CLDICE,TGCLDIWP,CLDLIQ,TGCLDCWP,TMQ,FLNSC,FSNTOA,FSNT,FLNT,FLUTC,FSDSC,SOLIN,FSNSC,FSUTOA,FSUTOAC,AODABS,AODVIS,AREL,TREFMNAV,TREFMXAV,FISCCP1_COSP,CLDTOT_ISCCP,MEANCLDALB_ISCCP,MEANPTOP_ISCCP,CLD_CAL,CLDTOT_CAL,CLDLOW_CAL,CLDMED_CAL,CLDHGH_CAL"
 
 # 1. atm 2D variables
 #--------------------------
-cmip_var_list="pfull, phalf, tas, ts, psl, ps, sfcWind, huss, pr, prc, prsn, evspsbl, tauu, tauv, hfls, clt, rlds, rlus, rsds, rsus, hfss, cl, clw, cli, clivi, clwvi, prw, rldscs, rlut, rlutcs, rsdt, rsuscs, rsut, rsutcs, rtmt, abs550aer, od550aer, rsdscs, tasmax, tasmin, clisccp, cltisccp, albisccp, pctis
-ccp, clcalipso, cltcalipso, cllcalipso, clmcalipso, clhcalipso"
+cmip_var_list="pfull, phalf, tas, ts, psl, ps, sfcWind, huss, pr, prc, prsn, evspsbl, tauu, tauv, hfls, clt, rlds, rlus, rsds, rsus, hfss, cl, clw, cli, clivi, clwvi, prw, rldscs, rlut, rlutcs, rsdt, rsuscs, rsut, rsutcs, rtmt, abs550aer, od550aer, rsdscs, tasmax, tasmin, clisccp, cltisccp, albisccp, pctisccp, clcalipso, cltcalipso, cllcalipso, clmcalipso, clhcalipso"
 ncclimo -P eam -j 1 --map=${map_file} --start=$start --end=$end --ypf=$ypf --split -c $caseid -o ${native_dir} -O ${rgr_dir} -v ${raw_var_list} -i ${input_path} ${flags}
 # CMORIZE Atmosphere monthly variables: 2D and model level 3D variables (CLOUD,CLDICE,CLDLIQ)
 e3sm_to_cmip -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t $tables_path -u ${metadata_path}
@@ -132,8 +130,7 @@ e3sm_to_cmip -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t ${tables_path}
 # Note the input folder for mpas sea ice files requires:
 # 1. Monthly mean history files: e.g.,v2.LR.historical_0101.mpassi.hist.am.timeSeriesStatsMonthly.1850-01-01.nc
 # 2. A restart file for meshes: can use the mpaso restart e.g., v2.LR.historical_0101.mpaso.rst.1855-01-01_00000.nc
-e3sm_to_cmip -s --realm SImon --var-list siconc, sitemptop, sisnmass, sitimefrac, siu, siv, sithick, sisnthick, simass --map ${e2c_path}/maps/map_EC30to60E2r2_to_cmip6_180x360_aave.20220301.nc --input-path ${model_data}/v2.mpassi_input/ --output-path ${result_dir} --user-metadata ${metadata_path}  --tables
--path ${e2c_path}/cmor/cmip6-cmor-tables/Tables
+e3sm_to_cmip -s --realm SImon --var-list siconc, sitemptop, sisnmass, sitimefrac, siu, siv, sithick, sisnthick, simass --map ${e2c_path}/maps/map_EC30to60E2r2_to_cmip6_180x360_aave.20220301.nc --input-path ${model_data}/v2.mpassi_input/ --output-path ${result_dir} --user-metadata ${metadata_path}  --tables-path ${e2c_path}/cmor/cmip6-cmor-tables/Tables
 
 
 # CMORIZE Ocean Monthly variables
