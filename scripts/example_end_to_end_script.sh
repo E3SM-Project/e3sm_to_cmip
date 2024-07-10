@@ -132,7 +132,6 @@ e3sm_to_cmip -i ${rgr_dir} -o $result_dir  -v ${cmip_var_list} -t ${tables_path}
 # 2. A restart file for meshes: can use the mpaso restart e.g., v2.LR.historical_0101.mpaso.rst.1855-01-01_00000.nc
 e3sm_to_cmip -s --realm SImon --var-list siconc, sitemptop, sisnmass, sitimefrac, siu, siv, sithick, sisnthick, simass --map ${e2c_path}/maps/map_EC30to60E2r2_to_cmip6_180x360_aave.20220301.nc --input-path ${model_data}/v2.mpassi_input/ --output-path ${result_dir} --user-metadata ${metadata_path}  --tables-path ${e2c_path}/cmor/cmip6-cmor-tables/Tables
 
-
 # CMORIZE Ocean Monthly variables
 # Note the input folder for mpas ocean files requires:
 # 1. History files: e.g.,v2.LR.historical_0101.mpaso.hist.am.timeSeriesStatsMonthly.1850-01-01.nc
@@ -205,7 +204,7 @@ for ((segdex=0;segdex<range_segs;segdex++)); do
     ts=`date -u +%Y%m%d_%H%M%S_%6N`
     echo "$ts: Calling e3sm_to_cmip for segment years $year_init to $year_last" >> $runlog
 
-    # e3sm_to_cmip -s --realm Omon --var-list $Omon_var_list --map ${mapfile} --input-path ${native_data}  --output-path ${result_dir} --user-metadata ${metadata_path} --tables-path ${tables_path} >> $runlog 2>&1
+    e3sm_to_cmip -s --realm Omon --var-list $Omon_var_list --map ${mapfile} --input-path ${native_data}  --output-path ${result_dir} --user-metadata ${metadata_path} --tables-path ${tables_path} >> $runlog 2>&1
 
 done
 
