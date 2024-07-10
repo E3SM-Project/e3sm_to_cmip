@@ -156,9 +156,9 @@ native_src=${model_data}/v2.mpaso_input/
 start_year=`ls $native_src | grep mpaso.hist.am.timeSeriesStatsMonthly | rev | cut -f2 -d. | rev | cut -f1 -d- | head -1`
 final_year=`ls $native_src | grep mpaso.hist.am.timeSeriesStatsMonthly | rev | cut -f2 -d. | rev | cut -f1 -d- | tail -1`
 range_years=$((10#$final_year - 10#$start_year + 1))
-ypf=20
-range_segs=$((range_years/ypf))
-if [[ $((range_segs*ypf)) -lt $range_years ]]; then range_segs=$((range_segs + 1)); fi
+YPF=20
+range_segs=$((range_years/YPF))
+if [[ $((range_segs*YPF)) -lt $range_years ]]; then range_segs=$((range_segs + 1)); fi
 
 
 native_data="native_links"
@@ -171,11 +171,6 @@ for afile in `ls $native_src`; do
     ln -s ${native_src}/$afile $native_data/$afile 2>/dev/null
 done
 
-# for this test, remove links to these datafiles, because we will use the full published years.
-for afile in `ls ${native_data}/*mpaso.hist.am.timeSeriesStatsMonthly*.nc 2>/dev/null`; do
-    rm -f $afile
-done
-
 for ((segdex=0;segdex<range_segs;segdex++)); do
 
     # wipe existing native_data datafile symlinks, create new range of same
@@ -185,8 +180,8 @@ for ((segdex=0;segdex<range_segs;segdex++)); do
         rm -f $afile
     done
 
-    for ((yrdex=0;yrdex<ypf;yrdex++)); do
-        the_year=$((10#$start_year + segdex*ypf + yrdex))
+    for ((yrdex=0;yrdex<YPF;yrdex++)); do
+        the_year=$((10#$start_year + segdex*YPF + yrdex))
         prt_year=`printf "%04d" "$the_year"`
 
         if [[ $the_year -gt $((10#$final_year)) ]]; then
@@ -199,8 +194,8 @@ for ((segdex=0;segdex<range_segs;segdex++)); do
         done
     done
 
-    year_init=$((10#$start_year + segdex*ypf))
-    year_last=$((10#$start_year + segdex*ypf + yrdex - 1))
+    year_init=$((10#$start_year + segdex*YPF))
+    year_last=$((10#$start_year + segdex*YPF + yrdex - 1))
     ts=`date -u +%Y%m%d_%H%M%S_%6N`
     echo "$ts: Calling e3sm_to_cmip for segment years $year_init to $year_last" >> $runlog
 
