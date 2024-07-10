@@ -105,7 +105,7 @@ def print_message(message, status="error"):
 # ------------------------------------------------------------------
 
 
-def setup_cmor(varname, table_path, table_name, user_input_path):
+def setup_cmor(var_name, table_path, table_name, user_input_path):
     """
     Sets up cmor and logging for a single handler
     """
@@ -113,7 +113,7 @@ def setup_cmor(varname, table_path, table_name, user_input_path):
     logfile = os.path.join(os.getcwd(), "cmor_logs")
     if not os.path.exists(logfile):
         os.makedirs(logfile)
-    logfile = os.path.join(logfile, varname + ".log")
+    logfile = os.path.join(logfile, var_name + ".log")
 
     cmor.setup(inpath=table_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
 
@@ -122,7 +122,7 @@ def setup_cmor(varname, table_path, table_name, user_input_path):
     try:
         cmor.load_table(table_name)
     except Exception:
-        raise ValueError(f"Unable to load table {table_name} for {varname}")
+        raise ValueError(f"Unable to load table {table_name} for {var_name}")
 
 
 
