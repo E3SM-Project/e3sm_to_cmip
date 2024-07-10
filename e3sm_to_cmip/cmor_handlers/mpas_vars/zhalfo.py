@@ -92,7 +92,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     depth_coord_half = numpy.zeros(nVertLevels+1)
     depth_coord_half[1:] = dsMesh.refBottomDepth.values
 
-    util.setup_cmor(VAR_NAME, tables, TABLE, user_input_path)
+    util.setup_cmor(var_name=VAR_NAME, table_path=tables, table_name=TABLE, user_input_path=user_input_path)
 
     # create axes
     axes = [{'table_entry': 'time',

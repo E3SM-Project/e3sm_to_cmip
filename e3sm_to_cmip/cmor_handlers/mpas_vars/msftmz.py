@@ -77,7 +77,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     ds = ds.rename({'moc': VAR_NAME})
 
-    util.setup_cmor(VAR_NAME, tables, TABLE, user_input_path)
+    util.setup_cmor(var_name=VAR_NAME, table_path=tables, table_name=TABLE, user_input_path=user_input_path)
 
     region = ['global_ocean',
               'atlantic_arctic_ocean']
