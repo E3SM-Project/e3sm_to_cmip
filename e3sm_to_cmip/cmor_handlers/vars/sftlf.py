@@ -67,7 +67,7 @@ def handle(infiles, tables, user_input_path, table, logdir):
     if zerofiles:
         return None
 
-    setup_cmor(VAR_NAME, tables, TABLE, user_input_path)
+    setup_cmor(var_name=VAR_NAME, table_path=tables, table_name=TABLE, user_input_path=user_input_path)
 
     logger.info(f"{VAR_NAME}: CMOR setup complete")
 

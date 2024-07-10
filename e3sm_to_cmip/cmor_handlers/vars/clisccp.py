@@ -72,7 +72,7 @@ def handle(  # noqa: C901
 
     logger.debug(f"{VAR_NAME}: running with input files: {vars_to_filepaths}")
 
-    setup_cmor(VAR_NAME, tables, TABLE, metadata_path)
+    setup_cmor(var_name=VAR_NAME, table_path=tables, table_name=TABLE, user_input_path=metadata_path)
 
     logger.info(f"{VAR_NAME}: CMOR setup complete")
 
