@@ -127,6 +127,14 @@ def lai(ds: xr.Dataset) -> xr.DataArray:
 
     return result
 
+def co2(ds: xr.Dataset) -> xr.DataArray:
+    """
+    co2 = CO2*29./44.
+    """
+    result = ds["CO2"]
+
+    return result
+
 
 def mmrbc(ds: xr.Dataset) -> xr.DataArray:
     """
