@@ -140,6 +140,68 @@ e3sm_to_cmip -s --realm SImon --var-list siconc, sitemptop, sisnmass, sitimefrac
 #    hfsifrazil requires 'config_density0' and 'config_frazil_heat_of_fusion'
 # 3. A restart file for mesh: e.g., v2.LR.historical_0101.mpaso.rst.1855-01-01_00000.nc
 # 4. A region masks file for MOC regions: EC30to60E2r2_mocBasinsAndTransects20210623.nc (Needed for variable msftmz: Ocean Meridional Overturning Mass Streamfunction)
-e3sm_to_cmip -s --realm Omon --var-list areacello, fsitherm, hfds, masso, mlotst, sfdsi, sob, soga, sos, sosga, tauuo, tauvo, thetaoga, tob, tos, tosga, volo, wfo, zos, thetaoga, hfsifrazil, masscello, so, thetao, thkcello, uo, vo, volcello, wo, zhalfo --map ${e2c_path}/maps/map_EC30to60E2r2_to_cmip6_180x360_aave.20220301.nc --input-path ${model_data}/v2.mpaso_input/ --output-path ${result_dir} --user-metadata ${metadata_path} --tables-path ${e2c_path}/cmor/cmip6-cmor-tables/Tables
+
+# BEYOND THIS POINT, We attempt to replace "${model_data}/v2.mpaso_input/" with a directory of symlinks ("native_data"), intended to support a
+# user-specified "years-per-file" (YPF) value, and to call e3sm_to_cmip on those lonks in a loop that updates the links for each YPF segment.
+
+ts=`date -u +%Y%m%d_%H%M%S_%6N`
+runlog="e2e_e2c-${ts}.log"
+
+Omon_var_list="areacello, fsitherm, hfds, masso, mlotst, sfdsi, sob, soga, sos, sosga, tauuo, tauvo, thetaoga, tob, tos, tosga, volo, wfo, zos, thetaoga, hfsifrazil, masscello, so, thetao, thkcello, uo, vo, volcello, wo, zhalfo"
+mapfile=${e2c_path}/maps/map_EC30to60E2r2_to_cmip6_180x360_aave.20220301.nc
+
+native_src=${model_data}/v2.mpaso_input/
+
+# Determine range of years and number of segments from the available native input (model_data).
+start_year=`ls $native_src | grep mpaso.hist.am.timeSeriesStatsMonthly | rev | cut -f2 -d. | rev | cut -f1 -d- | head -1`
+final_year=`ls $native_src | grep mpaso.hist.am.timeSeriesStatsMonthly | rev | cut -f2 -d. | rev | cut -f1 -d- | tail -1`
+range_years=$((10#$final_year - 10#$start_year + 1))
+YPF=20
+range_segs=$((range_years/YPF))
+if [[ $((range_segs*YPF)) -lt $range_years ]]; then range_segs=$((range_segs + 1)); fi
+
+
+native_data="native_links"
+mkdir -p $native_data
+rm $native_data/*
+
+# WORK:  To begin, we need symlinks in native_data to ALL files in model_output, because the restart, namefile and region_mask files are there.
+
+for afile in `ls $native_src`; do
+    ln -s ${native_src}/$afile $native_data/$afile 2>/dev/null
+done
+
+for ((segdex=0;segdex<range_segs;segdex++)); do
+
+    # wipe existing native_data datafile symlinks, create new range of same
+    # then create the next segment of symlinks, and call the e3sm_to_cmip
+
+    for afile in `ls ${native_data}/*mpaso.hist.am.timeSeriesStatsMonthly*.nc 2>/dev/null`; do
+        rm -f $afile
+    done
+
+    for ((yrdex=0;yrdex<YPF;yrdex++)); do
+        the_year=$((10#$start_year + segdex*YPF + yrdex))
+        prt_year=`printf "%04d" "$the_year"`
+
+        if [[ $the_year -gt $((10#$final_year)) ]]; then
+            break;
+        fi
+
+        for afile in `ls $native_src/*.${prt_year}-*.nc`; do
+            bfile=`basename $afile`
+            ln -s $afile $native_data/$bfile 2>/dev/null
+        done
+    done
+
+    year_init=$((10#$start_year + segdex*YPF))
+    year_last=$((10#$start_year + segdex*YPF + yrdex - 1))
+    ts=`date -u +%Y%m%d_%H%M%S_%6N`
+    echo "$ts: Calling e3sm_to_cmip for segment years $year_init to $year_last" >> $runlog
+
+    e3sm_to_cmip -s --realm Omon --var-list $Omon_var_list --map ${mapfile} --input-path ${native_data}  --output-path ${result_dir} --user-metadata ${metadata_path} --tables-path ${tables_path} >> $runlog 2>&1
+
+done
+
 
 exit
