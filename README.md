@@ -43,13 +43,14 @@ Once you have dev environment setup, simply run:
 ```bash
 python -m pip install .
 ```
+Hint: Before re-installing, running `make clean` can ensure a clean installation. 
 
 ## Example
 
 Here's an example of the tool usage, with the variables tas, prc, and rlut. The time-series files containing the regridded output are in a directory named input_path, and a directory named output_path will be used to hold the CMIP6 output. A copy of an example metadata definition file (default_metadata.json) can be found [here](https://github.com/E3SM-Project/e3sm_to_cmip/blob/master/e3sm_to_cmip/resources/default_metadata.json).
 
 ```
-e3sm_to_cmip -v tas, prc, rlut --realm atm --input ./input_path/ --output ./output_path/ -t ~/cmip6-cmor-tables -u default_metadata.json
+e3sm_to_cmip -v tas, prc, rlut --realm atm --input ./input_path/ --output ./output_path/ -t ~/cmip6-cmor-tables/Tables -u default_metadata.json
 ```
 
 This will produce a directory tree named CMIP6 below the output_path, with the CMIP6 directory tree based on the metadata json file.
