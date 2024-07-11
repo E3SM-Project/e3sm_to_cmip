@@ -312,6 +312,14 @@
   formula: null
   positive: null
   levels: { name: plev19, units: Pa, e3sm_axis_name: plev }
+- name: co2
+  units: "mol mol-1"
+  raw_variables: [CO2]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: { name: plev19, units: Pa, e3sm_axis_name: plev }
 - name: huss
   units: "1"
   raw_variables: [QREFHT]
