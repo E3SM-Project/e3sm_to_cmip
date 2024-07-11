@@ -317,7 +317,7 @@
   raw_variables: [CO2]
   table: CMIP6_Amon.json
   unit_conversion: null
-  formula: null
+  formula: CO2*(29./44.)
   positive: null
   levels: { name: plev19, units: Pa, e3sm_axis_name: plev }
 - name: huss
