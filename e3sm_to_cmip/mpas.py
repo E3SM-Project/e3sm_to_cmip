@@ -137,7 +137,6 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
     ds.load()
 
     if delete_tempfiles:
-        # remove the temporary files
         os.remove(inFileName)
         os.remove(outFileName)
 
@@ -409,7 +408,6 @@ def convert_namelist_to_dict(fileName):
 
 def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
     """Write a time series of a variable in the format expected by CMOR"""
-
     axis_ids = list()
     for axis in axes:
         axis_id = cmor.axis(**axis)

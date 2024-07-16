@@ -13,16 +13,12 @@ from datetime import datetime, timezone
         propagate=[True|False]          [default = False]
 '''
 
-default_log_dir = "e2c_logs"
-default_log = f"{default_log_dir}/e2c_root_log-{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}.log"
+DEFAULT_LOG_LEVEL = logging.DEBUG
 
-def e2c_logger(name=None, logfilename=default_log, set_log_level=None, to_console=False, to_logfile=False, propagate=False):
+DEFAULT_LOG_DIR = "e2c_logs"
+DEFAULT_LOG = f"{default_log_dir}/e2c_root_log-{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}.log"
 
-    # print(f"DEBUG: _logger: entered e2c_logger at {datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')} called by {name}", flush=True)
-
-    default_log_lvl = logging.DEBUG
-
-    # create logging directory as required
+def e2c_logger(name=None, logfilename=DEFAULT_LOG, set_log_level=None, to_console=False, to_logfile=False, propagate=False):
 
     if to_logfile:
         dn = os.path.dirname(logfilename)
@@ -36,7 +32,7 @@ def e2c_logger(name=None, logfilename=default_log, set_log_level=None, to_consol
     logger.propagate = propagate
 
     if set_log_level == "None" or set_log_level == "DEBUG":
-        log_level = default_log_lvl
+        log_level = DEFAULT_LOG_LEVEL
     elif set_log_level == "INFO":
         log_level = logging.INFO
     elif set_log_level == "WARNING":
@@ -45,7 +41,7 @@ def e2c_logger(name=None, logfilename=default_log, set_log_level=None, to_consol
         log_level = logging.ERROR
     elif set_log_level == "CRITICAL":
         log_level = logging.CRITICAL
-    else: log_level = default_log_lvl
+    else: log_level = DEFAULT_LOG_LEVEL
 
     logger.setLevel(log_level)
 

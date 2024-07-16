@@ -109,7 +109,6 @@ def setup_cmor(var_name, table_path, table_name, user_input_path):
     """
     Sets up cmor and logging for a single handler
     """
-
     logfile = os.path.join(os.getcwd(), "cmor_logs")
     if not os.path.exists(logfile):
         os.makedirs(logfile)
