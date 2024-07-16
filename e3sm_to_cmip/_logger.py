@@ -17,9 +17,6 @@ default_log_dir = "e2c_logs"
 default_log = f"{default_log_dir}/e2c_root_log-{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}.log"
 
 def e2c_logger(name=None, logfilename=default_log, set_log_level=None, to_console=False, to_logfile=False, propagate=False):
-
-    # print(f"DEBUG: _logger: entered e2c_logger at {datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')} called by {name}", flush=True)
-
     default_log_lvl = logging.DEBUG
 
     # create logging directory as required
