@@ -9,8 +9,6 @@ import xarray
 from e3sm_to_cmip import mpas, util
 from e3sm_to_cmip.util import print_message
 from e3sm_to_cmip._logger import e2c_logger
-logger = e2c_logger(name=__name__, set_log_level="INFO", to_console=True, propagate=False)
-
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ['MPASSI', 'MPAS_mesh', 'MPAS_map']
 
@@ -19,6 +17,7 @@ VAR_NAME = 'siv'
 VAR_UNITS = 'm s-1'
 TABLE = 'CMIP6_SImon.json'
 
+logger = e2c_logger(name=__name__, set_log_level="INFO", to_console=True, propagate=False)
 
 def handle(infiles, tables, user_input_path, **kwargs):
     """

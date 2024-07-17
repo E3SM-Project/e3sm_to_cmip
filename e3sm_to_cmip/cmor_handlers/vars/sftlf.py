@@ -13,9 +13,7 @@ import cmor
 from e3sm_to_cmip import resources
 from e3sm_to_cmip.mpas import write_netcdf
 from e3sm_to_cmip.util import setup_cmor, print_message
-
 from e3sm_to_cmip._logger import e2c_logger
-logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
 
 # list of raw variable names needed
 RAW_VARIABLES = [str("LANDFRAC")]
@@ -23,6 +21,7 @@ VAR_NAME = str("sftlf")
 VAR_UNITS = str("%")
 TABLE = str("CMIP6_fx.json")
 
+logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
 
 def handle_simple(infiles):
     resource_path, _ = os.path.split(os.path.abspath(resources.__file__))

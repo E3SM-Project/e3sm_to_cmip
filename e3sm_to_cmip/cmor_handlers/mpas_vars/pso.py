@@ -6,8 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import xarray
 from e3sm_to_cmip._logger import e2c_logger
-logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
-
 from e3sm_to_cmip import mpas, util
 from e3sm_to_cmip.util import print_message
 # 'MPAS' as a placeholder for raw variables needed
@@ -18,6 +16,7 @@ VAR_NAME = 'pso'
 VAR_UNITS = 'Pa'
 TABLE = 'CMIP6_Omon.json'
 
+logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
 
 def handle(infiles, tables, user_input_path, **kwargs):
     """
