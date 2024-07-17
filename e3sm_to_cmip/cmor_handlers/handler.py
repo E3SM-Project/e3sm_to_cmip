@@ -13,14 +13,14 @@ import yaml
 
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE, _formulas
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
-from e3sm_to_cmip._logger import e2c_logger
+from e3sm_to_cmip._logger import _logger
 
 logger=None
 
 def instantiate_handler_logger():
     global logger
 
-    logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=True)
+    logger = _logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=True)
 
 
 # The names for valid hybrid sigma levels.

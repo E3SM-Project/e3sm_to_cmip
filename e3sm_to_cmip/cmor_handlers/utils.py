@@ -14,12 +14,12 @@ from e3sm_to_cmip import (
 from e3sm_to_cmip.cmor_handlers.handler import VarHandler
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
 
-from e3sm_to_cmip._logger import e2c_logger
+from e3sm_to_cmip._logger import _logger
 
 def instantiate_h_utils_logger():
     global logger
 
-    logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
+    logger = _logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
 
 
 # Type aliases

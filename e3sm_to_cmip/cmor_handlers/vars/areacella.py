@@ -13,7 +13,7 @@ import cmor
 from e3sm_to_cmip import resources
 from e3sm_to_cmip.mpas import write_netcdf
 from e3sm_to_cmip.util import setup_cmor, print_message
-from e3sm_to_cmip._logger import e2c_logger
+from e3sm_to_cmip._logger import _logger
 # list of raw variable names needed
 RAW_VARIABLES = [str("area")]
 VAR_NAME = str("areacella")
@@ -21,7 +21,7 @@ VAR_UNITS = str("m2")
 TABLE = str("CMIP6_fx.json")
 RADIUS = 6.37122e6
 
-logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
+logger = _logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
 
 def handle_simple(infiles):
     resource_path, _ = os.path.split(os.path.abspath(resources.__file__))

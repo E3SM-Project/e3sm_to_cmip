@@ -23,7 +23,7 @@ from tqdm import tqdm
 from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
 from datetime import datetime, timezone
 
-from e3sm_to_cmip._logger import e2c_logger
+from e3sm_to_cmip._logger import _logger
 
 from e3sm_to_cmip.cmor_handlers.utils import (
     instantiate_h_utils_logger,
@@ -105,7 +105,7 @@ class E3SMtoCMIP:
 
         # Setup this module's logger AFTER args parsed in E3SMtoCMIP init, so that
         # default log file is NOT created for mere "--help" or "--version" calls.
-        logger = e2c_logger(name=__name__, set_log_level="INFO", to_logfile=True)
+        logger = _logger(name=__name__, set_log_level="INFO", to_logfile=True)
 
         # NOTE: The order of these attributes align with class CLIArguments.
         # ======================================================================
@@ -641,14 +641,14 @@ class E3SMtoCMIP:
         if not self.simple_mode:
             copy_user_metadata(self.user_metadata, self.output_path)
 
-        # Setup temp storage directory
-        # temp_path = os.environ.get("TMPDIR")
-        # if temp_path is None:
-        #     temp_path = f"{self.output_path}/tmp"
-        #     if not os.path.exists(temp_path):
-        #         os.makedirs(temp_path)
+        Setup temp storage directory
+        temp_path = os.environ.get("TMPDIR")
+        if temp_path is None:
+            temp_path = f"{self.output_path}/tmp"
+            if not os.path.exists(temp_path):
+                os.makedirs(temp_path)
 
-        # tempfile.tempdir = temp_path
+        tempfile.tempdir = temp_path
 
     def _run_info_mode(self):  # noqa: C901
         logger.info("--------------------------------------")
@@ -828,7 +828,7 @@ class E3SMtoCMIP:
                     }
 
                 msg = f"Trying to CMORize with handler: {handler}"
-                logger.critical(msg)
+                logger.info(msg)
 
                 # NOTE: We need a try and except statement here for TypeError because
                 # the VarHandler.cmorize method does not use **kwargs, while the handle
@@ -887,7 +887,7 @@ class E3SMtoCMIP:
         pool_res = list()
         will_run = []
 
-        # NOTE: Make this a command-line flag.
+        # TODO: Make this a command-line flag.
         do_pbar = False
 
         for idx, handler in enumerate(self.handlers):
@@ -989,8 +989,6 @@ class E3SMtoCMIP:
 
 logger=None
 
-def main(args: Optional[List[str]] = None):
-    global logger
 def main(args: Optional[List[str]] = None):
     global logger
 
