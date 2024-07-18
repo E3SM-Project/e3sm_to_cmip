@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 DEFAULT_LOG_LEVEL = logging.DEBUG
 DEFAULT_LOG_DIR = "e2c_logs"
-DEFAULT_LOG = f"{default_log_dir}/e2c_root_log-{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}.log"
+DEFAULT_LOG = f"{DEFAULT_LOG_DIR}/e2c_root_log-{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}.log"
 
 def _logger(name=None, logfilename=DEFAULT_LOG, set_log_level=None, to_console=False, to_logfile=False, propagate=False):
     """ Return a root or named logger with variable configuration.
