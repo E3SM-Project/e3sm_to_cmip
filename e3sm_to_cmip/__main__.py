@@ -641,7 +641,7 @@ class E3SMtoCMIP:
         if not self.simple_mode:
             copy_user_metadata(self.user_metadata, self.output_path)
 
-        Setup temp storage directory
+        # Setup temp storage directory
         temp_path = os.environ.get("TMPDIR")
         if temp_path is None:
             temp_path = f"{self.output_path}/tmp"
