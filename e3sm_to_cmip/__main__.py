@@ -99,12 +99,17 @@ class CLIArguments:
 
 class E3SMtoCMIP:
     def __init__(self, args: Optional[List[str]] = None):
+        # logger assignment is moved into __init__ AFTER the call to _parse_args
+        # to prevent the default logfile directory being created whenever a call
+        # to "--help" or "--version" is invoked.  Doing so, however, makes the
+        # logger unavailable to the functions in this class unless made global.
         global logger
+
         # A dictionary of command line arguments.
         parsed_args = self._parse_args(args)
 
-        # Setup this module's logger AFTER args parsed in E3SMtoCMIP init, so that
-        # default log file is NOT created for mere "--help" or "--version" calls.
+        # Setup this module's logger AFTER args are parsed in __init__, so that
+        # default log file is NOT created for "--help" or "--version" calls.
         logger = _logger(name=__name__, set_log_level="INFO", to_logfile=True)
 
         # NOTE: The order of these attributes align with class CLIArguments.
@@ -987,10 +992,7 @@ class E3SMtoCMIP:
         print_message("Hit timeout limit, exiting")
         os.kill(os.getpid(), signal.SIGINT)
 
-logger=None
-
 def main(args: Optional[List[str]] = None):
-    global logger
 
     app = E3SMtoCMIP(args)
 
