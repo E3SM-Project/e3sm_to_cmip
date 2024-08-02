@@ -15,7 +15,7 @@ from e3sm_to_cmip.cmor_handlers import FILL_VALUE, _formulas
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
 from e3sm_to_cmip._logger import _logger
 
-logger=None
+logger = None
 
 def instantiate_handler_logger():
     global logger
