@@ -28,7 +28,6 @@ def _logger(name=None, logfilename=DEFAULT_LOG, set_log_level=None, to_console=F
     propagate : boolean
         If True, messages logged are propagated to the root logger.  Default = False.
     """
-  
     if to_logfile:
         dn = os.path.dirname(logfilename)
         if len(dn) and not os.path.exists(dn):
