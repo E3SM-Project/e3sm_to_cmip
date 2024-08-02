@@ -4,7 +4,6 @@ LANDFRAC to sftlf converter
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import json
-import logging
 import os
 
 import numpy as np
@@ -12,12 +11,10 @@ import xarray as xr
 
 import cmor
 from e3sm_to_cmip import resources
-from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.mpas import write_netcdf
-from e3sm_to_cmip.util import print_message
-
-logger = _setup_logger(__name__)
-
+from e3sm_to_cmip.util import setup_cmor, print_message
+import logging
+from e3sm_to_cmip._logger import _logger
 # list of raw variable names needed
 RAW_VARIABLES = [str("area")]
 VAR_NAME = str("areacella")
@@ -25,6 +22,7 @@ VAR_UNITS = str("m2")
 TABLE = str("CMIP6_fx.json")
 RADIUS = 6.37122e6
 
+logger = _logger(name=__name__, log_level=logging.INFO, to_logfile=True, propagate=False)
 
 def handle_simple(infiles):
     resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
@@ -56,46 +54,30 @@ def handle_simple(infiles):
 
 
 def handle(infiles, tables, user_input_path, table, logdir):
-    msg = "{}: Starting".format(VAR_NAME)
-    logger.info(msg)
+    logger.info(f"{VAR_NAME}: Starting")
 
     # check that we have some input files for every variable
     zerofiles = False
     for variable in RAW_VARIABLES:
         if len(infiles[variable]) == 0:
-            msg = "{}: Unable to find input files for {}".format(VAR_NAME, variable)
+            msg = f"{VAR_NAME}: Unable to find input files for {variable}"
             print_message(msg)
-            logging.error(msg)
+            logger.error(msg)
             zerofiles = True
     if zerofiles:
         return None
 
-    # Create the logging directory and setup cmor
-    if logdir:
-        logpath = logdir
-    else:
-        outpath, _ = os.path.split(logger.__dict__["handlers"][0].baseFilename)
-        logpath = os.path.join(outpath, "cmor_logs")
-    os.makedirs(logpath, exist_ok=True)
+    setup_cmor(var_name=VAR_NAME, table_path=tables, table_name=TABLE, user_input_path=user_input_path)
 
-    logfile = os.path.join(logpath, VAR_NAME + ".log")
-
-    cmor.setup(inpath=tables, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
-
-    cmor.dataset_json(str(user_input_path))
-    cmor.load_table(str(TABLE))
-
-    msg = "{}: CMOR setup complete".format(VAR_NAME)
-    logging.info(msg)
+    logger.info(f"{VAR_NAME}: CMOR setup complete")
 
     # extract data from the input file
-    msg = "areacella: loading area"
-    logger.info(msg)
+    logger.info("areacella: loading area")
 
     filename = infiles["area"][0]
 
     if not os.path.exists(filename):
-        raise IOError("File not found: {}".format(filename))
+        raise IOError(f"File not found: {filename}")
 
     ds = xr.open_dataset(filename, decode_times=False)
 
@@ -108,8 +90,7 @@ def handle(infiles, tables, user_input_path, table, logdir):
         "area": ds["area"],
     }
 
-    msg = "{name}: loading axes".format(name=VAR_NAME)
-    logger.info(msg)
+    logger.info(f"{VAR_NAME}: loading axes")
 
     axes = [
         {
@@ -126,8 +107,7 @@ def handle(infiles, tables, user_input_path, table, logdir):
         },
     ]
 
-    msg = "areacella: running CMOR"
-    logging.info(msg)
+    logger.info(f"{VAR_NAME}: running CMOR")
 
     axis_ids = list()
     for axis in axes:
@@ -139,12 +119,10 @@ def handle(infiles, tables, user_input_path, table, logdir):
     outdata = data["area"].values * pow(RADIUS, 2)
     cmor.write(varid, outdata)
 
-    msg = "{}: write complete, closing".format(VAR_NAME)
-    logger.debug(msg)
+    logger.debug(f"{VAR_NAME}: write complete, closing")
 
     cmor.close()
 
-    msg = "{}: file close complete".format(VAR_NAME)
-    logger.debug(msg)
+    logger.debug(f"{VAR_NAME}: file close complete")
 
-    return "areacella"
+    return VAR_NAME

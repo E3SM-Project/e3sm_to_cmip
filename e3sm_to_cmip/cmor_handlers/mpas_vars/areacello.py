@@ -4,8 +4,9 @@ compute  Grid-Cell Area for Ocean Variables areacello
 import xarray
 import logging
 
-from e3sm_to_cmip import mpas
-from e3sm_to_cmip.util import print_message, setup_cmor
+from e3sm_to_cmip import mpas, util
+from e3sm_to_cmip.util import print_message
+from e3sm_to_cmip._logger import _logger
 
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ['MPAS_mesh', 'MPAS_map']
@@ -15,6 +16,7 @@ VAR_NAME = 'areacello'
 VAR_UNITS = 'm2'
 TABLE = 'CMIP6_Ofx.json'
 
+logger = _logger(name=__name__, log_level=logging.INFO, to_logfile=True, propagate=False)
 
 def handle(infiles, tables, user_input_path, **kwargs):
     """
@@ -41,7 +43,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         return
 
     msg = 'Starting {name}'.format(name=__name__)
-    logging.info(msg)
+    logger.info(msg)
 
     meshFileName = infiles['MPAS_mesh']
     mappingFileName = infiles['MPAS_map']
@@ -65,8 +67,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     # area_b is in square radians, so need to multiply by the earth_radius**2
     ds[VAR_NAME] = earth_radius**2*area_b*ds[VAR_NAME]
 
-    setup_cmor(var_name=VAR_NAME, table_path=tables, table_name=TABLE,
-               user_input_path=user_input_path)
+    util.setup_cmor(var_name=VAR_NAME, table_path=tables, table_name=TABLE, user_input_path=user_input_path)
 
     # create axes
     axes = [{'table_entry': 'latitude',

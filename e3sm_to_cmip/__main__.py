@@ -21,8 +21,13 @@ import yaml
 from tqdm import tqdm
 
 from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
-from e3sm_to_cmip._logger import _setup_logger, _setup_root_logger
+from datetime import datetime, timezone
+
+import logging
+from e3sm_to_cmip._logger import _logger
+
 from e3sm_to_cmip.cmor_handlers.utils import (
+    instantiate_h_utils_logger,
     MPAS_REALMS,
     REALMS,
     Frequency,
@@ -32,7 +37,10 @@ from e3sm_to_cmip.cmor_handlers.utils import (
     derive_handlers,
     load_all_handlers,
 )
+from e3sm_to_cmip.cmor_handlers.handler import instantiate_handler_logger
+
 from e3sm_to_cmip.util import (
+    instantiate_util_logger,
     FREQUENCIES,
     _get_table_info,
     get_handler_info_msg,
@@ -48,11 +56,6 @@ from e3sm_to_cmip.util import (
 os.environ["CDAT_ANONYMOUS_LOG"] = "false"
 
 warnings.filterwarnings("ignore")
-
-
-# Setup the root logger and this module's logger.
-log_filename = _setup_root_logger()
-logger = _setup_logger(__name__, propagate=True)
 
 
 @dataclass
@@ -97,8 +100,18 @@ class CLIArguments:
 
 class E3SMtoCMIP:
     def __init__(self, args: Optional[List[str]] = None):
+        # logger assignment is moved into __init__ AFTER the call to _parse_args
+        # to prevent the default logfile directory being created whenever a call
+        # to "--help" or "--version" is invoked.  Doing so, however, makes the
+        # logger unavailable to the functions in this class unless made global.
+        global logger
+
         # A dictionary of command line arguments.
         parsed_args = self._parse_args(args)
+
+        # Setup this module's logger AFTER args are parsed in __init__, so that
+        # default log file is NOT created for "--help" or "--version" calls.
+        logger = _logger(name=__name__, log_level=logging.INFO, to_logfile=True)
 
         # NOTE: The order of these attributes align with class CLIArguments.
         # ======================================================================
@@ -115,8 +128,6 @@ class E3SMtoCMIP:
         self.debug: bool = parsed_args.debug
         self.timeout: int = parsed_args.timeout
 
-        # ======================================================================
-        # CMOR settings.
         # ======================================================================
         self.var_list: List[str] = self._get_var_list(parsed_args.var_list)
         self.realm: Union[Realm, MPASRealm] = parsed_args.realm
@@ -140,6 +151,9 @@ class E3SMtoCMIP:
         if self.precheck_path is not None:
             self._run_precheck()
 
+        self.handlers = self._get_handlers()
+
+    def echo_settings(self):
         logger.info("--------------------------------------")
         logger.info("| E3SM to CMIP Configuration")
         logger.info("--------------------------------------")
@@ -149,9 +163,6 @@ class E3SMtoCMIP:
         logger.info(f"    * precheck_path='{self.precheck_path}'")
         logger.info(f"    * freq='{self.freq}'")
         logger.info(f"    * realm='{self.realm}'")
-        logger.info(f"    * Writing log output file to: {log_filename}")
-
-        self.handlers = self._get_handlers()
 
     def run(self):
         # Setup logger information and print out e3sm_to_cmip CLI arguments.
@@ -161,16 +172,15 @@ class E3SMtoCMIP:
                 self.output_path, "user_metadata.json"
             )
 
-        # Setup directories using the CLI argument paths (e.g., output dir).
-        # ======================================================================
-        if not self.info_mode:
-            self._setup_dirs_with_paths()
-
         # Run e3sm_to_cmip with info mode.
         # ======================================================================
         if self.info_mode:
             self._run_info_mode()
             sys.exit(0)
+
+        # Setup directories using the CLI argument paths (e.g., output dir).
+        # ======================================================================
+        self._setup_dirs_with_paths()
 
         # Run e3sm_to_cmip to CMORize serially or in parallel.
         # ======================================================================
@@ -306,7 +316,9 @@ class E3SMtoCMIP:
             sys.exit(1)
 
         # Parse the arguments and perform validation.
+        # NOTE: exits here if args == "-h" or "--help" or "--version", else validate
         parsed_args = argparser.parse_args(args_to_parse)
+
         self._validate_parsed_args(parsed_args)
 
         # Convert to this data class for type checking to work.
@@ -531,7 +543,6 @@ class E3SMtoCMIP:
             "-h",
             "--help",
             action="help",
-            default=argparse.SUPPRESS,
             help="show this help message and exit",
         )
 
@@ -778,12 +789,17 @@ class E3SMtoCMIP:
         int
             1 if an error occurs, else 0
         """
+
+        # TODO: Make this a command-line flag.
+        do_pbar = False
+
         try:
             num_handlers = len(self.handlers)
             num_success = 0
+            num_failure = 0
             name = None
 
-            if self.realm != "atm":
+            if self.realm != "atm" and do_pbar:
                 pbar = tqdm(total=len(self.handlers))
 
             for _, handler in enumerate(self.handlers):
@@ -838,17 +854,18 @@ class E3SMtoCMIP:
                 except Exception as e:
                     print_debug(e)
 
-                if name is not None:
+                if name is not None and name is not "":
                     num_success += 1
-                    msg = f"Finished {name}, {num_success}/{num_handlers} jobs complete"
+                    msg = f"Finished {name}, {num_success}/{num_handlers} jobs complete (via run_serial)"
                     logger.info(msg)
                 else:
+                    num_failure += 1
                     msg = f"Error running handler {handler['name']}"
                     logger.info(msg)
 
-                if self.realm != "atm":
+                if self.realm != "atm" and do_pbar:
                     pbar.update(1)
-            if self.realm != "atm":
+            if self.realm != "atm" and do_pbar:
                 pbar.close()
 
         except Exception as error:
@@ -858,6 +875,8 @@ class E3SMtoCMIP:
             msg = f"{num_success} of {num_handlers} handlers complete"
             logger.info(msg)
 
+            if num_failure > 0:
+                return 1
             return 0
 
     def _run_parallel(self) -> int:  # noqa: C901
@@ -871,6 +890,9 @@ class E3SMtoCMIP:
         pool = Pool(max_workers=self.num_proc)
         pool_res = list()
         will_run = []
+
+        # TODO: Make this a command-line flag.
+        do_pbar = False
 
         for idx, handler in enumerate(self.handlers):
             handler_method = handler["method"]
@@ -926,8 +948,10 @@ class E3SMtoCMIP:
             pool_res.append(res)
 
         # wait for each result to complete
-        pbar = tqdm(total=len(pool_res))
+        if do_pbar:
+            pbar = tqdm(total=len(pool_res))
         num_success = 0
+        num_failure = 0
         num_handlers = len(self.handlers)
         finished_success = []
         for idx, res in enumerate(pool_res):
@@ -936,26 +960,32 @@ class E3SMtoCMIP:
                 finished_success.append(out)
                 if out:
                     num_success += 1
-                    msg = f"Finished {out}, {idx + 1}/{num_handlers} jobs complete"
+                    msg = f"Finished {out}, {idx + 1}/{num_handlers} jobs complete (via run_parallel)"
                 else:
+                    num_failure += 1
                     msg = f'Error running handler {self.handlers[idx]["name"]}'
                     logger.error(msg)
 
                 logger.info(msg)
             except Exception as e:
                 print_debug(e)
-            pbar.update(1)
 
-        pbar.close()
+            if do_pbar:
+                pbar.update(1)
+
+        if do_pbar:
+            pbar.close()
+
         pool.shutdown()
 
         msg = f"{num_success} of {num_handlers} handlers complete"
         logger.info(msg)
 
         failed = set(will_run) - set(finished_success)
-        if failed:
+        if failed or num_failure > 0:
             logger.error(f"{', '.join(list(failed))} failed to complete")
             logger.error(msg)
+            return 1
 
         return 0
 
@@ -963,11 +993,21 @@ class E3SMtoCMIP:
         print_message("Hit timeout limit, exiting")
         os.kill(os.getpid(), signal.SIGINT)
 
-
 def main(args: Optional[List[str]] = None):
+
     app = E3SMtoCMIP(args)
-    app.run()
+
+    # These calls allow module loggers that create default logfiles to avoid being 
+    # instantiated by arguments "--help" or "--version" upon import.
+    instantiate_util_logger()
+    instantiate_h_utils_logger()
+    instantiate_handler_logger()
+
+    app.echo_settings()
+    return app.run()
 
 
 if __name__ == "__main__":
+
+
     main()

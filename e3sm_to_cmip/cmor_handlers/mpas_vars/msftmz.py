@@ -6,8 +6,8 @@ from __future__ import absolute_import, division, print_function
 
 import xarray
 import logging
-
-from e3sm_to_cmip import mpas
+from e3sm_to_cmip._logger import _logger
+from e3sm_to_cmip import mpas, util
 from e3sm_to_cmip.util import print_message
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ['MPASO', 'MPAS_mesh', 'MPASO_MOC_regions', 'MPASO_namelist']
@@ -17,6 +17,7 @@ VAR_NAME = 'msftmz'
 VAR_UNITS = 'kg s-1'
 TABLE = 'CMIP6_Omon.json'
 
+logger = _logger(name=__name__, log_level=logging.INFO, to_logfile=True, propagate=False)
 
 def handle(infiles, tables, user_input_path, **kwargs):
     """
@@ -47,7 +48,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         return
 
     msg = 'Starting {name}'.format(name=__name__)
-    logging.info(msg)
+    logger.info(msg)
 
     meshFileName = infiles['MPAS_mesh']
     timeSeriesFiles = infiles['MPASO']
@@ -76,7 +77,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
 
     ds = ds.rename({'moc': VAR_NAME})
 
-    mpas.setup_cmor(VAR_NAME, tables, user_input_path, component='ocean')
+    util.setup_cmor(var_name=VAR_NAME, table_path=tables, table_name=TABLE, user_input_path=user_input_path)
 
     region = ['global_ocean',
               'atlantic_arctic_ocean']
