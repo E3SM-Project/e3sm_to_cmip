@@ -975,6 +975,7 @@ class E3SMtoCMIP:
 
         if do_pbar:
             pbar.close()
+
         pool.shutdown()
 
         msg = f"{num_success} of {num_handlers} handlers complete"
