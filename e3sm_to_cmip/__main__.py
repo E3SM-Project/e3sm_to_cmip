@@ -969,6 +969,7 @@ class E3SMtoCMIP:
                 logger.info(msg)
             except Exception as e:
                 print_debug(e)
+
             if do_pbar:
                 pbar.update(1)
 
