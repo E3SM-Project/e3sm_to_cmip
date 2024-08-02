@@ -13,6 +13,7 @@ import xarray as xr
 
 import cmor
 from e3sm_to_cmip.util import setup_cmor, print_message
+import logging
 from e3sm_to_cmip._logger import _logger
 
 # list of raw variable names needed
@@ -21,7 +22,7 @@ VAR_NAME = str("clisccp")
 VAR_UNITS = str("%")
 TABLE = str("CMIP6_CFmon.json")
 
-logger = _logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
+logger = _logger(name=__name__, log_level=logging.INFO, to_logfile=True, propagate=False)
 
 def handle(  # noqa: C901
     vars_to_filepaths: Dict[str, List[str]],

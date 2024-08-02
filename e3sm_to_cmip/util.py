@@ -14,12 +14,13 @@ import xarray as xr
 import yaml
 from tqdm import tqdm
 
+import logging
 from e3sm_to_cmip._logger import _logger
 
 def instantiate_util_logger():
     global logger
 
-    logger = _logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
+    logger = _logger(name=__name__, log_level=logging.INFO, to_logfile=True, propagate=False)
 
 ATMOS_TABLES = [
     "CMIP6_Amon.json",

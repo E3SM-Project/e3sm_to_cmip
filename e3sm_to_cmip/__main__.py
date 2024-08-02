@@ -23,6 +23,7 @@ from tqdm import tqdm
 from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
 from datetime import datetime, timezone
 
+import logging
 from e3sm_to_cmip._logger import _logger
 
 from e3sm_to_cmip.cmor_handlers.utils import (
@@ -110,7 +111,7 @@ class E3SMtoCMIP:
 
         # Setup this module's logger AFTER args are parsed in __init__, so that
         # default log file is NOT created for "--help" or "--version" calls.
-        logger = _logger(name=__name__, set_log_level="INFO", to_logfile=True)
+        logger = _logger(name=__name__, log_level=logging.INFO, to_logfile=True)
 
         # NOTE: The order of these attributes align with class CLIArguments.
         # ======================================================================

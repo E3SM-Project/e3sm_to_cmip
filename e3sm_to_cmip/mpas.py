@@ -22,8 +22,9 @@ import numpy as np
 import xarray
 from dask.diagnostics import ProgressBar
 
+import logging
 from e3sm_to_cmip._logger import _logger
-logger = _logger(name=__name__, set_log_level="INFO", to_logfile=True, propagate=False)
+logger = _logger(name=__name__, log_level=logging.INFO, to_logfile=True, propagate=False)
 
 def run_ncremap_cmd(args, env):
 

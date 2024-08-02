@@ -8,8 +8,16 @@ DEFAULT_LOG_LEVEL = logging.DEBUG
 DEFAULT_LOG_DIR = "e2c_logs"
 DEFAULT_LOG = f"{DEFAULT_LOG_DIR}/e2c_root_log-{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}.log"
 
-def _logger(name=None, logfilename=DEFAULT_LOG, set_log_level=None, to_console=False, to_logfile=False, propagate=False):
-    """ Return a root or named logger with variable configuration.
+
+def _logger(
+    name=None,
+    logfilename=DEFAULT_LOG,
+    log_level=None,
+    to_console=False,
+    to_logfile=False,
+    propagate=False,
+):
+    """Return a root or named logger with variable configuration.
 
     Parameters
     ----------
@@ -19,8 +27,9 @@ def _logger(name=None, logfilename=DEFAULT_LOG, set_log_level=None, to_console=F
     logfilename : str
         If logfile handling is requested, any logfile may be specified, or else
         the default (e2c_logs/dflt_log-{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}.log) is used.
-    set_log_level : str
-        One of { "DEBUG" (default), "INFO", "WARNING", "ERROR", "CRITICAL" }
+    log_level : int
+        One of { logging.DEBUG (default), logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL }
+        as defined in the module "logging".
     to_console : boolean
         If True, a logging.StreamHandler is supplied.  Default = False
     to_logfile : boolean
@@ -40,17 +49,8 @@ def _logger(name=None, logfilename=DEFAULT_LOG, set_log_level=None, to_console=F
 
     logger.propagate = propagate
 
-    if set_log_level == "None" or set_log_level == "DEBUG":
+    if log_level == None:
         log_level = DEFAULT_LOG_LEVEL
-    elif set_log_level == "INFO":
-        log_level = logging.INFO
-    elif set_log_level == "WARNING":
-        log_level = logging.WARNING
-    elif set_log_level == "ERROR":
-        log_level = logging.ERROR
-    elif set_log_level == "CRITICAL":
-        log_level = logging.CRITICAL
-    else: log_level = DEFAULT_LOG_LEVEL
 
     logger.setLevel(log_level)
 
@@ -70,5 +70,3 @@ def _logger(name=None, logfilename=DEFAULT_LOG, set_log_level=None, to_console=F
         logger.addHandler(logFileHandler)
 
     return logger
-
-
