@@ -162,7 +162,6 @@ class E3SMtoCMIP:
         logger.info(f"    * precheck_path='{self.precheck_path}'")
         logger.info(f"    * freq='{self.freq}'")
         logger.info(f"    * realm='{self.realm}'")
-        # logger.info(f"    * Writing log output file to: {log_filename}")
 
     def run(self):
         # Setup logger information and print out e3sm_to_cmip CLI arguments.
