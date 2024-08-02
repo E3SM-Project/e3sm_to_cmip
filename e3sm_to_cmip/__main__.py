@@ -543,7 +543,6 @@ class E3SMtoCMIP:
             "-h",
             "--help",
             action="help",
-            # default=argparse.SUPPRESS,
             help="show this help message and exit",
         )
 
