@@ -14,117 +14,117 @@ env:
   PATHS_IGNORE: '["**/README.md", "**/docs/**", "**/examples/**", "**/misc/**", "**/.vscode/**", "**/ISSUE_TEMPLATE/**", "**/pull_request_template.md"]'
 
 jobs:
-    skip-duplicate-actions:
-        runs-on: ubuntu-latest
-        outputs:
-            should_skip: ${{ steps.skip_check.outputs.should_skip }}
-            paths_result: ${{ steps.skip_check.outputs.paths_result }}
-        steps:
-            - id: skip_check
-              uses: fkirc/skip-duplicate-actions@v5
-              with:
-                  cancel_others: ${{ env.CANCEL_OTHERS }}
-                  paths_ignore: ${{ env.PATHS_IGNORE }}
-                  do_not_skip: '["push", "workflow_dispatch"]'
+  skip-duplicate-actions:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+      paths_result: ${{ steps.skip_check.outputs.paths_result }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: ${{ env.CANCEL_OTHERS }}
+          paths_ignore: ${{ env.PATHS_IGNORE }}
+          do_not_skip: '["push", "workflow_dispatch"]'
 
-    pre-commit-hooks:
-        needs: skip-duplicate-actions
-        if: needs.skip-duplicate-actions.outputs.should_skip != 'true'
-        runs-on: ubuntu-latest
-        timeout-minutes: 3
-        steps:
-            - name: Checkout Code Repository
-              uses: actions/checkout@v3
+  pre-commit-hooks:
+    needs: skip-duplicate-actions
+    if: needs.skip-duplicate-actions.outputs.should_skip != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v3
 
-            - name: Set up Python 3.10
-              uses: actions/setup-python@v3
-              with:
-                  python-version: "3.10"
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
 
-            - name: Install and Run Pre-commit
-              uses: pre-commit/action@v3.0.0
+      - name: Install and Run Pre-commit
+        uses: pre-commit/action@v3.0.0
 
-      build:
-          needs: skip-duplicate-actions
-          if: needs.skip-duplicate-actions.outputs.should_skip != 'true'
-          name: Build (Python ${{ matrix.python-version }})
-          runs-on: "ubuntu-latest"
-          timeout-minutes: 10
-          defaults:
-              run:
-                  shell: bash -l {0}
-          strategy:
-              matrix:
-                  python-version: ["3.9", "3.10", "3.11"]
-          steps:
-              - uses: actions/checkout@v3
+  build:
+    needs: skip-duplicate-actions
+    if: needs.skip-duplicate-actions.outputs.should_skip != 'true'
+    name: Build (Python ${{ matrix.python-version }})
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash -l {0}
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+    steps:
+      - uses: actions/checkout@v3
 
-              - name: Set up Conda Environment
-                uses: conda-incubator/setup-miniconda@v2
-                with:
-                    miniforge-variant: Mambaforge
-                    miniforge-version: latest
-                    activate-environment: "e3sm_to_cmip_ci"
-                    use-mamba: true
-                    mamba-version: "*"
-                    channel-priority: strict
-                    auto-update-conda: true
-                    python-version: ${{ matrix.python-version }}
+      - name: Set up Conda Environment
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
+          activate-environment: "e3sm_to_cmip_ci"
+          use-mamba: true
+          mamba-version: "*"
+          channel-priority: strict
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
 
-              # Refresh the cache every 24 hours to avoid inconsistencies of package versions
-              # between the CI pipeline and local installations.
-              - id: get-date
-                name: Get Date
-                run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
-                shell: bash
+      # Refresh the cache every 24 hours to avoid inconsistencies of package versions
+      # between the CI pipeline and local installations.
+      - id: get-date
+        name: Get Date
+        run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+        shell: bash
 
-              - id: cache
-                name: Cache Conda env
-                uses: actions/cache@v3
-                with:
-                    path: ${{ env.CONDA }}/envs
-                    key:
-                        conda-${{ runner.os }}-${{ runner.arch }}-${{ matrix.python-version }}-${{
-                        steps.get-date.outputs.today }}-${{hashFiles('conda-env/ci.yml') }}-${{ env.CACHE_NUMBER}}
-                env:
-                    # Increase this value to reset cache if conda-env/ci.yml has not changed in the workflow
-                    CACHE_NUMBER: 0
+      - id: cache
+        name: Cache Conda env
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.CONDA }}/envs
+          key:
+            conda-${{ runner.os }}-${{ runner.arch }}-${{ matrix.python-version }}-${{
+            steps.get-date.outputs.today }}-${{hashFiles('conda-env/ci.yml') }}-${{ env.CACHE_NUMBER}}
+        env:
+          # Increase this value to reset cache if conda-env/ci.yml has not changed in the workflow
+          CACHE_NUMBER: 0
 
-              - if: steps.cache.outputs.cache-hit != 'true'
-                name: Update environment
-                run: |
-                    mamba env update -n e3sm_to_cmip_ci -f conda-env/ci.yml
-                    # Make sure the Python version in the env matches the current matrix version.
-                    # Make sure numpy is not > 2.0.
-                    mamba install -c conda-forge python=${{ matrix.python-version }} "numpy>=1.23.0,<2.0"
+      - if: steps.cache.outputs.cache-hit != 'true'
+        name: Update environment
+        run: |
+          mamba env update -n e3sm_to_cmip_ci -f conda-env/ci.yml
+          # Make sure the Python version in the env matches the current matrix version.
+          # Make sure numpy is not > 2.0.
+          mamba install -c conda-forge python=${{ matrix.python-version }} "numpy>=1.23.0,<2.0"
 
-              - name: Install e3sm_to_cmip
-                # Source: https://github.com/conda/conda-build/issues/4251#issuecomment-1053460542
-                run: |
-                    python -m pip install --no-build-isolation --no-deps -e .
+      - name: Install e3sm_to_cmip
+        # Source: https://github.com/conda/conda-build/issues/4251#issuecomment-1053460542
+        run: |
+          python -m pip install --no-build-isolation --no-deps -e .
 
-              - name: Run Tests
-                run: |
-                    pytest
+      - name: Run Tests
+        run: |
+          pytest
 
-              - name: Upload Coverage Report
-                uses: codecov/codecov-action@v4
-                with:
-                    file: "tests_coverage_reports/coverage.xml"
-                    fail_ci_if_error: true
-                    token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload Coverage Report
+        uses: codecov/codecov-action@v4
+        with:
+          file: "tests_coverage_reports/coverage.xml"
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 
-      # `build-result` is a workaround to skipped matrix jobs in `build` not being considered "successful",
-      # which can block PR merges if matrix jobs are required status checks.
-      # More info: https://github.com/fkirc/skip-duplicate-actions#how-to-use-skip-check-with-required-matrix-jobs
-      build-result:
-          name: Build Result
-          if: needs.skip-duplicate-actions.outputs.should_skip != 'true' && always()
-          runs-on: ubuntu-latest
-          needs:
-              - skip-duplicate-actions
-              - build
-          steps:
-              - name: Mark result as failed
-                if: needs.build.result != 'success'
-                run: exit 1
+  # `build-result` is a workaround to skipped matrix jobs in `build` not being considered "successful",
+  # which can block PR merges if matrix jobs are required status checks.
+  # More info: https://github.com/fkirc/skip-duplicate-actions#how-to-use-skip-check-with-required-matrix-jobs
+  build-result:
+    name: Build Result
+    if: needs.skip-duplicate-actions.outputs.should_skip != 'true' && always()
+    runs-on: ubuntu-latest
+    needs:
+      - skip-duplicate-actions
+      - build
+    steps:
+      - name: Mark result as failed
+        if: needs.build.result != 'success'
+        run: exit 1
