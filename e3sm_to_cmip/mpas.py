@@ -42,7 +42,16 @@ def run_ncremap_cmd(args, env):
 
 
 def remap_seaice_sgs(inFileName, outFileName, mappingFileName, renorm_threshold=0.0):
+    if "_sgs_" in mappingFileName:
+        raise ValueError(
+            f"Mapping file: {mappingFileName} with *sgs* is no longer supported! Subgrid-scale field is now handled by ncremp -P, please use a standard MPAS mapping file instead."
+        )
+
+    # set an environment variable to make sure we're not using czender's
+    # local version of NCO instead of one we have intentionally loaded
     env = os.environ.copy()
+    env["NCO_PATH_OVERRIDE"] = "no"
+
     ds_in = xarray.open_dataset(inFileName, decode_times=False)
     outFilePath = f"{outFileName}sub"
     os.makedirs(outFilePath)
@@ -74,7 +83,33 @@ def remap_seaice_sgs(inFileName, outFileName, mappingFileName, renorm_threshold=
     shutil.rmtree(outFilePath, ignore_errors=True)
 
 
-def remap(ds, pcode, mappingFileName, threshold=0.0):
+def remap_ocean(inFileName, outFileName, mappingFileName, renorm_threshold=0.05):
+    """Use ncreamp to remap the ocean dataset to a new target grid"""
+
+    # set an environment variable to make sure we're not using czender's
+    # local version of NCO instead of one we have intentionally loaded
+    env = os.environ.copy()
+    env["NCO_PATH_OVERRIDE"] = "no"
+
+    args = [
+        "ncremap",
+        "-P",
+        "mpasocean",
+        "-7",
+        "--dfl_lvl=1",
+        "--no_stdin",
+        "--no_cll_msr",
+        "--no_frm_trm",
+        "--no_permute",
+        f"--rnr_thr={renorm_threshold}",
+        f"--map={mappingFileName}",
+        inFileName,
+        outFileName,
+    ]
+    run_ncremap_cmd(args, env)
+
+
+def remap(ds, pcode, mappingFileName):
     """Use ncreamp to remap the xarray Dataset to a new target grid"""
 
     # write the dataset to a temp file
@@ -86,37 +121,11 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
 
     write_netcdf(ds, inFileName, unlimited="time")
 
-    # set an environment variable to make sure we're not using czender's
-    # local version of NCO instead of one we have intentionally loaded
-    env = os.environ.copy()
-    env["NCO_PATH_OVERRIDE"] = "no"
-
-    if "_sgs_" in mappingFileName:
-        raise ValueError(
-            f"Mapping file: {mappingFileName} with *sgs* is no longer supported! Subgrid-scale field is now handled by ncremp -P, please use a standard MPAS mapping file instead."
-        )
-
     if pcode == "mpasocean":
-        args = [
-            "ncremap",
-            "-P",
-            f"{pcode}",
-            "-7",
-            "--dfl_lvl=1",
-            "--no_stdin",
-            "--no_cll_msr",
-            "--no_frm_trm",
-            "--no_permute",
-            f"--map={mappingFileName}",
-            inFileName,
-            outFileName,
-        ]
-        run_ncremap_cmd(args, env)
+        remap_ocean(inFileName, outFileName, mappingFileName)
     elif pcode == "mpasseaice":
         # MPAS-Seaice is a special case because the of the time-varying SGS field
-        remap_seaice_sgs(
-            inFileName, outFileName, mappingFileName, renorm_threshold=threshold
-        )
+        remap_seaice_sgs(inFileName, outFileName, mappingFileName)
     else:
         raise ValueError(f"pcode: {pcode} is not supported.")
 
