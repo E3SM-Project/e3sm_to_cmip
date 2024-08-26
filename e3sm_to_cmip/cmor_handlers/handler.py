@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import abc
 import json
+import logging
 import os
 from typing import Any, Dict, KeysView, List, Literal, Optional, Tuple, TypedDict
 
@@ -11,17 +12,19 @@ import xarray as xr
 import xcdat as xc
 import yaml
 
+from e3sm_to_cmip._logger import _logger
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE, _formulas
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
-import logging
-from e3sm_to_cmip._logger import _logger
 
 logger = None
 
-def instantiate_handler_logger():
+
+def _instantiate_handler_logger():
     global logger
 
-    logger = _logger(name=__name__, log_level=logging.INFO, to_logfile=True, propagate=True)
+    logger = _logger(
+        name=__name__, log_level=logging.INFO, to_logfile=True, propagate=True
+    )
 
 
 # The names for valid hybrid sigma levels.
@@ -273,9 +276,7 @@ class VarHandler(BaseVarHandler):
         # the variables. Otherwise, the IDs of cmor objects gets wiped after
         # every loop.
         cmor.close()
-        logger.info(
-            f"{self.name}: CMORized and file write complete, closing CMOR I/O."
-        )
+        logger.info(f"{self.name}: CMORized and file write complete, closing CMOR I/O.")
 
         return self.name
 
@@ -332,7 +333,9 @@ class VarHandler(BaseVarHandler):
         os.makedirs(logpath, exist_ok=True)
         logfile = os.path.join(logpath, var_name + ".log")
 
-        cmor.setup(inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
+        cmor.setup(
+            inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile
+        )
         cmor.dataset_json(metadata_path)
         cmor.load_table(self.table)
 

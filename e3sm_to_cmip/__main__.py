@@ -4,6 +4,7 @@ A python command line tool to turn E3SM model output into CMIP6 compatable data.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import argparse
+import logging
 import os
 import signal
 import sys
@@ -21,33 +22,28 @@ import yaml
 from tqdm import tqdm
 
 from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
-from datetime import datetime, timezone
-
-import logging
 from e3sm_to_cmip._logger import _logger
-
+from e3sm_to_cmip.cmor_handlers.handler import _instantiate_handler_logger
 from e3sm_to_cmip.cmor_handlers.utils import (
-    instantiate_h_utils_logger,
     MPAS_REALMS,
     REALMS,
     Frequency,
     MPASRealm,
     Realm,
     _get_mpas_handlers,
+    _instantiate_h_utils_logger,
     derive_handlers,
     load_all_handlers,
 )
-from e3sm_to_cmip.cmor_handlers.handler import instantiate_handler_logger
-
 from e3sm_to_cmip.util import (
-    instantiate_util_logger,
     FREQUENCIES,
     _get_table_info,
-    get_handler_info_msg,
+    _instantiate_util_logger,
     add_metadata,
     copy_user_metadata,
     find_atm_files,
     find_mpas_files,
+    get_handler_info_msg,
     precheck,
     print_debug,
     print_message,
@@ -153,7 +149,7 @@ class E3SMtoCMIP:
 
         self.handlers = self._get_handlers()
 
-    def echo_settings(self):
+    def print_config(self):
         logger.info("--------------------------------------")
         logger.info("| E3SM to CMIP Configuration")
         logger.info("--------------------------------------")
@@ -422,7 +418,9 @@ class E3SMtoCMIP:
             nargs="+",
             required=True,
             metavar="",
-            help=("Space separated list of CMIP variables to convert from E3SM to CMIP."),
+            help=(
+                "Space separated list of CMIP variables to convert from E3SM to CMIP."
+            ),
         )
         optional_run.add_argument(
             "--realm",
@@ -669,7 +667,7 @@ class E3SMtoCMIP:
 
         # if the user asked if the variable is included in the table
         # but didnt ask about the files in the inpath
-        elif self.freq and self.tables_path and not self.input_path:    # info mode 2
+        elif self.freq and self.tables_path and not self.input_path:  # info mode 2
             for handler in self.handlers:
                 table_info = _get_table_info(self.tables_path, handler["table"])
                 if handler["name"] not in table_info["variable_entry"]:
@@ -677,15 +675,16 @@ class E3SMtoCMIP:
                     print_message(msg, status="error")
                     continue
                 else:
-                    if self.freq == "mon" and handler['table'] == "CMIP6_day.json":
+                    if self.freq == "mon" and handler["table"] == "CMIP6_day.json":
                         continue
-                    if ( self.freq == "day" or self.freq == "3hr" ) and handler['table'] == "CMIP6_Amon.json":
+                    if (self.freq == "day" or self.freq == "3hr") and handler[
+                        "table"
+                    ] == "CMIP6_Amon.json":
                         continue
                     hand_msg = get_handler_info_msg(handler)
                     messages.append(hand_msg)
 
-        elif self.freq and self.tables_path and self.input_path:        # info mode 3
-
+        elif self.freq and self.tables_path and self.input_path:  # info mode 3
             file_path = next(Path(self.input_path).glob("*.nc"))
 
             with xr.open_dataset(file_path) as ds:
@@ -725,9 +724,11 @@ class E3SMtoCMIP:
                     #    but we only want the latter in the "hand_msg" output.
                     #    The vars "hass" and "rlut" have multiple freqs.
 
-                    if self.freq == "mon" and handler['table'] == "CMIP6_day.json":
+                    if self.freq == "mon" and handler["table"] == "CMIP6_day.json":
                         continue
-                    if ( self.freq == "day" or self.freq == "3hr" ) and handler['table'] == "CMIP6_Amon.json":
+                    if (self.freq == "day" or self.freq == "3hr") and handler[
+                        "table"
+                    ] == "CMIP6_Amon.json":
                         continue
 
                     hand_msg = None
@@ -791,7 +792,7 @@ class E3SMtoCMIP:
         """
 
         # TODO: Make this a command-line flag.
-        do_pbar = False
+        use_pbar = False
 
         try:
             num_handlers = len(self.handlers)
@@ -799,7 +800,7 @@ class E3SMtoCMIP:
             num_failure = 0
             name = None
 
-            if self.realm != "atm" and do_pbar:
+            if self.realm != "atm" and use_pbar:
                 pbar = tqdm(total=len(self.handlers))
 
             for _, handler in enumerate(self.handlers):
@@ -854,7 +855,7 @@ class E3SMtoCMIP:
                 except Exception as e:
                     print_debug(e)
 
-                if name is not None and name is not "":
+                if name is not None and name != "":
                     num_success += 1
                     msg = f"Finished {name}, {num_success}/{num_handlers} jobs complete (via run_serial)"
                     logger.info(msg)
@@ -863,13 +864,14 @@ class E3SMtoCMIP:
                     msg = f"Error running handler {handler['name']}"
                     logger.info(msg)
 
-                if self.realm != "atm" and do_pbar:
+                if self.realm != "atm" and use_pbar:
                     pbar.update(1)
-            if self.realm != "atm" and do_pbar:
-                pbar.close()
 
+            if self.realm != "atm" and use_pbar:
+                pbar.close()
         except Exception as error:
             print_debug(error)
+
             return 1
         else:
             msg = f"{num_success} of {num_handlers} handlers complete"
@@ -877,6 +879,7 @@ class E3SMtoCMIP:
 
             if num_failure > 0:
                 return 1
+
             return 0
 
     def _run_parallel(self) -> int:  # noqa: C901
@@ -993,21 +996,19 @@ class E3SMtoCMIP:
         print_message("Hit timeout limit, exiting")
         os.kill(os.getpid(), signal.SIGINT)
 
-def main(args: Optional[List[str]] = None):
 
+def main(args: Optional[List[str]] = None):
     app = E3SMtoCMIP(args)
 
-    # These calls allow module loggers that create default logfiles to avoid being 
+    # These calls allow module loggers that create default logfiles to avoid being
     # instantiated by arguments "--help" or "--version" upon import.
-    instantiate_util_logger()
-    instantiate_h_utils_logger()
-    instantiate_handler_logger()
+    _instantiate_util_logger()
+    _instantiate_h_utils_logger()
+    _instantiate_handler_logger()
 
-    app.echo_settings()
+    app.print_config()
     return app.run()
 
 
 if __name__ == "__main__":
-
-
     main()

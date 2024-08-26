@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import json
+import logging
 import os
 import re
 import sys
@@ -14,13 +15,16 @@ import xarray as xr
 import yaml
 from tqdm import tqdm
 
-import logging
 from e3sm_to_cmip._logger import _logger
 
-def instantiate_util_logger():
+
+def _instantiate_util_logger():
     global logger
 
-    logger = _logger(name=__name__, log_level=logging.INFO, to_logfile=True, propagate=False)
+    logger = _logger(
+        name=__name__, log_level=logging.INFO, to_logfile=True, propagate=False
+    )
+
 
 ATMOS_TABLES = [
     "CMIP6_Amon.json",
@@ -123,7 +127,6 @@ def setup_cmor(var_name, table_path, table_name, user_input_path):
         cmor.load_table(table_name)
     except Exception:
         raise ValueError(f"Unable to load table {table_name} for {var_name}")
-
 
 
 # ------------------------------------------------------------------
@@ -317,6 +320,7 @@ def _get_table_info(tables, table):
         raise ValueError(f"CMIP6 table doesnt exist: {table}")
     with open(table, "r") as instream:
         return json.load(instream)
+
 
 def get_handler_info_msg(handler):
     msg = {

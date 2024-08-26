@@ -5,6 +5,7 @@ Utilities related to converting MPAS-Ocean and MPAS-Seaice files to CMOR
 from __future__ import absolute_import, division, print_function
 
 import argparse
+import logging
 import multiprocessing
 import os
 import re
@@ -22,16 +23,18 @@ import numpy as np
 import xarray
 from dask.diagnostics import ProgressBar
 
-import logging
 from e3sm_to_cmip._logger import _logger
-logger = _logger(name=__name__, log_level=logging.INFO, to_logfile=True, propagate=False)
+
+logger = _logger(
+    name=__name__, log_level=logging.INFO, to_logfile=True, propagate=False
+)
+
 
 def run_ncremap_cmd(args, env):
-
     proc = subprocess.Popen(
         args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env
     )
-    (out, err) = proc.communicate()
+    (_, err) = proc.communicate()
 
     if proc.returncode:
         arglist = " ".join(args)
@@ -48,7 +51,9 @@ def remap_seaice_sgs(inFileName, outFileName, mappingFileName, renorm_threshold=
     outFilePath = f"{outFileName}sub"
     os.makedirs(outFilePath)
 
-    logger.info(f"Calling run_ncremap_cmd for each ds_slice in {range(ds_in.sizes['time'])}") 
+    logger.info(
+        f"Calling run_ncremap_cmd for each ds_slice in {range(ds_in.sizes['time'])}"
+    )
 
     for t_index in range(ds_in.sizes["time"]):
         ds_slice = ds_in.isel(time=slice(t_index, t_index + 1))
@@ -89,10 +94,10 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
     outFileName = _get_temp_path()
 
     if "depth" in ds.dims:
-        logger.info(f"Calling ds.transpose") 
+        logger.info("Calling ds.transpose")
         ds = ds.transpose("time", "depth", "nCells", "nbnd")
 
-    logger.info(f"Calling write_netcdf() (inFileName={inFileName})") 
+    logger.info(f"Calling write_netcdf() (inFileName={inFileName})")
     write_netcdf(ds, inFileName, unlimited="time")
 
     # set an environment variable to make sure we're not using czender's
@@ -120,7 +125,7 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
             inFileName,
             outFileName,
         ]
-        logger.info(f"Calling run_ncremap_cmd with args {args}") 
+        logger.info(f"Calling run_ncremap_cmd with args {args}")
         run_ncremap_cmd(args, env)
     elif pcode == "mpasseaice":
         # MPAS-Seaice is a special case because the of the time-varying SGS field

@@ -1,8 +1,6 @@
-import inspect
 import logging
 import os
 from datetime import datetime, timezone
-
 
 DEFAULT_LOG_LEVEL = logging.DEBUG
 DEFAULT_LOG_DIR = "e2c_logs"
@@ -10,12 +8,12 @@ DEFAULT_LOG = f"{DEFAULT_LOG_DIR}/e2c_root_log-{datetime.now(timezone.utc).strft
 
 
 def _logger(
-    name=None,
-    logfilename=DEFAULT_LOG,
-    log_level=None,
-    to_console=False,
-    to_logfile=False,
-    propagate=False,
+    name: str | None = None,
+    logfilename: str = DEFAULT_LOG,
+    log_level: int = DEFAULT_LOG_LEVEL,
+    to_console: bool = False,
+    to_logfile: bool = False,
+    propagate: bool = False,
 ):
     """Return a root or named logger with variable configuration.
 
@@ -28,30 +26,27 @@ def _logger(
         If logfile handling is requested, any logfile may be specified, or else
         the default (e2c_logs/dflt_log-{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}.log) is used.
     log_level : int
-        One of { logging.DEBUG (default), logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL }
-        as defined in the module "logging".
-    to_console : boolean
-        If True, a logging.StreamHandler is supplied.  Default = False
-    to_logfile : boolean
-        If True, a logging.FileHandler is supplied. Default = False.
+        Logging.DEBUG (default), logging.INFO, logging.WARNING, logging.ERROR,
+        or logging.CRITICAL, by default logging.DEBUG.
+    to_console : bool
+        If True, a logging.StreamHandler is supplied, by default False.
+    to_logfile : bool
+        If True, a logging.FileHandler is supplied, by default False.
     propagate : boolean
-        If True, messages logged are propagated to the root logger.  Default = False.
+        If True, messages logged are propagated to the root logger, by default
+        False.
     """
     if to_logfile:
         dn = os.path.dirname(logfilename)
         if len(dn) and not os.path.exists(dn):
             os.makedirs(dn)
 
-    if name == None or name == "__main__":
-        logger = logger.root
+    if name is None or name == "__main__":
+        logger = logger.root  # noqa: F821
     else:
         logger = logging.getLogger(name)
 
     logger.propagate = propagate
-
-    if log_level == None:
-        log_level = DEFAULT_LOG_LEVEL
-
     logger.setLevel(log_level)
 
     logger.handlers = []
