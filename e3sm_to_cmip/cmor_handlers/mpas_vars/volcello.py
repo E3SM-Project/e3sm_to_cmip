@@ -6,8 +6,8 @@ import xarray
 import logging
 import netCDF4
 
-from e3sm_to_cmip import mpas
-from e3sm_to_cmip.util import print_message, setup_cmor
+from e3sm_to_cmip import mpas, util
+from e3sm_to_cmip.util import print_message
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ['MPASO', 'MPAS_mesh', 'MPAS_map']
 
@@ -85,7 +85,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
     # multiply variables in this order so they don't get transposed
     ds[VAR_NAME] = ds[VAR_NAME]*earth_radius**2*area_b
 
-    setup_cmor(var_name=VAR_NAME, table_path=tables, table_name=TABLE,
+    util.setup_cmor(var_name=VAR_NAME, table_path=tables, table_name=TABLE,
                user_input_path=user_input_path)
 
     # create axes
