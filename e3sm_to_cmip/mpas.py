@@ -399,27 +399,6 @@ def convert_namelist_to_dict(fileName):
     return nml
 
 
-def setup_cmor(varname, tables, user_input_path, component="ocean", table=None):
-    """Set up CMOR for MPAS-Ocean or MPAS-Seaice"""
-    logfile = os.path.join(os.getcwd(), "cmor_logs")
-    if not os.path.exists(logfile):
-        os.makedirs(logfile)
-    logfile = os.path.join(logfile, varname + ".log")
-    cmor.setup(inpath=tables, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
-    cmor.dataset_json(str(user_input_path))
-    if table is None:
-        if component == "ocean":
-            table = "CMIP6_Omon.json"
-        elif component == "seaice":
-            table = "CMIP6_SImon.json"
-        else:
-            raise ValueError("Unexpected component {}".format(component))
-    try:
-        cmor.load_table(table)
-    except Exception:
-        raise ValueError("Unable to load table from {}".format(varname))
-
-
 def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
     """Write a time series of a variable in the format expected by CMOR"""
     axis_ids = list()
