@@ -12,11 +12,10 @@ import xarray as xr
 
 import cmor
 from e3sm_to_cmip import resources
-from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.mpas import write_netcdf
-from e3sm_to_cmip.util import print_message
+from e3sm_to_cmip.util import setup_cmor, print_message
 
-logger = _setup_logger(__name__)
+logger = _setup_logger(name=__name__)
 
 # list of raw variable names needed
 RAW_VARIABLES = [str("area")]
@@ -56,14 +55,13 @@ def handle_simple(infiles):
 
 
 def handle(infiles, tables, user_input_path, table, logdir):
-    msg = "{}: Starting".format(VAR_NAME)
-    logger.info(msg)
+    logger.info(f"{VAR_NAME}: Starting")
 
     # check that we have some input files for every variable
     zerofiles = False
     for variable in RAW_VARIABLES:
         if len(infiles[variable]) == 0:
-            msg = "{}: Unable to find input files for {}".format(VAR_NAME, variable)
+            msg = f"{VARNAME}: Unable to find input files for {variable}"
             print_message(msg)
             logging.error(msg)
             zerofiles = True
@@ -78,15 +76,11 @@ def handle(infiles, tables, user_input_path, table, logdir):
         logpath = os.path.join(outpath, "cmor_logs")
     os.makedirs(logpath, exist_ok=True)
 
-    logfile = os.path.join(logpath, VAR_NAME + ".log")
-
-    cmor.setup(inpath=tables, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
-
-    cmor.dataset_json(str(user_input_path))
-    cmor.load_table(str(TABLE))
+    setup_cmor(var_name=VAR_NAME, table_path=tables, table_name=TABLE,
+            user_input_path=user_input_path)
 
     msg = "{}: CMOR setup complete".format(VAR_NAME)
-    logging.info(msg)
+    logger.info(msg)
 
     # extract data from the input file
     msg = "areacella: loading area"

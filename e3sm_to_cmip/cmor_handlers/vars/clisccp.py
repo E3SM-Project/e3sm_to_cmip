@@ -14,7 +14,7 @@ import xarray as xr
 
 import cmor
 from e3sm_to_cmip._logger import _setup_logger
-from e3sm_to_cmip.util import print_message
+from e3sm_to_cmip.util import setup_cmor, print_message
 
 logger = _setup_logger(__name__)
 
@@ -74,17 +74,7 @@ def handle(  # noqa: C901
     msg = f"{VAR_NAME}: running with input files: {vars_to_filepaths}"
     logger.debug(msg)
 
-    if logdir is not None:
-        logfile = logfile = os.path.join(logdir, VAR_NAME + ".log")
-    else:
-        logfile = os.path.join(os.getcwd(), "logs")
-        if not os.path.exists(logfile):
-            os.makedirs(logfile)
-        logfile = os.path.join(logfile, VAR_NAME + ".log")
-
-    cmor.setup(inpath=tables, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
-    cmor.dataset_json(metadata_path)
-    cmor.load_table(TABLE)
+    setup_cmor(var_name=VAR_NAME, table_path=tables, table_name=TABLE, user_input_path=metadata_path)
 
     msg = f"{VAR_NAME}: CMOR setup complete"
     logger.info(msg)
