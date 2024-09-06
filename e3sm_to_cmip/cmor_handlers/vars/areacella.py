@@ -16,7 +16,7 @@ from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.mpas import write_netcdf
 from e3sm_to_cmip.util import setup_cmor, print_message
 
-logger = _setup_logger(name=__name__)
+logger = _setup_logger(__name__)
 
 # list of raw variable names needed
 RAW_VARIABLES = [str("area")]
