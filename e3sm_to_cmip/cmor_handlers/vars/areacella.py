@@ -56,13 +56,14 @@ def handle_simple(infiles):
 
 
 def handle(infiles, tables, user_input_path, table, logdir):
-    logger.info(f"{VAR_NAME}: Starting")
+    msg = "{}: Starting".format(VAR_NAME)
+    logger.info(msg)
 
     # check that we have some input files for every variable
     zerofiles = False
     for variable in RAW_VARIABLES:
         if len(infiles[variable]) == 0:
-            msg = f"{VARNAME}: Unable to find input files for {variable}"
+            msg = "{}: Unable to find input files for {}".format(VAR_NAME, variable)
             print_message(msg)
             logging.error(msg)
             zerofiles = True
