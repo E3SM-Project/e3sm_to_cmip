@@ -12,6 +12,7 @@ import xarray as xr
 
 import cmor
 from e3sm_to_cmip import resources
+from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.mpas import write_netcdf
 from e3sm_to_cmip.util import setup_cmor, print_message
 
