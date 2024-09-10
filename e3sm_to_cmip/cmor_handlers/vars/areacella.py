@@ -78,8 +78,12 @@ def handle(infiles, tables, user_input_path, table, logdir):
         logpath = os.path.join(outpath, "cmor_logs")
     os.makedirs(logpath, exist_ok=True)
 
-    setup_cmor(var_name=VAR_NAME, table_path=tables, table_name=TABLE,
-            user_input_path=user_input_path)
+    setup_cmor(
+        var_name=VAR_NAME,
+        table_path=tables,
+        table_name=TABLE,
+        user_input_path=user_input_path,
+    )
 
     msg = "{}: CMOR setup complete".format(VAR_NAME)
     logger.info(msg)
