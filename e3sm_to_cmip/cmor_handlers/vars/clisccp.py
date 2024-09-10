@@ -14,7 +14,7 @@ import xarray as xr
 
 import cmor
 from e3sm_to_cmip._logger import _setup_logger
-from e3sm_to_cmip.util import setup_cmor, print_message
+from e3sm_to_cmip.util import print_message, setup_cmor
 
 logger = _setup_logger(__name__)
 
