@@ -14,7 +14,7 @@ import cmor
 from e3sm_to_cmip import resources
 from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.mpas import write_netcdf
-from e3sm_to_cmip.util import print_message
+from e3sm_to_cmip.util import print_message, setup_cmor
 
 logger = _setup_logger(__name__)
 
@@ -78,15 +78,15 @@ def handle(infiles, tables, user_input_path, table, logdir):
         logpath = os.path.join(outpath, "cmor_logs")
     os.makedirs(logpath, exist_ok=True)
 
-    logfile = os.path.join(logpath, VAR_NAME + ".log")
-
-    cmor.setup(inpath=tables, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
-
-    cmor.dataset_json(str(user_input_path))
-    cmor.load_table(str(TABLE))
+    setup_cmor(
+        var_name=VAR_NAME,
+        table_path=tables,
+        table_name=TABLE,
+        user_input_path=user_input_path,
+    )
 
     msg = "{}: CMOR setup complete".format(VAR_NAME)
-    logging.info(msg)
+    logger.info(msg)
 
     # extract data from the input file
     msg = "areacella: loading area"
