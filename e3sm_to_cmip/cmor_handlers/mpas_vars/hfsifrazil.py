@@ -111,7 +111,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         },
     ]
     try:
-        mpas.write_cmor(axes, ds, VAR_NAME, VAR_UNITS, positive="down")
+        mpas.write_cmor(axes, ds, VAR_NAME, VAR_UNITS)
     except Exception:
         return ""
     return VAR_NAME
