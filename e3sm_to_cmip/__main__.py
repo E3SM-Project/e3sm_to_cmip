@@ -22,8 +22,12 @@ import yaml
 from tqdm import tqdm
 
 from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
-from e3sm_to_cmip._logger import _setup_logger, _setup_root_logger
+from datetime import datetime, timezone
+
+from e3sm_to_cmip import _logger
+
 from e3sm_to_cmip.cmor_handlers.utils import (
+    instantiate_h_utils_logger,
     MPAS_REALMS,
     REALMS,
     Frequency,
@@ -33,7 +37,10 @@ from e3sm_to_cmip.cmor_handlers.utils import (
     derive_handlers,
     load_all_handlers,
 )
+from e3sm_to_cmip.cmor_handlers.handler import instantiate_handler_logger
+
 from e3sm_to_cmip.util import (
+    instantiate_util_logger,
     FREQUENCIES,
     _get_table_info,
     add_metadata,
@@ -49,11 +56,6 @@ from e3sm_to_cmip.util import (
 os.environ["CDAT_ANONYMOUS_LOG"] = "false"
 
 warnings.filterwarnings("ignore")
-
-
-# Setup the root logger and this module's logger.
-log_filename = _setup_root_logger()
-logger = _setup_logger(__name__, propagate=True)
 
 
 @dataclass
@@ -98,8 +100,18 @@ class CLIArguments:
 
 class E3SMtoCMIP:
     def __init__(self, args: Optional[List[str]] = None):
+        # logger assignment is moved into __init__ AFTER the call to _parse_args
+        # to prevent the default logfile directory being created whenever a call
+        # to "--help" or "--version" is invoked.  Doing so, however, makes the
+        # logger unavailable to the functions in this class unless made global.
+        global logger
+
         # A dictionary of command line arguments.
         parsed_args = self._parse_args(args)
+
+        # Setup this module's logger AFTER args are parsed in __init__, so that
+        # default log file is NOT created for "--help" or "--version" calls.
+        logger = _logger.e2c_logger(name=__name__, log_level=_logger.INFO, to_logfile=True)
 
         # NOTE: The order of these attributes align with class CLIArguments.
         # ======================================================================
@@ -141,6 +153,9 @@ class E3SMtoCMIP:
         if self.precheck_path is not None:
             self._run_precheck()
 
+        self.handlers = self._get_handlers()
+
+    def print_config(self):
         logger.info("--------------------------------------")
         logger.info("| E3SM to CMIP Configuration")
         logger.info("--------------------------------------")
@@ -150,28 +165,24 @@ class E3SMtoCMIP:
         logger.info(f"    * precheck_path='{self.precheck_path}'")
         logger.info(f"    * freq='{self.freq}'")
         logger.info(f"    * realm='{self.realm}'")
-        logger.info(f"    * Writing log output file to: {log_filename}")
-
-        self.handlers = self._get_handlers()
 
     def run(self):
-        # Setup logger information and print out e3sm_to_cmip CLI arguments.
+        # If info_mode, call and then exit.
+        # ======================================================================
+        if self.info_mode:
+            self._run_info_mode()
+            sys.exit(0)
+
+        # Setup directories using the CLI argument paths (e.g., output dir).
+        # ======================================================================
+        self._setup_dirs_with_paths()
+
+        # Set new metadata path if output path was provided.
         # ======================================================================
         if self.output_path is not None:
             self.new_metadata_path = os.path.join(
                 self.output_path, "user_metadata.json"
             )
-
-        # Setup directories using the CLI argument paths (e.g., output dir).
-        # ======================================================================
-        if not self.info_mode:
-            self._setup_dirs_with_paths()
-
-        # Run e3sm_to_cmip with info mode.
-        # ======================================================================
-        if self.info_mode:
-            self._run_info_mode()
-            sys.exit(0)
 
         # Run e3sm_to_cmip to CMORize serially or in parallel.
         # ======================================================================
@@ -959,8 +970,17 @@ class E3SMtoCMIP:
 
 
 def main(args: Optional[List[str]] = None):
+
     app = E3SMtoCMIP(args)
-    app.run()
+
+    # These calls allow module loggers that create default logfiles to avoid being
+    # instantiated by arguments "--help" or "--version" upon import.
+    instantiate_util_logger()
+    instantiate_h_utils_logger()
+    instantiate_handler_logger()
+
+    app.print_config()
+    return app.run()
 
 
 if __name__ == "__main__":

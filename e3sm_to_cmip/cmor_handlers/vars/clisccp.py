@@ -6,17 +6,21 @@ formulas.py).
 
 from __future__ import absolute_import, annotations, division, unicode_literals
 
-import logging
+import os
 from typing import Dict, List, Union
 
 import cmor
 import numpy as np
 import xarray as xr
 
-from e3sm_to_cmip._logger import _setup_logger
+import cmor
+from e3sm_to_cmip import resources, _logger
+from e3sm_to_cmip.mpas import write_netcdf
 from e3sm_to_cmip.util import print_message, setup_cmor
 
-logger = _setup_logger(__name__)
+logger = _logger.e2c_logger(
+    name=__name__, log_level=_logger.INFO, to_logfile=True, propagate=False
+)
 
 # list of raw variable names needed
 RAW_VARIABLES = [str("FISCCP1_COSP")]
@@ -59,14 +63,14 @@ def handle(  # noqa: C901
         If CMORizing was successful, return the output CMIP variable name
         to indicate success. If failed, return None
     ."""
-    logging.info(f"Starting {VAR_NAME}")
+    logger.info(f"Starting {VAR_NAME}")
 
     nonzero = False
     for variable in RAW_VARIABLES:
         if len(vars_to_filepaths[variable]) == 0:
             msg = f"{variable}: Unable to find input files for {RAW_VARIABLES}"
             print_message(msg)
-            logging.error(msg)
+            logger.error(msg)
             nonzero = True
     if nonzero:
         return None

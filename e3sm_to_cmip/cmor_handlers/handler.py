@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import logging
 import os
 from typing import Any, Dict, KeysView, List, Literal, Optional, Tuple, TypedDict
 
@@ -11,11 +10,14 @@ import xarray as xr
 import xcdat as xc
 import yaml
 
-from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE, _formulas
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
+from e3sm_to_cmip import _logger
 
-logger = _setup_logger(__name__)
+def instantiate_handler_logger():
+    global logger
+
+    logger = _logger.e2c_logger(name=__name__, log_level=_logger.INFO, to_logfile=True, propagate=True)
 
 # The names for valid hybrid sigma levels.
 HYBRID_SIGMA_LEVEL_NAMES = [
@@ -289,7 +291,7 @@ class VarHandler(BaseVarHandler):
         """
         for var, filepaths in vars_to_filespaths.items():
             if len(filepaths) == 0:
-                logging.error(f"{var}: Unable to find input files for {var}")
+                logger.error(f"{var}: Unable to find input files for {var}")
                 return False
 
         return True
@@ -331,7 +333,7 @@ class VarHandler(BaseVarHandler):
         cmor.dataset_json(metadata_path)
         cmor.load_table(self.table)
 
-        logging.info(f"{var_name}: CMOR setup complete")
+        logger.info(f"{var_name}: CMOR setup complete")
 
     def _get_var_time_dim(self, table_path: str) -> str | None:
         """Get the CMIP variable's time dimension, if it exists.
