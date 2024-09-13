@@ -5,7 +5,6 @@ Utilities related to converting MPAS-Ocean and MPAS-Seaice files to CMOR
 from __future__ import absolute_import, division, print_function
 
 import argparse
-import logging
 import multiprocessing
 import os
 import re
@@ -23,10 +22,11 @@ import numpy as np
 import xarray
 from dask.diagnostics import ProgressBar
 
+from e3sm_to_cmip import _logger
+
+logger = _logger.e2c_logger(name=__name__, log_level=_logger.INFO, to_logfile=True, propagate=False)
 
 def run_ncremap_cmd(args, env):
-    logtext = f"mpas.py: remap: ncremap args = {args}"
-    logging.info(logtext)
 
     proc = subprocess.Popen(
         args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env
@@ -34,10 +34,11 @@ def run_ncremap_cmd(args, env):
     (out, err) = proc.communicate()
     logging.info(out)
     if proc.returncode:
-        print("Error running ncremap command: {}".format(" ".join(args)))
+        arglist = " ".join(args)
+        logger.error(f"Error running ncremap command: {arglist}")
         print(err.decode("utf-8"))
         raise subprocess.CalledProcessError(  # type: ignore
-            "ncremap returned {}".format(proc.returncode)  # type: ignore
+            f"ncremap returned {proc.returncode}"  # type: ignore
         )
 
 
@@ -46,6 +47,9 @@ def remap_seaice_sgs(inFileName, outFileName, mappingFileName, renorm_threshold=
     ds_in = xarray.open_dataset(inFileName, decode_times=False)
     outFilePath = f"{outFileName}sub"
     os.makedirs(outFilePath)
+
+    logger.info(f"Calling run_ncremap_cmd for each ds_slice in {range(ds_in.sizes['time'])}")
+
     for t_index in range(ds_in.sizes["time"]):
         ds_slice = ds_in.isel(time=slice(t_index, t_index + 1))
         ds_slice.to_netcdf(f"{outFilePath}/temp_in{t_index}.nc")
@@ -82,8 +86,10 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
     outFileName = _get_temp_path()
 
     if "depth" in ds.dims:
+        logger.info(f"Calling ds.transpose")
         ds = ds.transpose("time", "depth", "nCells", "nbnd")
 
+    logger.info(f"Calling write_netcdf() (inFileName={inFileName})")
     write_netcdf(ds, inFileName, unlimited="time")
 
     # set an environment variable to make sure we're not using czender's
@@ -111,6 +117,7 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
             inFileName,
             outFileName,
         ]
+        logger.info(f"Calling run_ncremap_cmd with args {args}")
         run_ncremap_cmd(args, env)
     elif pcode == "mpasseaice":
         # MPAS-Seaice is a special case because the of the time-varying SGS field
@@ -170,6 +177,8 @@ def add_time(ds, dsIn, referenceDate="0001-01-01", offsetYears=0):
     daysEnd = offsetYears * 365 + _string_to_days_since_date(
         dateStrings=xtimeEnd, referenceDate=referenceDate
     )
+
+    logger.info(f"add_time: daysStart={daysStart} daysEnd={daysEnd}")
 
     time_bnds = np.zeros((len(daysStart), 2))
     time_bnds[:, 0] = daysStart
@@ -432,7 +441,7 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
                 time_bnds=ds.time_bnds.values,
             )
     except Exception as error:
-        logging.exception(f"Error in cmor.write for {varname}")
+        logger.exception(f"Error in cmor.write for {varname}")
         raise Exception(error)
     finally:
         cmor.close(varid)
