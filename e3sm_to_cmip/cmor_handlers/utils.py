@@ -11,11 +11,14 @@ from e3sm_to_cmip import (
     LEGACY_HANDLER_DIR_PATH,
     MPAS_HANDLER_DIR_PATH,
 )
-from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.cmor_handlers.handler import VarHandler
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
+from e3sm_to_cmip import _logger
 
-logger = _setup_logger(__name__)
+def instantiate_h_utils_logger():
+    global logger
+
+    logger = _logger.e2c_logger(name=__name__, log_level=_logger.INFO, to_logfile=True, propagate=False)
 
 # Type aliases
 Frequency = Literal["mon", "day", "6hrLev", "6hrPlev", "6hrPlevPt", "3hr", "1hr"]

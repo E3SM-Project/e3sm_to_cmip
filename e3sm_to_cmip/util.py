@@ -14,10 +14,12 @@ import xarray as xr
 import yaml
 from tqdm import tqdm
 
-from e3sm_to_cmip._logger import _setup_logger
+from e3sm_to_cmip import _logger
 
-logger = _setup_logger(__name__)
+def instantiate_util_logger():
+    global logger
 
+    logger = _logger.e2c_logger(name=__name__, log_level=_logger.INFO, to_logfile=True, propagate=False)
 
 ATMOS_TABLES = [
     "CMIP6_Amon.json",
@@ -112,7 +114,7 @@ def setup_cmor(var_name, table_path, table_name, user_input_path):
     table_name = str(table_name)
     user_input_path = str(user_input_path)
 
-    logfile = os.path.join(os.getcwd(), "logs")
+    logfile = os.path.join(os.getcwd(), "cmor_logs")
     if not os.path.exists(logfile):
         os.makedirs(logfile)
 
@@ -562,7 +564,7 @@ def find_mpas_files(component, path, map_path=None):  # noqa: C901
         pattern_v2 = "mocBasinsAndTransects"
         for infile in contents:
             if pattern_v1 in infile or pattern_v2 in infile:
-                logger.info(f"component mpas0_moc_regions found: {infile}")
+                logger.info(f"component mpaso_moc_regions found: {infile}")
                 return os.path.abspath(os.path.join(path, infile))
         raise IOError("Unable to find mpaso_moc_regions in the input directory")
 

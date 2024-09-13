@@ -4,7 +4,8 @@ compute Water Flux into Sea Water due to Sea Ice Thermodynamics, fsitherm
 
 from __future__ import absolute_import, division, print_function
 
-import logging
+import xarray
+from e3sm_to_cmip import _logger
 
 import xarray
 
@@ -18,6 +19,10 @@ RAW_VARIABLES = ["MPASO", "MPAS_map"]
 VAR_NAME = "fsitherm"
 VAR_UNITS = "kg m-2 s-1"
 TABLE = "CMIP6_Omon.json"
+
+logger = _logger.e2c_logger(
+    name=__name__, log_level=_logger.INFO, to_logfile=True, propagate=False
+)
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
@@ -44,7 +49,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         print_message(f"Simple CMOR output not supported for {VAR_NAME}", "error")
         return None
 
-    logging.info(f"Starting {VAR_NAME}")
+    logger.info(f"Starting {VAR_NAME}")
 
     mappingFileName = infiles["MPAS_map"]
     timeSeriesFiles = infiles["MPASO"]

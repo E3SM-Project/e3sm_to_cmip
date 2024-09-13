@@ -4,8 +4,8 @@ compute Ocean Grid-Cell Mass per area, masscello
 
 from __future__ import absolute_import, division, print_function
 
-import logging
-
+import xarray
+from e3sm_to_cmip import _logger
 import netCDF4
 import xarray
 
@@ -19,6 +19,10 @@ RAW_VARIABLES = ["MPASO", "MPASO_namelist", "MPAS_mesh", "MPAS_map"]
 VAR_NAME = "masscello"
 VAR_UNITS = "kg m-2"
 TABLE = "CMIP6_Omon.json"
+
+logger = _logger.e2c_logger(
+    name=__name__, log_level=_logger.INFO, to_logfile=True, propagate=False
+)
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
@@ -47,7 +51,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         return
 
     msg = "Starting {name}".format(name=__name__)
-    logging.info(msg)
+    logger.info(msg)
 
     namelistFileName = infiles["MPASO_namelist"]
     meshFileName = infiles["MPAS_mesh"]
