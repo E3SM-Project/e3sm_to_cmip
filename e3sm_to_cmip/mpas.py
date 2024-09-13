@@ -119,6 +119,10 @@ def remap(ds, pcode, mappingFileName):
     if "depth" in ds.dims:
         ds = ds.transpose("time", "depth", "nCells", "nbnd")
 
+    # missing_value_mask attribute has undesired impacts in ncremap
+    for varName in ds.data_vars:
+        ds[varName].attrs.pop("missing_value_mask", None)
+
     write_netcdf(ds, inFileName, unlimited="time")
 
     if pcode == "mpasocean":
@@ -235,6 +239,7 @@ def add_mask(ds, mask):
         var = ds[varName]
         if all([dim in var.dims for dim in mask.dims]):
             ds[varName] = var.where(mask)
+            
 
     ds["cellMask"] = 1.0 * mask
 
