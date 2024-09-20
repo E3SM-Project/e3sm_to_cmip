@@ -238,10 +238,8 @@ def add_mask(ds, mask):
     for varName in ds.data_vars:
         var = ds[varName]
         if all([dim in var.dims for dim in mask.dims]):
+            print(f"Masking {varName}")
             ds[varName] = var.where(mask)
-            
-
-    ds["cellMask"] = 1.0 * mask
 
     return ds
 
