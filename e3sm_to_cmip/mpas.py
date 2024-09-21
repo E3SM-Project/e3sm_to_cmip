@@ -344,9 +344,8 @@ def write_netcdf(ds, fileName, fillValues=netCDF4.default_fillvals, unlimited=No
     encodingDict = {}
     variableNames = list(ds.data_vars.keys()) + list(ds.coords.keys())
     for variableName in variableNames:
-        if "_FillValue" in ds[variableName].attrs:
-            # There's already a fill value attribute so don't add a new one
-            continue
+        # If there's already a fill value attribute, drop it
+        ds[variableName].attrs.pop("_FillValue", None)
         isNumeric = np.issubdtype(ds[variableName].dtype, np.number)
         if isNumeric:
             dtype = ds[variableName].dtype
