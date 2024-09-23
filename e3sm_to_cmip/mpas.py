@@ -141,8 +141,13 @@ def remap(ds, pcode, mappingFileName):
     ds.load()
 
     # remove the temporary files
-    os.remove(inFileName)
-    os.remove(outFileName)
+    keep_temp_files = False
+    if keep_temp_files:
+        logging.info(f"Retaining inFileName  {inFileName}")
+        logging.info(f"Retaining outFileName {outFileName}")
+    else:
+        os.remove(inFileName)
+        os.remove(outFileName)
 
     return ds
 
