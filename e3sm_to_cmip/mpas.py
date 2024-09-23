@@ -42,7 +42,16 @@ def run_ncremap_cmd(args, env):
 
 
 def remap_seaice_sgs(inFileName, outFileName, mappingFileName, renorm_threshold=0.0):
+    if "_sgs_" in mappingFileName:
+        raise ValueError(
+            f"Mapping file: {mappingFileName} with *sgs* is no longer supported! Subgrid-scale field is now handled by ncremp -P, please use a standard MPAS mapping file instead."
+        )
+
+    # set an environment variable to make sure we're not using czender's
+    # local version of NCO instead of one we have intentionally loaded
     env = os.environ.copy()
+    env["NCO_PATH_OVERRIDE"] = "no"
+
     ds_in = xarray.open_dataset(inFileName, decode_times=False)
     outFilePath = f"{outFileName}sub"
     os.makedirs(outFilePath)
@@ -74,7 +83,33 @@ def remap_seaice_sgs(inFileName, outFileName, mappingFileName, renorm_threshold=
     shutil.rmtree(outFilePath, ignore_errors=True)
 
 
-def remap(ds, pcode, mappingFileName, threshold=0.0):
+def remap_ocean(inFileName, outFileName, mappingFileName, renorm_threshold=0.05):
+    """Use ncreamp to remap the ocean dataset to a new target grid"""
+
+    # set an environment variable to make sure we're not using czender's
+    # local version of NCO instead of one we have intentionally loaded
+    env = os.environ.copy()
+    env["NCO_PATH_OVERRIDE"] = "no"
+
+    args = [
+        "ncremap",
+        "-P",
+        "mpasocean",
+        "-7",
+        "--dfl_lvl=1",
+        "--no_stdin",
+        "--no_cll_msr",
+        "--no_frm_trm",
+        "--no_permute",
+        f"--rnr_thr={renorm_threshold}",
+        f"--map={mappingFileName}",
+        inFileName,
+        outFileName,
+    ]
+    run_ncremap_cmd(args, env)
+
+
+def remap(ds, pcode, mappingFileName):
     """Use ncreamp to remap the xarray Dataset to a new target grid"""
 
     # write the dataset to a temp file
@@ -84,39 +119,17 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
     if "depth" in ds.dims:
         ds = ds.transpose("time", "depth", "nCells", "nbnd")
 
+    # missing_value_mask attribute has undesired impacts in ncremap
+    for varName in ds.data_vars:
+        ds[varName].attrs.pop("missing_value_mask", None)
+
     write_netcdf(ds, inFileName, unlimited="time")
 
-    # set an environment variable to make sure we're not using czender's
-    # local version of NCO instead of one we have intentionally loaded
-    env = os.environ.copy()
-    env["NCO_PATH_OVERRIDE"] = "no"
-
-    if "_sgs_" in mappingFileName:
-        raise ValueError(
-            f"Mapping file: {mappingFileName} with *sgs* is no longer supported! Subgrid-scale field is now handled by ncremp -P, please use a standard MPAS mapping file instead."
-        )
-
     if pcode == "mpasocean":
-        args = [
-            "ncremap",
-            "-P",
-            f"{pcode}",
-            "-7",
-            "--dfl_lvl=1",
-            "--no_stdin",
-            "--no_cll_msr",
-            "--no_frm_trm",
-            "--no_permute",
-            f"--map={mappingFileName}",
-            inFileName,
-            outFileName,
-        ]
-        run_ncremap_cmd(args, env)
+        remap_ocean(inFileName, outFileName, mappingFileName)
     elif pcode == "mpasseaice":
         # MPAS-Seaice is a special case because the of the time-varying SGS field
-        remap_seaice_sgs(
-            inFileName, outFileName, mappingFileName, renorm_threshold=threshold
-        )
+        remap_seaice_sgs(inFileName, outFileName, mappingFileName)
     else:
         raise ValueError(f"pcode: {pcode} is not supported.")
 
@@ -128,8 +141,13 @@ def remap(ds, pcode, mappingFileName, threshold=0.0):
     ds.load()
 
     # remove the temporary files
-    os.remove(inFileName)
-    os.remove(outFileName)
+    keep_temp_files = False
+    if keep_temp_files:
+        logging.info(f"Retaining inFileName  {inFileName}")
+        logging.info(f"Retaining outFileName {outFileName}")
+    else:
+        os.remove(inFileName)
+        os.remove(outFileName)
 
     return ds
 
@@ -225,27 +243,8 @@ def add_mask(ds, mask):
     for varName in ds.data_vars:
         var = ds[varName]
         if all([dim in var.dims for dim in mask.dims]):
-            ds[varName] = var.where(mask, 0.0)
-
-    ds["cellMask"] = 1.0 * mask
-
-    return ds
-
-
-def add_si_mask(ds, mask, siconc, threshold=0.05):
-    """
-    Add a 2D mask to the data sets and apply the mask to all variables
-    """
-
-    mask = np.logical_and(mask, siconc > threshold)
-
-    ds = ds.copy()
-    for varName in ds.data_vars:
-        var = ds[varName]
-        if all([dim in var.dims for dim in mask.dims]):
-            ds[varName] = var.where(mask, 0.0)
-
-    ds["cellMask"] = 1.0 * mask
+            print(f"Masking {varName}")
+            ds[varName] = var.where(mask)
 
     return ds
 
@@ -345,22 +344,19 @@ def open_mfdataset(
     return ds
 
 
-def write_netcdf(ds, fileName, fillValues=netCDF4.default_fillvals,
-                 unlimited=None):
+def write_netcdf(ds, fileName, fillValues=netCDF4.default_fillvals, unlimited=None):
     """Write an xarray Dataset with NetCDF4 fill values where needed"""
     encodingDict = {}
     variableNames = list(ds.data_vars.keys()) + list(ds.coords.keys())
     for variableName in variableNames:
-        if "_FillValue" in ds[variableName].attrs:
-            # There's already a fill value attribute so don't add a new one
-            continue
+        # If there's already a fill value attribute, drop it
+        ds[variableName].attrs.pop("_FillValue", None)
         isNumeric = np.issubdtype(ds[variableName].dtype, np.number)
         if isNumeric:
             dtype = ds[variableName].dtype
             for fillType in fillValues:
                 if dtype == np.dtype(fillType):
-                    encodingDict[variableName] = \
-                        {"_FillValue": fillValues[fillType]}
+                    encodingDict[variableName] = {"_FillValue": fillValues[fillType]}
                     break
         else:
             encodingDict[variableName] = {"_FillValue": None}
