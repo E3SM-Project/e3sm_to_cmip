@@ -240,6 +240,10 @@ class E3SMtoCMIP:
             elif self.realm in MPAS_REALMS:
                 handlers = _get_mpas_handlers(self.var_list)
 
+            else:
+                logger.error(f"No such realm: {self.realm}")
+                sys.exit(0)
+
             if len(handlers) == 0:
                 logger.error(
                     "No CMIP6 variable handlers were derived from the variables found "
