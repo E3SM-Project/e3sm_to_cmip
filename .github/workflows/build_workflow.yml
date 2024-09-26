@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 env:
-  CANCEL_OTHERS: true
+  CANCEL_OTHERS: false
   PATHS_IGNORE: '["**/README.md", "**/docs/**", "**/examples/**", "**/misc/**", "**/.vscode/**", "**/ISSUE_TEMPLATE/**", "**/pull_request_template.md"]'
 
 jobs:
@@ -32,7 +32,7 @@ jobs:
   #   needs: skip-duplicate-actions
   #   if: needs.skip-duplicate-actions.outputs.should_skip != 'true'
   #   runs-on: ubuntu-latest
-  #   timeout-minutes: 3
+  #   timeout-minutes: 5
   #   steps:
   #     - name: Checkout Code Repository
   #       uses: actions/checkout@v3
@@ -63,11 +63,9 @@ jobs:
       - name: Set up Conda Environment
         uses: conda-incubator/setup-miniconda@v2
         with:
-          miniforge-variant: Mambaforge
+          miniforge-variant: Miniforge3
           miniforge-version: latest
           activate-environment: "e3sm_to_cmip_ci"
-          use-mamba: true
-          mamba-version: "*"
           channel-priority: strict
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
@@ -94,10 +92,10 @@ jobs:
       - if: steps.cache.outputs.cache-hit != 'true'
         name: Update environment
         run: |
-          mamba env update -n e3sm_to_cmip_ci -f conda-env/ci.yml
+          conda env update -n e3sm_to_cmip_ci -f conda-env/ci.yml
           # Make sure the Python version in the env matches the current matrix version.
           # Make sure numpy is not > 2.0.
-          mamba install -c conda-forge python=${{ matrix.python-version }} "numpy>=1.23.0,<2.0"
+          conda install -c conda-forge python=${{ matrix.python-version }} "numpy>=1.23.0,<2.0"
 
       - name: Install e3sm_to_cmip
         # Source: https://github.com/conda/conda-build/issues/4251#issuecomment-1053460542
