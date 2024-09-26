@@ -32,7 +32,7 @@ def run_ncremap_cmd(args, env):
         args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env
     )
     (out, err) = proc.communicate()
-    logging.info(out)
+    logger.info(out)
     if proc.returncode:
         arglist = " ".join(args)
         logger.error(f"Error running ncremap command: {arglist}")
