@@ -6,7 +6,7 @@ X-component of sea ice velocity, siu
 from __future__ import absolute_import, division, print_function
 
 import xarray
-import logging
+from e3sm_to_cmip import _logger
 
 from e3sm_to_cmip import mpas, util
 from e3sm_to_cmip.util import print_message
@@ -18,6 +18,7 @@ VAR_NAME = 'siu'
 VAR_UNITS = 'm s-1'
 TABLE = 'CMIP6_SImon.json'
 
+logger = _logger.e2c_logger(name=__name__, log_level=_logger.INFO, to_logfile=True, propagate=False)
 
 def handle(infiles, tables, user_input_path, **kwargs):
     """
@@ -43,9 +44,9 @@ def handle(infiles, tables, user_input_path, **kwargs):
         msg = f"{VAR_NAME} is not supported for simple conversion"
         print_message(msg)
         return
-        
+
     msg = 'Starting {name}'.format(name=__name__)
-    logging.info(msg)
+    logger.info(msg)
 
     meshFileName = infiles['MPAS_mesh']
     mappingFileName = infiles['MPAS_map']

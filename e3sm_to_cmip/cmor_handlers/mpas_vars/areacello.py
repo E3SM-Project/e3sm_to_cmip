@@ -2,7 +2,7 @@
 compute  Grid-Cell Area for Ocean Variables areacello
 """
 import xarray
-import logging
+from e3sm_to_cmip import _logger
 
 from e3sm_to_cmip import mpas, util
 from e3sm_to_cmip.util import print_message
@@ -15,6 +15,7 @@ VAR_NAME = 'areacello'
 VAR_UNITS = 'm2'
 TABLE = 'CMIP6_Ofx.json'
 
+logger = _logger.e2c_logger(name=__name__, log_level=_logger.INFO, to_logfile=True, propagate=False)
 
 def handle(infiles, tables, user_input_path, **kwargs):
     """
@@ -41,7 +42,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         return
 
     msg = 'Starting {name}'.format(name=__name__)
-    logging.info(msg)
+    logger.info(msg)
 
     meshFileName = infiles['MPAS_mesh']
     mappingFileName = infiles['MPAS_map']

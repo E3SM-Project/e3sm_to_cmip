@@ -1,68 +1,77 @@
 import logging
 import os
-import time
-from datetime import datetime
-
-from pytz import UTC
+from datetime import datetime, timezone
 
 
-def _setup_root_logger() -> str:  # pragma: no cover
-    """Sets up the root logger.
+DEBUG = logging.DEBUG
+INFO = logging.INFO
+WARNING = logging.WARNING
+ERROR = logging.ERROR
+CRITICAL = logging.CRITICAL
 
-    The logger module will write to a log file and stream the console
-    simultaneously.
-
-    The log files are saved in a `/logs` directory relative to where
-    `e3sm_to_cmip` is executed.
-
-    Returns
-    -------
-    str
-        The name of the logfile.
-    """
-    os.makedirs("logs", exist_ok=True)
-    filename = f'logs/{UTC.localize(datetime.utcnow()).strftime("%Y%m%d_%H%M%S_%f")}'
-    log_format = "%(asctime)s_%(msecs)03d:%(levelname)s:%(funcName)s:%(message)s"
-
-    # Setup the logging module.
-    logging.basicConfig(
-        filename=filename,
-        format=log_format,
-        datefmt="%Y%m%d_%H%M%S",
-        level=logging.DEBUG,
-    )
-    logging.captureWarnings(True)
-    logging.Formatter.converter = time.gmtime
-
-    # Configure and add a console stream handler.
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    log_formatter = logging.Formatter(log_format)
-    console_handler.setFormatter(log_formatter)
-    logging.getLogger().addHandler(console_handler)
-
-    return filename
+DEFAULT_LOG_LEVEL = logging.DEBUG
+DEFAULT_LOG_DIR = "e2c_logs"
+DEFAULT_LOG = f"{DEFAULT_LOG_DIR}/e2c_root_log-{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}.log"
 
 
-def _setup_logger(name, propagate=True) -> logging.Logger:
-    """Sets up a logger object.
-
-    This function is intended to be used at the top-level of a module.
+def e2c_logger(
+    name=None,
+    logfilename=DEFAULT_LOG,
+    log_level=None,
+    to_console=False,
+    to_logfile=False,
+    propagate=False,
+):
+    """Return a root or named logger with variable configuration.
 
     Parameters
     ----------
     name : str
-        Name of the file where this function is called.
-    propagate : bool, optional
-        Propogate this logger module's messages to the root logger or not, by
-        default True.
-
-    Returns
-    -------
-    logging.Logger
-        The logger.
+        The name displayed for the logger in messages.
+        If name == None or name == "__main__", the root logger is returned
+    logfilename : str
+        If logfile handling is requested, any logfile may be specified, or else
+        the default (e2c_logs/dflt_log-{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}.log) is used.
+    log_level : int
+        One of { logging.DEBUG (default), logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL }
+        as defined in the module "logging".
+    to_console : boolean
+        If True, a logging.StreamHandler is supplied.  Default = False
+    to_logfile : boolean
+        If True, a logging.FileHandler is supplied. Default = False.
+    propagate : boolean
+        If True, messages logged are propagated to the root logger.  Default = False.
     """
-    logger = logging.getLogger(name)
+    if to_logfile:
+        dn = os.path.dirname(logfilename)
+        if len(dn) and not os.path.exists(dn):
+            os.makedirs(dn)
+
+    if name == None or name == "__main__":
+        logger = logger.root
+    else:
+        logger = logging.getLogger(name)
+
     logger.propagate = propagate
+
+    if log_level == None:
+        log_level = DEFAULT_LOG_LEVEL
+
+    logger.setLevel(log_level)
+
+    logger.handlers = []
+
+    msgfmt = "%(asctime)s_%(msecs)03d:%(levelname)s:%(name)s:%(funcName)s:%(message)s"
+    datefmt = "%Y%m%d_%H%M%S"
+
+    if to_console:
+        logStreamHandler = logging.StreamHandler()
+        logStreamHandler.setFormatter(logging.Formatter(msgfmt, datefmt=datefmt))
+        logger.addHandler(logStreamHandler)
+
+    if to_logfile:
+        logFileHandler = logging.FileHandler(logfilename)
+        logFileHandler.setFormatter(logging.Formatter(msgfmt, datefmt=datefmt))
+        logger.addHandler(logFileHandler)
 
     return logger
