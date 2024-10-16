@@ -16,13 +16,12 @@ import tempfile
 from datetime import datetime
 from multiprocessing.pool import ThreadPool
 
+import cmor
 import dask
 import netCDF4
 import numpy as np
 import xarray
 from dask.diagnostics import ProgressBar
-
-import cmor
 
 
 def run_ncremap_cmd(args, env):

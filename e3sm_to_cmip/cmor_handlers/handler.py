@@ -5,12 +5,12 @@ import logging
 import os
 from typing import Any, Dict, KeysView, List, Literal, Optional, Tuple, TypedDict
 
+import cmor
 import numpy as np
 import xarray as xr
 import xcdat as xc
 import yaml
 
-import cmor
 from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE, _formulas
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq

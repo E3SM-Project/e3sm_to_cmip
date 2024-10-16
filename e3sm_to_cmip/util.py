@@ -9,11 +9,11 @@ from pathlib import Path
 from pprint import pprint
 from typing import Optional
 
+import cmor
 import xarray as xr
 import yaml
 from tqdm import tqdm
 
-import cmor
 from e3sm_to_cmip._logger import _setup_logger
 
 logger = _setup_logger(__name__)

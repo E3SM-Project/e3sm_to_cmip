@@ -9,10 +9,10 @@ from __future__ import absolute_import, annotations, division, unicode_literals
 import logging
 from typing import Dict, List, Union
 
+import cmor
 import numpy as np
 import xarray as xr
 
-import cmor
 from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.util import print_message, setup_cmor
 
