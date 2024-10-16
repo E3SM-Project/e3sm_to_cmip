@@ -29,7 +29,7 @@ class CleanCommand(distutils.cmd.Command):
             dist_dirs="find . -name dist -print0 | xargs -0 rm -rf;",
             egg_dirs="find . -name *.egg-info -print0 | xargs -0 rm -rf;",
         )
-        for key, cmd in cmd_list.items():
+        for _, cmd in cmd_list.items():
             os.system(cmd)
 
 

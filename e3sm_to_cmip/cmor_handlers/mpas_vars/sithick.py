@@ -95,5 +95,5 @@ def handle(infiles, tables, user_input_path, **kwargs):
     try:
         mpas.write_cmor(axes, ds, VAR_NAME, VAR_UNITS)
     except Exception as err:
-        print_message(err)
+        util.print_message(err)
     return VAR_NAME
