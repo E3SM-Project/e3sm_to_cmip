@@ -4,8 +4,9 @@ compute Water Flux into Sea Water due to Sea Ice Thermodynamics, fsitherm
 """
 from __future__ import absolute_import, division, print_function
 
-import xarray
 import logging
+
+import xarray
 
 from e3sm_to_cmip import mpas, util
 from e3sm_to_cmip.util import print_message

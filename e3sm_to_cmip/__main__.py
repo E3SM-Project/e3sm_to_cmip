@@ -35,11 +35,11 @@ from e3sm_to_cmip.cmor_handlers.utils import (
 from e3sm_to_cmip.util import (
     FREQUENCIES,
     _get_table_info,
-    get_handler_info_msg,
     add_metadata,
     copy_user_metadata,
     find_atm_files,
     find_mpas_files,
+    get_handler_info_msg,
     precheck,
     print_debug,
     print_message,

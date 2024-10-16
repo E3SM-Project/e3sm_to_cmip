@@ -4,11 +4,13 @@ compute Ocean Meridional Overturning Mass Streamfunction, msftmz
 """
 from __future__ import absolute_import, division, print_function
 
-import xarray
 import logging
+
+import xarray
 
 from e3sm_to_cmip import mpas, util
 from e3sm_to_cmip.util import print_message
+
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ['MPASO', 'MPAS_mesh', 'MPASO_MOC_regions', 'MPASO_namelist']
 

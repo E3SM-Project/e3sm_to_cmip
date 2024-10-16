@@ -1,8 +1,9 @@
 """
 compute  Grid-Cell Area for Ocean Variables areacello
 """
-import xarray
 import logging
+
+import xarray
 
 from e3sm_to_cmip import mpas, util
 from e3sm_to_cmip.util import print_message
