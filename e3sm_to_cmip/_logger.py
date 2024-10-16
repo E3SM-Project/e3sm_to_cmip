@@ -1,68 +1,70 @@
+from __future__ import annotations
+
 import logging
 import os
-import time
-from datetime import datetime
+from datetime import datetime, timezone
 
-from pytz import UTC
+DEFAULT_LOG_LEVEL = logging.INFO
+DEFAULT_LOG_DIR = "e2c_logs"
+DEFAULT_LOGPATH = f"{DEFAULT_LOG_DIR}/e2c_root_log-{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}.log"
 
-
-def _setup_root_logger() -> str:  # pragma: no cover
-    """Sets up the root logger.
-
-    The logger module will write to a log file and stream the console
-    simultaneously.
-
-    The log files are saved in a `/logs` directory relative to where
-    `e3sm_to_cmip` is executed.
-
-    Returns
-    -------
-    str
-        The name of the logfile.
-    """
-    os.makedirs("logs", exist_ok=True)
-    filename = f'logs/{UTC.localize(datetime.utcnow()).strftime("%Y%m%d_%H%M%S_%f")}'
-    log_format = "%(asctime)s_%(msecs)03d:%(levelname)s:%(funcName)s:%(message)s"
-
-    # Setup the logging module.
-    logging.basicConfig(
-        filename=filename,
-        format=log_format,
-        datefmt="%Y%m%d_%H%M%S",
-        level=logging.DEBUG,
-    )
-    logging.captureWarnings(True)
-    logging.Formatter.converter = time.gmtime
-
-    # Configure and add a console stream handler.
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    log_formatter = logging.Formatter(log_format)
-    console_handler.setFormatter(log_formatter)
-    logging.getLogger().addHandler(console_handler)
-
-    return filename
+# Logger message and date formats.
+MSGFMT = "%(asctime)s_%(msecs)03d:%(levelname)s:%(name)s:%(funcName)s:%(message)s"
+DATEFMT = "%Y%m%d_%H%M%S"
 
 
-def _setup_logger(name, propagate=True) -> logging.Logger:
-    """Sets up a logger object.
-
-    This function is intended to be used at the top-level of a module.
+def _logger(
+    name: str | None = None,
+    log_filename: str = DEFAULT_LOGPATH,
+    log_level: int = DEFAULT_LOG_LEVEL,
+    to_console: bool = False,
+    to_logfile: bool = False,
+    propagate: bool = False,
+):
+    """Return a root or named logger with variable configuration.
 
     Parameters
     ----------
-    name : str
-        Name of the file where this function is called.
-    propagate : bool, optional
-        Propogate this logger module's messages to the root logger or not, by
-        default True.
-
-    Returns
-    -------
-    logging.Logger
-        The logger.
+    name : str | None
+        The name displayed for the logger in messages.
+        If name == None or name == "__main__", the root logger is returned
+    log_filename : str
+        If logfile handling is requested, any logfile may be specified.
+    log_level : LogLevel
+        Either logging.DEBUG (10), logging.INFO (20), logging.WARNING (30),
+        logging.ERROR (40), logging.CRITICAL (50), by default logging.INFO.
+    to_console : boolean
+        If True, a logging.StreamHandler is supplied, by default False.
+    to_logfile : boolean
+        If True, a logging.FileHandler is supplied, by default False.
+    propagate : boolean
+        If True, messages logged are propagated to the root logger, by default
+        False.
     """
-    logger = logging.getLogger(name)
+    if to_logfile:
+        dn = os.path.dirname(log_filename)
+        if len(dn) and not os.path.exists(dn):
+            os.makedirs(dn)
+
+    if name is None or name == "__main__":
+        # FIXME: F821 Undefined name `logger`
+        logger = logger.root  # noqa: F821
+    else:
+        logger = logging.getLogger(name)
+
     logger.propagate = propagate
+    logger.setLevel(log_level)
+
+    logger.handlers = []
+
+    if to_console:
+        logStreamHandler = logging.StreamHandler()
+        logStreamHandler.setFormatter(logging.Formatter(MSGFMT, datefmt=DATEFMT))
+        logger.addHandler(logStreamHandler)
+
+    if to_logfile:
+        logFileHandler = logging.FileHandler(log_filename)
+        logFileHandler.setFormatter(logging.Formatter(MSGFMT, datefmt=DATEFMT))
+        logger.addHandler(logFileHandler)
 
     return logger
