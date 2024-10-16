@@ -1,4 +1,3 @@
-# flake8: noqa F401
 import numpy as np
 import pytest
 import xarray as xr

@@ -21,13 +21,11 @@
       "editor.rulers": [80, 88, 120],
       "editor.wordWrap": "wordWrapColumn",
       "editor.wordWrapColumn": 120,
-      "editor.defaultFormatter": "ms-python.black-formatter"
+      "editor.defaultFormatter": "charliermarsh.ruff"
     },
-    "black-formatter.importStrategy": "fromEnvironment",
     // Code Formatting and Linting
     // ---------------------------
-    "flake8.args": ["--config=setup.cfg"],
-    "flake8.importStrategy": "fromEnvironment",
+    "ruff.importStrategy": "fromEnvironment",
     // Type checking
     // ---------------------------
     "mypy-type-checker.args": ["--config=pyproject.toml"],
@@ -58,7 +56,7 @@
     "configurations": [
       {
         "name": "Python: Current File",
-        "type": "python",
+        "type": "debugpy",
         "request": "launch",
         "program": "${file}",
         "console": "integratedTerminal",
