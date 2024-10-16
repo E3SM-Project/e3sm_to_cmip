@@ -27,23 +27,22 @@ jobs:
           paths_ignore: ${{ env.PATHS_IGNORE }}
           do_not_skip: '["push", "workflow_dispatch"]'
 
-  # TODO: Uncomment code block once latest PRs are merged to fix files
-  # pre-commit-hooks:
-  #   needs: skip-duplicate-actions
-  #   if: needs.skip-duplicate-actions.outputs.should_skip != 'true'
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 5
-  #   steps:
-  #     - name: Checkout Code Repository
-  #       uses: actions/checkout@v3
+  pre-commit-hooks:
+    needs: skip-duplicate-actions
+    if: needs.skip-duplicate-actions.outputs.should_skip != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v3
 
-  #     - name: Set up Python 3.10
-  #       uses: actions/setup-python@v3
-  #       with:
-  #         python-version: "3.10"
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
 
-  #     - name: Install and Run Pre-commit
-  #       uses: pre-commit/action@v3.0.0
+      - name: Install and Run Pre-commit
+        uses: pre-commit/action@v3.0.0
 
   build:
     needs: skip-duplicate-actions
