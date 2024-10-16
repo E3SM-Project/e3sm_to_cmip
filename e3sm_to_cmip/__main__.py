@@ -665,7 +665,7 @@ class E3SMtoCMIP:
             for handler in self.handlers:
                 table_info = _get_table_info(self.tables_path, handler["table"])
                 if handler["name"] not in table_info["variable_entry"]:
-                    msg = f"Variable {handler['name']} is not included in the table {handler['table']}"  # type: ignore
+                    msg = f"Variable {handler['name']} is not included in the table {handler['table']}"
                     print_message(msg, status="error")
                     continue
                 else:
@@ -687,37 +687,25 @@ class E3SMtoCMIP:
                     if handler["name"] not in table_info["variable_entry"]:
                         continue
 
-                    msg = None
-                    raw_vars = []
-
-                    if msg is None:
-                        msg = {
-                            "CMIP6 Name": handler["name"],
-                            "CMIP6 Table": handler["table"],
-                            "CMIP6 Units": handler["units"],
-                            "E3SM Variables": ", ".join(handler["raw_variables"]),
-                        }
-                        raw_vars.extend(handler["raw_variables"])
-                    if handler.get("unit_conversion"):
-                        msg["Unit conversion"] = handler["unit_conversion"]
-                    if handler.get("levels"):
-                        msg["Levels"] = handler["levels"]
-
+                    raw_vars = handler["raw_variables"]
                     has_vars = True
+
                     for raw_var in raw_vars:
                         if raw_var not in ds.data_vars:
                             has_vars = False
-                            msg = f"Variable {handler['name']} is not present in the input dataset"  # type: ignore
+
+                            msg = f"Variable {handler['name']} is not present in the input dataset"
                             print_message(msg, status="error")
+
                             break
+
                     if not has_vars:
                         continue
 
-                    # We test here against the input "freq", because
-                    #    atmos mon data satisfies BOTH CMIP6_day.json AND CMIP6_mon.json,
-                    #    but we only want the latter in the "hand_msg" output.
-                    #    The vars "hass" and "rlut" have multiple freqs.
-
+                    # We test here against the input "freq", because atmos mon
+                    # data satisfies BOTH CMIP6_day.json AND CMIP6_mon.json, but
+                    # we only want the latter in the "hand_msg" output. The vars
+                    # "hass" and "rlut" have multiple freqs.
                     if self.freq == "mon" and handler["table"] == "CMIP6_day.json":
                         continue
                     if (self.freq == "day" or self.freq == "3hr") and handler[
