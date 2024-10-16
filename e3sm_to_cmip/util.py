@@ -117,10 +117,10 @@ def setup_cmor(var_name, table_path, table_name, user_input_path):
         os.makedirs(logfile)
 
     logfile = os.path.join(logfile, var_name + ".log")
-    cmor.setup(inpath=table_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)  # type: ignore
+    cmor.setup(inpath=table_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
 
-    cmor.dataset_json(user_input_path)  # type: ignore
-    cmor.load_table(table_name)  # type: ignore
+    cmor.dataset_json(user_input_path)
+    cmor.load_table(table_name)
 
 
 # ------------------------------------------------------------------

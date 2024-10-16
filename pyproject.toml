@@ -70,5 +70,5 @@ warn_unused_configs = true
 # cmor type stubs does not exist and there are no plans to add them.
 # netCDF4 type stubs has not been added yet (https://github.com/python/typeshed/issues/9545)
 module = ["cmor.*", "netCFD4.*"]
-follow_imports = "silent"
+follow_imports = "skip"
 follow_imports_for_stubs = true

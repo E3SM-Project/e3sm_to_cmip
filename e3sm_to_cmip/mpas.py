@@ -403,7 +403,7 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
     """Write a time series of a variable in the format expected by CMOR"""
     axis_ids = list()
     for axis in axes:
-        axis_id = cmor.axis(**axis)  # type: ignore
+        axis_id = cmor.axis(**axis)
         axis_ids.append(axis_id)
 
     if d2f and ds[varname].dtype == np.float64:
@@ -416,16 +416,16 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
         ds[varname] = ds[varname].where(mask, fillValue)
 
     # create the cmor variable
-    varid = cmor.variable(  # type: ignore
+    varid = cmor.variable(
         str(varname), str(varunits), axis_ids, missing_value=fillValue, **kwargs
     )
 
     # write out the data
     try:
         if "time" not in ds.dims:
-            cmor.write(varid, ds[varname].values)  # type: ignore
+            cmor.write(varid, ds[varname].values)
         else:
-            cmor.write(  # type: ignore
+            cmor.write(
                 varid,
                 ds[varname].values,
                 time_vals=ds.time.values,
@@ -435,7 +435,7 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
         logging.exception(f"Error in cmor.write for {varname}")
         raise Exception(error) from error
     finally:
-        cmor.close(varid)  # type: ignore
+        cmor.close(varid)
 
 
 def compute_moc_streamfunction(dsIn=None, dsMesh=None, dsMasks=None, showProgress=True):
