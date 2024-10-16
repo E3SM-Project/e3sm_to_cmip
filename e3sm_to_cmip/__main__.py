@@ -21,13 +21,9 @@ import xarray as xr
 import yaml
 from tqdm import tqdm
 
-from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
-from datetime import datetime, timezone
-
-from e3sm_to_cmip import _logger
-
+from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, _logger, resources
+from e3sm_to_cmip.cmor_handlers.handler import instantiate_handler_logger
 from e3sm_to_cmip.cmor_handlers.utils import (
-    instantiate_h_utils_logger,
     MPAS_REALMS,
     REALMS,
     Frequency,
@@ -35,12 +31,10 @@ from e3sm_to_cmip.cmor_handlers.utils import (
     Realm,
     _get_mpas_handlers,
     derive_handlers,
+    instantiate_h_utils_logger,
     load_all_handlers,
 )
-from e3sm_to_cmip.cmor_handlers.handler import instantiate_handler_logger
-
 from e3sm_to_cmip.util import (
-    instantiate_util_logger,
     FREQUENCIES,
     _get_table_info,
     add_metadata,
@@ -48,6 +42,7 @@ from e3sm_to_cmip.util import (
     find_atm_files,
     find_mpas_files,
     get_handler_info_msg,
+    instantiate_util_logger,
     precheck,
     print_debug,
     print_message,
@@ -111,7 +106,7 @@ class E3SMtoCMIP:
 
         # Setup this module's logger AFTER args are parsed in __init__, so that
         # default log file is NOT created for "--help" or "--version" calls.
-        logger = _logger.e2c_logger(name=__name__, log_level=_logger.INFO, to_logfile=True)
+        logger = _logger._logger(name=__name__, to_logfile=True)
 
         # NOTE: The order of these attributes align with class CLIArguments.
         # ======================================================================
@@ -974,7 +969,6 @@ class E3SMtoCMIP:
 
 
 def main(args: Optional[List[str]] = None):
-
     app = E3SMtoCMIP(args)
 
     # These calls allow module loggers that create default logfiles to avoid being

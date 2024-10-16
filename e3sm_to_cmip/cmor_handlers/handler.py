@@ -10,14 +10,16 @@ import xarray as xr
 import xcdat as xc
 import yaml
 
+from e3sm_to_cmip import _logger
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE, _formulas
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
-from e3sm_to_cmip import _logger
+
 
 def instantiate_handler_logger():
     global logger
 
-    logger = _logger.e2c_logger(name=__name__, log_level=_logger.INFO, to_logfile=True, propagate=True)
+    logger = _logger._logger(name=__name__, to_logfile=True, propagate=True)
+
 
 # The names for valid hybrid sigma levels.
 HYBRID_SIGMA_LEVEL_NAMES = [
