@@ -16,12 +16,13 @@ import tempfile
 from datetime import datetime
 from multiprocessing.pool import ThreadPool
 
-import cmor
 import dask
 import netCDF4
 import numpy as np
 import xarray
 from dask.diagnostics import ProgressBar
+
+import cmor
 
 
 def run_ncremap_cmd(args, env):
@@ -303,7 +304,10 @@ def get_sea_floor_values(ds, dsMesh):
 
 
 def open_mfdataset(
-    fileNames, variableList=None, chunks={"nCells": 32768, "Time": 6}, daskThreads=6
+    fileNames,
+    variableList=None,
+    chunks={"nCells": 32768, "Time": 6},  # noqa: B006
+    daskThreads=6,
 ):
     """Open a multi-file xarray Dataset, retaining only the listed variables"""
 
@@ -399,7 +403,7 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
     """Write a time series of a variable in the format expected by CMOR"""
     axis_ids = list()
     for axis in axes:
-        axis_id = cmor.axis(**axis)
+        axis_id = cmor.axis(**axis)  # type: ignore
         axis_ids.append(axis_id)
 
     if d2f and ds[varname].dtype == np.float64:
@@ -412,16 +416,16 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
         ds[varname] = ds[varname].where(mask, fillValue)
 
     # create the cmor variable
-    varid = cmor.variable(
+    varid = cmor.variable(  # type: ignore
         str(varname), str(varunits), axis_ids, missing_value=fillValue, **kwargs
     )
 
     # write out the data
     try:
         if "time" not in ds.dims:
-            cmor.write(varid, ds[varname].values)
+            cmor.write(varid, ds[varname].values)  # type: ignore
         else:
-            cmor.write(
+            cmor.write(  # type: ignore
                 varid,
                 ds[varname].values,
                 time_vals=ds.time.values,
@@ -429,9 +433,9 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
             )
     except Exception as error:
         logging.exception(f"Error in cmor.write for {varname}")
-        raise Exception(error)
+        raise Exception(error) from error
     finally:
-        cmor.close(varid)
+        cmor.close(varid)  # type: ignore
 
 
 def compute_moc_streamfunction(dsIn=None, dsMesh=None, dsMasks=None, showProgress=True):

@@ -9,11 +9,11 @@ from pathlib import Path
 from pprint import pprint
 from typing import Optional
 
-import cmor
 import xarray as xr
 import yaml
 from tqdm import tqdm
 
+import cmor
 from e3sm_to_cmip._logger import _setup_logger
 
 logger = _setup_logger(__name__)
@@ -117,10 +117,10 @@ def setup_cmor(var_name, table_path, table_name, user_input_path):
         os.makedirs(logfile)
 
     logfile = os.path.join(logfile, var_name + ".log")
-    cmor.setup(inpath=table_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
+    cmor.setup(inpath=table_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)  # type: ignore
 
-    cmor.dataset_json(user_input_path)
-    cmor.load_table(table_name)
+    cmor.dataset_json(user_input_path)  # type: ignore
+    cmor.load_table(table_name)  # type: ignore
 
 
 # ------------------------------------------------------------------
@@ -315,6 +315,7 @@ def _get_table_info(tables, table):
     with open(table, "r") as instream:
         return json.load(instream)
 
+
 def get_handler_info_msg(handler):
     msg = {
         "CMIP6 Name": handler["name"],
@@ -458,7 +459,7 @@ def add_metadata(file_path, var_list, metadata_path):
 
 
 def find_atm_files(var, path):
-    """
+    r"""
     Looks in the given path for all files that match that match VAR_\d{6}_\d{6}.nc  # noqa: W605
 
     Params:
