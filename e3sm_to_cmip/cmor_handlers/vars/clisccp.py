@@ -6,21 +6,16 @@ formulas.py).
 
 from __future__ import absolute_import, annotations, division, unicode_literals
 
-import os
 from typing import Dict, List, Union
 
 import cmor
 import numpy as np
 import xarray as xr
 
-import cmor
-from e3sm_to_cmip import resources, _logger
-from e3sm_to_cmip.mpas import write_netcdf
+from e3sm_to_cmip import _logger
 from e3sm_to_cmip.util import print_message, setup_cmor
 
-logger = _logger.e2c_logger(
-    name=__name__, log_level=_logger.INFO, to_logfile=True, propagate=False
-)
+logger = _logger._logger(name=__name__, to_logfile=True, propagate=False)
 
 # list of raw variable names needed
 RAW_VARIABLES = [str("FISCCP1_COSP")]

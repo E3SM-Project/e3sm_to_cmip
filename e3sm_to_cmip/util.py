@@ -16,10 +16,12 @@ from tqdm import tqdm
 
 from e3sm_to_cmip import _logger
 
+
 def instantiate_util_logger():
     global logger
 
-    logger = _logger.e2c_logger(name=__name__, log_level=_logger.INFO, to_logfile=True, propagate=False)
+    logger = _logger._logger(name=__name__, to_logfile=True, propagate=False)
+
 
 ATMOS_TABLES = [
     "CMIP6_Amon.json",
