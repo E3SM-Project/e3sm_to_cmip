@@ -1,16 +1,17 @@
 """
 LANDFRAC to sftlf converter
 """
+
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import json
 import logging
 import os
 
+import cmor
 import numpy as np
 import xarray as xr
 
-import cmor
 from e3sm_to_cmip import resources
 from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.mpas import write_netcdf

@@ -1,6 +1,7 @@
 """
 A python command line tool to turn E3SM model output into CMIP6 compatable data.
 """
+
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import argparse
@@ -35,11 +36,11 @@ from e3sm_to_cmip.cmor_handlers.utils import (
 from e3sm_to_cmip.util import (
     FREQUENCIES,
     _get_table_info,
-    get_handler_info_msg,
     add_metadata,
     copy_user_metadata,
     find_atm_files,
     find_mpas_files,
+    get_handler_info_msg,
     precheck,
     print_debug,
     print_message,
@@ -410,7 +411,9 @@ class E3SMtoCMIP:
             nargs="+",
             required=True,
             metavar="",
-            help=("Space separated list of CMIP variables to convert from E3SM to CMIP."),
+            help=(
+                "Space separated list of CMIP variables to convert from E3SM to CMIP."
+            ),
         )
         optional_run.add_argument(
             "--realm",
@@ -658,23 +661,24 @@ class E3SMtoCMIP:
 
         # if the user asked if the variable is included in the table
         # but didnt ask about the files in the inpath
-        elif self.freq and self.tables_path and not self.input_path:    # info mode 2
+        elif self.freq and self.tables_path and not self.input_path:  # info mode 2
             for handler in self.handlers:
                 table_info = _get_table_info(self.tables_path, handler["table"])
                 if handler["name"] not in table_info["variable_entry"]:
-                    msg = f"Variable {handler['name']} is not included in the table {handler['table']}"  # type: ignore
+                    msg = f"Variable {handler['name']} is not included in the table {handler['table']}"
                     print_message(msg, status="error")
                     continue
                 else:
-                    if self.freq == "mon" and handler['table'] == "CMIP6_day.json":
+                    if self.freq == "mon" and handler["table"] == "CMIP6_day.json":
                         continue
-                    if ( self.freq == "day" or self.freq == "3hr" ) and handler['table'] == "CMIP6_Amon.json":
+                    if (self.freq == "day" or self.freq == "3hr") and handler[
+                        "table"
+                    ] == "CMIP6_Amon.json":
                         continue
                     hand_msg = get_handler_info_msg(handler)
                     messages.append(hand_msg)
 
-        elif self.freq and self.tables_path and self.input_path:        # info mode 3
-
+        elif self.freq and self.tables_path and self.input_path:  # info mode 3
             file_path = next(Path(self.input_path).glob("*.nc"))
 
             with xr.open_dataset(file_path) as ds:
@@ -683,40 +687,30 @@ class E3SMtoCMIP:
                     if handler["name"] not in table_info["variable_entry"]:
                         continue
 
-                    msg = None
-                    raw_vars = []
-
-                    if msg is None:
-                        msg = {
-                            "CMIP6 Name": handler["name"],
-                            "CMIP6 Table": handler["table"],
-                            "CMIP6 Units": handler["units"],
-                            "E3SM Variables": ", ".join(handler["raw_variables"]),
-                        }
-                        raw_vars.extend(handler["raw_variables"])
-                    if handler.get("unit_conversion"):
-                        msg["Unit conversion"] = handler["unit_conversion"]
-                    if handler.get("levels"):
-                        msg["Levels"] = handler["levels"]
-
+                    raw_vars = handler["raw_variables"]
                     has_vars = True
+
                     for raw_var in raw_vars:
                         if raw_var not in ds.data_vars:
                             has_vars = False
-                            msg = f"Variable {handler['name']} is not present in the input dataset"  # type: ignore
+
+                            msg = f"Variable {handler['name']} is not present in the input dataset"
                             print_message(msg, status="error")
+
                             break
+
                     if not has_vars:
                         continue
 
-                    # We test here against the input "freq", because
-                    #    atmos mon data satisfies BOTH CMIP6_day.json AND CMIP6_mon.json,
-                    #    but we only want the latter in the "hand_msg" output.
-                    #    The vars "hass" and "rlut" have multiple freqs.
-
-                    if self.freq == "mon" and handler['table'] == "CMIP6_day.json":
+                    # We test here against the input "freq", because atmos mon
+                    # data satisfies BOTH CMIP6_day.json AND CMIP6_mon.json, but
+                    # we only want the latter in the "hand_msg" output. The vars
+                    # "hass" and "rlut" have multiple freqs.
+                    if self.freq == "mon" and handler["table"] == "CMIP6_day.json":
                         continue
-                    if ( self.freq == "day" or self.freq == "3hr" ) and handler['table'] == "CMIP6_Amon.json":
+                    if (self.freq == "day" or self.freq == "3hr") and handler[
+                        "table"
+                    ] == "CMIP6_Amon.json":
                         continue
 
                     hand_msg = None
@@ -872,7 +866,7 @@ class E3SMtoCMIP:
         pool_res = list()
         will_run = []
 
-        for idx, handler in enumerate(self.handlers):
+        for _, handler in enumerate(self.handlers):
             handler_method = handler["method"]
             handler_variables = handler["raw_variables"]
             table = handler["table"]

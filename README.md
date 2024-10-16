@@ -4,8 +4,8 @@ A cli utility to transform E3SM model output into CMIP compatible data.
 
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/e3sm_to_cmip/badges/version.svg)](https://anaconda.org/conda-forge/e3sm_to_cmip)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/e3sm_to_cmip/badges/downloads.svg)](https://anaconda.org/conda-forge/e3sm_to_cmip)
-
 [![CI/CD Build Workflow](https://github.com/E3SM-Project/e3sm_to_cmip/actions/workflows/build_workflow.yml/badge.svg)](https://github.com/E3SM-Project/e3sm_to_cmip/actions/workflows/build_workflow.yml)
+[![Ruff Badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 [Documentation](https://e3sm-to-cmip.readthedocs.io/en/latest/)
 
@@ -43,7 +43,8 @@ Once you have dev environment setup, simply run:
 ```bash
 python -m pip install .
 ```
-Hint: Before re-installing, running `make clean` can ensure a clean installation. 
+
+Hint: Before re-installing, running `make clean` can ensure a clean installation.
 
 ## Example
 

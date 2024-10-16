@@ -315,6 +315,7 @@ def _get_table_info(tables, table):
     with open(table, "r") as instream:
         return json.load(instream)
 
+
 def get_handler_info_msg(handler):
     msg = {
         "CMIP6 Name": handler["name"],
@@ -458,7 +459,7 @@ def add_metadata(file_path, var_list, metadata_path):
 
 
 def find_atm_files(var, path):
-    """
+    r"""
     Looks in the given path for all files that match that match VAR_\d{6}_\d{6}.nc  # noqa: W605
 
     Params:

@@ -303,7 +303,10 @@ def get_sea_floor_values(ds, dsMesh):
 
 
 def open_mfdataset(
-    fileNames, variableList=None, chunks={"nCells": 32768, "Time": 6}, daskThreads=6
+    fileNames,
+    variableList=None,
+    chunks={"nCells": 32768, "Time": 6},  # noqa: B006
+    daskThreads=6,
 ):
     """Open a multi-file xarray Dataset, retaining only the listed variables"""
 
@@ -429,7 +432,7 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
             )
     except Exception as error:
         logging.exception(f"Error in cmor.write for {varname}")
-        raise Exception(error)
+        raise Exception(error) from error
     finally:
         cmor.close(varid)
 

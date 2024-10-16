@@ -72,7 +72,7 @@ class TestGetTableForNonMonthlyFreq:
                 base_table="CMIP6_Lmon.json",
                 freq="3hr",
                 realm="atm",
-                tables_path=None,
+                tables_path=None,  # type: ignore
             )
 
     def test_raises_error_if_table_could_not_be_found_in_table_path(self):

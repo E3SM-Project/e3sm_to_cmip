@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import abc
 import json
 import logging
 import os
@@ -30,7 +29,7 @@ HYBRID_SIGMA_LEVEL_NAMES = [
 TIME_DIMS = ["time", "time1", "time2"]
 
 
-class BaseVarHandler(abc.ABC):
+class BaseVarHandler:
     def __init__(
         self,
         name: str,
@@ -118,12 +117,12 @@ class VarHandler(BaseVarHandler):
         if self.formula is not None:
             try:
                 self.formula_method = getattr(_formulas, self.name)
-            except AttributeError:
+            except AttributeError as e:
                 raise AttributeError(
                     f"The formula method for the '{self.name}' VarHandler "
                     "is not defined. Define a function of the same name in the "
                     "`_formulas.py` file."
-                )
+                ) from e
 
         # The "positive" directive to CMOR enables data providers to specify
         # the direction that they have assumed in fields  (i.g. radiation fluxes
