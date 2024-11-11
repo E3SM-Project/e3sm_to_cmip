@@ -13,7 +13,7 @@ from e3sm_to_cmip.lib import handle_variables
 RAW_VARIABLES = [str('U10')]
 VAR_NAME = str('vas')
 VAR_UNITS = str('m/s')
-TABLE = str('QUOCA_mon.json')
+TABLE = str('QBOi_mon.json')
 ##POSITIVE = str('up')
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):

@@ -13,8 +13,10 @@ from e3sm_to_cmip.lib import handle_variables
 RAW_VARIABLES = [str('PRECC')]
 VAR_NAME = str('prc')
 VAR_UNITS = str('kg m-2 s-1')
-TABLE = str('QUOCA_mon.json')
+TABLE = str('QBOi_mon.json')
+#TABLE = str('QUOCA_mon.json')
 #TABLE = str('CMIP6_Amon.json')
+
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """

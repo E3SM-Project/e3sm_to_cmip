@@ -1,0 +1,9 @@
+20241111_030200_996:INFO:main:input_path = /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/post/v3.ccmi.PD_INT_custom30/post/atm/180x360_aave/ts/monthly/2yr/
+20241111_030200_996:INFO:main:output_path = /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/output
+20241111_030200_996:INFO:main:precheck_path = None
+20241111_030201_146:INFO:handle_variables:prc: Starting
+20241111_030201_235:INFO:handle_variables:prc: CMOR setup complete
+20241111_030201_235:INFO:handle_variables:prc: loading PRECC
+20241111_030201_360:INFO:handle_variables:prc: loading axes
+20241111_030201_362:INFO:handle_variables:prc: time 0.0 - 730.0
+20241111_030201_588:INFO:run_parallel:Finished prc, 1/1 jobs complete

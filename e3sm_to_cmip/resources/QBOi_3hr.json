@@ -1,0 +1,53 @@
+{
+    "Header": {
+        "data_specs_version": "01.00.00", 
+        "cmor_version": "3.5", 
+        "table_id": "Table 3hr", 
+        "realm": "atmos", 
+        "table_date": "11 Feb 2022", 
+        "missing_value": "1e20", 
+        "int_missing_value": "-999", 
+        "product": "model-output", 
+        "approx_interval": "0.125000", 
+        "generic_levels": "", 
+        "Conventions": "CF-1.8 QBOi"
+    }, 
+    "variable_entry": {
+        "pr": {
+            "frequency": "3hr", 
+            "modeling_realm": "atmos", 
+            "standard_name": "precipitation_flux", 
+            "units": "kg m-2 s-1", 
+            "cell_methods": "area: time: mean", 
+            "cell_measures": "area: areacella", 
+            "long_name": "Precipitation", 
+            "comment": "includes both liquid and solid phases", 
+            "dimensions": "longitude latitude time", 
+            "out_name": "pr", 
+            "type": "real", 
+            "positive": "", 
+            "valid_min": "", 
+            "valid_max": "",
+            "ok_min_mean_abs": "", 
+            "ok_max_mean_abs": ""
+        }, 
+        "rlut": {
+            "frequency": "3hr", 
+            "modeling_realm": "atmos", 
+            "standard_name": "toa_outgoing_longwave_flux", 
+            "units": "W m-2", 
+            "cell_methods": "time: point", 
+            "cell_measures": "area: areacella", 
+            "long_name": "TOA Outgoing Longwave Radiation", 
+            "comment": "at the top of the atmosphere (to be compared with satellite measurements)", 
+            "dimensions": "longitude latitude time", 
+            "out_name": "rlut", 
+            "type": "real", 
+            "positive": "up", 
+            "valid_min": "", 
+            "valid_max": "",
+            "ok_min_mean_abs": "", 
+            "ok_max_mean_abs": ""
+        }
+    }
+}

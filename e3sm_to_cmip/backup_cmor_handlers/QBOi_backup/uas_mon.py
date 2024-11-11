@@ -1,5 +1,5 @@
 """
-V10 to vas converter
+U10 to uas converter
 """
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
@@ -11,14 +11,14 @@ from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
 RAW_VARIABLES = [str('U10')]
-VAR_NAME = str('vas')
+VAR_NAME = str('uas')
 VAR_UNITS = str('m/s')
-TABLE = str('QUOCA_mon.json')
+TABLE = str('QBOi_mon.json')
 ##POSITIVE = str('up')
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
-    vas = U10 for southward
+    uas = U10 for eastward
     """
     outdata = data['U10'][index, :].values
     outdata[np.isnan(outdata)] = FILL_VALUE

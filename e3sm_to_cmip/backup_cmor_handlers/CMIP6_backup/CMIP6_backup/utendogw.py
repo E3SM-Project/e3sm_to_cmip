@@ -1,28 +1,29 @@
 """
-V10 to vas converter
+UTGWORO, UTGWSPEC, BUTGWSPEC to utendogw converter
 """
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import cmor
 import numpy as np
-from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 from e3sm_to_cmip.lib import handle_variables
+from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('U10')]
-VAR_NAME = str('vas')
-VAR_UNITS = str('m/s')
-TABLE = str('QUOCA_mon.json')
-##POSITIVE = str('up')
+RAW_VARIABLES = [str('UTGWORO'),str('UTGWSPEC'),str('BUTGWSPEC')]
+VAR_NAME = str('utendogw')
+VAR_UNITS = str("m s-2")
+TABLE = str('QBOi_monZ.json')
+LEVELS = {
+    'name': str('qboi30'),
+    'units': str('Pa'),
+    'e3sm_axis_name': 'qboi30'
+}
+
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
-    """
-    vas = U10 for southward
-    """
-    outdata = data['U10'][index, :].values
+    #outdata =  data['UTGWORO'][index, :]
+    outdata = (data['UTGWORO'][index, :] + data['UTGWSPEC'][index, :] + data['BUTGWSPEC'][index, :])
     outdata[np.isnan(outdata)] = FILL_VALUE
-
     if kwargs.get('simple'):
         return outdata
     cmor.write(
@@ -30,6 +31,8 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
         outdata,
         time_vals=timeval,
         time_bnds=timebnds)
+# ------------------------------------------------------------------
+
 
 def handle(infiles, tables, user_input_path, **kwargs):
 
@@ -43,6 +46,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
         serial=kwargs.get('serial'),
+        levels=LEVELS,
         logdir=kwargs.get('logdir'),
         simple=kwargs.get('simple'),
         outpath=kwargs.get('outpath'))

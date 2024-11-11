@@ -52,7 +52,8 @@ def run_parallel(
     #print(input_path)
     #print(tables_path)
     #print(metadata_path)
-    #exit
+    #quit()
+
     pool_res = list()
     will_run = []
     for idx, handler in enumerate(handlers):

@@ -1,5 +1,5 @@
 """
-V10 to vas converter
+PSL to psl converter
 """
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
@@ -10,17 +10,17 @@ from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('U10')]
-VAR_NAME = str('vas')
-VAR_UNITS = str('m/s')
-TABLE = str('QUOCA_mon.json')
+RAW_VARIABLES = [str('PSL')]
+VAR_NAME = str('psl')
+VAR_UNITS = str('Pa')
+TABLE = str('QBOi_mon.json')
 ##POSITIVE = str('up')
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
-    vas = U10 for southward
+    psl = PSL
     """
-    outdata = data['U10'][index, :].values
+    outdata = data['PSL'][index, :].values
     outdata[np.isnan(outdata)] = FILL_VALUE
 
     if kwargs.get('simple'):

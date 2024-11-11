@@ -1,0 +1,8 @@
+2024-11-11 03:02:00,996_996:INFO:main:input_path = /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/post/v3.ccmi.PD_INT_custom30/post/atm/180x360_aave/ts/monthly/2yr/
+2024-11-11 03:02:00,996_996:INFO:main:output_path = /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/output
+2024-11-11 03:02:00,996_996:INFO:main:precheck_path = None
+[94m[*] [0mLoaded `prc_mon` handler for variable `prc`.[94m[0m
+[94m[*] [0mWriting log output to: /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/output/converter.log[94m[0m
+[92m[+] [0mRunning CMOR handlers in parallel
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  2.54it/s]100%|██████████| 1/1 [00:00<00:00,  2.53it/s]
+[92m[+] [0m1 of 1 handlers complete

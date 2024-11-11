@@ -1,3 +1,36 @@
+#python  setup.py  install && ./sub >& output11  && cat output11
+
+
+e3sm_to_cmip   -i /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/post/v3.ccmi.PD_INT_custom30/post/atm/180x360_aave/ts/monthly/2yr/  -o   /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/output  -v prc_mon   -t  /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/e3sm_to_cmip/e3sm_to_cmip/resources/   -u  /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template.json   -H   /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/e3sm_to_cmip/e3sm_to_cmip/cmor_handlers     
+#--debug
+#
+#e3sm_to_cmip   -i /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/post/v3.ccmi.PD_INT_custom30/post/atm/180x360_aave/ts/monthly/2yr/  -o   /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/output  -v prc_mon   -t  /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/qboi-cmor-tables/Tables      -u  /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template.json   -H   /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/e3sm_to_cmip/e3sm_to_cmip/cmor_handlers     --debug
+#exit
+
+
+#e3sm_to_cmip   -i /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/post/v3.ccmi.PD_INT_custom30/post/atm/180x360_aave/ts/monthly/2yr/  -o   /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/output  -v prc_mon   -t  /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/qboi-cmor-tables/Tables      -u  /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/e3sm_to_cmip/e3sm_to_cmip/resources/qboi_template.json   -H   /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/e3sm_to_cmip/e3sm_to_cmip/cmor_handlers     --debug  
+#-s
+# --info
+#e3sm_to_cmip   -i /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/post/v3.ccmi.PD_INT_custom30/post/atm/180x360_aave/ts/monthly/2yr/  -o   /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/output  -v ua_mon   -t  /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/cmor-tables/Tables/   -u   /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/cmor-tables/Tables/QUOCA_mon.json    -H   /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/e3sm_to_cmip/e3sm_to_cmip/cmor_handlers     --debug  --info
+#-s
+#-s
+exit
+
+
+
+#e3sm_to_cmip --realm  atm -i /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/post/v3.ccmi.PD_INT_custom30/post/atm/180x360_aave/ts/monthly/2yr/  -o   /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/output  -v prc_mon  -t /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/cmor-tables/Tables   -u   /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/e3sm_to_cmip/e3sm_to_cmip/resources/CMIP6_Amon.json   -H   /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/e3sm_to_cmip/e3sm_to_cmip/cmor_handlers
+
+
+
+exit
+
+
+e3sm_to_cmip -i  /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/post/v3.ccmi.PD_INT_custom30/post/atm/180x360_aave/ts/monthly/2yr/   -o  /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/output   -v  prc  -t  /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/cmor-tables/Tables      -u  /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/cmor-tables/Tables/QUOCA_mon.json
+
+
+
+
+exit
 e3sm_to_cmip -i /global/cscratch1/sd/xie7/forJill/   -o /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/new/e3sm_to_cmip/tests   -v      ua      -t /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/e3sm_to_cmip/e3sm_to_cmip/resources  -u /global/cscratch1/sd/xie7/qboi/TEM_calculate/qboi-cmip6/e3sm_to_cmip/e3sm_to_cmip/resources/CMIP6_Amon.json
 
 
