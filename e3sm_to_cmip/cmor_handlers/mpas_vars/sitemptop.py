@@ -4,11 +4,9 @@ Surface temperature of sea ice, sitemptop
 
 from __future__ import absolute_import, division, print_function
 
-import logging
-
 import xarray
 
-from e3sm_to_cmip import mpas, util
+from e3sm_to_cmip import _logger, mpas, util
 from e3sm_to_cmip.util import print_message
 
 # 'MPAS' as a placeholder for raw variables needed
@@ -18,6 +16,8 @@ RAW_VARIABLES = ["MPASSI", "MPAS_mesh", "MPAS_map"]
 VAR_NAME = "sitemptop"
 VAR_UNITS = "K"
 TABLE = "CMIP6_SImon.json"
+
+logger = _logger._logger(name=__name__, to_logfile=True, propagate=False)
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
@@ -47,7 +47,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         return
 
     msg = "Starting {name}".format(name=__name__)
-    logging.info(msg)
+    logger.info(msg)
 
     mappingFileName = infiles["MPAS_map"]
     timeSeriesFiles = infiles["MPASSI"]
