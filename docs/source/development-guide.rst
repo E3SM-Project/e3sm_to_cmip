@@ -45,7 +45,7 @@ Python Execution
     # `main()` creates an `E3SMtoCMIP` object and passes `args` to it, which sets the object parameters to execute a run.
     main(args)
 
-Note, a run script is provided at `/tests/run_script.py` to test change at runtime.
+Note, a run script is provided at `/tests/run_script.py` to test changes at runtime.
 
 Example 2 (info mode)
 ~~~~~~~~~~~~~~~~~~~~~
