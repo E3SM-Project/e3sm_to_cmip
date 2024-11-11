@@ -14,7 +14,12 @@ import datetime
 from e3sm_to_cmip.__main__ import main
 
 # The list of variables to process. Update as needed.
-VAR_LIST = "pfull, phalf, tas, ts, psl, ps, sfcWind, huss, pr, prc, prsn, evspsbl, tauu, tauv, hfls, clt, rlds, rlus, rsds, rsus, hfss, cl, clw, cli, clivi, clwvi, prw, rldscs, rlut, rlutcs, rsdt, rsuscs, rsut, rsutcs, rtmt, abs550aer, od550aer, rsdscs, hur"
+VAR_LIST = (
+    "pfull, phalf, tas, ts, psl, ps, sfcWind, huss, pr, prc, prsn, evspsbl, tauu, "
+    "tauv, hfls, clt, rlds, rlus, rsds, rsus, hfss, cl, clw, cli, clivi, clwvi, prw, "
+    "rldscs, rlut, rlutcs, rsdt, rsuscs, rsut, rsutcs, rtmt, abs550aer, od550aer "
+    "rsdscs, hur"
+)
 
 # The output path for CMORized datasets. Update as needed.
 OUTPUT_PATH = f"../qa/run_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
