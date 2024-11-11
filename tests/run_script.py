@@ -5,6 +5,8 @@ to install the package. It imports the `main` function from the `__main__`
 module and passes a list of arguments to it. The arguments are the same as those
 passed to the command line interface (CLI) of `e3sm_to_cmip`.
 The script can be run from the command line or an IDE.
+
+NOTE: This script can only be executed on LCRC machines.
 """
 
 import datetime
