@@ -62,7 +62,7 @@
                 "cohort": "Registered",
                 "institution_id": "NCAR",
                 "source_id": "CESM2-WACCM6",
-                "source": "CESM2-WACCM6 (2018): \naerosol: MAM4 (same grid as atmos)\natmos: WACCM6 (0.9x1.25 finite volume grid; 288 x 192 longitude/latitude; 70 levels; top level 4.5e-06 mb)\natmosChem: MAM4 (same grid as atmos)\nland: CLM5 (same grid as atmos)\nlandIce: CISM2.1\nocean: POP2 (320 x 384 longitude/latitude; 60 levels; top grid cell 0-10 m)\nocnBgchem: MARBL (same grid as ocean)\nseaIce: CICE5.1 (same grid as ocean)"
+                "source": "CESM2-WACCM6 (2018): \naerosol: MAM4 (same grid as atmos)\natmos: WACCM6 (0.9x1.25 finite volume grid; 288 x 192 longitude/latitude; 110 levels; top level 4.5e-06 mb)\natmosChem: MAM4 (same grid as atmos)\nland: CLM5 (same grid as atmos)\nlandIce: CISM2.1\nocean: POP2 (320 x 384 longitude/latitude; 60 levels; top grid cell 0-10 m)\nocnBgchem: MARBL (same grid as ocean)\nseaIce: CICE5.1 (same grid as ocean)"
             },
             "AGCM3-CMAM": {
                 "activity_participation": "QUOCA",
@@ -138,7 +138,7 @@
             "6hr"
         ],
         "license": [
-            "QUOCA model data produced by LLNL is licensed under a Creative Commons Attribution ShareAlike 4.0 International License (https://creativecommons.org/licenses). Consult LLNL for terms of use governing QUOCA output, including citation requirements and proper acknowledgment. The data producers and data providers make no warranty, either express or implied, including, but not limited to, warranties of merchantability and fitness for a particular purpose. All liabilities arising from the supply of the information (including any liability arising in negligence) are excluded to the fullest extent permitted by law."
+            "QUOCA model data produced by E3SM is licensed under a Creative Commons Attribution ShareAlike 4.0 International License .https://creativecommons.org/licenses). Consult https://pcmdi.llnl.gov/QUOCA/TermsOfUse for terms of use governing QUOCA output, including citation requirements and proper acknowledgment. The data producers and data providers make no warranty, either express or implied, including, but not limited to, warranties of merchantability and fitness for a particular purpose. All liabilities arising from the supply of the information (including any liability arising in negligence) are excluded to the fullest extent permitted by law."
         ],
         "mip_era": [
             "QUOCA"
