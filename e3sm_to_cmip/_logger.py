@@ -1,68 +1,128 @@
+"""Logger module for setting up a custom logger."""
+
 import logging
+import logging.handlers
 import os
-import time
-from datetime import datetime
+from datetime import datetime, timezone
 
-from pytz import UTC
+TIMESTAMP = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
+LOG_DIR = "prov"
+LOG_FILENAME = f"{TIMESTAMP}.log"
+LOG_FORMAT = (
+    "%(asctime)s [%(levelname)s]: %(filename)s(%(funcName)s:%(lineno)s) >> %(message)s"
+)
+LOG_FILEMODE = "w"
+LOG_LEVEL = logging.INFO
 
 
-def _setup_root_logger() -> str:  # pragma: no cover
-    """Sets up the root logger.
+# Setup the root logger with a default log file.
+# `force` is set to `True` to automatically remove root handlers whenever
+# `basicConfig` called. This is required for cases where multiple e3sm_to_cmip
+# runs are executed. Otherwise, the logger objects attempt to share the same
+# root file reference (which gets deleted between runs), resulting in
+# `FileNotFoundError: [Errno 2] No such file or directory: 'e3sm_diags_run.log'`.
+# More info here: https://stackoverflow.com/a/49202811
+logging.basicConfig(
+    format=LOG_FORMAT,
+    filename=LOG_FILENAME,
+    filemode=LOG_FILEMODE,
+    level=LOG_LEVEL,
+    force=True,
+)
+logging.captureWarnings(True)
 
-    The logger module will write to a log file and stream the console
-    simultaneously.
+# FIXME: A logger file is made initially then esmpy logs it to the file.
+# Adding the below will result in duplicate console messages.
+# # Add a console handler to display warnings in the console. This is useful
+# # for when other package loggers raise warnings (e.g, NumPy, Xarray).
+# console_handler = logging.StreamHandler()
+# console_handler.setLevel(logging.INFO)
+# console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+# logging.getLogger().addHandler(console_handler)
+
+
+def _setup_logger(name: str, propagate: bool = True) -> logging.Logger:
+    """Sets up a custom logger that is a child of the root logger.
+
+    This custom logger inherits the root logger's handlers.
 
     The log files are saved in a `/logs` directory relative to where
     `e3sm_to_cmip` is executed.
-
-    Returns
-    -------
-    str
-        The name of the logfile.
-    """
-    os.makedirs("logs", exist_ok=True)
-    filename = f'logs/{UTC.localize(datetime.utcnow()).strftime("%Y%m%d_%H%M%S_%f")}'
-    log_format = "%(asctime)s_%(msecs)03d:%(levelname)s:%(funcName)s:%(message)s"
-
-    # Setup the logging module.
-    logging.basicConfig(
-        filename=filename,
-        format=log_format,
-        datefmt="%Y%m%d_%H%M%S",
-        level=logging.DEBUG,
-    )
-    logging.captureWarnings(True)
-    logging.Formatter.converter = time.gmtime
-
-    # Configure and add a console stream handler.
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    log_formatter = logging.Formatter(log_format)
-    console_handler.setFormatter(log_formatter)
-    logging.getLogger().addHandler(console_handler)
-
-    return filename
-
-
-def _setup_logger(name, propagate=True) -> logging.Logger:
-    """Sets up a logger object.
-
-    This function is intended to be used at the top-level of a module.
 
     Parameters
     ----------
     name : str
         Name of the file where this function is called.
     propagate : bool, optional
-        Propogate this logger module's messages to the root logger or not, by
-        default True.
+        Whether to propagate logger messages or not, by default True.
 
     Returns
     -------
     logging.Logger
         The logger.
+
+    Examples
+    ---------
+    Detailed information, typically of interest only when diagnosing problems:
+
+    >>> logger.debug("")
+
+    Confirmation that things are working as expected:
+
+    >>> logger.info("")
+
+    An indication that something unexpected happened, or indicative of some
+    problem in the near future:
+
+    >>> logger.warning("")
+
+    The software has not been able to perform some function due to a more
+    serious problem:
+
+    >>> logger.error("")
+
+    Similar to ``logger.error()``, but also outputs stack trace:
+
+    >>> logger.exception("", exc_info=True)
+
+    A serious error, indicating that the program itself may be unable to
+    continue running:
+
+    >>> logger.critical("")
     """
     logger = logging.getLogger(name)
     logger.propagate = propagate
 
     return logger
+
+
+def _update_root_logger_filepath(log_path: str):
+    """Updates the log file path to the provenance directory.
+
+    This method changes the log file path to a subdirectory named 'prov'
+    or a specified path. It updates the filename of the existing file handler
+    to the new path.
+
+    Parameters
+    ----------
+    log_path : str
+        The path to the log file..
+
+    Notes
+    -----
+    - The method assumes that a logging file handler is already configured.
+    - The log file is closed and reopened at the new location.
+    - The log file mode is determined by the constant `LOG_FILEMODE`.
+    - The log file name is determined by the constant `LOG_FILENAME`.
+    """
+    for handler in logging.root.handlers:
+        if isinstance(handler, logging.FileHandler):
+            if os.path.exists(log_path):
+                # Move the existing log file to the new path
+                os.rename(handler.baseFilename, log_path)
+
+            handler.baseFilename = log_path
+            handler.stream.close()
+            handler.stream = open(log_path, LOG_FILEMODE)  # type: ignore
+
+            break

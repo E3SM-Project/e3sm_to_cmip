@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import argparse
 import os
+import pathlib
 import signal
 import sys
 import tempfile
@@ -22,7 +23,13 @@ import yaml
 from tqdm import tqdm
 
 from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
-from e3sm_to_cmip._logger import _setup_logger, _setup_root_logger
+from e3sm_to_cmip._logger import (
+    LOG_DIR,
+    LOG_FILENAME,
+    TIMESTAMP,
+    _setup_logger,
+    _update_root_logger_filepath,
+)
 from e3sm_to_cmip.cmor_handlers.utils import (
     MPAS_REALMS,
     REALMS,
@@ -46,14 +53,18 @@ from e3sm_to_cmip.util import (
     print_message,
 )
 
-os.environ["CDAT_ANONYMOUS_LOG"] = "false"
+# TODO: This doesn't work.
+# Suppress specific warnings related to ESMF and ESMPy version mismatch
+warnings.filterwarnings(
+    "ignore",
+    message=r"ESMF installation version .*?, ESMPy version .*?",
+    category=UserWarning,
+    module=r".*?esmpy\.interface\.loadESMF",
+)
 
-warnings.filterwarnings("ignore")
-
-
-# Setup the root logger and this module's logger.
-log_filename = _setup_root_logger()
-logger = _setup_logger(__name__, propagate=True)
+# Set up a module level logger object. This logger object is a child of the
+# root logger.
+logger = _setup_logger(__name__)
 
 
 @dataclass
@@ -136,6 +147,25 @@ class E3SMtoCMIP:
         self.cmor_log_dir: Optional[str] = parsed_args.logdir
         self.user_metadata: Optional[str] = parsed_args.user_metadata
         self.custom_metadata: Optional[str] = parsed_args.custom_metadata
+
+        # Sets a default output_path if it is not set.
+        if self.output_path is not None:
+            self.output_path = os.path.abspath(self.output_path)
+        else:
+            self.output_path = os.path.join("runs", f"run_{TIMESTAMP}")
+
+            os.makedirs(self.output_path, exist_ok=True)
+
+        # Make sure cmor log directory saves in the output directory.
+        self.cmor_log_dir = os.path.join(self.output_path, self.cmor_log_dir)  # type: ignore
+
+        # Make the provenance directory to store the log file.
+        prov_dir = os.path.join(self.output_path, LOG_DIR)
+        pathlib.Path(prov_dir).mkdir(parents=True, exist_ok=True)
+
+        log_path = os.path.join(prov_dir, LOG_FILENAME)
+        _update_root_logger_filepath(log_path)
+
         # Run the pre-check to determine if any of the variables have already
         # been CMORized.
         if self.precheck_path is not None:
@@ -150,7 +180,8 @@ class E3SMtoCMIP:
         logger.info(f"    * precheck_path='{self.precheck_path}'")
         logger.info(f"    * freq='{self.freq}'")
         logger.info(f"    * realm='{self.realm}'")
-        logger.info(f"    * Writing log output file to: {log_filename}")
+        logger.info(f"    * Log Path: {log_path}")
+        logger.info(f"    * CMOR log path: {self.cmor_log_dir}")
 
         self.handlers = self._get_handlers()
 
@@ -497,8 +528,11 @@ class E3SMtoCMIP:
         optional.add_argument(
             "--logdir",
             type=str,
-            default="./cmor_logs",
-            help="Where to put the logging output from CMOR.",
+            default="cmor_logs",
+            help=(
+                "The sub-directory that stores the CMOR logs. This sub-directory will "
+                "be stored under --output-path."
+            ),
         )
         required_no_simple.add_argument(
             "-u",
