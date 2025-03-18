@@ -2,7 +2,7 @@
 
 import logging
 import logging.handlers
-import os
+import shutil
 from datetime import datetime, timezone
 
 TIMESTAMP = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
@@ -11,9 +11,8 @@ LOG_FILENAME = f"{TIMESTAMP}.log"
 LOG_FORMAT = (
     "%(asctime)s [%(levelname)s]: %(filename)s(%(funcName)s:%(lineno)s) >> %(message)s"
 )
-LOG_FILEMODE = "w"
+LOG_FILEMODE = "a"
 LOG_LEVEL = logging.INFO
-
 
 # Setup the root logger with a default log file.
 # `force` is set to `True` to automatically remove root handlers whenever
@@ -29,16 +28,8 @@ logging.basicConfig(
     level=LOG_LEVEL,
     force=True,
 )
-logging.captureWarnings(True)
 
-# FIXME: A logger file is made initially then esmpy logs it to the file.
-# Adding the below will result in duplicate console messages.
-# # Add a console handler to display warnings in the console. This is useful
-# # for when other package loggers raise warnings (e.g, NumPy, Xarray).
-# console_handler = logging.StreamHandler()
-# console_handler.setLevel(logging.INFO)
-# console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
-# logging.getLogger().addHandler(console_handler)
+logging.captureWarnings(True)
 
 
 def _setup_logger(name: str, propagate: bool = True) -> logging.Logger:
@@ -99,14 +90,13 @@ def _setup_logger(name: str, propagate: bool = True) -> logging.Logger:
 def _update_root_logger_filepath(log_path: str):
     """Updates the log file path to the provenance directory.
 
-    This method changes the log file path to a subdirectory named 'prov'
-    or a specified path. It updates the filename of the existing file handler
-    to the new path.
+    This function updates the filename of the existing file handler to the new
+    path.
 
     Parameters
     ----------
     log_path : str
-        The path to the log file..
+        The path to the log file.
 
     Notes
     -----
@@ -117,9 +107,10 @@ def _update_root_logger_filepath(log_path: str):
     """
     for handler in logging.root.handlers:
         if isinstance(handler, logging.FileHandler):
-            if os.path.exists(log_path):
-                # Move the existing log file to the new path
-                os.rename(handler.baseFilename, log_path)
+            # Move the log file to the new directory because it might contain
+            # warnings that are raised before this function is called
+            # (e.g., esmpy VersionWarning).
+            shutil.move(handler.baseFilename, log_path)
 
             handler.baseFilename = log_path
             handler.stream.close()
