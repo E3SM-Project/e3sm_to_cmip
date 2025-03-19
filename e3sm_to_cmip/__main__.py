@@ -5,6 +5,7 @@ A python command line tool to turn E3SM model output into CMIP6 compatable data.
 import argparse
 import os
 import signal
+import subprocess
 import sys
 import tempfile
 import threading
@@ -21,6 +22,7 @@ from tqdm import tqdm
 from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
 from e3sm_to_cmip._logger import (
     LOG_FILENAME,
+    TIMESTAMP,
     _add_filehandler,
     _setup_child_logger,
     _setup_root_logger,
@@ -137,6 +139,11 @@ class E3SMtoCMIP:
         if self.output_path is not None:
             self.output_path = os.path.abspath(self.output_path)
             os.makedirs(self.output_path, exist_ok=True)
+        elif self.output_path is None:
+            self.output_path = os.path.join(
+                os.getcwd(), f"e3sm_to_cmip_run_{TIMESTAMP}"
+            )
+            os.makedirs(self.output_path, exist_ok=True)
 
         # Setup directories using the CLI argument paths (e.g., output dir).
         # ======================================================================
@@ -155,6 +162,8 @@ class E3SMtoCMIP:
         logger.info("--------------------------------------")
 
         config_details = {
+            "Timestamp": TIMESTAMP,
+            "Version Info": self._get_version_info(),
             "Mode": (
                 "Info"
                 if self.info_mode
@@ -177,6 +186,52 @@ class E3SMtoCMIP:
 
         # Load the CMOR handlers based on the realm and variable list.
         self.handlers = self._get_handlers()
+
+    def _get_version_info(self) -> str:
+        """Retrieve version information for the current codebase.
+
+        This method attempts to determine the current Git branch name and commit
+        hash of the repository containing this file. If the Git information
+        cannot be retrieved, it falls back to using the `__version__` variable.
+
+        Returns
+        -------
+        str
+            A string containing the Git branch name and commit hash in the
+            format "branch <branch_name> with commit <commit_hash>", or the
+            fallback version string in the format "version <__version__>" if Git
+            information is unavailable.
+
+        Raises
+        ------
+        subprocess.CalledProcessError
+            If there is an error executing the Git commands to retrieve branch
+            or commit information.
+        """
+        try:
+            branch_name = (
+                subprocess.check_output(
+                    ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                    cwd=os.path.dirname(__file__),
+                    stderr=subprocess.DEVNULL,
+                )
+                .strip()
+                .decode("utf-8")
+            )
+            commit_hash = (
+                subprocess.check_output(
+                    ["git", "rev-parse", "HEAD"],
+                    cwd=os.path.dirname(__file__),
+                    stderr=subprocess.DEVNULL,
+                )
+                .strip()
+                .decode("utf-8")
+            )
+            version_info = f"branch {branch_name} with commit {commit_hash}"
+        except subprocess.CalledProcessError:
+            version_info = f"version {__version__}"
+
+        return version_info
 
     def run(self):
         # Run e3sm_to_cmip with info mode.
