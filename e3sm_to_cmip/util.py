@@ -50,6 +50,7 @@ HIGHFREQ_VARS = ["pr", "rlut", "tasmin", "tasmax"]
 
 
 def print_debug(e):
+    # TODO: Deprecate this function. We use Python logger now.
     _, _, tb = sys.exc_info()
     traceback.print_tb(tb)
     print(e)
@@ -73,11 +74,16 @@ def print_message(message, status="error"):
     """
     Prints a message with either a green + or a red -
 
+    # TODO: Deprecate this function. We use Python logger now. Colors can't
+    # be captured in log files.
+
     Parameters:
         message (str): the message to print
-        status (str): th"""
+        status (str): the status message.
+    """
+
     if status == "error":
-        print(
+        logger.error(
             colors.FAIL
             + "[-] "
             + colors.ENDC
@@ -86,11 +92,11 @@ def print_message(message, status="error"):
             + colors.ENDC
         )
     elif status == "ok":
-        print(colors.OKGREEN + "[+] " + colors.ENDC + str(message))
+        logger.info(colors.OKGREEN + "[+] " + colors.ENDC + str(message))
     elif status == "info":
-        print(str(message))
+        logger.info(str(message))
     elif status == "debug":
-        print(
+        logger.info(
             colors.OKBLUE
             + "[*] "
             + colors.ENDC

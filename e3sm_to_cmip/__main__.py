@@ -44,8 +44,6 @@ from e3sm_to_cmip.util import (
     find_mpas_files,
     get_handler_info_msg,
     precheck,
-    print_debug,
-    print_message,
 )
 
 # Set up the root logger and module level logger. The module level logger is
@@ -197,7 +195,7 @@ class E3SMtoCMIP:
         status = self._run()
 
         if status != 0:
-            print_message(
+            logger.error(
                 f"Error running handlers: { ' '.join([x['name'] for x in self.handlers]) }"
             )
             return 1
@@ -637,12 +635,12 @@ class E3SMtoCMIP:
             self.input_path, self.precheck_path, self.var_list, self.realm
         )
         if not new_var_list:
-            print("All variables previously computed")
+            logger.info("All variables previously computed")
             if self.output_path is not None:
                 os.mkdir(os.path.join(self.output_path, "CMIP6"))
             return 0
         else:
-            print_message(f"Setting up conversion for {' '.join(new_var_list)}", "ok")
+            logger.info(f"Setting up conversion for {' '.join(new_var_list)}", "ok")
             self.var_list = new_var_list
 
     def _setup_dirs_with_paths(self):
@@ -695,8 +693,11 @@ class E3SMtoCMIP:
             for handler in self.handlers:
                 table_info = _get_table_info(self.tables_path, handler["table"])
                 if handler["name"] not in table_info["variable_entry"]:
-                    msg = f"Variable {handler['name']} is not included in the table {handler['table']}"
-                    print_message(msg, status="error")
+                    logger.error(
+                        "Variable {handler['name']} is not included in the table "
+                        f"{handler['table']}"
+                    )
+
                     continue
                 else:
                     if self.freq == "mon" and handler["table"] == "CMIP6_day.json":
@@ -705,6 +706,7 @@ class E3SMtoCMIP:
                         "table"
                     ] == "CMIP6_Amon.json":
                         continue
+
                     hand_msg = get_handler_info_msg(handler)
                     messages.append(hand_msg)
 
@@ -714,6 +716,7 @@ class E3SMtoCMIP:
             with xr.open_dataset(file_path) as ds:
                 for handler in self.handlers:
                     table_info = _get_table_info(self.tables_path, handler["table"])
+
                     if handler["name"] not in table_info["variable_entry"]:
                         continue
 
@@ -724,8 +727,9 @@ class E3SMtoCMIP:
                         if raw_var not in ds.data_vars:
                             has_vars = False
 
-                            msg = f"Variable {handler['name']} is not present in the input dataset"
-                            print_message(msg, status="error")
+                            logger.error(
+                                f"Variable {handler['name']} is not present in the input dataset"
+                            )
 
                             break
 
@@ -783,10 +787,10 @@ class E3SMtoCMIP:
         try:
             status = run_func()
         except KeyboardInterrupt:
-            print_message(" -- keyboard interrupt -- ", "error")
+            logger.error(" -- keyboard interrupt -- ")
             return 1
         except Exception as e:
-            print_debug(e)
+            logger.error(e)
             return 1
 
         return status
@@ -857,7 +861,7 @@ class E3SMtoCMIP:
                         self.new_metadata_path,
                     )
                 except Exception as e:
-                    print_debug(e)
+                    logger.error(e)
 
                 if name is not None:
                     num_success += 1
@@ -873,7 +877,7 @@ class E3SMtoCMIP:
                 pbar.close()
 
         except Exception as error:
-            print_debug(error)
+            logger.error(error)
             return 1
         else:
             msg = f"{num_success} of {num_handlers} handlers complete"
@@ -964,7 +968,7 @@ class E3SMtoCMIP:
 
                 logger.info(msg)
             except Exception as e:
-                print_debug(e)
+                logger.error(e)
             pbar.update(1)
 
         pbar.close()
@@ -981,7 +985,7 @@ class E3SMtoCMIP:
         return 0
 
     def _timeout_exit(self):
-        print_message("Hit timeout limit, exiting")
+        logger.info("Hit timeout limit, exiting")
         os.kill(os.getpid(), signal.SIGINT)
 
 
