@@ -13,11 +13,11 @@ import numpy as np
 import xarray as xr
 
 from e3sm_to_cmip import resources
-from e3sm_to_cmip._logger import _setup_logger
+from e3sm_to_cmip._logger import _setup_child_logger
 from e3sm_to_cmip.mpas import write_netcdf
 from e3sm_to_cmip.util import print_message, setup_cmor
 
-logger = _setup_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # list of raw variable names needed
 RAW_VARIABLES = [str("LANDFRAC")]

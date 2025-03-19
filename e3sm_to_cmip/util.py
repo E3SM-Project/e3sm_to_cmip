@@ -14,9 +14,9 @@ import xarray as xr
 import yaml
 from tqdm import tqdm
 
-from e3sm_to_cmip._logger import _setup_logger
+from e3sm_to_cmip._logger import _setup_child_logger
 
-logger = _setup_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 
 ATMOS_TABLES = [

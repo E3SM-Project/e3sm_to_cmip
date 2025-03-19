@@ -2,43 +2,44 @@
 
 import logging
 import logging.handlers
-import shutil
 from datetime import datetime, timezone
 
 TIMESTAMP = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
-LOG_DIR = "prov"
 LOG_FILENAME = f"{TIMESTAMP}.log"
 LOG_FORMAT = (
     "%(asctime)s [%(levelname)s]: %(filename)s(%(funcName)s:%(lineno)s) >> %(message)s"
 )
-LOG_FILEMODE = "a"
+LOG_FILEMODE = "w"
 LOG_LEVEL = logging.INFO
 
-# Setup the root logger with a default log file.
-# `force` is set to `True` to automatically remove root handlers whenever
-# `basicConfig` called. This is required for cases where multiple e3sm_to_cmip
-# runs are executed. Otherwise, the logger objects attempt to share the same
-# root file reference (which gets deleted between runs), resulting in
-# `FileNotFoundError: [Errno 2] No such file or directory: 'e3sm_diags_run.log'`.
-# More info here: https://stackoverflow.com/a/49202811
-logging.basicConfig(
-    format=LOG_FORMAT,
-    filename=LOG_FILENAME,
-    filemode=LOG_FILEMODE,
-    level=LOG_LEVEL,
-    force=True,
-)
 
-logging.captureWarnings(True)
+def _setup_root_logger():
+    """Configures the root logger.
+
+    This function sets up the root logger with a predefined format and log level.
+    It also enables capturing of warnings issued by the `warnings` module and
+    redirects them to the logging system.
+
+    Notes
+    -----
+    - The `force=True` parameter ensures that any existing logging configuration
+      is overridden.
+    - The file handler is added dynamically to the root logger later in the
+      E3SMtoCMIP class once the log file path is known.
+    """
+    logging.basicConfig(
+        format=LOG_FORMAT,
+        level=LOG_LEVEL,
+        force=True,
+    )
+
+    logging.captureWarnings(True)
 
 
-def _setup_logger(name: str, propagate: bool = True) -> logging.Logger:
-    """Sets up a custom logger that is a child of the root logger.
+def _setup_child_logger(name: str, propagate: bool = True) -> logging.Logger:
+    """Sets up a logger that is a child of the root logger.
 
-    This custom logger inherits the root logger's handlers.
-
-    The log files are saved in a `/logs` directory relative to where
-    `e3sm_to_cmip` is executed.
+    This child logger inherits the root logger's handlers.
 
     Parameters
     ----------
@@ -50,7 +51,7 @@ def _setup_logger(name: str, propagate: bool = True) -> logging.Logger:
     Returns
     -------
     logging.Logger
-        The logger.
+        The child logger.
 
     Examples
     ---------
@@ -87,11 +88,10 @@ def _setup_logger(name: str, propagate: bool = True) -> logging.Logger:
     return logger
 
 
-def _update_root_logger_filepath(log_path: str):
-    """Updates the log file path to the provenance directory.
+def _add_filehandler(log_path: str):
+    """Adds a file handler to the root logger dynamically.
 
-    This function updates the filename of the existing file handler to the new
-    path.
+    Adding the file handler will also create the log file automatically.
 
     Parameters
     ----------
@@ -100,20 +100,10 @@ def _update_root_logger_filepath(log_path: str):
 
     Notes
     -----
-    - The method assumes that a logging file handler is already configured.
-    - The log file is closed and reopened at the new location.
-    - The log file mode is determined by the constant `LOG_FILEMODE`.
-    - The log file name is determined by the constant `LOG_FILENAME`.
+    Any warnings that appear before the log filehandler is instantiated will not
+    be captured (e.g,. esmpy VersionWarning). However, they will still be
+    captured by the console via the default StreamHandler.
     """
-    for handler in logging.root.handlers:
-        if isinstance(handler, logging.FileHandler):
-            # Move the log file to the new directory because it might contain
-            # warnings that are raised before this function is called
-            # (e.g., esmpy VersionWarning).
-            shutil.move(handler.baseFilename, log_path)
-
-            handler.baseFilename = log_path
-            handler.stream.close()
-            handler.stream = open(log_path, LOG_FILEMODE)  # type: ignore
-
-            break
+    file_handler = logging.FileHandler(log_path, mode=LOG_FILEMODE)
+    file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    logging.root.addHandler(file_handler)

@@ -21,8 +21,9 @@ from tqdm import tqdm
 from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
 from e3sm_to_cmip._logger import (
     LOG_FILENAME,
-    _setup_logger,
-    _update_root_logger_filepath,
+    _add_filehandler,
+    _setup_child_logger,
+    _setup_root_logger,
 )
 from e3sm_to_cmip.cmor_handlers.utils import (
     MPAS_REALMS,
@@ -47,9 +48,11 @@ from e3sm_to_cmip.util import (
     print_message,
 )
 
-# Set up a module level logger object. This logger object is a child of the
-# root logger.
-logger = _setup_logger(__name__)
+# Set up the root logger and module level logger. The module level logger is
+# a child of the root logger.
+_setup_root_logger()
+
+logger = _setup_child_logger(__name__)
 
 
 @dataclass
@@ -657,8 +660,12 @@ class E3SMtoCMIP:
         self.new_metadata_path = os.path.join(self.output_path, "user_metadata.json")  # type: ignore
         self.cmor_log_dir = os.path.join(self.output_path, self.cmor_log_dir)  # type: ignore
 
+        # NOTE: Any warnings that appear before the log filehandler is
+        # instantiated will not be captured (e.g,. esmpy VersionWarning).
+        # However, they will still be captured by the console via a
+        # StreamHandler.
         self.log_path = os.path.join(self.output_path, LOG_FILENAME)  # type: ignore
-        _update_root_logger_filepath(self.log_path)
+        _add_filehandler(self.log_path)
 
         # Copy the user's metadata json file with the updated output directory
         if not self.simple_mode:
