@@ -117,5 +117,8 @@ def _add_filehandler(log_path: str):
     captured by the console via the default StreamHandler.
     """
     file_handler = logging.FileHandler(log_path, mode=LOG_FILEMODE)
-    file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+
+    custom_formatter = CustomFormatter(LOG_FORMAT)
+    file_handler.setFormatter(custom_formatter)
+
     logging.root.addHandler(file_handler)
