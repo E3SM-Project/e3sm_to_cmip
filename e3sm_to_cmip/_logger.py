@@ -13,6 +13,14 @@ LOG_FILEMODE = "w"
 LOG_LEVEL = logging.INFO
 
 
+class CustomFormatter(logging.Formatter):
+    def formatTime(self, record, datefmt=None):
+        # Includes microseconds up to 6 digits
+        dt = datetime.fromtimestamp(record.created)
+
+        return dt.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+
 def _setup_root_logger():
     """Configures the root logger.
 
@@ -27,10 +35,14 @@ def _setup_root_logger():
     - The file handler is added dynamically to the root logger later in the
       E3SMtoCMIP class once the log file path is known.
     """
+    custom_formatter = CustomFormatter(LOG_FORMAT)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(custom_formatter)
+
     logging.basicConfig(
-        format=LOG_FORMAT,
         level=LOG_LEVEL,
         force=True,
+        handlers=[console_handler],
     )
 
     logging.captureWarnings(True)
