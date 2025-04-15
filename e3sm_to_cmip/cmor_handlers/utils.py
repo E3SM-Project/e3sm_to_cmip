@@ -10,12 +10,17 @@ from e3sm_to_cmip import (
     HANDLER_DEFINITIONS_PATH,
     LEGACY_HANDLER_DIR_PATH,
     MPAS_HANDLER_DIR_PATH,
+    _logger,
 )
-from e3sm_to_cmip._logger import _setup_logger
 from e3sm_to_cmip.cmor_handlers.handler import VarHandler
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
 
-logger = _setup_logger(__name__)
+
+def instantiate_h_utils_logger():
+    global logger
+
+    logger = _logger._logger(name=__name__, to_logfile=True, propagate=False)
+
 
 # Type aliases
 Frequency = Literal["mon", "day", "6hrLev", "6hrPlev", "6hrPlevPt", "3hr", "1hr"]

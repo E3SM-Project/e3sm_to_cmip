@@ -5,19 +5,17 @@ LANDFRAC to sftlf converter
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import json
-import logging
 import os
 
 import cmor
 import numpy as np
 import xarray as xr
 
-from e3sm_to_cmip import resources
-from e3sm_to_cmip._logger import _setup_logger
+from e3sm_to_cmip import _logger, resources
 from e3sm_to_cmip.mpas import write_netcdf
 from e3sm_to_cmip.util import print_message, setup_cmor
 
-logger = _setup_logger(__name__)
+logger = _logger._logger(name=__name__, to_logfile=True, propagate=False)
 
 # list of raw variable names needed
 RAW_VARIABLES = [str("LANDFRAC")]
@@ -65,7 +63,7 @@ def handle(infiles, tables, user_input_path, table, logdir):
         if len(infiles[variable]) == 0:
             msg = f"{VAR_NAME}: Unable to find input files for {variable}"
             print_message(msg)
-            logging.error(msg)
+            logger.error(msg)
             zerofiles = True
     if zerofiles:
         return None
@@ -78,7 +76,7 @@ def handle(infiles, tables, user_input_path, table, logdir):
     )
 
     msg = "{}: CMOR setup complete".format(VAR_NAME)
-    logging.info(msg)
+    logger.info(msg)
 
     # extract data from the input file
     msg = "sftlf: loading LANDFRAC"
@@ -119,7 +117,7 @@ def handle(infiles, tables, user_input_path, table, logdir):
     ]
 
     msg = "sftlf: running CMOR"
-    logging.info(msg)
+    logger.info(msg)
 
     axis_ids = list()
     for axis in axes:

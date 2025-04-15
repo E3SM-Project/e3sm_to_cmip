@@ -4,11 +4,9 @@ compute Ocean Meridional Overturning Mass Streamfunction, msftmz
 
 from __future__ import absolute_import, division, print_function
 
-import logging
-
 import xarray
 
-from e3sm_to_cmip import mpas, util
+from e3sm_to_cmip import _logger, mpas, util
 from e3sm_to_cmip.util import print_message
 
 # 'MPAS' as a placeholder for raw variables needed
@@ -18,6 +16,8 @@ RAW_VARIABLES = ["MPASO", "MPAS_mesh", "MPASO_MOC_regions", "MPASO_namelist"]
 VAR_NAME = "msftmz"
 VAR_UNITS = "kg s-1"
 TABLE = "CMIP6_Omon.json"
+
+logger = _logger._logger(name=__name__, to_logfile=True, propagate=False)
 
 
 def handle(infiles, tables, user_input_path, **kwargs):
@@ -49,7 +49,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         return
 
     msg = "Starting {name}".format(name=__name__)
-    logging.info(msg)
+    logger.info(msg)
 
     meshFileName = infiles["MPAS_mesh"]
     timeSeriesFiles = infiles["MPASO"]
