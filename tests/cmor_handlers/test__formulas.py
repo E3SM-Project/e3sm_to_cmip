@@ -142,15 +142,17 @@ def test_mmrbc():
     ds = xr.Dataset(
         data_vars={
             "bc_a1": _dummy_dataarray(),
+            "bc_a3": _dummy_dataarray(),
             "bc_a4": _dummy_dataarray(),
             "bc_c1": _dummy_dataarray(),
+            "bc_c3": _dummy_dataarray(),
             "bc_c4": _dummy_dataarray(),
         }
     )
 
     result = mmrbc(ds)
     expected = xr.DataArray(
-        dims=["lat", "lon"], data=np.array([[0, 4, 8], [0, 4, 8], [0, 4, 8]])
+        dims=["lat", "lon"], data=np.array([[0, 6, 12], [0, 6, 12], [0, 6, 12]])
     )
     xr.testing.assert_allclose(result, expected)
 
@@ -173,7 +175,10 @@ def test_mmrso4():
 
     result = mmrso4(ds)
     expected = xr.DataArray(
-        dims=["lat", "lon"], data=np.array([[0, 6, 12], [0, 6, 12], [0, 6, 12]])
+        dims=["lat", "lon"],
+        data=np.array(
+            [[0, 5.00734, 10.01468], [0, 5.00734, 10.01468], [0, 5.00734, 10.01468]]
+        ),
     )
     xr.testing.assert_allclose(result, expected)
 
