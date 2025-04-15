@@ -728,17 +728,18 @@ class E3SMtoCMIP:
         _add_filehandler(self.log_path)
 
         # Copy the user's metadata json file with the updated output directory
-        if not self.simple_mode:
+        if not self.simple_mode and not self.info_mode:
             copy_user_metadata(self.user_metadata, self.output_path)
 
-        # Setup temp storage directory
-        temp_path = os.environ.get("TMPDIR")
-        if temp_path is None:
-            temp_path = f"{self.output_path}/tmp"
-            if not os.path.exists(temp_path):
-                os.makedirs(temp_path)
+        if not self.info_mode:
+            # Setup temp storage directory
+            temp_path = os.environ.get("TMPDIR")
+            if temp_path is None:
+                temp_path = f"{self.output_path}/tmp"
+                if not os.path.exists(temp_path):
+                    os.makedirs(temp_path)
 
-        tempfile.tempdir = temp_path
+            tempfile.tempdir = temp_path
 
     def _run_info_mode(self):  # noqa: C901
         messages = []
