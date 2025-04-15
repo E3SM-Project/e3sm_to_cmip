@@ -205,12 +205,6 @@ class E3SMtoCMIP:
             format "branch <branch_name> with commit <commit_hash>", or the
             fallback version string in the format "version <__version__>" if Git
             information is unavailable.
-
-        Raises
-        ------
-        subprocess.CalledProcessError
-            If there is an error executing the Git commands to retrieve branch
-            or commit information.
         """
         try:
             branch_name = (
