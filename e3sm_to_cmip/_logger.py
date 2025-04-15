@@ -1,11 +1,8 @@
 """Logger module for setting up a custom logger."""
 
 import logging
-import logging.handlers
-from datetime import datetime, timezone
+from datetime import datetime
 
-TIMESTAMP = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
-LOG_FILENAME = f"{TIMESTAMP}.log"
 LOG_FORMAT = (
     "%(asctime)s [%(levelname)s]: %(filename)s(%(funcName)s:%(lineno)s) >> %(message)s"
 )

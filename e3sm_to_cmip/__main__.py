@@ -3,6 +3,7 @@ A python command line tool to turn E3SM model output into CMIP6 compatable data.
 """
 
 import argparse
+import logging
 import os
 import shutil
 import signal
@@ -12,6 +13,7 @@ import tempfile
 import threading
 from concurrent.futures import ProcessPoolExecutor as Pool
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from pprint import pprint
 from typing import List, Optional, Union
@@ -22,8 +24,6 @@ from tqdm import tqdm
 
 from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
 from e3sm_to_cmip._logger import (
-    LOG_FILENAME,
-    TIMESTAMP,
     _add_filehandler,
     _setup_child_logger,
     _setup_root_logger,
@@ -98,6 +98,9 @@ class CLIArguments:
 
 class E3SMtoCMIP:
     def __init__(self, args: Optional[List[str]] = None):
+        self.timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
+        self.log_filename = f"{self.timestamp}.log"
+
         # A dictionary of command line arguments.
         parsed_args = self._parse_args(args)
 
@@ -142,7 +145,7 @@ class E3SMtoCMIP:
             os.makedirs(self.output_path, exist_ok=True)
         elif self.output_path is None:
             self.output_path = os.path.join(
-                os.getcwd(), f"e3sm_to_cmip_run_{TIMESTAMP}"
+                os.getcwd(), f"e3sm_to_cmip_run_{self.timestamp}"
             )
             os.makedirs(self.output_path, exist_ok=True)
 
@@ -163,7 +166,7 @@ class E3SMtoCMIP:
         logger.info("--------------------------------------")
 
         config_details = {
-            "Timestamp": TIMESTAMP,
+            "Timestamp": self.timestamp,
             "Version Info": self._get_version_info(),
             "Mode": (
                 "Info"
@@ -721,7 +724,7 @@ class E3SMtoCMIP:
         # instantiated will not be captured (e.g,. esmpy VersionWarning).
         # However, they will still be captured by the console via a
         # StreamHandler.
-        self.log_path = os.path.join(self.output_path, LOG_FILENAME)  # type: ignore
+        self.log_path = os.path.join(self.output_path, self.log_filename)  # type: ignore
         _add_filehandler(self.log_path)
 
         # Copy the user's metadata json file with the updated output directory
@@ -1061,6 +1064,14 @@ class E3SMtoCMIP:
 
 def main(args: Optional[List[str]] = None):
     app = E3SMtoCMIP(args)
+
+    # Remove any existing filehandlers from the root logger. This prevents
+    # multiple filehandlers from being added to the root logger, which can
+    # cause log messages from newer runs to be written log files from older
+    # runs.
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+
     app.run()
 
 
