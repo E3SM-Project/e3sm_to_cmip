@@ -11,11 +11,11 @@ import xarray as xr
 import xcdat as xc
 import yaml
 
-from e3sm_to_cmip._logger import _setup_logger
+from e3sm_to_cmip._logger import _setup_child_logger
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE, _formulas
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
 
-logger = _setup_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # The names for valid hybrid sigma levels.
 HYBRID_SIGMA_LEVEL_NAMES = [
@@ -645,7 +645,10 @@ class VarHandler(BaseVarHandler):
         """
         output_data = self._get_output_data(ds)
 
-        cmor.write(var_id=cmor_var_id, data=output_data)
+        try:
+            cmor.write(var_id=cmor_var_id, data=output_data)
+        except Exception as e:
+            logger.error(f"Error writing variable {self.name} to file: {e}")
 
     def _cmor_write_with_time(
         self,
