@@ -263,9 +263,6 @@ class E3SMtoCMIP:
         if timer is not None:
             timer.cancel()
 
-        # Clean up temporary directory
-        self._cleanup_temp_dir()
-
         return 0
 
     def _get_handlers(self):
@@ -1044,17 +1041,6 @@ class E3SMtoCMIP:
     def _timeout_exit(self):
         logger.info("Hit timeout limit, exiting")
         os.kill(os.getpid(), signal.SIGINT)
-
-    def _cleanup_temp_dir(self):
-        """Deletes the temporary directory created in the tempfile module."""
-        temp_path = tempfile.gettempdir()
-
-        if os.path.exists(temp_path):
-            try:
-                shutil.rmtree(temp_path)
-                logger.info(f"Temporary directory '{temp_path}' deleted successfully.")
-            except Exception as e:
-                logger.error(f"Failed to delete temporary directory '{temp_path}': {e}")
 
 
 def main(args: Optional[List[str]] = None):
