@@ -5,7 +5,6 @@ A python command line tool to turn E3SM model output into CMIP6 compatable data.
 import argparse
 import logging
 import os
-import shutil
 import signal
 import subprocess
 import sys
