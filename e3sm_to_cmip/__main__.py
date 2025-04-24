@@ -732,6 +732,8 @@ class E3SMtoCMIP:
                     os.makedirs(self.temp_path)
 
             tempfile.tempdir = self.temp_path
+        else:
+            self.temp_path = None
 
     def _run_info_mode(self):  # noqa: C901
         messages = []
