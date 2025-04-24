@@ -5,7 +5,6 @@ A python command line tool to turn E3SM model output into CMIP6 compatable data.
 import argparse
 import logging
 import os
-import shutil
 import signal
 import subprocess
 import sys
@@ -181,6 +180,7 @@ class E3SMtoCMIP:
             "Precheck Path": self.precheck_path,
             "Log Path": self.log_path,
             "CMOR Log Path": self.cmor_log_dir,
+            "Temp Path for Processing MPAS Files": self.temp_path,
             "Frequency": self.freq,
             "Realm": self.realm,
         }
@@ -262,9 +262,6 @@ class E3SMtoCMIP:
 
         if timer is not None:
             timer.cancel()
-
-        # Clean up temporary directory
-        self._cleanup_temp_dir()
 
         return 0
 
@@ -726,15 +723,15 @@ class E3SMtoCMIP:
             copy_user_metadata(self.user_metadata, self.output_path)
 
         if not self.info_mode:
-            temp_path = os.environ.get("TMPDIR")
+            self.temp_path = os.environ.get("TMPDIR")
 
-            if temp_path is None:
-                temp_path = f"{self.output_path}/tmp_{self.timestamp}"
+            if self.temp_path is None:
+                self.temp_path = f"{self.output_path}/tmp"
 
-                if not os.path.exists(temp_path):
-                    os.makedirs(temp_path)
+                if not os.path.exists(self.temp_path):
+                    os.makedirs(self.temp_path)
 
-            tempfile.tempdir = temp_path
+            tempfile.tempdir = self.temp_path
 
     def _run_info_mode(self):  # noqa: C901
         messages = []
@@ -1045,17 +1042,6 @@ class E3SMtoCMIP:
     def _timeout_exit(self):
         logger.info("Hit timeout limit, exiting")
         os.kill(os.getpid(), signal.SIGINT)
-
-    def _cleanup_temp_dir(self):
-        """Deletes the temporary directory created in the tempfile module."""
-        temp_path = tempfile.gettempdir()
-
-        if os.path.exists(temp_path):
-            try:
-                shutil.rmtree(temp_path)
-                logger.info(f"Temporary directory '{temp_path}' deleted successfully.")
-            except Exception as e:
-                logger.error(f"Failed to delete temporary directory '{temp_path}': {e}")
 
 
 def main(args: Optional[List[str]] = None):
