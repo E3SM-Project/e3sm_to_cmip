@@ -2,17 +2,17 @@
 A python command line tool to turn E3SM model output into CMIP6 compatable data.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import argparse
+import logging
 import os
 import signal
+import subprocess
 import sys
 import tempfile
 import threading
-import warnings
 from concurrent.futures import ProcessPoolExecutor as Pool
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from pprint import pprint
 from typing import List, Optional, Union
@@ -22,7 +22,11 @@ import yaml
 from tqdm import tqdm
 
 from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
-from e3sm_to_cmip._logger import _setup_logger, _setup_root_logger
+from e3sm_to_cmip._logger import (
+    _add_filehandler,
+    _setup_child_logger,
+    _setup_root_logger,
+)
 from e3sm_to_cmip.cmor_handlers.utils import (
     MPAS_REALMS,
     REALMS,
@@ -42,18 +46,13 @@ from e3sm_to_cmip.util import (
     find_mpas_files,
     get_handler_info_msg,
     precheck,
-    print_debug,
-    print_message,
 )
 
-os.environ["CDAT_ANONYMOUS_LOG"] = "false"
+# Set up the root logger and module level logger. The module level logger is
+# a child of the root logger.
+_setup_root_logger()
 
-warnings.filterwarnings("ignore")
-
-
-# Setup the root logger and this module's logger.
-log_filename = _setup_root_logger()
-logger = _setup_logger(__name__, propagate=True)
+logger = _setup_child_logger(__name__)
 
 
 @dataclass
@@ -98,6 +97,9 @@ class CLIArguments:
 
 class E3SMtoCMIP:
     def __init__(self, args: Optional[List[str]] = None):
+        self.timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
+        self.log_filename = f"{self.timestamp}.log"
+
         # A dictionary of command line arguments.
         parsed_args = self._parse_args(args)
 
@@ -136,37 +138,100 @@ class E3SMtoCMIP:
         self.cmor_log_dir: Optional[str] = parsed_args.logdir
         self.user_metadata: Optional[str] = parsed_args.user_metadata
         self.custom_metadata: Optional[str] = parsed_args.custom_metadata
-        # Run the pre-check to determine if any of the variables have already
-        # been CMORized.
-        if self.precheck_path is not None:
-            self._run_precheck()
 
-        logger.info("--------------------------------------")
-        logger.info("| E3SM to CMIP Configuration")
-        logger.info("--------------------------------------")
-        logger.info(f"    * var_list='{self.var_list}'")
-        logger.info(f"    * input_path='{self.input_path}'")
-        logger.info(f"    * output_path='{self.output_path}'")
-        logger.info(f"    * precheck_path='{self.precheck_path}'")
-        logger.info(f"    * freq='{self.freq}'")
-        logger.info(f"    * realm='{self.realm}'")
-        logger.info(f"    * Writing log output file to: {log_filename}")
-
-        self.handlers = self._get_handlers()
-
-    def run(self):
-        # Setup logger information and print out e3sm_to_cmip CLI arguments.
-        # ======================================================================
         if self.output_path is not None:
-            self.new_metadata_path = os.path.join(
-                self.output_path, "user_metadata.json"
+            self.output_path = os.path.abspath(self.output_path)
+            os.makedirs(self.output_path, exist_ok=True)
+        elif self.output_path is None:
+            self.output_path = os.path.join(
+                os.getcwd(), f"e3sm_to_cmip_run_{self.timestamp}"
             )
+            os.makedirs(self.output_path, exist_ok=True)
 
         # Setup directories using the CLI argument paths (e.g., output dir).
         # ======================================================================
-        if not self.info_mode:
-            self._setup_dirs_with_paths()
+        self._setup_dirs_with_paths()
 
+        # Run the pre-check to determine if any of the variables have already
+        # been CMORized.
+        # ======================================================================
+        if self.precheck_path is not None:
+            self._run_precheck()
+
+        # Setup logger information and print out e3sm_to_cmip CLI arguments.
+        # ======================================================================
+        logger.info("--------------------------------------")
+        logger.info("| E3SM to CMIP Configuration")
+        logger.info("--------------------------------------")
+
+        config_details = {
+            "Timestamp": self.timestamp,
+            "Version Info": self._get_version_info(),
+            "Mode": (
+                "Info"
+                if self.info_mode
+                else "Serial"
+                if self.serial_mode
+                else "Parallel"
+            ),
+            "Variable List": self.var_list,
+            "Input Path": self.input_path,
+            "Output Path": self.output_path,
+            "Precheck Path": self.precheck_path,
+            "Log Path": self.log_path,
+            "CMOR Log Path": self.cmor_log_dir,
+            "Temp Path for Processing MPAS Files": self.temp_path,
+            "Frequency": self.freq,
+            "Realm": self.realm,
+        }
+
+        for key, value in config_details.items():
+            logger.info(f"    * {key}: {value}")
+
+        # Load the CMOR handlers based on the realm and variable list.
+        self.handlers = self._get_handlers()
+
+    def _get_version_info(self) -> str:
+        """Retrieve version information for the current codebase.
+
+        This method attempts to determine the current Git branch name and commit
+        hash of the repository containing this file. If the Git information
+        cannot be retrieved, it falls back to using the `__version__` variable.
+
+        Returns
+        -------
+        str
+            A string containing the Git branch name and commit hash in the
+            format "branch <branch_name> with commit <commit_hash>", or the
+            fallback version string in the format "version <__version__>" if Git
+            information is unavailable.
+        """
+        try:
+            branch_name = (
+                subprocess.check_output(
+                    ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                    cwd=os.path.dirname(__file__),
+                    stderr=subprocess.DEVNULL,
+                )
+                .strip()
+                .decode("utf-8")
+            )
+            commit_hash = (
+                subprocess.check_output(
+                    ["git", "rev-parse", "HEAD"],
+                    cwd=os.path.dirname(__file__),
+                    stderr=subprocess.DEVNULL,
+                )
+                .strip()
+                .decode("utf-8")
+            )
+            version_info = f"branch {branch_name} with commit {commit_hash}"
+        except subprocess.CalledProcessError:
+            version_info = f"version {__version__}"
+
+        return version_info
+
+    def run(self):
         # Run e3sm_to_cmip with info mode.
         # ======================================================================
         if self.info_mode:
@@ -183,7 +248,7 @@ class E3SMtoCMIP:
         status = self._run()
 
         if status != 0:
-            print_message(
+            logger.error(
                 f"Error running handlers: { ' '.join([x['name'] for x in self.handlers]) }"
             )
             return 1
@@ -497,8 +562,11 @@ class E3SMtoCMIP:
         optional.add_argument(
             "--logdir",
             type=str,
-            default="./cmor_logs",
-            help="Where to put the logging output from CMOR.",
+            default="cmor_logs",
+            help=(
+                "The sub-directory that stores the CMOR logs. This sub-directory will "
+                "be stored under --output-path."
+            ),
         )
         required_no_simple.add_argument(
             "-u",
@@ -620,37 +688,54 @@ class E3SMtoCMIP:
             self.input_path, self.precheck_path, self.var_list, self.realm
         )
         if not new_var_list:
-            print("All variables previously computed")
+            logger.info("All variables previously computed")
             if self.output_path is not None:
                 os.mkdir(os.path.join(self.output_path, "CMIP6"))
             return 0
         else:
-            print_message(f"Setting up conversion for {' '.join(new_var_list)}", "ok")
+            logger.info(f"Setting up conversion for {' '.join(new_var_list)}", "ok")
             self.var_list = new_var_list
 
     def _setup_dirs_with_paths(self):
-        # Create the output directory if it doesn't exist.
-        if not os.path.exists(self.output_path):  # type: ignore
-            os.makedirs(self.output_path)  # type: ignore
+        """Sets up various directories and paths required for e3sm_to_cmip.
+
+        This method initializes paths for metadata, logs, and temporary storage.
+        It also updates the root logger's file path and copies user metadata
+        to the output directory if not in simple mode.
+
+        Notes
+        -----
+        If the environment variable `TMPDIR` is not set, a temporary directory
+        is created under the output path.
+        """
+        self.new_metadata_path = os.path.join(self.output_path, "user_metadata.json")  # type: ignore
+        self.cmor_log_dir = os.path.join(self.output_path, self.cmor_log_dir)  # type: ignore
+
+        # NOTE: Any warnings that appear before the log filehandler is
+        # instantiated will not be captured (e.g,. esmpy VersionWarning).
+        # However, they will still be captured by the console via a
+        # StreamHandler.
+        self.log_path = os.path.join(self.output_path, self.log_filename)  # type: ignore
+        _add_filehandler(self.log_path)
 
         # Copy the user's metadata json file with the updated output directory
-        if not self.simple_mode:
+        if not self.simple_mode and not self.info_mode:
             copy_user_metadata(self.user_metadata, self.output_path)
 
-        # Setup temp storage directory
-        temp_path = os.environ.get("TMPDIR")
-        if temp_path is None:
-            temp_path = f"{self.output_path}/tmp"
-            if not os.path.exists(temp_path):
-                os.makedirs(temp_path)
+        if not self.info_mode:
+            self.temp_path = os.environ.get("TMPDIR")
 
-        tempfile.tempdir = temp_path
+            if self.temp_path is None:
+                self.temp_path = f"{self.output_path}/tmp"
+
+                if not os.path.exists(self.temp_path):
+                    os.makedirs(self.temp_path)
+
+            tempfile.tempdir = self.temp_path
+        else:
+            self.temp_path = None
 
     def _run_info_mode(self):  # noqa: C901
-        logger.info("--------------------------------------")
-        logger.info("| Running E3SM to CMIP in Info Mode")
-        logger.info("--------------------------------------")
-
         messages = []
 
         # if the user just asked for the handler info
@@ -665,8 +750,11 @@ class E3SMtoCMIP:
             for handler in self.handlers:
                 table_info = _get_table_info(self.tables_path, handler["table"])
                 if handler["name"] not in table_info["variable_entry"]:
-                    msg = f"Variable {handler['name']} is not included in the table {handler['table']}"
-                    print_message(msg, status="error")
+                    logger.error(
+                        "Variable {handler['name']} is not included in the table "
+                        f"{handler['table']}"
+                    )
+
                     continue
                 else:
                     if self.freq == "mon" and handler["table"] == "CMIP6_day.json":
@@ -675,6 +763,7 @@ class E3SMtoCMIP:
                         "table"
                     ] == "CMIP6_Amon.json":
                         continue
+
                     hand_msg = get_handler_info_msg(handler)
                     messages.append(hand_msg)
 
@@ -684,6 +773,7 @@ class E3SMtoCMIP:
             with xr.open_dataset(file_path) as ds:
                 for handler in self.handlers:
                     table_info = _get_table_info(self.tables_path, handler["table"])
+
                     if handler["name"] not in table_info["variable_entry"]:
                         continue
 
@@ -694,8 +784,9 @@ class E3SMtoCMIP:
                         if raw_var not in ds.data_vars:
                             has_vars = False
 
-                            msg = f"Variable {handler['name']} is not present in the input dataset"
-                            print_message(msg, status="error")
+                            logger.error(
+                                f"Variable {handler['name']} is not present in the input dataset"
+                            )
 
                             break
 
@@ -737,29 +828,26 @@ class E3SMtoCMIP:
             with open(self.info_out_path, "w") as outstream:
                 yaml.dump(messages, outstream)
         elif self.output_path is not None:
-            with open(self.output_path, "w") as outstream:
+            yaml_filepath = os.path.join(self.output_path, "info.yaml")
+
+            with open(yaml_filepath, "w") as outstream:
                 yaml.dump(messages, outstream)
         else:
             pprint(messages)
 
     def _run(self):
         if self.serial_mode:
-            mode_str = "Serial"
             run_func = self._run_serial
         else:
-            mode_str = "Parallel"
             run_func = self._run_parallel
 
         try:
-            logger.info("--------------------------------------")
-            logger.info(f"| Running E3SM to CMIP in {mode_str}")
-            logger.info("--------------------------------------")
             status = run_func()
         except KeyboardInterrupt:
-            print_message(" -- keyboard interrupt -- ", "error")
+            logger.error(" -- keyboard interrupt -- ")
             return 1
         except Exception as e:
-            print_debug(e)
+            logger.error(e)
             return 1
 
         return status
@@ -830,7 +918,7 @@ class E3SMtoCMIP:
                         self.new_metadata_path,
                     )
                 except Exception as e:
-                    print_debug(e)
+                    logger.error(e)
 
                 if name is not None:
                     num_success += 1
@@ -846,7 +934,7 @@ class E3SMtoCMIP:
                 pbar.close()
 
         except Exception as error:
-            print_debug(error)
+            logger.error(error)
             return 1
         else:
             msg = f"{num_success} of {num_handlers} handlers complete"
@@ -937,7 +1025,7 @@ class E3SMtoCMIP:
 
                 logger.info(msg)
             except Exception as e:
-                print_debug(e)
+                logger.error(e)
             pbar.update(1)
 
         pbar.close()
@@ -954,12 +1042,20 @@ class E3SMtoCMIP:
         return 0
 
     def _timeout_exit(self):
-        print_message("Hit timeout limit, exiting")
+        logger.info("Hit timeout limit, exiting")
         os.kill(os.getpid(), signal.SIGINT)
 
 
 def main(args: Optional[List[str]] = None):
     app = E3SMtoCMIP(args)
+
+    # Remove any existing filehandlers from the root logger. This prevents
+    # multiple filehandlers from being added to the root logger, which can
+    # cause log messages from newer runs to be written log files from older
+    # runs.
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+
     app.run()
 
 

@@ -6,4 +6,3 @@ to `handlers.yaml`.
 For example:
 
 - Some contain legacy `handle_simple()` functions that have since been refactored as a single `handle_simple()` function
-- `phalf.py` and `pfull.py` still use `cdms2` and `cdutil`
