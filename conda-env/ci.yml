@@ -12,10 +12,10 @@ dependencies:
   - dask
   - nco >=5.1.4
   - netcdf4
-  - numpy >=2.0.0, <3.0.0 # This version of numpy includes support for Python 3.11.
+  - numpy >=2.0.0, <3.0.0
   - pyyaml
   - tqdm
-  - xarray >=2024.03.0 # This version of Xarray drops support for Python 3.8.
+  - xarray >=2024.03.0
   - xcdat >=0.8.0
   # Testing
   # ==================
