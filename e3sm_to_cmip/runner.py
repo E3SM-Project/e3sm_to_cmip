@@ -100,43 +100,43 @@ class E3SMtoCMIP:
         if not isinstance(args, argparse.Namespace):
             args = parse_args(args)
 
-        args = self.convert_parsed_args_to_data_class(args)  # type: ignore
+        parsed_args = self.convert_parsed_args_to_data_class(args)
 
         # NOTE: The order of these attributes align with class CLIArguments.
         # ======================================================================
         # Run Mode settings.
         # ======================================================================
-        self.simple_mode: bool = args.simple
-        self.serial_mode: bool = args.serial
-        self.info_mode: bool = args.info
+        self.simple_mode: bool = parsed_args.simple
+        self.serial_mode: bool = parsed_args.serial
+        self.info_mode: bool = parsed_args.info
 
         # ======================================================================
         # Run settings.
         # ======================================================================
-        self.num_proc: int = args.num_proc
-        self.debug: bool = args.debug
-        self.timeout: int = args.timeout
+        self.num_proc: int = parsed_args.num_proc
+        self.debug: bool = parsed_args.debug
+        self.timeout: int = parsed_args.timeout
 
         # ======================================================================
         # CMOR settings.
         # ======================================================================
-        self.var_list: List[str] = self._get_var_list(args.var_list)
-        self.realm: Union[Realm, MPASRealm] = args.realm
-        self.freq: Frequency = args.freq
+        self.var_list: List[str] = self._get_var_list(parsed_args.var_list)
+        self.realm: Union[Realm, MPASRealm] = parsed_args.realm
+        self.freq: Frequency = parsed_args.freq
 
         # ======================================================================
         # Paths references.
         # ======================================================================
-        self.input_path: Optional[str] = args.input_path
-        self.output_path: Optional[str] = args.output_path
-        self.tables_path: str = self._get_tables_path(args.tables_path)
-        self.handlers_path: str = self._get_handlers_path(args.handlers)
-        self.map_path: Optional[str] = args.map
-        self.info_out_path: Optional[str] = args.info_out
-        self.precheck_path: Optional[str] = args.precheck
-        self.cmor_log_dir: Optional[str] = args.logdir
-        self.user_metadata: Optional[str] = args.user_metadata
-        self.custom_metadata: Optional[str] = args.custom_metadata
+        self.input_path: Optional[str] = parsed_args.input_path
+        self.output_path: Optional[str] = parsed_args.output_path
+        self.tables_path: str = self._get_tables_path(parsed_args.tables_path)
+        self.handlers_path: str = self._get_handlers_path(parsed_args.handlers)
+        self.map_path: Optional[str] = parsed_args.map
+        self.info_out_path: Optional[str] = parsed_args.info_out
+        self.precheck_path: Optional[str] = parsed_args.precheck
+        self.cmor_log_dir: Optional[str] = parsed_args.logdir
+        self.user_metadata: Optional[str] = parsed_args.user_metadata
+        self.custom_metadata: Optional[str] = parsed_args.custom_metadata
 
         if self.output_path is not None:
             self.output_path = os.path.abspath(self.output_path)
@@ -248,7 +248,7 @@ class E3SMtoCMIP:
 
         if status != 0:
             logger.error(
-                f"Error running handlers: { ' '.join([x['name'] for x in self.handlers]) }"
+                f"Error running handlers: {' '.join([x['name'] for x in self.handlers])}"
             )
             return 1
 
@@ -716,7 +716,7 @@ class E3SMtoCMIP:
                     num_success += 1
                     msg = f"Finished {out}, {idx + 1}/{num_handlers} jobs complete"
                 else:
-                    msg = f'Error running handler {self.handlers[idx]["name"]}'
+                    msg = f"Error running handler {self.handlers[idx]['name']}"
                     logger.error(msg)
 
                 logger.info(msg)

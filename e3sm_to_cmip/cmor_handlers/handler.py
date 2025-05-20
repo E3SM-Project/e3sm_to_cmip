@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import json
 import logging
 import os
@@ -677,8 +675,7 @@ class VarHandler(BaseVarHandler):
         time_bnds = ds[time_bnds_key].values
 
         logger.info(
-            f"{self.name}: time span {time_bnds[0][0]:1.1f} - "
-            f"{time_bnds[-1][-1]:1.1f}"
+            f"{self.name}: time span {time_bnds[0][0]:1.1f} - {time_bnds[-1][-1]:1.1f}"
         )
         logger.info(f"{self.name}: Writing variable to file...")
 

@@ -1,6 +1,6 @@
 import argparse
 import sys
-from typing import List, Optional
+from typing import List
 
 from e3sm_to_cmip import __version__
 from e3sm_to_cmip.util import FREQUENCIES
@@ -239,12 +239,12 @@ def setup_argparser() -> argparse.ArgumentParser:
     return parser
 
 
-def parse_args(args: Optional[List[str]]) -> argparse.Namespace:
+def parse_args(args: List[str] | None) -> argparse.Namespace:
     """Parses command line arguments.
 
     Parameters
     ----------
-    args : Optional[List[str]]
+    args : List[str] | None
         A list of arguments, useful for debugging purposes to simulate a
         passing arguments via the CLI.
 
