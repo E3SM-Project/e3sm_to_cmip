@@ -71,7 +71,7 @@
     "utendmp": {
       "frequency": "day",
       "modeling_realm": "atmos",
-      "standard_name": "tendency_of_eastward_wind_due_to_parameterized_physics",
+      "standard_name": "tendency_of_eastward_wind_due_to_model_physics",
       "units": "m s-2",
       "cell_methods": "longitude: mean time: mean",
       "cell_measures": "area: areacella",
@@ -125,7 +125,7 @@
     "vtendmp": {
       "frequency": "day",
       "modeling_realm": "atmos",
-      "standard_name": "tendency_of_northward_wind_due_to_parameterized_physics",
+      "standard_name": "tendency_of_northward_wind_due_to_model_physics",
       "units": "m s-2",
       "cell_methods": "longitude: mean time: mean",
       "cell_measures": "area: areacella",

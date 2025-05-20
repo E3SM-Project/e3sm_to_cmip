@@ -285,7 +285,7 @@
     "vt": {
       "frequency": "mon",
       "modeling_realm": "atmos",
-      "standard_name": "product_of_deviations_of_northward_wind_and_air_temperature_wrt_zonal_means",
+      "standard_name": "covariance_over_longitude_of_northward_wind_and_air_temperature",
       "units": "K m s-1",
       "cell_methods": "longitude: mean time: mean",
       "cell_measures": "area: areacella",
@@ -303,7 +303,7 @@
     "uv": {
       "frequency": "mon",
       "modeling_realm": "atmos",
-      "standard_name": "product_of_deviations_of_eastward_wind_and_northward_wind_wrt_zonal_means",
+      "standard_name": "covariance_over_longitude_of_eastward_wind_and_northward_wind",
       "units": "m2 s-2",
       "cell_methods": "longitude: mean time: mean",
       "cell_measures": "area: areacella",
@@ -321,7 +321,7 @@
     "uomega": {
       "frequency": "mon",
       "modeling_realm": "atmos",
-      "standard_name": "product_of_deviations_of_eastward_wind_and_lagrangian_tendency_of_air_pressure_wrt_zonal_means",
+      "standard_name": "covariance_over_longitude_of_eastward_wind_and_lagrangian_tendency_of_air_pressure",
       "units": "Pa m s-2",
       "cell_methods": "longitude: mean time: mean",
       "cell_measures": "area: areacella",
@@ -339,7 +339,7 @@
     "utendmp": {
       "frequency": "mon",
       "modeling_realm": "atmos",
-      "standard_name": "tendency_of_eastward_wind_due_to_parameterized_physics",
+      "standard_name": "tendency_of_eastward_wind_due_to_model_physics",
       "units": "m s-2",
       "cell_methods": "longitude: mean time: mean",
       "cell_measures": "area: areacella",
@@ -393,7 +393,7 @@
     "vtendmp": {
       "frequency": "mon",
       "modeling_realm": "atmos",
-      "standard_name": "tendency_of_northward_wind_due_to_parameterized_physics",
+      "standard_name": "tendency_of_northward_wind_due_to_model_physics",
       "units": "m s-2",
       "cell_methods": "longitude: mean time: mean",
       "cell_measures": "area: areacella",
@@ -552,7 +552,7 @@
       "ok_min_mean_abs": "",
       "ok_max_mean_abs": ""
     },
-    "meanage": {
+    "aoa": {
       "frequency": "mon",
       "modeling_realm": "atmos",
       "standard_name": "age_of_stratospheric_air",
@@ -568,17 +568,17 @@
       "valid_min": "",
       "valid_max": ""
     },
-    "st8025": {
+    "st80-25": {
       "frequency": "mon",
       "modeling_realm": "atmos",
       "standard_name": "",
       "units": "ppb",
       "cell_methods": "longitude: mean time: mean",
       "cell_measures": "area: areacella",
-      "long_name": "ST8025",
+      "long_name": "ST80_25",
       "comment": "",
       "dimensions": "latitude plev42 time",
-      "out_name": "st8025",
+      "out_name": "st80-25",
       "type": "real",
       "positive": "",
       "valid_min": "",
@@ -764,7 +764,7 @@
       "ok_min_mean_abs": "",
       "ok_max_mean_abs": ""
     },
-    "totalcl": {
+    "total-cl": {
       "frequency": "mon",
       "modeling_realm": "atmos",
       "standard_name": "",
@@ -774,7 +774,7 @@
       "long_name": "Total Cl volume mixing ratio",
       "comment": "",
       "dimensions": "latitude plev42 time",
-      "out_name": "totalcl",
+      "out_name": "total-cl",
       "type": "real",
       "positive": "",
       "valid_min": "",
@@ -782,7 +782,7 @@
       "ok_min_mean_abs": "",
       "ok_max_mean_abs": ""
     },
-    "totalbr": {
+    "total-br": {
       "frequency": "mon",
       "modeling_realm": "atmos",
       "standard_name": "",
@@ -792,7 +792,7 @@
       "long_name": "Total Br volume mixing ratio",
       "comment": "",
       "dimensions": "latitude plev42 time",
-      "out_name": "totalbr",
+      "out_name": "total-br",
       "type": "real",
       "positive": "",
       "valid_min": "",
@@ -946,7 +946,7 @@
       "valid_min": "",
       "valid_max": ""
     },
-    "jo3": {
+    "j-o3": {
       "frequency": "mon",
       "modeling_realm": "atmos",
       "standard_name": "",
@@ -956,7 +956,7 @@
       "long_name": "O3 photolysis frequency",
       "comment": "",
       "dimensions": "latitude plev42 time",
-      "out_name": "jo3",
+      "out_name": "j-o3",
       "type": "real",
       "positive": "",
       "valid_min": "",
@@ -964,7 +964,7 @@
       "ok_min_mean_abs": "",
       "ok_max_mean_abs": ""
     },
-    "jo2": {
+    "j-o2": {
       "frequency": "mon",
       "modeling_realm": "atmos",
       "standard_name": "photolysis_rate_of_molecular_oxygen",
@@ -982,7 +982,7 @@
       "ok_min_mean_abs": "",
       "ok_max_mean_abs": ""
     },
-    "o3prod": {
+    "o3-prod": {
       "frequency": "mon",
       "modeling_realm": "atmos",
       "standard_name": "tendency_of_atmosphere_mole_concentration_of_ozone_due_to_chemical_production",
@@ -992,7 +992,7 @@
       "long_name": "Ozone production",
       "comment": "",
       "dimensions": "latitude plev42 time",
-      "out_name": "o3prod",
+      "out_name": "o3-prod",
       "type": "real",
       "positive": "",
       "valid_min": "",
@@ -1000,7 +1000,7 @@
       "ok_min_mean_abs": "",
       "ok_max_mean_abs": ""
     },
-    "o3_loss": {
+    "o3-loss": {
       "frequency": "mon",
       "modeling_realm": "atmos",
       "standard_name": "tendency_of_atmosphere_mole_concentration_of_ozone_due_to_chemical_destruction",
@@ -1010,7 +1010,7 @@
       "long_name": "Chemical ozone loss",
       "comment": "",
       "dimensions": "latitude plev42 time",
-      "out_name": "o3loss",
+      "out_name": "o3-loss",
       "type": "real",
       "positive": "",
       "valid_min": "",
@@ -1018,7 +1018,7 @@
       "ok_min_mean_abs": "",
       "ok_max_mean_abs": ""
     },
-    "o3lossox": {
+    "o3-loss-ox": {
       "frequency": "mon",
       "modeling_realm": "atmos",
       "standard_name": "",
@@ -1028,7 +1028,7 @@
       "long_name": "Chemical ozone loss by Ox",
       "comment": "",
       "dimensions": "latitude plev42 time",
-      "out_name": "o3lossox",
+      "out_name": "o3-loss-ox",
       "type": "real",
       "positive": "",
       "valid_min": "",
@@ -1036,7 +1036,7 @@
       "ok_min_mean_abs": "",
       "ok_max_mean_abs": ""
     },
-    "o3losshox": {
+    "o3-loss-hox": {
       "frequency": "mon",
       "modeling_realm": "atmos",
       "standard_name": "",
@@ -1046,7 +1046,7 @@
       "long_name": "Chemical ozone loss by HOx",
       "comment": "",
       "dimensions": "latitude plev42 time",
-      "out_name": "o3losshox",
+      "out_name": "o3-loss-hox",
       "type": "real",
       "positive": "",
       "valid_min": "",
@@ -1054,7 +1054,7 @@
       "ok_min_mean_abs": "",
       "ok_max_mean_abs": ""
     },
-    "o3lossnox": {
+    "o3-loss-nox": {
       "frequency": "mon",
       "modeling_realm": "atmos",
       "standard_name": "",
@@ -1064,7 +1064,7 @@
       "long_name": "Chemical ozone loss by NOx",
       "comment": "",
       "dimensions": "latitude plev42 time",
-      "out_name": "o3lossnox",
+      "out_name": "o3-loss-nox",
       "type": "real",
       "positive": "",
       "valid_min": "",
@@ -1072,7 +1072,7 @@
       "ok_min_mean_abs": "",
       "ok_max_mean_abs": ""
     },
-    "o3lossclox": {
+    "o3-loss-clox": {
       "frequency": "mon",
       "modeling_realm": "atmos",
       "standard_name": "",
@@ -1082,7 +1082,7 @@
       "long_name": "Chemical ozone loss by ClOx",
       "comment": "",
       "dimensions": "latitude plev42 time",
-      "out_name": "o3lossclox",
+      "out_name": "o3-loss-clox",
       "type": "real",
       "positive": "",
       "valid_min": "",

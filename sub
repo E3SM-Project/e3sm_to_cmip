@@ -1,6 +1,6 @@
 #python  setup.py  install && ./sub >& output11  && cat output11
 
-e3sm_to_cmip  -i /global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/PRECT/post/atm/180x360_aave/ts/monthly/90yr/  -o  /global/cfs/cdirs/e3sm/xie7/ccmi_output/   -v  prc_mon  -t   /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/   -u   /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template.json  -H  /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/cmor_handlers/
+e3sm_to_cmip  -i /global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/PRECC/post/atm/180x360_aave/ts/monthly/90yr/  -o  /global/cfs/cdirs/e3sm/xie7/ccmi_output/   -v  prc_mon  -t   /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/   -u   /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template.json  -H  /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/cmor_handlers/
 
 
 #e3sm_to_cmip   -i /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/post/v3.ccmi.PD_INT_custom30/post/atm/180x360_aave/ts/monthly/2yr/  -o   /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/cmor/output  -v prc_mon   -t  /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/e3sm_to_cmip/e3sm_to_cmip/resources/   -u  /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template.json   -H   /lcrc/group/e3sm/ac.xie7/ccmi/postprocess/e3sm_to_cmip/e3sm_to_cmip/cmor_handlers

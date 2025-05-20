@@ -1,23 +1,8 @@
-2025-05-20 04:20:30,570_570:INFO:main:input_path = /global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/PRECT/post/atm/180x360_aave/ts/monthly/90yr/
-2025-05-20 04:20:30,570_570:INFO:main:output_path = /global/cfs/cdirs/e3sm/xie7/ccmi_output/
-2025-05-20 04:20:30,570_570:INFO:main:precheck_path = None
-Traceback (most recent call last):
-  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/bin/e3sm_to_cmip", line 33, in <module>
-    sys.exit(load_entry_point('e3sm_to_cmip==1.9.1rc2', 'console_scripts', 'e3sm_to_cmip')())
-  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/e3sm_to_cmip/__main__.py", line 107, in main
-    handlers = _load_handlers(
-  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/e3sm_to_cmip/util.py", line 403, in _load_handlers
-    available_handlers = _get_available_handlers(handlers_path)
-  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/e3sm_to_cmip/util.py", line 468, in _get_available_handlers
-    handlers_from_modules = _get_handlers_from_modules(handlers_path)
-  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/e3sm_to_cmip/util.py", line 582, in _get_handlers_from_modules
-    module = imp.load_source(var, filepath)
-  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/imp.py", line 172, in load_source
-    module = _load(spec)
-  File "<frozen importlib._bootstrap>", line 719, in _load
-  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
-  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
-  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
-  File "/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/cmor_handlers/zg_mon.py", line 9, in <module>
-    from e3sm_to_cmip.cmor_handlers import FILL_VALUE
-ImportError: cannot import name 'FILL_VALUE' from 'e3sm_to_cmip.cmor_handlers' (/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/e3sm_to_cmip/cmor_handlers/__init__.py)
+2025-05-20 16:42:17,367_367:INFO:main:input_path = /global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/PRECC/post/atm/180x360_aave/ts/monthly/90yr/
+2025-05-20 16:42:17,368_368:INFO:main:output_path = /global/cfs/cdirs/e3sm/xie7/ccmi_output/
+2025-05-20 16:42:17,368_368:INFO:main:precheck_path = None
+[94m[*] [0mLoaded `prc_mon` handler for variable `prc`.[94m[0m
+[94m[*] [0mWriting log output to: /global/cfs/cdirs/e3sm/xie7/ccmi_output/converter.log[94m[0m
+[92m[+] [0mRunning CMOR handlers in parallel
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:11<00:00, 11.84s/it]100%|██████████| 1/1 [00:11<00:00, 11.84s/it]
+[92m[+] [0m1 of 1 handlers complete
