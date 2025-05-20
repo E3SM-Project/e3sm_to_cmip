@@ -36,4 +36,5 @@ repos:
             types-pytz,
             types-PyYAML,
             types-tqdm,
+            pandas-stubs,
           ]

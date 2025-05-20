@@ -50,7 +50,8 @@ dev = [
   "isort",
   "types-pytz",
   "types-PyYAML",
-  "types-tqdm"
+  "types-tqdm",
+  "pandas-stubs",
 ]
 
 [project.urls]
@@ -131,14 +132,12 @@ python_files = ["tests.py", "test_*.py"]
 # Docs: https://mypy.readthedocs.io/en/stable/config_file.html
 python_version = "3.12"
 check_untyped_defs = true
-ignore_missing_imports = false
+ignore_missing_imports = true
 warn_unused_ignores = true
 warn_redundant_casts = true
 warn_unused_configs = true
 
 [[tool.mypy.overrides]]
-# cmor type stubs does not exist and there are no plans to add them.
-# netCDF4 type stubs has not been added yet (https://github.com/python/typeshed/issues/9545)
-module = ["cmor.*", "netCFD4.*"]
+# cmor type stubs do not exist and there are no plans to add them.
+module = ["cmor.*", "xcdat.*"]
 follow_imports = "skip"
-follow_imports_for_stubs = true

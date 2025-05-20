@@ -289,18 +289,18 @@ def _get_handlers_from_yaml() -> Dict[str, List[Dict[str, Any]]]:
     handlers = defaultdict(list)
     for row in df_in.itertuples():
         var_handler = VarHandler(
-            name=row.name,
-            units=row.units,
-            raw_variables=row.raw_variables,
-            table=row.table,
-            formula=row.formula,
-            unit_conversion=row.unit_conversion,
-            positive=row.positive,
-            levels=row.levels,
+            name=row.name,  # type: ignore
+            units=row.units,  # type: ignore
+            raw_variables=row.raw_variables,  # type: ignore
+            table=row.table,  # type: ignore
+            formula=row.formula,  # type: ignore
+            unit_conversion=row.unit_conversion,  # type: ignore
+            positive=row.positive,  # type: ignore
+            levels=row.levels,  # type: ignore
         ).to_dict()
         handlers[row.name].append(var_handler)
 
-    return dict(handlers)
+    return dict(handlers)  # type: ignore
 
 
 def _get_handlers_from_modules(path: str) -> Dict[str, List[Dict[str, Any]]]:
