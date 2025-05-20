@@ -1,0 +1,1 @@
+python  setup.py  install && ./sub >& output11  && cat output11
