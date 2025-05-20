@@ -33,7 +33,7 @@
 
   "parent_activity_id": "QUOCA",
 
-  "parent_source_id": "E3SM-2-0",
+  "parent_source_id": "E3SM-3-0",
 
   "parent_variant_label": "r1i1p1f1",
 
@@ -73,17 +73,17 @@
 
   "data contact": "E3SM-DATA-SUPPORT@LISTSERV.LLNL.GOV",
 
-  "history": "Output from v2.QBOI.amip_0101_ObsQBO. resolution=ne30pg2_EC30to60E2r2.  compset = F20TR",
+  "history": "Output from v3.ccmi.PD_INT_custom30. resolution=ne30pg2_EC30to60E2r2.  compset = F2000",
 
   "comment": "This is the default metadata file, any data  should only be used for testing purposes",
 
-  "references": "Golaz, J.-C., Van Roekel, L. P., Zheng, X., Roberts, A. F., Wolfe, J. D., Lin, W., et al. (2022). The DOE E3SM Model version 2: Overview of the physical model and initial model evaluation. Journal of Advances in Modeling Earth Systems, 14, e2022MS003156. https://doi.org/10.1029/2022MS003156",
+  "references": "Shaocheng X., Christopher R. T., Hailong W., et al. The Energy Exascale Earth System Model Version 3. Part I: Overview of the Atmospheric Component. ESS Open Archive . April 13, 2025. DOI: 10.22541/essoar.174456922.21825772/v1",
 
   "#note_CV": " **** The following will be obtained from the CV and do not need to be defined here",
 
   "institution": "E3SM-Project",
 
-  "source": "E3SM 2.0 (2022)",
+  "source": "E3SM 3.0 (2025)",
 
   "#note_QUOCA": " **** The following are set correctly for QUOCA and should not normally need editing",
 
