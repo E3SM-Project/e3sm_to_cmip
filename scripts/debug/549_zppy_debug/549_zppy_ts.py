@@ -1,4 +1,4 @@
-from e3sm_to_cmip.__main__ import E3SMtoCMIP
+from e3sm_to_cmip.runner import E3SMtoCMIP
 
 # e3sm_to_cmip --output-path ~/test -v 'lai' --realm lnd --input-path /lcrc/group/e3sm/ac.zhang40/zppy_test_complete_run_output/test-main2-20240216/v2.LR.historical_0201_try7/post/lnd/180x360_aave/ts/monthly/2yr --user-metadata ~/zppy/zppy/templates/e3sm_to_cmip/default_metadata.json --tables-path /lcrc/group/e3sm/diagnostics/cmip6-cmor-tables/Tables --num-proc 12
 

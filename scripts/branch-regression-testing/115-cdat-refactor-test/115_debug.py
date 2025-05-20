@@ -1,5 +1,5 @@
 # %%
-from e3sm_to_cmip.__main__ import E3SMtoCMIP
+from e3sm_to_cmip.runner import E3SMtoCMIP
 
 # -----------------
 # SETUP

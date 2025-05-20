@@ -1,9 +1,13 @@
 """
-A python command line tool to turn E3SM model output into CMIP6 compatable data.
+This module provides the main functionality for converting E3SM model output
+to CMIP-compliant datasets. It includes the `E3SMtoCMIP` class, which handles
+the configuration, logging, and execution of the conversion process. The module
+supports both serial and parallel processing modes and provides options for
+pre-checking variables, generating metadata, and handling various realms and
+frequencies.
 """
 
 import argparse
-import logging
 import os
 import signal
 import subprocess
@@ -22,11 +26,8 @@ import yaml
 from tqdm import tqdm
 
 from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
-from e3sm_to_cmip._logger import (
-    _add_filehandler,
-    _setup_child_logger,
-    _setup_root_logger,
-)
+from e3sm_to_cmip._logger import _add_filehandler, _setup_child_logger
+from e3sm_to_cmip.argparser import parse_args
 from e3sm_to_cmip.cmor_handlers.utils import (
     MPAS_REALMS,
     REALMS,
@@ -38,7 +39,6 @@ from e3sm_to_cmip.cmor_handlers.utils import (
     load_all_handlers,
 )
 from e3sm_to_cmip.util import (
-    FREQUENCIES,
     _get_table_info,
     add_metadata,
     copy_user_metadata,
@@ -47,10 +47,6 @@ from e3sm_to_cmip.util import (
     get_handler_info_msg,
     precheck,
 )
-
-# Set up the root logger and module level logger. The module level logger is
-# a child of the root logger.
-_setup_root_logger()
 
 logger = _setup_child_logger(__name__)
 
@@ -96,48 +92,51 @@ class CLIArguments:
 
 
 class E3SMtoCMIP:
-    def __init__(self, args: Optional[List[str]] = None):
+    def __init__(self, args: argparse.Namespace | List[str] | None):
         self.timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
         self.log_filename = f"{self.timestamp}.log"
 
-        # A dictionary of command line arguments.
-        parsed_args = self._parse_args(args)
+        # Parse the command line arguments if they are not already parsed.
+        if not isinstance(args, argparse.Namespace):
+            args = parse_args(args)
+
+        args = self.convert_parsed_args_to_data_class(args)  # type: ignore
 
         # NOTE: The order of these attributes align with class CLIArguments.
         # ======================================================================
         # Run Mode settings.
         # ======================================================================
-        self.simple_mode: bool = parsed_args.simple
-        self.serial_mode: bool = parsed_args.serial
-        self.info_mode: bool = parsed_args.info
+        self.simple_mode: bool = args.simple
+        self.serial_mode: bool = args.serial
+        self.info_mode: bool = args.info
 
         # ======================================================================
         # Run settings.
         # ======================================================================
-        self.num_proc: int = parsed_args.num_proc
-        self.debug: bool = parsed_args.debug
-        self.timeout: int = parsed_args.timeout
+        self.num_proc: int = args.num_proc
+        self.debug: bool = args.debug
+        self.timeout: int = args.timeout
 
         # ======================================================================
         # CMOR settings.
         # ======================================================================
-        self.var_list: List[str] = self._get_var_list(parsed_args.var_list)
-        self.realm: Union[Realm, MPASRealm] = parsed_args.realm
-        self.freq: Frequency = parsed_args.freq
+        self.var_list: List[str] = self._get_var_list(args.var_list)
+        self.realm: Union[Realm, MPASRealm] = args.realm
+        self.freq: Frequency = args.freq
 
         # ======================================================================
         # Paths references.
         # ======================================================================
-        self.input_path: Optional[str] = parsed_args.input_path
-        self.output_path: Optional[str] = parsed_args.output_path
-        self.tables_path: str = self._get_tables_path(parsed_args.tables_path)
-        self.handlers_path: str = self._get_handlers_path(parsed_args.handlers)
-        self.map_path: Optional[str] = parsed_args.map
-        self.info_out_path: Optional[str] = parsed_args.info_out
-        self.precheck_path: Optional[str] = parsed_args.precheck
-        self.cmor_log_dir: Optional[str] = parsed_args.logdir
-        self.user_metadata: Optional[str] = parsed_args.user_metadata
-        self.custom_metadata: Optional[str] = parsed_args.custom_metadata
+        self.input_path: Optional[str] = args.input_path
+        self.output_path: Optional[str] = args.output_path
+        self.tables_path: str = self._get_tables_path(args.tables_path)
+        self.handlers_path: str = self._get_handlers_path(args.handlers)
+        self.map_path: Optional[str] = args.map
+        self.info_out_path: Optional[str] = args.info_out
+        self.precheck_path: Optional[str] = args.precheck
+        self.cmor_log_dir: Optional[str] = args.logdir
+        self.user_metadata: Optional[str] = args.user_metadata
+        self.custom_metadata: Optional[str] = args.custom_metadata
 
         if self.output_path is not None:
             self.output_path = os.path.abspath(self.output_path)
@@ -348,309 +347,6 @@ class E3SMtoCMIP:
             )
 
         return e3sm_vars
-
-    def _parse_args(self, args: Optional[List[str]]) -> CLIArguments:
-        """Parses command line arguments.
-
-        Parameters
-        ----------
-        args : Optional[List[str]]
-            A list of arguments, useful for debugging purposes to simulate a
-            passing arguments via the CLI.
-
-        Returns
-        -------
-        CLIArguments
-            A data class of parsed arguments.
-        """
-        argparser = self._setup_argparser()
-
-        try:
-            args_to_parse = sys.argv[1:] if args is None else args
-        except (Exception, BaseException):
-            argparser.print_help()
-            sys.exit(1)
-
-        # Parse the arguments and perform validation.
-        parsed_args = argparser.parse_args(args_to_parse)
-        self._validate_parsed_args(parsed_args)
-
-        # Convert to this data class for type checking to work.
-        final_args = CLIArguments(**vars(parsed_args))
-        return final_args
-
-    def _setup_argparser(self) -> argparse.ArgumentParser:
-        parser = argparse.ArgumentParser(
-            description="Convert ESM model output into CMIP compatible format.",
-            prog="e3sm_to_cmip",
-            usage="%(prog)s [-h]",
-            add_help=False,
-        )
-
-        # Argument groups to organize the numerous arguments printed by --help.
-        required = parser.add_argument_group("required arguments (general)")
-        required_no_info = parser.add_argument_group(
-            "required arguments (without --info)"
-        )
-        required_no_simple = parser.add_argument_group(
-            "required arguments (without --simple)"
-        )
-        required_mpas = parser.add_argument_group(
-            "required arguments (with --realm [mpasso|mpassi])"
-        )
-
-        optional = parser.add_argument_group("optional arguments (general)")
-        optional_mode = parser.add_argument_group("optional arguments (run mode)")
-        optional_run = parser.add_argument_group("optional arguments (run settings)")
-        optional_info = parser.add_argument_group("optional arguments (with --info)")
-
-        helper = parser.add_argument_group("helper arguments")
-
-        # NOTE: The order of these arguments align with class CLIArguments.
-        # ======================================================================
-        # Run Mode settings.
-        # ======================================================================
-        optional_mode.add_argument(
-            "--info",
-            action="store_true",
-            help=(
-                "Produce information about the CMIP6 variables passed in the --var-list "
-                "argument and exit without doing any processing. There are three modes "
-                "for getting the info. (Mode 1) If you just pass the --info flag with the "
-                "--var-list then it will print out the handler information as yaml data for "
-                "the requested variable to your default output path (or to a file designated "
-                "by the --info-out path). (Mode 2) If the --freq <frequency> is passed "
-                "along with the --tables-path, then the variable handler information will "
-                "only be output if the requested variables are present in the CMIP6 table matching the freq. "
-                "NOTE: For MPAS data, one must also include --realm mpaso (or mpassi) and --map no_map. "
-                "(Mode 3) For non-MPAS data, if the --freq <freq> is passed with the --tables-path, and the "
-                "--input-path, and the input-path points to raw unprocessed E3SM files, "
-                "then an additional check will me made for if the required raw "
-                "variables are present in the E3SM native output. "
-            ),
-        )
-        optional_mode.add_argument(
-            "--simple",
-            help=(
-                "Perform a simple translation of the E3SM output to CMIP format, but "
-                "without the CMIP6 metadata checks. (WARNING: NOT WORKING AS OF 1.8.2)"
-            ),
-            action="store_true",
-        )
-        optional_mode.add_argument(
-            "-s",
-            "--serial",
-            help="Run in serial mode (by default parallel). Useful for debugging purposes.",
-            action="store_true",
-        )
-
-        # ======================================================================
-        # Run settings.
-        # ======================================================================
-        optional.add_argument(
-            "-n",
-            "--num-proc",
-            type=int,
-            metavar="<nproc>",
-            default=6,
-            help=(
-                "Optional: number of processes, default = 6. Not used when -s, "
-                "--serial specified."
-            ),
-        )
-        optional.add_argument(
-            "--debug", help="Set output level to debug.", action="store_true"
-        )
-        optional.add_argument(
-            "--timeout",
-            type=int,
-            help="Exit with code -1 if execution time exceeds given time in seconds.",
-        )
-
-        # ======================================================================
-        # CMOR settings.
-        # ======================================================================
-        required.add_argument(
-            "-v",
-            "--var-list",
-            nargs="+",
-            required=True,
-            metavar="",
-            help=(
-                "Space separated list of CMIP variables to convert from E3SM to CMIP."
-            ),
-        )
-        optional_run.add_argument(
-            "--realm",
-            metavar="<realm>",
-            type=str,
-            default="atm",
-            help="The realm to process. Must be atm, lnd, mpaso or mpassi. Default is atm.",
-        )
-        # TODO: Use list of choices for freq.
-        optional_run.add_argument(
-            "-f",
-            "--freq",
-            type=str,
-            help=(
-                "The frequency of the data (default is 'mon' for monthly). Accepted "
-                "values are 'mon', 'day', '6hrLev', '6hrPlev', '6hrPlevPt', '3hr', '1hr."
-            ),
-            default="mon",
-        )
-
-        # ======================================================================
-        # Paths references.
-        # ======================================================================
-        required_no_info.add_argument(
-            "-i",
-            "--input-path",
-            type=str,
-            metavar="",
-            help=(
-                "Path to directory containing e3sm time series data files. "
-                "Additionally namelist, restart, and 'region' files if handling MPAS "
-                "data. Region files are available from "
-                "https://web.lcrc.anl.gov/public/e3sm/inputdata/ocn/mpas-o/<mpas_mesh_name>."
-            ),
-        )
-        required_no_simple.add_argument(
-            "-o",
-            "--output-path",
-            type=str,
-            metavar="",
-            help="Where to store cmorized output.",
-        )
-        required_no_simple.add_argument(
-            "-t",
-            "--tables-path",
-            metavar="<tables-path>",
-            type=str,
-            help=(
-                "Path to directory containing CMOR Tables directory, required unless "
-                "the `--simple` flag is used."
-            ),
-        )
-        optional.add_argument(
-            "-H",
-            "--handlers",
-            type=str,
-            metavar="<handler_path>",
-            help=(
-                "Path to cmor handlers directory, default is the (built-in) "
-                "'e3sm_to_cmip/cmor_handlers'."
-            ),
-        )
-        required_mpas.add_argument(
-            "--map",
-            type=str,
-            metavar="<map_mpas_to_std_grid>",
-            help=(
-                "The path to an mpas remapping file. Required if realm is 'mpaso' or "
-                "'mpassi'.  Available from https://web.lcrc.anl.gov/public/e3sm/mapping/maps/."
-            ),
-        )
-        optional.add_argument(
-            "--precheck",
-            type=str,
-            help=(
-                "Check for each variable if it's already in the output CMIP6 "
-                "directory, only run variables that don't have pre-existing CMIP6 "
-                "output."
-            ),
-        )
-        optional.add_argument(
-            "--logdir",
-            type=str,
-            default="cmor_logs",
-            help=(
-                "The sub-directory that stores the CMOR logs. This sub-directory will "
-                "be stored under --output-path."
-            ),
-        )
-        required_no_simple.add_argument(
-            "-u",
-            "--user-metadata",
-            type=str,
-            metavar="<user_input_json_path>",
-            help=(
-                "Path to user json file for CMIP6 metadata, required unless the "
-                "`--simple` flag is used."
-            ),
-        )
-        optional.add_argument(
-            "--custom-metadata",
-            type=str,
-            help=(
-                "The path to a json file with additional custom metadata to add to "
-                "the output files."
-            ),
-        )
-        optional_info.add_argument(
-            "--info-out",
-            type=str,
-            help=(
-                "If passed with the --info flag, will cause the variable info to be "
-                "written out to the specified file path as yaml."
-            ),
-        )
-
-        # ======================================================================
-        # Helper arguments.
-        # ======================================================================
-        helper.add_argument(
-            "-h",
-            "--help",
-            action="help",
-            default=argparse.SUPPRESS,
-            help="show this help message and exit",
-        )
-
-        helper.add_argument(
-            "--version",
-            help="Print the version number and exit.",
-            action="version",
-            version="%(prog)s {}".format(__version__),
-        )
-
-        return parser
-
-    def _validate_parsed_args(self, parsed_args: argparse.Namespace):
-        if parsed_args.realm == "mpaso" and not parsed_args.map:
-            raise ValueError("MPAS ocean handling requires a map file")
-
-        if parsed_args.realm == "mpassi" and not parsed_args.map:
-            raise ValueError("MPAS sea-ice handling requires a map file")
-
-        if (
-            not parsed_args.simple
-            and not parsed_args.tables_path
-            and not parsed_args.info
-        ):
-            raise ValueError(
-                "Running without the --simple flag requires CMIP6 tables path"
-            )
-
-        if (
-            not parsed_args.input_path or not parsed_args.output_path
-        ) and not parsed_args.info:
-            raise ValueError("Input and output paths required")
-
-        if (
-            not parsed_args.simple
-            and not parsed_args.user_metadata
-            and not parsed_args.info
-        ):
-            raise ValueError(
-                "Running without the --simple flag requires CMIP6 metadata json file"
-            )
-
-        valid_freqs = [freq for freq_type in FREQUENCIES.values() for freq in freq_type]
-        if parsed_args.freq and parsed_args.freq not in valid_freqs:
-            raise ValueError(
-                f"Frequency set to {parsed_args.freq} which is not in the set of allowed "
-                "frequencies: {', '.join(valid_freqs)}"
-            )
 
     def _get_var_list(self, input_var_list: List[str]) -> List[str]:
         if len(input_var_list) == 1 and " " in input_var_list[0]:
@@ -1045,19 +741,19 @@ class E3SMtoCMIP:
         logger.info("Hit timeout limit, exiting")
         os.kill(os.getpid(), signal.SIGINT)
 
+    def convert_parsed_args_to_data_class(
+        self, parsed_args: argparse.Namespace
+    ) -> CLIArguments:
+        """Convert parsed arguments to a data class.
 
-def main(args: Optional[List[str]] = None):
-    app = E3SMtoCMIP(args)
+        Parameters
+        ----------
+        parsed_args : argparse.Namespace
+            The parsed arguments from the command line.
 
-    # Remove any existing filehandlers from the root logger. This prevents
-    # multiple filehandlers from being added to the root logger, which can
-    # cause log messages from newer runs to be written log files from older
-    # runs.
-    for handler in logging.root.handlers[:]:
-        logging.root.removeHandler(handler)
-
-    app.run()
-
-
-if __name__ == "__main__":
-    main()
+        Returns
+        -------
+        CLIArguments
+            A data class of parsed arguments.
+        """
+        return CLIArguments(**vars(parsed_args))
