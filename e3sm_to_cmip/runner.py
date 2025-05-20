@@ -92,7 +92,7 @@ class CLIArguments:
 
 
 class E3SMtoCMIP:
-    def __init__(self, args: argparse.Namespace | List[str] | None):
+    def __init__(self, args: argparse.Namespace | List[str] | None = None):
         self.timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
         self.log_filename = f"{self.timestamp}.log"
 
