@@ -178,8 +178,8 @@ class VarHandler(BaseVarHandler):
         vars_to_filepaths: Dict[str, List[str]],
         tables_path: str,
         metadata_path: str,
+        cmor_log_dir: str,
         table: str | None = None,
-        logdir: str | None = None,
     ) -> bool:
         """CMORizes a list of E3SM raw variables to a CMIP variable.
 
@@ -191,11 +191,11 @@ class VarHandler(BaseVarHandler):
             The path to directory containing CMOR Tables directory.
         metadata_path : str
             The path to user json file for CMIP6 metadata
+        cmor_log_dir : str
+            The directory that stores the CMOR logs.
         table : str | None
             The CMOR table filename, derived from a custom `freq`, by default
             None.
-        logdir : str | None, optional
-            The optional CMOR logging directory, by default None
 
         Returns
         -------
@@ -215,7 +215,7 @@ class VarHandler(BaseVarHandler):
         # Create the logging directory and setup the CMOR module globally before
         # running any CMOR functions.
         # ----------------------------------------------------------------------
-        self._setup_cmor_module(self.name, tables_path, metadata_path, logdir)
+        self._setup_cmor_module(self.name, tables_path, metadata_path, cmor_log_dir)
 
         # Get parameters for running CMOR operations
         # ----------------------------------------------------------------------
@@ -294,11 +294,7 @@ class VarHandler(BaseVarHandler):
         return True
 
     def _setup_cmor_module(
-        self,
-        var_name: str,
-        tables_path: str,
-        metadata_path: str,
-        log_dir: str | None,
+        self, var_name: str, tables_path: str, metadata_path: str, cmor_log_dir: str
     ):
         """Set up the CMOR module before CMORzing variables.
 
@@ -312,17 +308,10 @@ class VarHandler(BaseVarHandler):
             The tables path.
         metadata_path : str
             The metadata path.
-        logdir : str | None
-            The optional log directory.
+        cmor_log_dir : str
+            The directory that stores the CMOR logs.
         """
-        if log_dir is not None:
-            logpath = log_dir
-        else:
-            cwd = os.getcwd()
-            logpath = os.path.join(cwd, "cmor_logs")
-
-        os.makedirs(logpath, exist_ok=True)
-        logfile = os.path.join(logpath, var_name + ".log")
+        logfile = os.path.join(cmor_log_dir, var_name + ".log")
 
         cmor.setup(
             inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile

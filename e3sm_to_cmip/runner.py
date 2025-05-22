@@ -90,7 +90,7 @@ class CLIArguments:
     info_out: Optional[str]
 
     precheck: Optional[str]
-    logdir: Optional[str]
+    logdir: str
     user_metadata: Optional[str]
     custom_metadata: Optional[str]
 
@@ -140,7 +140,7 @@ class E3SMtoCMIP:
         self.map_path: Optional[str] = parsed_args.map
         self.info_out_path: Optional[str] = parsed_args.info_out
         self.precheck_path: Optional[str] = parsed_args.precheck
-        self.cmor_log_dir: Optional[str] = parsed_args.logdir
+        self.cmor_log_dir: str = parsed_args.logdir
         self.user_metadata: Optional[str] = parsed_args.user_metadata
         self.custom_metadata: Optional[str] = parsed_args.custom_metadata
 
@@ -427,6 +427,7 @@ class E3SMtoCMIP:
         """
         self.new_metadata_path = os.path.join(self.output_path, "user_metadata.json")  # type: ignore
         self.cmor_log_dir = os.path.join(self.output_path, self.cmor_log_dir)  # type: ignore
+        os.makedirs(self.cmor_log_dir, exist_ok=True)
 
         # NOTE: Any warnings that appear before the log filehandler is
         # instantiated will not be captured (e.g,. esmpy VersionWarning).
@@ -614,6 +615,7 @@ class E3SMtoCMIP:
                             vars_to_filepaths,
                             self.tables_path,
                             self.new_metadata_path,
+                            self.cmor_log_dir,
                         )
                     else:
                         is_cmor_successful = handler_method(
@@ -622,6 +624,7 @@ class E3SMtoCMIP:
                             self.new_metadata_path,
                             handler_table,
                             self.cmor_log_dir,
+                            handler_table,
                         )
                 except TypeError as te:
                     logger.error(f"TypeError in handler '{handler['name']}': {te}")
@@ -694,6 +697,7 @@ class E3SMtoCMIP:
                         vars_to_filepaths,
                         self.tables_path,
                         self.new_metadata_path,
+                        self.cmor_log_dir,
                     )
                 else:
                     future = pool.submit(
@@ -701,8 +705,8 @@ class E3SMtoCMIP:
                         vars_to_filepaths,
                         self.tables_path,
                         self.new_metadata_path,
-                        handler_table,
                         self.cmor_log_dir,
+                        handler_table,
                     )
             except Exception as exc:
                 logger.error(

@@ -2,11 +2,10 @@
 compute  Grid-Cell Area for Ocean Variables areacello
 """
 
-import logging
-
 import xarray
 
 from e3sm_to_cmip import mpas, util
+from e3sm_to_cmip._logger import _setup_child_logger
 from e3sm_to_cmip.util import print_message
 
 # 'MPAS' as a placeholder for raw variables needed
@@ -18,7 +17,10 @@ VAR_UNITS = "m2"
 TABLE = "CMIP6_Ofx.json"
 
 
-def handle(infiles, tables, user_input_path, **kwargs):
+logger = _setup_child_logger(__name__)
+
+
+def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
     """
     Transform MPASO cellArea into CMIP.areacello
     Parameters
@@ -43,7 +45,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         return
 
     msg = "Starting {name}".format(name=__name__)
-    logging.info(msg)
+    logger.info(msg)
 
     meshFileName = infiles["MPAS_mesh"]
     mappingFileName = infiles["MPAS_map"]
@@ -72,6 +74,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         table_path=tables,
         table_name=TABLE,
         user_input_path=user_input_path,
+        cmor_log_dir=cmor_log_dir,
     )
 
     # create axes

@@ -20,8 +20,13 @@ VAR_NAME = "mlotst"
 VAR_UNITS = "m"
 TABLE = "CMIP6_Omon.json"
 
+logger = _setup_child_logger(__name__)
 
-def handle(infiles, tables, user_input_path, **kwargs):
+
+logger = _setup_child_logger(__name__)
+
+
+def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
     """
     Transform MPASO timeMonthly_avg_dThreshMLD into CMIP.mlotst
 
@@ -29,12 +34,12 @@ def handle(infiles, tables, user_input_path, **kwargs):
     ----------
     infiles : dict
         a dictionary with namelist, mesh and time series file names
-
     tables : str
         path to CMOR tables
-
     user_input_path : str
         path to user input json file
+    cmor_log_dir : str
+        path to directory where CMOR log files will be stored.
 
     Returns
     -------
@@ -77,6 +82,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         table_path=tables,
         table_name=TABLE,
         user_input_path=user_input_path,
+        cmor_log_dir=cmor_log_dir,
     )
 
     # create axes
