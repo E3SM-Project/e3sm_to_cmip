@@ -26,10 +26,10 @@ def main(args: list[str] | None = None):
 
         # Initialize the application.
         app = E3SMtoCMIP(parsed_args)
-        
+
         # Run the application.
         app.run()
-        
+
         # Clear existing log handlers to avoid duplicates.
         for handler in logging.root.handlers[:]:
             logging.root.removeHandler(handler)
