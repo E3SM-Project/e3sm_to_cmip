@@ -9,6 +9,7 @@ The script can be run from the command line or an IDE.
 NOTE: This script can only be executed on LCRC machines.
 """
 
+# %%
 import os
 
 from e3sm_to_cmip.main import main
@@ -21,36 +22,38 @@ from e3sm_to_cmip.main import main
 #     "rsdscs, hur"
 # )1
 
-VAR_LIST = "pfull, phalf, tas"
+VAR_LIST = "rlut, "
 
 # The output path for CMORized datasets. Update as needed.
-OUTPUT_PATH = (
-    "/lcrc/group/e3sm/public_html/e3sm_to_cmip/feature-274-redesign-logger-info"
-)
+OUTPUT_PATH = "/lcrc/group/e3sm/public_html/e3sm_to_cmip/bugfix-216-handler"
 
 
-args = [
-    "--var-list",
-    f"{VAR_LIST}",
-    "--input",
-    "/lcrc/group/e3sm/e3sm_to_cmip/test-cases/atm-unified-eam/input-regridded",
-    "--output",
-    f"{OUTPUT_PATH}",
-    "--tables-path",
-    "/lcrc/group/e3sm/e3sm_to_cmip/cmip6-cmor-tables/Tables/",
-    "--user-metadata",
-    "/lcrc/group/e3sm/e3sm_to_cmip/CMIP6-Metadata/template.json",
-    "--info",
-]
+# args = [
+#     "--var-list",
+#     f"{VAR_LIST}",
+#     "--input",
+#     "/lcrc/group/e3sm/e3sm_to_cmip/test-cases/atm-unified-eam/input-regridded",
+#     "--output",
+#     f"{OUTPUT_PATH}",
+#     "--tables-path",
+#     "/lcrc/group/e3sm/e3sm_to_cmip/cmip6-cmor-tables/Tables/",
+#     "--user-metadata",
+#     "/lcrc/group/e3sm/e3sm_to_cmip/CMIP6-Metadata/template.json",
+#     "--freq",
+#     "day",
+#     # "--version",
+# ]
+args = ["--version"]
 
 # `main()` creates an `E3SMtoCMIP` object and passes `args` to it, which sets
 # the object parameters to execute a run.
 main(args)
 
+# %%
 # Ensure the path and its contents have the correct permissions recursively
-for root, dirs, files in os.walk(OUTPUT_PATH):
-    os.chmod(root, 0o505)  # o=rx (read and execute for others)
-    for d in dirs:
-        os.chmod(os.path.join(root, d), 0o505)
-    for f in files:
-        os.chmod(os.path.join(root, f), 0o404)  # o=r (read for others)
+# for root, dirs, files in os.walk(OUTPUT_PATH):
+#     os.chmod(root, 0o505)  # o=rx (read and execute for others)
+#     for d in dirs:
+#         os.chmod(os.path.join(root, d), 0o505)
+#     for f in files:
+#         os.chmod(os.path.join(root, f), 0o404)  # o=r (read for others)

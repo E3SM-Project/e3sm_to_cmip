@@ -212,7 +212,7 @@ def add_depth(ds, dsCoord):
         depth, depth_bnds = _compute_depth(dsCoord.refBottomDepth)
         ds.coords["depth"] = ("depth", depth)
         ds.depth.attrs["long_name"] = (
-            "reference depth of the center of " "each vertical level"
+            "reference depth of the center of each vertical level"
         )
         ds.depth.attrs["standard_name"] = "depth"
         ds.depth.attrs["units"] = "meters"
@@ -457,7 +457,7 @@ def compute_moc_streamfunction(dsIn=None, dsMesh=None, dsMasks=None, showProgres
             dest="meshFileName",
             type=str,
             required=True,
-            help="An MPAS file with mesh data (edgesOnCell, " "etc.)",
+            help="An MPAS file with mesh data (edgesOnCell, etc.)",
         )
         parser.add_argument(
             "-r",
@@ -473,7 +473,7 @@ def compute_moc_streamfunction(dsIn=None, dsMesh=None, dsMasks=None, showProgres
             dest="inFileNames",
             type=str,
             required=True,
-            help="An MPAS monthly mean files from which to " "compute transport.",
+            help="An MPAS monthly mean files from which to compute transport.",
         )
         parser.add_argument(
             "-o",
@@ -481,7 +481,7 @@ def compute_moc_streamfunction(dsIn=None, dsMesh=None, dsMasks=None, showProgres
             dest="outFileName",
             type=str,
             required=True,
-            help="An output MPAS file with transport time " "series",
+            help="An output MPAS file with transport time series",
         )
         args = parser.parse_args()
 
@@ -765,7 +765,7 @@ def _compute_moc_time_series(
         _compute_dask(
             transport[regionName],
             showProgress,
-            "Computing transport through southern boundary of " "{}".format(regionName),
+            "Computing transport through southern boundary of {}".format(regionName),
         )
 
         cellMasks[regionName] = dsMask.regionCellMasks

@@ -1,3 +1,74 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "e3sm_to_cmip"
+dynamic = ["version"]
+description = "Transform E3SM model data output into CMIP compatible data using the Climate Model Output Rewriter."
+authors = [
+    {name = "Sterling Baldwin"},
+    {name = "Tom Vo", email = "vo13@llnl.gov"},
+    {name = "Chengzhu (Jill) Zhang", email = "zhang40@llnl.gov"},
+    {name = "Anthony Bartoletti"}
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+keywords = ["e3sm_to_cmip"]
+dependencies = [
+  "cmor>=3.7.0",
+  "dask",
+  # "nco" is not available on PyPI, but is required for the E3SM to CMIP conversion.
+  # It can be installed via conda or from source.
+  # "nco >= 5.1.4",
+  "netcdf4",
+  "numpy >=2.0.0,<3.0.0",
+  "pyyaml",
+  "tqdm",
+  "xarray >=2024.03.0",
+  "xcdat>=0.8.0",
+]
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov"]
+dev = [
+  "ruff",
+  "mypy",
+  "pre-commit",
+  "isort",
+  "types-pytz",
+  "types-PyYAML",
+  "types-tqdm",
+  "pandas-stubs",
+]
+
+[project.urls]
+homepage = "https://github.com/E3SM-Project/e3sm_to_cmip"
+
+[project.scripts]
+e3sm_to_cmip = "e3sm_to_cmip.main:main"
+
+[tool.setuptools.packages.find]
+include = ["e3sm_to_cmip", "e3sm_to_cmip.*"]
+
+[tool.setuptools.package-data]
+"e3sm_to_cmip" = ["LICENSE"]
+
+[tool.setuptools.dynamic]
+version = { attr = "e3sm_to_cmip.__version__" }
+
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -59,7 +130,7 @@ python_files = ["tests.py", "test_*.py"]
 
 [tool.mypy]
 # Docs: https://mypy.readthedocs.io/en/stable/config_file.html
-python_version = "3.10"
+python_version = "3.12"
 check_untyped_defs = true
 ignore_missing_imports = true
 warn_unused_ignores = true
@@ -67,8 +138,6 @@ warn_redundant_casts = true
 warn_unused_configs = true
 
 [[tool.mypy.overrides]]
-# cmor type stubs does not exist and there are no plans to add them.
-# netCDF4 type stubs has not been added yet (https://github.com/python/typeshed/issues/9545)
-module = ["cmor.*", "netCFD4.*"]
+# cmor type stubs do not exist and there are no plans to add them.
+module = ["cmor.*", "xcdat.*"]
 follow_imports = "skip"
-follow_imports_for_stubs = true
