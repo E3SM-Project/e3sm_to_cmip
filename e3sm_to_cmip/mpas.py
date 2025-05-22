@@ -5,7 +5,6 @@ Utilities related to converting MPAS-Ocean and MPAS-Seaice files to CMOR
 from __future__ import absolute_import, division, print_function
 
 import argparse
-import logging
 import multiprocessing
 import os
 import re
@@ -23,19 +22,23 @@ import numpy as np
 import xarray
 from dask.diagnostics import ProgressBar
 
+from e3sm_to_cmip._logger import _setup_child_logger
+
+logger = _setup_child_logger(__name__)
+
 
 def run_ncremap_cmd(args, env):
     logtext = f"mpas.py: remap: ncremap args = {args}"
-    logging.info(logtext)
+    logger.info(logtext)
 
     proc = subprocess.Popen(
         args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env
     )
     (out, err) = proc.communicate()
-    logging.info(out)
+    logger.info(out)
     if proc.returncode:
-        print("Error running ncremap command: {}".format(" ".join(args)))
-        print(err.decode("utf-8"))
+        logger.info("Error running ncremap command: {}".format(" ".join(args)))
+        logger.info(err.decode("utf-8"))
         raise subprocess.CalledProcessError(  # type: ignore
             "ncremap returned {}".format(proc.returncode)  # type: ignore
         )
@@ -143,8 +146,8 @@ def remap(ds, pcode, mappingFileName):
     # remove the temporary files
     keep_temp_files = False
     if keep_temp_files:
-        logging.info(f"Retaining inFileName  {inFileName}")
-        logging.info(f"Retaining outFileName {outFileName}")
+        logger.info(f"Retaining inFileName  {inFileName}")
+        logger.info(f"Retaining outFileName {outFileName}")
     else:
         os.remove(inFileName)
         os.remove(outFileName)
@@ -243,7 +246,7 @@ def add_mask(ds, mask):
     for varName in ds.data_vars:
         var = ds[varName]
         if all([dim in var.dims for dim in mask.dims]):
-            print(f"Masking {varName}")
+            logger.info(f"Masking {varName}")
             ds[varName] = var.where(mask)
 
     return ds
@@ -406,7 +409,7 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
         axis_ids.append(axis_id)
 
     if d2f and ds[varname].dtype == np.float64:
-        print("Converting {} to float32".format(varname))
+        logger.info("Converting {} to float32".format(varname))
         ds[varname] = ds[varname].astype(np.float32)
 
     fillValue = netCDF4.default_fillvals["f4"]
@@ -430,9 +433,9 @@ def write_cmor(axes, ds, varname, varunits, d2f=True, **kwargs):
                 time_vals=ds.time.values,
                 time_bnds=ds.time_bnds.values,
             )
-    except Exception as error:
-        logging.exception(f"Error in cmor.write for {varname}")
-        raise Exception(error) from error
+    except cmor.CMORError as error:
+        logger.error(f"Error in cmor.write for {varname}: {error}")
+        raise
     finally:
         cmor.close(varid)
 
@@ -825,7 +828,7 @@ def _compute_moc_time_series(
 
 def _compute_dask(ds, showProgress, message):
     if showProgress:
-        print(message)
+        logger.info(message)
         with ProgressBar():
             ds.compute()
     else:
