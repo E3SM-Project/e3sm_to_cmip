@@ -8,7 +8,7 @@ Original Command: e3sm_to_cmip -v mlotst -u /lcrc/group/e3sm2/DSM/Ops/DSM_Manage
 
 import os
 
-from e3sm_to_cmip.__main__ import main
+from e3sm_to_cmip.main import main
 
 OUTPUT_PATH = "/lcrc/group/e3sm/public_html/e3sm_to_cmip/297-v3-fails"
 
