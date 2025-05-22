@@ -8,13 +8,7 @@ Usage:
 import logging
 import sys
 
-from e3sm_to_cmip._logger import _setup_child_logger, _setup_root_logger
 from e3sm_to_cmip.argparser import parse_args
-
-# Set up the root logger and module level logger. The module level logger is
-# a child of the root logger.
-_setup_root_logger()
-logger = _setup_child_logger(__name__)
 
 
 def main(args: list[str] | None = None):
@@ -22,7 +16,11 @@ def main(args: list[str] | None = None):
 
     try:
         # Defer expensive imports and initialization.
+        from e3sm_to_cmip._logger import _setup_child_logger, _setup_root_logger
         from e3sm_to_cmip.runner import E3SMtoCMIP
+
+        _setup_root_logger()
+        logger = _setup_child_logger(__name__)
 
         # Initialize the application.
         app = E3SMtoCMIP(parsed_args)
@@ -30,13 +28,23 @@ def main(args: list[str] | None = None):
         # Run the application.
         app.run()
 
-        # Clear existing log handlers to avoid duplicates.
-        for handler in logging.root.handlers[:]:
-            logging.root.removeHandler(handler)
-
+        _remove_root_handlers()
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}", exc_info=True)
+
+        _remove_root_handlers()
+
         sys.exit(1)
+
+
+def _remove_root_handlers():
+    """Remove all handlers associated with the root logger.
+
+    This prevents duplicate log messages when the `e3sm_to_cmip` is run
+    multiple times successively.
+    """
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
 
 
 if __name__ == "__main__":
