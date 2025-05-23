@@ -10,7 +10,7 @@ import os
 
 from e3sm_to_cmip.main import main
 
-OUTPUT_PATH = "/lcrc/group/e3sm/public_html/e3sm_to_cmip/297-v3-fails"
+OUTPUT_PATH = "/lcrc/group/e3sm/public_html/e3sm_to_cmip/298-logs-success-serial-mpas"
 
 args = [
     "--var-list",
@@ -28,16 +28,14 @@ args = [
     "mpaso",
     "--map",
     "/lcrc/group/e3sm2/DSM/Staging/Resource/maps/map_IcoswISC30E3r5_to_cmip6_180x360_traave.20240221.nc",
-    "--parallel",
 ]
 
 main(args)
 
 
-# Ensure the path and its contents have the correct permissions recursively
 for root, dirs, files in os.walk(OUTPUT_PATH):
-    os.chmod(root, 0o505)  # o=rx (read and execute for others)
+    os.chmod(root, 0o755)  # rwxr-xr-x for directories
     for d in dirs:
-        os.chmod(os.path.join(root, d), 0o505)
+        os.chmod(os.path.join(root, d), 0o755)
     for f in files:
-        os.chmod(os.path.join(root, f), 0o404)  # o=r (read for others)
+        os.chmod(os.path.join(root, f), 0o644)  # rw-r--r-- for files

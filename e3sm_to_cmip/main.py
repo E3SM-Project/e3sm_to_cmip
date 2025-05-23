@@ -5,7 +5,6 @@ Usage:
     Run this script with --help or --version for information.
 """
 
-import logging
 import sys
 
 from e3sm_to_cmip.argparser import parse_args
@@ -28,23 +27,10 @@ def main(args: list[str] | None = None):
         # Run the application.
         app.run()
 
-        _remove_root_handlers()
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}", exc_info=True)
 
-        _remove_root_handlers()
-
         sys.exit(1)
-
-
-def _remove_root_handlers():
-    """Remove all handlers associated with the root logger.
-
-    This prevents duplicate log messages when the `e3sm_to_cmip` is run
-    multiple times successively.
-    """
-    for handler in logging.root.handlers[:]:
-        logging.root.removeHandler(handler)
 
 
 if __name__ == "__main__":

@@ -13,12 +13,12 @@ import argparse
 import concurrent
 import os
 import signal
-import stat
 import subprocess
 import sys
 import tempfile
 import threading
 from concurrent.futures import ProcessPoolExecutor as Pool
+from concurrent.futures import as_completed
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -241,9 +241,9 @@ class E3SMtoCMIP:
             timer = threading.Timer(self.timeout, self._timeout_exit)
             timer.start()
 
-        is_successful = self._run_by_mode()
+        is_run_successful = self._run_by_mode()
 
-        if is_successful:
+        if is_run_successful:
             if self.custom_metadata:
                 add_metadata(
                     file_path=self.output_path,
@@ -402,45 +402,16 @@ class E3SMtoCMIP:
         str
             The absolute path to the output directory.
         """
-        abs_path = (
-            os.path.abspath(output_path)
-            if output_path
-            else os.path.join(os.getcwd(), f"e3sm_to_cmip_run_{self.timestamp}")
-        )
-        os.makedirs(abs_path, exist_ok=True)
+        if output_path is not None:
+            output_abs_path = os.path.abspath(output_path)
+        elif output_path is None:
+            output_abs_path = os.path.join(
+                os.getcwd(), f"e3sm_to_cmip_run_{self.timestamp}"
+            )
 
-        self._set_output_path_permissions(abs_path)
+        os.makedirs(output_abs_path, exist_ok=True)
 
-        return abs_path
-
-    def _set_output_path_permissions(self, path: str):
-        """
-        Recursively set read, write, and execute permissions for user and group.
-
-        Parameters
-        ----------
-        path : str
-            Root directory whose permissions will be updated.
-
-        Notes
-        -----
-        Traverses the directory and all subdirectories, setting permissions to
-        allow read, write, and execute access for user and group on every file
-        and directory. Logs a warning if permissions cannot be set.
-        """
-        try:
-            for root, dirs, files in os.walk(path):
-                for name in dirs + files:
-                    try:
-                        os.chmod(os.path.join(root, name), stat.S_IRWXU | stat.S_IRWXG)
-                    except Exception as e:
-                        logger.warning(
-                            f"Could not set permissions on {os.path.join(root, name)}: {e}"
-                        )
-
-            os.chmod(path, stat.S_IRWXU | stat.S_IRWXG)
-        except Exception as e:
-            logger.warning(f"Could not set permissions on {path}: {e}")
+        return output_abs_path
 
     def _setup_dirs_with_paths(self):
         """Sets up various directories and paths required for e3sm_to_cmip.
@@ -701,8 +672,9 @@ class E3SMtoCMIP:
             for the user to debug.
         """
         pool = Pool(max_workers=self.num_proc)
-        pool_jobs: list[concurrent.futures.Future] = []
-        pbar = tqdm(total=len(pool_jobs))
+        jobs: list[concurrent.futures.Future] = []
+        future_to_name = {}  # Map each future to its handler name
+        pbar = tqdm(total=len(self.handlers))
 
         num_handlers = len(self.handlers)
         num_success = 0
@@ -716,17 +688,15 @@ class E3SMtoCMIP:
             vars_to_filepaths = self._get_handler_input_files(handler_variables)
 
             try:
-                # MPAS handlers require a different set of arguments than other
-                # handlers.
                 if self.realm in MPAS_REALMS:
-                    job = pool.submit(
+                    future = pool.submit(
                         handler_method,
                         vars_to_filepaths,
                         self.tables_path,
                         self.new_metadata_path,
                     )
                 else:
-                    job = pool.submit(
+                    future = pool.submit(
                         handler_method,
                         vars_to_filepaths,
                         self.tables_path,
@@ -740,25 +710,29 @@ class E3SMtoCMIP:
                 )
                 continue
 
-            pool_jobs.append(job)
+            jobs.append(future)
+            # Map future job to handler name for progress tracking as they
+            # complete
+            future_to_name[future] = handler.get("name", "unknown")
 
-        # Execute the jobs in the pool and log their status.
-        for job in pool_jobs:
+        # Execute the jobs in the pool and log their status as they complete.
+        for future in as_completed(jobs):
             job_result = None
+            handler_name = future_to_name[future]  # Get the correct handler name
 
             try:
-                job_result = job.result()
+                job_result = future.result()
             except Exception as e:
                 logger.error(e)
 
             num_success, failed_handlers = self._log_handler_status(
-                job_result, handler["name"], num_handlers, num_success, failed_handlers
+                job_result, handler_name, num_handlers, num_success, failed_handlers
             )
+
             pbar.update(1)
 
         pbar.close()
         pool.shutdown()
-
         self._log_final_result(num_handlers, num_success, failed_handlers)
 
         return True
@@ -845,10 +819,15 @@ class E3SMtoCMIP:
             failed_handlers.append(name)
             logger.error(f"Error processing '{name}' handler.")
 
-        logger.info(
-            f"STATUS: {num_success} of {num_handlers} succeeded, "
-            f"{len(failed_handlers)} failed so far."
-        )
+        logger.info("=" * 60)
+        logger.info("STATUS UPDATE:")
+        logger.info(f"  * Successful handlers: {num_success} of {num_handlers}")
+        logger.info(f"  * Failed handlers: {len(failed_handlers)}")
+        if failed_handlers:
+            logger.info(f"  - Failed handler names: {', '.join(failed_handlers)}")
+        else:
+            logger.info("  - No failed handlers so far.")
+        logger.info("=" * 60)
         return num_success, failed_handlers
 
     def _log_final_result(

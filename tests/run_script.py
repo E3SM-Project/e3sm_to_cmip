@@ -47,10 +47,9 @@ args = [
 # the object parameters to execute a run.
 main(args)
 
-# Ensure the path and its contents have the correct permissions recursively
 for root, dirs, files in os.walk(OUTPUT_PATH):
-    os.chmod(root, 0o505)  # o=rx (read and execute for others)
+    os.chmod(root, 0o755)  # rwxr-xr-x for directories
     for d in dirs:
-        os.chmod(os.path.join(root, d), 0o505)
+        os.chmod(os.path.join(root, d), 0o755)
     for f in files:
-        os.chmod(os.path.join(root, f), 0o404)  # o=r (read for others)
+        os.chmod(os.path.join(root, f), 0o644)  # rw-r--r-- for files

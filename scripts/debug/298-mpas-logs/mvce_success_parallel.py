@@ -21,10 +21,10 @@ from e3sm_to_cmip.main import main
 #     "rsdscs, hur"
 # )1
 
-VAR_LIST = "pfull, phalf, tas"
+VAR_LIST = "phalf, tas, "
 
 # The output path for CMORized datasets. Update as needed.
-OUTPUT_PATH = "/lcrc/group/e3sm/public_html/e3sm_to_cmip/298-mpas-logs-success-parallel"
+OUTPUT_PATH = "/lcrc/group/e3sm/public_html/e3sm_to_cmip/298-logs-success-parallel"
 
 
 args = [
@@ -38,7 +38,6 @@ args = [
     "/lcrc/group/e3sm/e3sm_to_cmip/cmip6-cmor-tables/Tables/",
     "--user-metadata",
     "/lcrc/group/e3sm/e3sm_to_cmip/CMIP6-Metadata/template.json",
-    "--info",
 ]
 
 # `main()` creates an `E3SMtoCMIP` object and passes `args` to it, which sets
@@ -47,8 +46,8 @@ main(args)
 
 # Ensure the path and its contents have the correct permissions recursively
 for root, dirs, files in os.walk(OUTPUT_PATH):
-    os.chmod(root, 0o505)  # o=rx (read and execute for others)
+    os.chmod(root, 0o755)  # rwxr-xr-x for directories
     for d in dirs:
-        os.chmod(os.path.join(root, d), 0o505)
+        os.chmod(os.path.join(root, d), 0o755)
     for f in files:
-        os.chmod(os.path.join(root, f), 0o404)  # o=r (read for others)
+        os.chmod(os.path.join(root, f), 0o644)  # rw-r--r-- for files
