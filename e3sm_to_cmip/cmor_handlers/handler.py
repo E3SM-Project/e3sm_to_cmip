@@ -207,7 +207,7 @@ class VarHandler(BaseVarHandler):
         if table is not None:
             self.table = table
 
-        # If at least one E3SM raw variable has no file(s) found, return None to
+        # If at least one E3SM raw variable has no file(s) found, return False to
         # represent a failed operation.
         if not self._all_vars_have_filepaths(vars_to_filepaths):
             return False
@@ -712,7 +712,7 @@ class VarHandler(BaseVarHandler):
 
                     return False
 
-                return True
+        return True
 
     def _get_output_data(self, ds: xr.Dataset) -> np.ndarray:
         """Get the variable output data.
