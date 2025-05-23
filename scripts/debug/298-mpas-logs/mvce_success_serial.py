@@ -19,7 +19,7 @@ from e3sm_to_cmip.main import main
 #     "tauv, hfls, clt, rlds, rlus, rsds, rsus, hfss, cl, clw, cli, clivi, clwvi, prw, "
 #     "rldscs, rlut, rlutcs, rsdt, rsuscs, rsut, rsutcs, rtmt, abs550aer, od550aer "
 #     "rsdscs, hur"
-# )1
+# )
 
 VAR_LIST = "tas, "
 
