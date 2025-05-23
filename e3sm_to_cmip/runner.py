@@ -241,7 +241,7 @@ class E3SMtoCMIP:
             timer = threading.Timer(self.timeout, self._timeout_exit)
             timer.start()
 
-        is_successful = self._run()
+        is_successful = self._run_by_mode()
 
         if is_successful:
             if self.custom_metadata:
@@ -382,63 +382,65 @@ class E3SMtoCMIP:
             logger.info(f"Setting up conversion for {' '.join(new_var_list)}", "ok")
             self.var_list = new_var_list
 
-    def _setup_output_path(self, output_path: str | None) -> str:
-        """Sets up the output path for the CMORized data.
+    def _setup_output_path(self, output_path: Optional[str]) -> str:
+        """
+        Set up and return the absolute output directory path.
 
-        If the output path is not provided, it creates a new directory with a
-        timestamp in the current working directory.
-
-        If the output path is provided, it ensures that the directory exists and
-        is writeable by Python.
+        If an output path is provided, its absolute path is used. Otherwise, a
+        new directory is created in the current working directory with a name
+        based on the current timestamp. The directory is created if it does not
+        exist, and permissions are set accordingly.
 
         Parameters
         ----------
-        output_path : str | None
-            The path to the output directory.
+        output_path : Optional[str]
+            The desired output directory path. If None, a default directory is
+            created.
 
         Returns
         -------
         str
             The absolute path to the output directory.
         """
-        if output_path is not None:
-            output_path = os.path.abspath(output_path)
-            os.makedirs(output_path, exist_ok=True)
-        elif output_path is None:
-            output_path = os.path.join(
-                os.getcwd(), f"e3sm_to_cmip_run_{self.timestamp}"
-            )
-            os.makedirs(output_path, exist_ok=True)
+        abs_path = (
+            os.path.abspath(output_path)
+            if output_path
+            else os.path.join(os.getcwd(), f"e3sm_to_cmip_run_{self.timestamp}")
+        )
+        os.makedirs(abs_path, exist_ok=True)
 
-        # Ensure the output directory is writeable by python on successive runs
+        self._set_output_path_permissions(abs_path)
+
+        return abs_path
+
+    def _set_output_path_permissions(self, path: str):
+        """
+        Recursively set read, write, and execute permissions for user and group.
+
+        Parameters
+        ----------
+        path : str
+            Root directory whose permissions will be updated.
+
+        Notes
+        -----
+        Traverses the directory and all subdirectories, setting permissions to
+        allow read, write, and execute access for user and group on every file
+        and directory. Logs a warning if permissions cannot be set.
+        """
         try:
-            os.chmod(output_path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-            # Recursively set permissions for all files and subdirectories
-            for root, dirs, files in os.walk(output_path):
-                for d in dirs:
+            for root, dirs, files in os.walk(path):
+                for name in dirs + files:
                     try:
-                        os.chmod(
-                            os.path.join(root, d),
-                            stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO,
-                        )
+                        os.chmod(os.path.join(root, name), stat.S_IRWXU | stat.S_IRWXG)
                     except Exception as e:
                         logger.warning(
-                            f"Could not set write permissions on directory {os.path.join(root, d)}: {e}"
+                            f"Could not set permissions on {os.path.join(root, name)}: {e}"
                         )
-                for f in files:
-                    try:
-                        os.chmod(
-                            os.path.join(root, f),
-                            stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO,
-                        )
-                    except Exception as e:
-                        logger.warning(
-                            f"Could not set write permissions on file {os.path.join(root, f)}: {e}"
-                        )
-        except Exception as e:
-            logger.warning(f"Could not set write permissions on {output_path}: {e}")
 
-        return output_path
+            os.chmod(path, stat.S_IRWXU | stat.S_IRWXG)
+        except Exception as e:
+            logger.warning(f"Could not set permissions on {path}: {e}")
 
     def _setup_dirs_with_paths(self):
         """Sets up various directories and paths required for e3sm_to_cmip.
@@ -579,7 +581,7 @@ class E3SMtoCMIP:
         else:
             pprint(messages)
 
-    def _run(self) -> bool:
+    def _run_by_mode(self) -> bool:
         """
         Executes the CMORization process in either serial or parallel mode.
 
