@@ -180,7 +180,7 @@ class VarHandler(BaseVarHandler):
         metadata_path: str,
         table: str | None = None,
         logdir: str | None = None,
-    ) -> str | None:
+    ) -> bool:
         """CMORizes a list of E3SM raw variables to a CMIP variable.
 
         Parameters
@@ -199,9 +199,8 @@ class VarHandler(BaseVarHandler):
 
         Returns
         -------
-        str | None
-            If CMORizing was successful, return the output CMIP variable name
-            to indicate success. If failed, return None.
+        bool
+            If CMORizing was successful, return True, else False.
         """
         logger.info(f"{self.name}: Starting CMORizing")
 
@@ -211,7 +210,7 @@ class VarHandler(BaseVarHandler):
         # If at least one E3SM raw variable has no file(s) found, return None to
         # represent a failed operation.
         if not self._all_vars_have_filepaths(vars_to_filepaths):
-            return None
+            return False
 
         # Create the logging directory and setup the CMOR module globally before
         # running any CMOR functions.
@@ -254,9 +253,11 @@ class VarHandler(BaseVarHandler):
             )
 
             if time_dim is None:
-                self._cmor_write(ds, cmor_var_id)
+                is_cmor_successful = self._cmor_write(ds, cmor_var_id)
             else:
-                self._cmor_write_with_time(ds, cmor_var_id, time_dim, cmor_ips_id)
+                is_cmor_successful = self._cmor_write_with_time(
+                    ds, cmor_var_id, time_dim, cmor_ips_id
+                )
 
             ds.close()
 
@@ -268,7 +269,7 @@ class VarHandler(BaseVarHandler):
             f"{self.name}: CMORized and file write complete, closing CMOR I/O."
         )
 
-        return self.name
+        return is_cmor_successful
 
     def _all_vars_have_filepaths(
         self, vars_to_filespaths: Dict[str, List[str]]
@@ -629,24 +630,24 @@ class VarHandler(BaseVarHandler):
         self,
         ds: xr.Dataset,
         cmor_var_id: int,
-    ):
+    ) -> bool:
         """Writes the output CMIP variable.
 
-        Parameters
-        ----------
-        ds : xr.Dataset
-            The dataset containing the E3SM raw variable and axes info.
-        var_key : str
-            The key for the E3SM raw variable.
-        cmor_var_id : int
-            The CMOR variable ID.
+        Returns
+        -------
+        bool
+            True if write succeeded, False otherwise.
         """
         output_data = self._get_output_data(ds)
 
         try:
             cmor.write(var_id=cmor_var_id, data=output_data)
+
+            return True
         except Exception as e:
             logger.error(f"Error writing variable {self.name} to file: {e}")
+
+            return False
 
     def _cmor_write_with_time(
         self,
@@ -654,7 +655,7 @@ class VarHandler(BaseVarHandler):
         cmor_var_id: int,
         time_dim: str,
         cmor_ips_id: int | None,
-    ):
+    ) -> bool:
         """Writes the output CMIP variable and IPS variable (if it exists).
 
         Parameters
@@ -667,6 +668,11 @@ class VarHandler(BaseVarHandler):
             The key of the time dimension.
         cmor_ips_id : int | None
             The optional CMOR zfactor ips ID.
+
+        Returns
+        -------
+        bool
+            True if write succeeded, False otherwise.
         """
         output_data = self._get_output_data(ds)
 
@@ -689,18 +695,24 @@ class VarHandler(BaseVarHandler):
         except Exception as e:
             logger.error(e)
 
-        if cmor_ips_id is not None:
-            logger.info(f"{self.name}: Writing IPS variable to file...")
-            try:
-                cmor.write(
-                    var_id=cmor_ips_id,
-                    data=ds["PS"].values,
-                    time_vals=time_vals,
-                    time_bnds=time_bnds,
-                    store_with=cmor_var_id,
-                )
-            except Exception as e:
-                logger.error(e)
+            return False
+        else:
+            if cmor_ips_id is not None:
+                logger.info(f"{self.name}: Writing IPS variable to file...")
+                try:
+                    cmor.write(
+                        var_id=cmor_ips_id,
+                        data=ds["PS"].values,
+                        time_vals=time_vals,
+                        time_bnds=time_bnds,
+                        store_with=cmor_var_id,
+                    )
+                except Exception as e:
+                    logger.error(e)
+
+                    return False
+
+                return True
 
     def _get_output_data(self, ds: xr.Dataset) -> np.ndarray:
         """Get the variable output data.

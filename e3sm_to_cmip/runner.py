@@ -10,6 +10,7 @@ frequencies.
 from __future__ import annotations
 
 import argparse
+import concurrent
 import os
 import signal
 import stat
@@ -22,7 +23,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from pprint import pprint
-from typing import List, Optional, Union
+from typing import List, Literal, Optional, Tuple, Union
 
 import xarray as xr
 import yaml
@@ -240,25 +241,18 @@ class E3SMtoCMIP:
             timer = threading.Timer(self.timeout, self._timeout_exit)
             timer.start()
 
-        status = self._run()
+        is_successful = self._run()
 
-        if status != 0:
-            logger.error(
-                f"Error running handlers: {' '.join([x['name'] for x in self.handlers])}"
-            )
-            return 1
+        if is_successful:
+            if self.custom_metadata:
+                add_metadata(
+                    file_path=self.output_path,
+                    var_list=self.var_list,
+                    metadata_path=self.custom_metadata,
+                )
 
-        if self.custom_metadata:
-            add_metadata(
-                file_path=self.output_path,
-                var_list=self.var_list,
-                metadata_path=self.custom_metadata,
-            )
-
-        if timer is not None:
-            timer.cancel()
-
-        return 0
+            if timer is not None:
+                timer.cancel()
 
     def _get_handlers(self):
         if self.info_mode:
@@ -585,211 +579,302 @@ class E3SMtoCMIP:
         else:
             pprint(messages)
 
-    def _run(self):
-        if self.serial_mode:
-            run_func = self._run_serial
-        else:
-            run_func = self._run_parallel
+    def _run(self) -> bool:
+        """
+        Executes the CMORization process in either serial or parallel mode.
 
+        Returns
+        -------
+        bool
+            True if the run was successful, False otherwise.
+        """
         try:
-            status = run_func()
+            if self.serial_mode:
+                result = self._run_serial()
+            else:
+                result = self._run_parallel()
         except KeyboardInterrupt:
             logger.error(" -- keyboard interrupt -- ")
-            return 1
+
+            return False
         except Exception as e:
             logger.error(e)
-            return 1
 
-        return status
+            return False
 
-    def _run_serial(self) -> int:  # noqa: C901
+        return result
+
+    def _run_serial(self) -> bool:
         """Run each of the handlers one at a time on the main process
 
         Returns
         -------
-        int
-            1 if an error occurs, else 0
+        bool
+            True if the run was successful (even with failed handlers),
+            False if there was an exception raised beyond the CMORization
+            process.
         """
-        try:
-            num_handlers = len(self.handlers)
-            num_success = 0
-            name = None
+        num_handlers = len(self.handlers)
+        num_success = 0
+        failed_handlers: List[str] = []
 
+        try:
             if self.realm != "atm":
                 pbar = tqdm(total=len(self.handlers))
 
-            for _, handler in enumerate(self.handlers):
+            logger.info("========== STARTING CMORIZING PROCESS ==========")
+            for index, handler in enumerate(self.handlers):
+                is_cmor_successful = False
                 handler_method = handler["method"]
                 handler_variables = handler["raw_variables"]
-                table = handler["table"]
+                handler_table = handler["table"]
+                vars_to_filepaths = self._get_handler_input_files(handler_variables)
 
-                # find the input files this handler needs
-                if self.realm in ["atm", "lnd"]:
-                    vars_to_filepaths = {
-                        var: [
-                            os.path.join(self.input_path, x)  # type: ignore
-                            for x in find_atm_files(var, self.input_path)
-                        ]
-                        for var in handler_variables
-                    }
-                elif self.realm == "fx":
-                    vars_to_filepaths = {
-                        var: [
-                            os.path.join(self.input_path, x)  # type: ignore
-                            for x in os.listdir(self.input_path)
-                            if x[-3:] == ".nc"
-                        ]
-                        for var in handler_variables
-                    }
-                else:
-                    vars_to_filepaths = {
-                        var: find_mpas_files(var, self.input_path, self.map_path)
-                        for var in handler_variables
-                    }
-
-                msg = f"Trying to CMORize with handler: {handler}"
-                logger.info(msg)
-
-                # NOTE: We need a try and except statement here for TypeError because
-                # the VarHandler.cmorize method does not use **kwargs, while the handle
-                # method for MPAS still does.
+                logger.info(
+                    f"CMOR attempt {index + 1}/{num_handlers} -- '{handler['name']}' handler: {handler}"
+                )
                 try:
-                    name = handler_method(
-                        vars_to_filepaths,
-                        self.tables_path,
-                        self.new_metadata_path,
-                        table,
-                        self.cmor_log_dir,
-                    )
-                except TypeError:
-                    name = handler_method(
-                        vars_to_filepaths,
-                        self.tables_path,
-                        self.new_metadata_path,
-                    )
+                    # MPAS handlers require a different set of arguments than other
+                    # handlers.
+                    if self.realm in MPAS_REALMS:
+                        is_cmor_successful = handler_method(
+                            vars_to_filepaths,
+                            self.tables_path,
+                            self.new_metadata_path,
+                        )
+                    else:
+                        is_cmor_successful = handler_method(
+                            vars_to_filepaths,
+                            self.tables_path,
+                            self.new_metadata_path,
+                            handler_table,
+                            self.cmor_log_dir,
+                        )
+                except TypeError as te:
+                    logger.error(f"TypeError in handler '{handler['name']}': {te}")
+                    is_cmor_successful = False
                 except Exception as e:
-                    logger.error(e)
+                    logger.error(f"Exception in handler '{handler['name']}': {e}")
+                    is_cmor_successful = False
 
-                if name is not None:
-                    num_success += 1
-                    msg = f"Finished {name}, {num_success}/{num_handlers} jobs complete"
-                    logger.info(msg)
-                else:
-                    msg = f"Error running handler {handler['name']}"
-                    logger.info(msg)
+                num_success, failed_handlers = self._log_handler_status(
+                    is_cmor_successful,
+                    handler["name"],
+                    num_handlers,
+                    num_success,
+                    failed_handlers,
+                )
 
                 if self.realm != "atm":
                     pbar.update(1)
+
             if self.realm != "atm":
                 pbar.close()
 
         except Exception as error:
             logger.error(error)
-            return 1
-        else:
-            msg = f"{num_success} of {num_handlers} handlers complete"
-            logger.info(msg)
 
-            return 0
+            return False
 
-    def _run_parallel(self) -> int:  # noqa: C901
+        self._log_final_result(num_handlers, num_success, failed_handlers)
+
+        return True
+
+    def _run_parallel(self) -> Literal[True]:
         """Run all the handlers in parallel using multiprocessing.Pool.
+
+        Note, this method will always return True even if a handler fails to
+        cmorize. This is because the handlers are run in parallel and
+        the main process does not wait for them to finish. Instead, it
+        returns immediately after starting the handlers. The handlers
+        will log their own success or failure messages.
+
+        If the user wants to check if all handlers succeeded, they should
+        check the console output and/or log files in the output directory.
 
         Returns
         --------
-        int
-            1 if an error occurs, else 0
+        Literal[True]
+            Always True, even with failed handlers. Failed jobs are logged
+            for the user to debug.
         """
         pool = Pool(max_workers=self.num_proc)
-        pool_res = list()
-        will_run = []
+        pool_jobs: list[concurrent.futures.Future] = []
+        pbar = tqdm(total=len(pool_jobs))
 
+        num_handlers = len(self.handlers)
+        num_success = 0
+        failed_handlers: List[str] = []
+
+        logger.info("========== STARTING CMORIZING PROCESS ==========")
         for _, handler in enumerate(self.handlers):
             handler_method = handler["method"]
             handler_variables = handler["raw_variables"]
-            table = handler["table"]
+            handler_table = handler["table"]
+            vars_to_filepaths = self._get_handler_input_files(handler_variables)
 
-            # find the input files this handler needs
-            if self.realm in ["atm", "lnd"]:
-                vars_to_filepaths = {
-                    var: [
-                        os.path.join(self.input_path, x)  # type: ignore
-                        for x in find_atm_files(var, self.input_path)
-                    ]
-                    for var in handler_variables
-                }
-            elif self.realm == "fx":
-                vars_to_filepaths = {
-                    var: [
-                        os.path.join(self.input_path, x)  # type: ignore
-                        for x in os.listdir(self.input_path)
-                        if x[-3:] == ".nc"
-                    ]
-                    for var in handler_variables
-                }
-            else:
-                vars_to_filepaths = {
-                    var: find_mpas_files(var, self.input_path, self.map_path)
-                    for var in handler_variables
-                }
-
-            will_run.append(handler.get("name"))
-
-            # NOTE: We need a try and except statement here for TypeError because
-            # the VarHandler.cmorize method does not use **kwargs, while the handle
-            # method for MPAS still does.
             try:
-                res = pool.submit(
-                    handler_method,
-                    vars_to_filepaths,
-                    self.tables_path,
-                    self.new_metadata_path,
-                    table,
-                    self.cmor_log_dir,
-                )
-            except TypeError:
-                res = pool.submit(
-                    handler_method,
-                    vars_to_filepaths,
-                    self.tables_path,
-                    self.new_metadata_path,
-                )
-
-            pool_res.append(res)
-
-        # wait for each result to complete
-        pbar = tqdm(total=len(pool_res))
-        num_success = 0
-        num_handlers = len(self.handlers)
-        finished_success = []
-        for idx, res in enumerate(pool_res):
-            try:
-                out = res.result()
-                finished_success.append(out)
-                if out:
-                    num_success += 1
-                    msg = f"Finished {out}, {idx + 1}/{num_handlers} jobs complete"
+                # MPAS handlers require a different set of arguments than other
+                # handlers.
+                if self.realm in MPAS_REALMS:
+                    job = pool.submit(
+                        handler_method,
+                        vars_to_filepaths,
+                        self.tables_path,
+                        self.new_metadata_path,
+                    )
                 else:
-                    msg = f"Error running handler {self.handlers[idx]['name']}"
-                    logger.error(msg)
+                    job = pool.submit(
+                        handler_method,
+                        vars_to_filepaths,
+                        self.tables_path,
+                        self.new_metadata_path,
+                        handler_table,
+                        self.cmor_log_dir,
+                    )
+            except Exception as exc:
+                logger.error(
+                    f"Failed to submit handler '{handler.get('name', 'unknown')}' to pool: {exc}"
+                )
+                continue
 
-                logger.info(msg)
+            pool_jobs.append(job)
+
+        # Execute the jobs in the pool and log their status.
+        for job in pool_jobs:
+            job_result = None
+
+            try:
+                job_result = job.result()
             except Exception as e:
                 logger.error(e)
+
+            num_success, failed_handlers = self._log_handler_status(
+                job_result, handler["name"], num_handlers, num_success, failed_handlers
+            )
             pbar.update(1)
 
         pbar.close()
         pool.shutdown()
 
-        msg = f"{num_success} of {num_handlers} handlers complete"
-        logger.info(msg)
+        self._log_final_result(num_handlers, num_success, failed_handlers)
 
-        failed = set(will_run) - set(finished_success)
-        if failed:
-            logger.error(f"{', '.join(list(failed))} failed to complete")
-            logger.error(msg)
+        return True
 
-        return 0
+    def _get_handler_input_files(
+        self, handler_variables: dict[str, str]
+    ) -> dict[str, list[str]]:
+        """Get the input files for a given handler.
+
+        Parameters
+        ----------
+        handler_variables : dict[str, str]
+            The handler dictionary containing the variable names and their
+            corresponding file paths.
+
+        Returns
+        -------
+        dict[str, list[str]]
+            A dictionary mapping variable names to their corresponding file paths.
+        """
+        if self.realm in ["atm", "lnd"]:
+            vars_to_filepaths = {
+                var: [
+                    os.path.join(self.input_path, x)  # type: ignore
+                    for x in find_atm_files(var, self.input_path)
+                ]
+                for var in handler_variables
+            }
+        elif self.realm == "fx":
+            vars_to_filepaths = {
+                var: [
+                    os.path.join(self.input_path, x)  # type: ignore
+                    for x in os.listdir(self.input_path)
+                    if x[-3:] == ".nc"
+                ]
+                for var in handler_variables
+            }
+        else:
+            vars_to_filepaths = {
+                var: find_mpas_files(var, self.input_path, self.map_path)
+                for var in handler_variables
+            }
+
+        return vars_to_filepaths
+
+    def _log_handler_status(
+        self,
+        is_cmor_successful: bool | str | None,
+        name: str,
+        num_handlers: int,
+        num_success: int,
+        failed_handlers: List[str],
+    ) -> Tuple[int, List[str]]:
+        """
+        Logs the status of a handler after attempting to CMORize a variable.
+
+        Parameters
+        ----------
+        is_cmor_successful : bool | str | None
+            Indicates if the handler was successful. False, None, or "" means
+            failure. VarHandler objects (`handlers/*.py`) return False for
+            failures. MPAS handlers (`mpas_vars/*.py`) return "" for failures.
+        name : str
+            The name of the handler (variable) being processed.
+        num_handlers : int
+            The total number of handlers.
+        num_success : int
+            The current count of successful handlers.
+        failed_handlers : List[str]
+            A list to append failed handler names to.
+
+        Returns
+        -------
+        Tuple[int, List[str]]
+            The updated number of successful handlers and the list of failed
+            handlers.
+        """
+        if is_cmor_successful is True or (
+            is_cmor_successful is not None and is_cmor_successful != ""
+        ):
+            num_success += 1
+            logger.info(f"Successfully processed '{name}' handler.")
+        else:
+            failed_handlers.append(name)
+            logger.error(f"Error processing '{name}' handler.")
+
+        logger.info(
+            f"STATUS: {num_success} of {num_handlers} succeeded, "
+            f"{len(failed_handlers)} failed so far."
+        )
+        return num_success, failed_handlers
+
+    def _log_final_result(
+        self, num_handlers: int, num_successes: int, failed_handlers: List[str]
+    ):
+        """
+        Logs the final result of the CMORization process.
+
+        Parameters
+        ----------
+        num_handlers : int
+            The total number of handlers that were processed.
+        num_successes : int
+            The number of handlers that completed successfully.
+        failed_handlers : List[str]
+            A list of handler names that failed during processing.
+        """
+        logger.info("========== FINAL RUN RESULTS ==========")
+        logger.info(f"* {num_successes} of {num_handlers} handlers succeeded.")
+
+        if failed_handlers:
+            logger.error(
+                "* The following handlers failed: "
+                + ", ".join(str(h) for h in failed_handlers)
+            )
+        else:
+            logger.info("* All handlers completed successfully.")
+        logger.info("=======================================")
 
     def _timeout_exit(self):
         logger.info("Hit timeout limit, exiting")
