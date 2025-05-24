@@ -15,9 +15,9 @@ VAR_UNITS = str("m")
 TABLE = str('QUOCA_mon.json')
 
 LEVELS = {
-    'name': str('plev8'),
+    'name': str('plev42'),
     'units': str('Pa'),
-    'e3sm_axis_name': 'plev8'
+    'e3sm_axis_name': 'plev42'
 }
 
 
