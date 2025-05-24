@@ -1,8 +1,0 @@
-2025-05-20 16:42:17,367_367:INFO:main:input_path = /global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/PRECC/post/atm/180x360_aave/ts/monthly/90yr/
-2025-05-20 16:42:17,368_368:INFO:main:output_path = /global/cfs/cdirs/e3sm/xie7/ccmi_output/
-2025-05-20 16:42:17,368_368:INFO:main:precheck_path = None
-[94m[*] [0mLoaded `prc_mon` handler for variable `prc`.[94m[0m
-[94m[*] [0mWriting log output to: /global/cfs/cdirs/e3sm/xie7/ccmi_output/converter.log[94m[0m
-[92m[+] [0mRunning CMOR handlers in parallel
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:11<00:00, 11.84s/it]100%|██████████| 1/1 [00:11<00:00, 11.84s/it]
-[92m[+] [0m1 of 1 handlers complete
