@@ -1,28 +1,27 @@
 """
-FLNT to rlutconverter
+PRECT to pr converter
 """
 from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
+                                                unicode_literals)
 
 import cmor
-import numpy as np
-from e3sm_to_cmip.cmor_handlers import FILL_VALUE
+#import numpy as np
+#from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('FLNT')]
-VAR_NAME = str('rlut')
-VAR_UNITS = str('W m-2')
-TABLE = str('QUOCA_mon.json')
-POSITIVE = str('up')
+RAW_VARIABLES = [str('PRECT')]
+VAR_NAME = str('pr')
+VAR_UNITS = str('kg m-2 s-1')
+TABLE = str('QUOCA_day.json')
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
-    rlut = FLNT
+    pr = PRECT * 1000.0
     """
-    outdata = data['FLNT'][index, :].values
-    outdata[np.isnan(outdata)] = FILL_VALUE
-
+    #outdata = (data['PRECC'][index, :].values + data['PRECL'][index, :].values) * 1000.0
+    outdata = data['PRECT'][index, :].values * 1000.0
+    #outdata[np.isnan(outdata)] = FILL_VALUE
     if kwargs.get('simple'):
         return outdata
     cmor.write(
@@ -30,8 +29,22 @@ def write_data(varid, data, timeval, timebnds, index, **kwargs):
         outdata,
         time_vals=timeval,
         time_bnds=timebnds)
+# ------------------------------------------------------------------
+
 
 def handle(infiles, tables, user_input_path, **kwargs):
+    """
+    Transform E3SM.TS into CMIP.ts
+
+    Parameters
+    ----------
+        infiles (List): a list of strings of file names for the raw input data
+        tables (str): path to CMOR tables
+        user_input_path (str): path to user input json file
+    Returns
+    -------
+        var name (str): the name of the processed variable after processing is complete
+    """
 
     return handle_variables(
         metadata_path=user_input_path,
@@ -42,7 +55,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
         write_data=write_data,
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
-        positive=POSITIVE,
         serial=kwargs.get('serial'),
         logdir=kwargs.get('logdir'),
         simple=kwargs.get('simple'),

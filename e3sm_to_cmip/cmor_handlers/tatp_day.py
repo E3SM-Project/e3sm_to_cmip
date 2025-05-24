@@ -1,5 +1,5 @@
 """
-FLNT to rlutconverter
+TROP_T to tatp converter
 """
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
@@ -10,17 +10,17 @@ from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('FLNT')]
-VAR_NAME = str('rlut')
-VAR_UNITS = str('W m-2')
-TABLE = str('QUOCA_mon.json')
-POSITIVE = str('up')
+RAW_VARIABLES = [str('TROP_T')]
+VAR_NAME = str('tatp')
+VAR_UNITS = str('K')
+TABLE = str('QUOCA_day.json')
+##POSITIVE = str('up')
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
-    rlut = FLNT
+    tatp = TROP_T
     """
-    outdata = data['FLNT'][index, :].values
+    outdata = data['TROP_T'][index, :].values
     outdata[np.isnan(outdata)] = FILL_VALUE
 
     if kwargs.get('simple'):
@@ -42,7 +42,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
         write_data=write_data,
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
-        positive=POSITIVE,
         serial=kwargs.get('serial'),
         logdir=kwargs.get('logdir'),
         simple=kwargs.get('simple'),

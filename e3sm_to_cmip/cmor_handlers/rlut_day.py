@@ -13,7 +13,7 @@ from e3sm_to_cmip.lib import handle_variables
 RAW_VARIABLES = [str('FLNT')]
 VAR_NAME = str('rlut')
 VAR_UNITS = str('W m-2')
-TABLE = str('QUOCA_mon.json')
+TABLE = str('QUOCA_day.json')
 POSITIVE = str('up')
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
