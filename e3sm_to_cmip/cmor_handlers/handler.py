@@ -642,12 +642,12 @@ class VarHandler(BaseVarHandler):
 
         try:
             cmor.write(var_id=cmor_var_id, data=output_data)
-
-            return True
         except Exception as e:
             logger.error(f"Error writing variable {self.name} to file: {e}")
 
             return False
+
+        return True
 
     def _cmor_write_with_time(
         self,

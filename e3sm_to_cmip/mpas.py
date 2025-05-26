@@ -37,10 +37,10 @@ def run_ncremap_cmd(args, env):
     (out, err) = proc.communicate()
     logger.info(out)
     if proc.returncode:
-        logger.error("Error running ncremap command: {}".format(" ".join(args)))
-        logger.error(err.decode("utf-8"))
-        raise subprocess.CalledProcessError(  # type: ignore
-            "ncremap returned {}".format(proc.returncode)  # type: ignore
+        logger.info(f"Error running ncremap command: {' '.join(args)}")
+        logger.info(err.decode("utf-8"))
+        raise subprocess.CalledProcessError(
+            f"ncremap returned {proc.returncode}"  # type: ignore
         )
 
 

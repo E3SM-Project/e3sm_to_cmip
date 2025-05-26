@@ -46,7 +46,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         print_message(msg)
         return
 
-    msg = "Starting {name}".format(name=__name__)
+    msg = f"Starting {__name__}"
     logger.info(msg)
 
     meshFileName = infiles["MPAS_mesh"]

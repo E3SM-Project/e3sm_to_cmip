@@ -10,7 +10,7 @@ import os
 
 from e3sm_to_cmip.main import main
 
-OUTPUT_PATH = "/lcrc/group/e3sm/public_html/e3sm_to_cmip/297-v3-fails"
+OUTPUT_PATH = "/lcrc/group/e3sm/public_html/e3sm_to_cmip/298-logs-success-parallel-mpas"
 
 args = [
     "--var-list",
