@@ -2,14 +2,15 @@
 compute Ocean Mixed Layer Thickness Defined by Sigma T, mlotst
 """
 
-from __future__ import absolute_import, division, print_function
-
-import logging
+from __future__ import absolute_import
 
 import xarray
 
 from e3sm_to_cmip import mpas, util
+from e3sm_to_cmip._logger import _setup_child_logger
 from e3sm_to_cmip.util import print_message
+
+logger = _setup_child_logger(__name__)
 
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ["MPASO", "MPAS_mesh", "MPAS_map"]
@@ -45,8 +46,8 @@ def handle(infiles, tables, user_input_path, **kwargs):
         print_message(msg)
         return
 
-    msg = "Starting {name}".format(name=__name__)
-    logging.info(msg)
+    msg = f"Starting {__name__}"
+    logger.info(msg)
 
     meshFileName = infiles["MPAS_mesh"]
     mappingFileName = infiles["MPAS_map"]
@@ -98,4 +99,5 @@ def handle(infiles, tables, user_input_path, **kwargs):
         mpas.write_cmor(axes, ds, VAR_NAME, VAR_UNITS)
     except Exception:
         return ""
+
     return VAR_NAME
