@@ -10,8 +10,6 @@ from e3sm_to_cmip import mpas, util
 from e3sm_to_cmip._logger import _setup_child_logger
 from e3sm_to_cmip.util import print_message
 
-logger = _setup_child_logger(__name__)
-
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ["MPASO", "MPAS_mesh", "MPAS_map"]
 
@@ -19,8 +17,6 @@ RAW_VARIABLES = ["MPASO", "MPAS_mesh", "MPAS_map"]
 VAR_NAME = "mlotst"
 VAR_UNITS = "m"
 TABLE = "CMIP6_Omon.json"
-
-logger = _setup_child_logger(__name__)
 
 
 logger = _setup_child_logger(__name__)
