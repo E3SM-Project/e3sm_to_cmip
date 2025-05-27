@@ -1,0 +1,13 @@
+#!/bin/bash
+case=v3.ccmi.PD_INT_custom30
+var1=U
+var2=ua_dayZ
+year=90yr
+scale=monthly
+input=/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/day/2D/
+output=/global/cfs/cdirs/e3sm/xie7/ccmi_output/
+#/global/cfs/cdirs/e3sm/xie7/ccmi/$case/output/$var1/post/atm/180x360_aave/ts/$scale/$year/
+
+e3sm_to_cmip  -i  $input   -o  $output  -v  $var2  -t   /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/   -u   /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template.json  -H  /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/cmor_handlers/
+
+exit

@@ -13,18 +13,17 @@ plevo2=plevo
 plevo=plevo/100.
 plevo@units="hPa"
 ;;
-dir2="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/"
+dir2="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/"+"month/"
 ;;
 rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
 fraw=addfile(rawdata,"r")
 ;;
-do i=0,0;0,4
+do i=0,4
 	dir="/global/cfs/cdirs/e3sm/xie7/ccmi/"+case+"/output/"+vars(i)+"/post/atm/180x360_aave/ts/"+scale+"/"+year+"/"
 	fil=dir+vars(i)+"_"+time+".nc"
 	;;
 	f1=addfile(fil,"r")
-	;do j=0,9;;for 90yr simulation only
-	do j=0,1
+	do j=0,9;;for 90yr simulation only
 	aa=f1->$vars(i)$(0+j*108:108+j*108-1,:,:,:)
 	;;
 	fil1="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/PS/post/atm/180x360_aave/ts/monthly/90yr/PS_001101_010012.nc"
@@ -55,7 +54,7 @@ do i=0,0;0,4
 	f3->$vars(i)$=aa_vint
 	f3->lat_bnds=f1->lat_bnds
 	f3->lon_bnds=f1->lon_bnds
-	f3->time_bnds=f1->time_bnds
+	f3->time_bnds=f1->time_bnds(0+j*108:108+j*108-1,:)
 	;;
 	aa_vint_zonal=dim_avg_n_Wrap(aa_vint,3)
 	fil3=dir2+vars(i)+"_"+case+"_"+scale+"_"+year+"_"+time+"_2D_"+j+".nc"
@@ -65,7 +64,7 @@ do i=0,0;0,4
 	filedimdef( f4, "time", 108, True)
         f4->$vars(i)$=aa_vint_zonal
 	f4->lat_bnds=f1->lat_bnds
-	f4->time_bnds=f1->time_bnds
+	f4->time_bnds=f1->time_bnds(0+j*108:108+j*108-1,:)
 	;;
 	delete(aa)
 	delete(ps)

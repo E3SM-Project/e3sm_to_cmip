@@ -1,5 +1,5 @@
 """
-FLUT to rlutconverter
+U10 to uas converter
 """
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
@@ -10,17 +10,17 @@ from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('FLUT')]
-VAR_NAME = str('rlut')
-VAR_UNITS = str('W m-2')
+RAW_VARIABLES = [str('U10')]
+VAR_NAME = str('uas')
+VAR_UNITS = str('m/s')
 TABLE = str('QUOCA_day.json')
-POSITIVE = str('up')
+##POSITIVE = str('up')
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
-    rlut = FLUT
+    uas = U10 for eastward
     """
-    outdata = data['FLUT'][index, :].values
+    outdata = data['U10'][index, :].values
     outdata[np.isnan(outdata)] = FILL_VALUE
 
     if kwargs.get('simple'):
@@ -42,7 +42,6 @@ def handle(infiles, tables, user_input_path, **kwargs):
         write_data=write_data,
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
-        positive=POSITIVE,
         serial=kwargs.get('serial'),
         logdir=kwargs.get('logdir'),
         simple=kwargs.get('simple'),

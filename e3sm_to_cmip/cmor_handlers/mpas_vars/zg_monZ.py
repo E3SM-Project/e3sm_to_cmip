@@ -14,9 +14,9 @@ VAR_NAME = str('zg')
 VAR_UNITS = str("m")
 TABLE = str('QUOCA_monZ.json')
 LEVELS = {
-    'name': str('qboi30'),
+    'name': str('plev42'),
     'units': str('Pa'),
-    'e3sm_axis_name': 'qboi30'
+    'e3sm_axis_name': 'plev42'
 }
 
 

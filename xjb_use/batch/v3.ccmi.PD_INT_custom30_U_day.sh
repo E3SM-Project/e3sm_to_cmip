@@ -1,10 +1,10 @@
 #!/bin/bash
 case=v3.ccmi.PD_INT_custom30
 var1=U
-var2=ua_monZ
+var2=ua_day
 year=90yr
 scale=monthly
-input=/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/2D/
+input=/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/day/3D/
 output=/global/cfs/cdirs/e3sm/xie7/ccmi_output/
 #/global/cfs/cdirs/e3sm/xie7/ccmi/$case/output/$var1/post/atm/180x360_aave/ts/$scale/$year/
 

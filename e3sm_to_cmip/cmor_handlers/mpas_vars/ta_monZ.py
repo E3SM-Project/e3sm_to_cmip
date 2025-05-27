@@ -14,9 +14,9 @@ VAR_NAME = str('ta')
 VAR_UNITS = str("K")
 TABLE = str('QUOCA_monZ.json')
 LEVELS = {
-    'name': str('qboi30'),
+    'name': str('plev42'),
     'units': str('Pa'),
-    'e3sm_axis_name': 'qboi30'
+    'e3sm_axis_name': 'plev42'
 }
 
 

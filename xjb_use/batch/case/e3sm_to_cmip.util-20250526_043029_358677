@@ -1,9 +1,0 @@
-20250526_043029_360:INFO:main:input_path = /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/2D/
-20250526_043029_360:INFO:main:output_path = /global/cfs/cdirs/e3sm/xie7/ccmi_output/
-20250526_043029_360:INFO:main:precheck_path = None
-20250526_043029_440:INFO:handle_variables:ua: Starting
-20250526_043029_626:INFO:handle_variables:ua: CMOR setup complete
-20250526_043029_626:INFO:handle_variables:ua: loading U
-20250526_043029_965:INFO:handle_variables:ua: loading axes
-20250526_043029_976:INFO:handle_variables:ua: time 3650.0 - 36500.0
-20250526_043030_668:INFO:run_parallel:Finished ua, 1/1 jobs complete
