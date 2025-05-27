@@ -622,7 +622,6 @@ class E3SMtoCMIP:
                             vars_to_filepaths,
                             self.tables_path,
                             self.new_metadata_path,
-                            handler_table,
                             self.cmor_log_dir,
                             handler_table,
                         )
