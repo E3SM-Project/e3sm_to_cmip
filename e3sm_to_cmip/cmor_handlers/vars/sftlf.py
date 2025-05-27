@@ -74,8 +74,8 @@ def handle(infiles, tables, user_input_path, cmor_log_dir, table):
         var_name=VAR_NAME,
         table_path=tables,
         table_name=TABLE,
-        cmor_log_dir=cmor_log_dir,
         user_input_path=user_input_path,
+        cmor_log_dir=cmor_log_dir,
     )
 
     msg = "{}: CMOR setup complete".format(VAR_NAME)
