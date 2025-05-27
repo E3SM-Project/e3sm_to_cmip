@@ -114,7 +114,8 @@ def setup_cmor(var_name, table_path, table_name, user_input_path, cmor_log_dir):
     Sets up cmor and logging for a single handler.
 
     NOTE: This function is only used by the MPAS variable handlers defined
-    under ``e3sm_to_cmip/cmor_handlers/mpas_vars``.
+    under ``e3sm_to_cmip/cmor_handlers/mpas_vars`` and legacy handlers
+    defined under ``e3sm_to_cmip/cmor_handlers/vars``.
     """
     logfile = os.path.join(cmor_log_dir, var_name + ".log")
     cmor.setup(inpath=table_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)

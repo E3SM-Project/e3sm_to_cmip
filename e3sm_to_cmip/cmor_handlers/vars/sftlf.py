@@ -55,7 +55,7 @@ def handle_simple(infiles):
     write_netcdf(ds, outname, fillValues=fillVals, unlimited=["time"])
 
 
-def handle(infiles, tables, user_input_path, table, logdir):
+def handle(infiles, tables, user_input_path, cmor_log_dir, table):
     msg = f"{VAR_NAME}: Starting"
     logger.info(msg)
 
@@ -74,6 +74,7 @@ def handle(infiles, tables, user_input_path, table, logdir):
         var_name=VAR_NAME,
         table_path=tables,
         table_name=TABLE,
+        cmor_log_dir=cmor_log_dir,
         user_input_path=user_input_path,
     )
 
