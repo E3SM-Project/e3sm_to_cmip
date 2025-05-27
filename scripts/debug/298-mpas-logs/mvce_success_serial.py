@@ -24,7 +24,7 @@ from e3sm_to_cmip.main import main
 VAR_LIST = "tas, "
 
 # The output path for CMORized datasets. Update as needed.
-OUTPUT_PATH = "/lcrc/group/e3sm/public_html/e3sm_to_cmip/298-logs-success-serial"
+OUTPUT_PATH = "/lcrc/group/e3sm/public_html/e3sm_to_cmip/298-test-cmor-logs"
 
 
 args = [
