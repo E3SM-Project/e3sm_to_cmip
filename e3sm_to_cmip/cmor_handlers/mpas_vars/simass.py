@@ -4,11 +4,10 @@ Sea-ice mass per area, simass
 
 from __future__ import absolute_import, division, print_function
 
-import logging
-
 import xarray
 
 from e3sm_to_cmip import mpas, util
+from e3sm_to_cmip._logger import _setup_child_logger
 
 # 'MPAS' as a placeholder for raw variables needed
 RAW_VARIABLES = ["MPASSI", "MPAS_mesh", "MPAS_map"]
@@ -19,7 +18,10 @@ VAR_UNITS = "kg m-2"
 TABLE = "CMIP6_SImon.json"
 
 
-def handle(infiles, tables, user_input_path, **kwargs):
+logger = _setup_child_logger(__name__)
+
+
+def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
     """
     Transform MPASSI timeMonthly_avg_iceAreaCell and
     timeMonthly_avg_iceVolumeCell into CMIP.simass
@@ -41,7 +43,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         the name of the processed variable after processing is complete
     """
     msg = "Starting {name}".format(name=__name__)
-    logging.info(msg)
+    logger.info(msg)
 
     mappingFileName = infiles["MPAS_map"]
     timeSeriesFiles = infiles["MPASSI"]
@@ -69,6 +71,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         table_path=tables,
         table_name=TABLE,
         user_input_path=user_input_path,
+        cmor_log_dir=cmor_log_dir,
     )
 
     # create axes

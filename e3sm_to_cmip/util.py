@@ -109,20 +109,15 @@ def print_message(message, status="error"):
 # ------------------------------------------------------------------
 
 
-def setup_cmor(var_name, table_path, table_name, user_input_path):
+def setup_cmor(var_name, table_path, table_name, user_input_path, cmor_log_dir):
     """
-    Sets up cmor and logging for a single handler
+    Sets up cmor and logging for a single handler.
+
+    NOTE: This function is only used by the MPAS variable handlers defined
+    under ``e3sm_to_cmip/cmor_handlers/mpas_vars`` and legacy handlers
+    defined under ``e3sm_to_cmip/cmor_handlers/vars``.
     """
-    var_name = str(var_name)
-    table_path = str(table_path)
-    table_name = str(table_name)
-    user_input_path = str(user_input_path)
-
-    logfile = os.path.join(os.getcwd(), "logs")
-    if not os.path.exists(logfile):
-        os.makedirs(logfile)
-
-    logfile = os.path.join(logfile, var_name + ".log")
+    logfile = os.path.join(cmor_log_dir, var_name + ".log")
     cmor.setup(inpath=table_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
 
     cmor.dataset_json(user_input_path)

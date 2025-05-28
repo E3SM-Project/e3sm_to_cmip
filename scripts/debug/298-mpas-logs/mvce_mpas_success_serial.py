@@ -10,7 +10,7 @@ import os
 
 from e3sm_to_cmip.main import main
 
-OUTPUT_PATH = "/lcrc/group/e3sm/public_html/e3sm_to_cmip/298-logs-success-serial-mpas"
+OUTPUT_PATH = "/lcrc/group/e3sm/public_html/e3sm_to_cmip/298-test-mpas-cmor-logs"
 
 args = [
     "--var-list",

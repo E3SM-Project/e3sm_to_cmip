@@ -29,8 +29,8 @@ def handle(  # noqa: C901
     vars_to_filepaths: Dict[str, List[str]],
     tables: str,
     metadata_path: str,
+    cmor_log_dir: str,
     table: str | None,
-    logdir: str | None,
 ) -> str | None:
     """Transform E3SM.TS into CMIP.ts
 
@@ -47,11 +47,11 @@ def handle(  # noqa: C901
         The path to directory containing CMOR Tables directory.
     metadata_path : str
         The path to user json file for CMIP6 metadata
+    cmor_log_dir : str
+            The directory that stores the CMOR logs.
     table : str | None
         The CMOR table filename, derived from a custom `freq`, by default
         None.
-    logdir : str | None, optional
-        The optional CMOR logging directory, by default None.
 
     Returns
     -------
@@ -79,6 +79,7 @@ def handle(  # noqa: C901
         table_path=tables,
         table_name=TABLE,
         user_input_path=metadata_path,
+        cmor_log_dir=cmor_log_dir,
     )
 
     msg = f"{VAR_NAME}: CMOR setup complete"

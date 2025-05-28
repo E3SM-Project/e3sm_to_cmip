@@ -56,7 +56,7 @@ def handle_simple(infiles):
     write_netcdf(ds, outname, fillValues=fillVals, unlimited=["time"])
 
 
-def handle(infiles, tables, user_input_path, table, logdir):
+def handle(infiles, tables, user_input_path, cmor_log_dir, table):
     msg = "{}: Starting".format(VAR_NAME)
     logger.info(msg)
 
@@ -71,19 +71,12 @@ def handle(infiles, tables, user_input_path, table, logdir):
     if zerofiles:
         return None
 
-    # Create the logging directory and setup cmor
-    if logdir:
-        logpath = logdir
-    else:
-        outpath, _ = os.path.split(logger.__dict__["handlers"][0].baseFilename)
-        logpath = os.path.join(outpath, "cmor_logs")
-    os.makedirs(logpath, exist_ok=True)
-
     setup_cmor(
         var_name=VAR_NAME,
         table_path=tables,
         table_name=TABLE,
         user_input_path=user_input_path,
+        cmor_log_dir=cmor_log_dir,
     )
 
     msg = "{}: CMOR setup complete".format(VAR_NAME)
