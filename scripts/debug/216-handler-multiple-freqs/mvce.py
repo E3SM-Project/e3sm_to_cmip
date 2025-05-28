@@ -22,7 +22,7 @@ from e3sm_to_cmip.main import main
 # )
 
 # VAR_LIST = "rlut, "
-VAR_LIST = "rlut, "
+VAR_LIST = "rlut, prc"
 
 # The output path for CMORized datasets. Update as needed.
 OUTPUT_PATH = "/lcrc/group/e3sm/public_html/e3sm_to_cmip/216-handler-freqs"

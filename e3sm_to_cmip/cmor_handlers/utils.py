@@ -182,37 +182,18 @@ def derive_handlers(
     cannot_derive: List[str] = []
 
     for var in cmip_vars:
-        # Try to get all matching handlers for a variable.
         var_handlers = handlers_by_var.get(var)
         if var_handlers is None:
             missing_handlers.append(var)
             continue
 
-        # Filter handlers whose CMIP table is not compatible with the specified
-        # frequency. For example, "CMIP6_Amon.json" is not compatible with
-        # "day" frequency, so it should not be used for deriving the handler.
-        var_handlers = _filter_handlers_by_freq(var_handlers, freq)
-
-        # Try to derive the variable handler using the E3SM variables from
-        # the input dataset(s).
-        derived_handler = _derive_handler(var, e3sm_vars, var_handlers)
+        derived_handler = _derive_handler(
+            var_handlers, freq, realm, var, cmip_tables_path, e3sm_vars
+        )
         if derived_handler is None:
             cannot_derive.append(var)
             continue
 
-        # Update which CMIP table to use for lookup if a custom frequency is
-        # passed.
-        if freq != "mon":
-            derived_handler["table"] = _get_table_for_non_monthly_freq(
-                derived_handler["name"],
-                derived_handler["table"],
-                freq,
-                realm,
-                cmip_tables_path,
-            )
-
-        # Check the variable handler table frequency aligns with the specified
-        # frequency.
         derived_handlers.append(derived_handler)
 
     if len(missing_handlers) > 0:
@@ -228,6 +209,115 @@ def derive_handlers(
         )
 
     return derived_handlers
+
+
+def _derive_handler(
+    var_handlers: List[Dict[str, Any]],
+    freq: Frequency,
+    realm: Union[Realm, MPASRealm],
+    var: str,
+    cmip_tables_path: str,
+    e3sm_vars: List[str],
+) -> Optional[Dict[str, Any]]:
+    """Attempts to derive a handler for a CMIP variable.
+
+    The function first filters the handlers to those compatible with the
+    requested frequency. It then tries to find a handler whose required raw
+    E3SM variables are present in the input E3SM variable list. If no compatible
+    handler is found, and no handlers match the requested frequency, it attempts
+    to update the handler's table to match the requested frequency and tries again.
+
+    Parameters
+    ----------
+    var_handlers : List[Dict[str, Any]]
+        List of variable handler dictionaries.
+    freq : Frequency
+        The requested output frequency.
+    realm : Union[Realm, MPASRealm]
+        The realm.
+    cmip_tables_path : str
+        Path to the CMIP6 tables.
+    var : str
+        The CMIP variable name.
+    e3sm_vars : List[str]
+        List of available E3SM variables.
+
+    Returns
+    -------
+    Optional[Dict[str, Any]]
+        The derived handler dictionary if found, otherwise None.
+    """
+    # Step 1: Filter handlers by frequency and attempt to derive a handler.
+    filtered_handlers = _filter_handlers_by_freq(var_handlers, freq)
+    derived_handler = _derive_handler_with_e3sm_vars(var, e3sm_vars, filtered_handlers)
+    if derived_handler is not None:
+        return derived_handler
+
+    # Step 2: Fallback for non-monthly frequencies
+    # If no suitable handler can be derived, try updating the table for each handler
+    # and try deriving a handler again. This maintains backwards compatibility.
+    if freq != "mon":
+        derived_handler = _try_update_handlers_for_freq(
+            var_handlers, var, e3sm_vars, freq, realm, cmip_tables_path
+        )
+
+    return derived_handler
+
+
+def _try_update_handlers_for_freq(
+    var_handlers: List[Dict[str, Any]],
+    var: str,
+    e3sm_vars: List[str],
+    freq: Frequency,
+    realm: Union[Realm, MPASRealm],
+    cmip_tables_path: str,
+) -> Optional[Dict[str, Any]]:
+    """
+    Attempts to update the 'table' field of each handler to match the requested
+    non-monthly frequency, then tries to derive a handler using the updated handlers.
+
+    This function is used as a fallback when no handler matches the requested
+    frequency directly. It updates the handler's table to the appropriate CMIP6
+    table for the given frequency and realm, then checks if a handler can be
+    derived using the available E3SM variables.
+
+    Parameters
+    ----------
+    var_handlers : List[Dict[str, Any]]
+        List of handler dictionaries for the CMIP variable.
+    var : str
+        The CMIP variable name.
+    e3sm_vars : List[str]
+        List of available E3SM variables.
+    freq : Frequency
+        The requested output frequency (e.g., "day", "1hr").
+    realm : Union[Realm, MPASRealm]
+        The realm (e.g., "atm", "lnd", "mpaso").
+    cmip_tables_path : str
+        Path to the CMIP6 tables.
+
+    Returns
+    -------
+    Optional[Dict[str, Any]]
+        The derived handler dictionary if found, otherwise None.
+    """
+    updated_handlers = []
+
+    for var_handler in var_handlers:
+        # Make a shallow copy to avoid mutating the original handler
+        handler_copy = var_handler.copy()
+        # Update the table to match the requested frequency and realm
+        handler_copy["table"] = _get_table_for_non_monthly_freq(
+            handler_copy["name"],
+            handler_copy["table"],
+            freq,
+            realm,
+            cmip_tables_path,
+        )
+        updated_handlers.append(handler_copy)
+
+    # Try to derive a handler using the updated handlers and available E3SM variables
+    return _derive_handler_with_e3sm_vars(var, e3sm_vars, updated_handlers)
 
 
 def _filter_handlers_by_freq(
@@ -288,7 +378,7 @@ def _is_cmip_table_frequency_compatible(freq: Frequency, handler_table: str) -> 
     return is_compatible
 
 
-def _derive_handler(
+def _derive_handler_with_e3sm_vars(
     cmip_var: str, e3sm_vars: List[str], handlers: List[Dict[str, Any]]
 ) -> Optional[Dict[str, Any]]:
     """Derives a handler a CMIP variable based on the input E3SM variables.
