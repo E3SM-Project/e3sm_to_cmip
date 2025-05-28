@@ -1,6 +1,9 @@
 ;@/global/cscratch1/sd/xie7/qboi/TEM_calculate/idl/io/netcdf.pro
 ;@/global/cscratch1/sd/xie7/qboi/TEM_calculate/idl/io/netcdf_dims.pro
 ;@/global/cscratch1/sd/xie7/qboi/TEM_calculate/idl/io/netcdf_global.pro
+;@/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/tem/netcdf.pro
+;@/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/tem/netcdf_dims.pro
+;@/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/tem/netcdf_global.pro
 
 
 pro calc_epflux,flag,lat,lon,lev,levels,ilevels,lats,P0,T,U,V,omega,$

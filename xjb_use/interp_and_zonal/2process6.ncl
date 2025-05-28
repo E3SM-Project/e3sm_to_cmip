@@ -1,5 +1,5 @@
 ;;for monthly
-vars=(/"U","V","T","OMEGA","Z3"/)
+vars=(/"O3","H2OLNZ"/)
 case="v3.ccmi.PD_INT_custom30"
 scale="daily";monthly"
 year="10yr"
@@ -13,14 +13,14 @@ plevo2=plevo
 plevo=plevo/100.
 plevo@units="hPa"
 ;;
-dir2="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/";+"day/"
+dir2="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/"
 ;;
 rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
 fraw=addfile(rawdata,"r")
 ;;
 ndays=365
 ;;
-do i=4,4;0,4
+do i=0,1
 	dir="/global/cfs/cdirs/e3sm/xie7/ccmi/"+case+"/output/"+vars(i)+"/post/atm/180x360_aave/ts/"+scale+"/"+year+"/"
 	fils=systemfunc("ls "+dir+"*nc")
 	;;
@@ -35,7 +35,8 @@ do i=4,4;0,4
 		f1=addfile(fils(k2),"r")
 		;;
 	aa=f1->$vars(i)$(0+kk*ndays:ndays-1+kk*ndays,:,:,:)
-	printVarSummary(aa)
+	;;convert to 1e+6
+	aa=aa*1e+6
 	;;
 	fil1="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/PS/post/atm/180x360_aave/ts/daily/90yr/PS_001101_010012.nc"
 	f2=addfile(fil1,"r")
@@ -55,30 +56,7 @@ do i=4,4;0,4
 	aa_vint&plev42@long_name="pressure"
 	aa_vint&plev42@positive="down"
 	delete(aa_vint&plev42@_FillValue)
-	;delete(aa_vint@_FillValue)
-	;;
-	;fil2=dir2+vars(i)+"_"+case+"_"+scale+"_"+year+"_"+times(k2)+"_3D_"+j+".nc"
-	;fil2=dir2+"output/"+case+"/day/3D/"+vars(i)+"_001101_001112"+".nc"
-	if ((11+j).lt.100) then
-		fil2=dir2+"output/"+case+"/day/3D/"+vars(i)+"_00"+(11+j)+"01_00"+(11+j)+"12"+".nc"
-	else
-		fil2=dir2+"output/"+case+"/day/3D/"+vars(i)+"_0"+(11+j)+"01_0"+(11+j)+"12"+".nc"
-	end if
-	;;
-	system("rm -rf "+fil2)
-	setfileoption("nc","Format","LargeFile")
-	f3=addfile(fil2,"c")
-	filedimdef( f3, "time", ndays, True)
-	f3->$vars(i)$=aa_vint
-	f3->lat_bnds=f1->lat_bnds
-	f3->lon_bnds=f1->lon_bnds
-	f3->time_bnds=f1->time_bnds(0+kk*ndays:ndays-1+kk*ndays,:)
-	;;
-;if (False) then
-if (i.eq.4) then;;only zg needs daily and zonal mean
 	aa_vint_zonal=dim_avg_n_Wrap(aa_vint,3)
-		;fil3=dir2+vars(i)+"_"+case+"_"+scale+"_"+year+"_"+times(k2)+"_2D_"+j+".nc"
-		;fil3=dir2+"output/"+case+"/day/2D/"+vars(i)+"_001101_001112"+".nc"
 	;;
 	if ((11+j).lt.100) then
                 fil3=dir2+"output/"+case+"/day/2D/"+vars(i)+"_00"+(11+j)+"01_00"+(11+j)+"12"+".nc"
@@ -93,7 +71,6 @@ if (i.eq.4) then;;only zg needs daily and zonal mean
         f4->$vars(i)$=aa_vint_zonal
 	f4->lat_bnds=f1->lat_bnds
 	f4->time_bnds=f1->time_bnds(0+kk*ndays:ndays-1+kk*ndays,:)
-end if
 	;;
 	delete(aa)
 	delete(ps)

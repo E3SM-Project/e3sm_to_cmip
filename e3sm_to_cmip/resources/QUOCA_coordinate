@@ -231,7 +231,7 @@
         "plevTEM": {
             "comment": "Pressure levels at model-levels resolution for offline calculation of TEM quantities. Exact levels should be chosen as close as possible to model levels and hence will be model-dependent.",
             "standard_name": "air_pressure", 
-            "units": "Pa", 
+            "units": "hPa", 
             "axis": "Z", 
             "long_name": "pressure", 
             "climatology": "", 

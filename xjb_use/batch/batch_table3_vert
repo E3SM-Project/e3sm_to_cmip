@@ -8,27 +8,26 @@ VAR1=(T  U  V  OMEGA  Z3)
 VAR2=(ta ua va wap    zg)
 #
 case=v3.ccmi.PD_INT_custom30
-scale=day
-#mon
+scale=6hrPt
 scale1=$scale
 scale2=$scale\Z
 #
-for i in {0..4..1}; do
-#for i in {2..2..1}; do
+#for i in {0..4..1}; do
+for i in {1..1..1}; do
 FILENAME=$case\_${VAR1[i]}_$scale1.sh
 cp $DIR/sub  $FILENAME
 echo ${VAR1[i]}
 sed -i "/var1=/c  var1=${VAR1[i]}"       $FILENAME
 sed -i "/var2=/c  var2=${VAR2[i]}\_$scale1"   $FILENAME
-sed -i "/input=/c  input=/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/$scale/3D/"  $FILENAME
+sed -i "/input=/c  input=/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/hourly/3D/"  $FILENAME
 ./$FILENAME >& output_$scale1\_${VAR1[i]}    #&
 #
 FILENAME=$case\_${VAR1[i]}_$scale2.sh
 cp $DIR/sub  $FILENAME
 sed -i "/var1=/c  var1=${VAR1[i]}"       $FILENAME
 sed -i "/var2=/c  var2=${VAR2[i]}\_$scale2"  $FILENAME
-sed -i "/input=/c  input=/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/$scale/2D/"  $FILENAME
-#./$FILENAME >& output_$scale2\_${VAR1[i]}    &
+sed -i "/input=/c  input=/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/hourly/2D/"  $FILENAME
+./$FILENAME >& output_$scale2\_${VAR1[i]}    &
 done
 
 

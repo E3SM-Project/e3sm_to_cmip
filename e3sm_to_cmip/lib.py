@@ -333,7 +333,7 @@ def handle_simple(
                 else:
                     dims = ["lat", "lon"]
 
-                for depth_dim in ["lev", "qboi30", "levgrnd","plev8","plev42"]:
+                for depth_dim in ["lev", "qboi30", "levgrnd","plev8","plev42","plevTEM"]:
                     if depth_dim in new_data.keys():
                         dims.insert(1, depth_dim)
 
@@ -559,8 +559,11 @@ def handle_variables(
                 elif "plev42" in new_data.keys()  and "lon" in new_data.keys():
                     dims = (timename, "plev42", "lat","lon")
                 elif "plev42" in new_data.keys()  and "lon" not in new_data.keys():
-                    print("Jinbo Xie in plev42 ")
                     dims = (timename, "plev42", "lat")
+                elif "plevTEM" in new_data.keys() and "lon" in new_data.keys():
+                    dims = (timename, "plevTEM", "lat","lon")
+                elif "plevTEM" in new_data.keys() and "lon" not in new_data.keys():
+                    dims = (timename, "plevTEM", "lat")
                 ds[outvar_name] = (dims, new_data[var_name])
                 for d in dims:
                     ds.coords[d] = new_data[d][:]
@@ -673,7 +676,7 @@ def get_dimension_data(filename, variable, levels=None, get_dims=False):
     variable_data = ds[variable]
 
     # load
-    if "qboi30" in ds.dims or "lev" in ds.dims or "plev8" in ds.dims or "plev42" in ds.dims:
+    if "qboi30" in ds.dims or "lev" in ds.dims or "plev8" in ds.dims or "plev42" in ds.dims or "plevTEM" in ds.dims:
         data[variable] = variable_data.values
     else:
         data[variable] = variable_data

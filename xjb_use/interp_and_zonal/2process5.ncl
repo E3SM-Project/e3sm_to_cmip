@@ -1,5 +1,5 @@
 ;;for monthly
-vars=(/"U","V","T","OMEGA","Z3"/)
+vars=(/"O3","H2OLNZ","AODABS","E90","NO","NO2","N2OLNZ","N2O5","HNO3","OH","HO2","CH4LNZ","SO2","jo1dU","NOYLNZ"/)
 case="v3.ccmi.PD_INT_custom30"
 scale="monthly"
 year="90yr"
@@ -25,6 +25,11 @@ do i=0,4
 	f1=addfile(fil,"r")
 	do j=0,9;;for 90yr simulation only
 	aa=f1->$vars(i)$(0+j*108:108+j*108-1,:,:,:)
+	;;convert to ppm for those tracers 
+	if (vars(i).ne."AODABS".and.\
+	    vars(i).ne."jo1dU") then
+	    aa=aa*1e+6
+    	end if
 	;;
 	fil1="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/PS/post/atm/180x360_aave/ts/monthly/90yr/PS_001101_010012.nc"
 	f2=addfile(fil1,"r")
@@ -45,16 +50,6 @@ do i=0,4
 	aa_vint&plev42@positive="down"
 	delete(aa_vint&plev42@_FillValue)
 	;;
-	fil2=dir2+vars(i)+"_"+case+"_"+scale+"_"+year+"_"+time+"_3D_"+j+".nc"
-	system("rm -rf "+fil2)
-	setfileoption("nc","Format","LargeFile")
-	f3=addfile(fil2,"c")
-	filedimdef( f3, "time", 108, True)
-	f3->$vars(i)$=aa_vint
-	f3->lat_bnds=f1->lat_bnds
-	f3->lon_bnds=f1->lon_bnds
-	f3->time_bnds=f1->time_bnds(0+j*108:108+j*108-1,:)
-	;;
 	aa_vint_zonal=dim_avg_n_Wrap(aa_vint,3)
 	fil3=dir2+vars(i)+"_"+case+"_"+scale+"_"+year+"_"+time+"_2D_"+j+".nc"
         system("rm -rf "+fil3)
@@ -72,27 +67,11 @@ do i=0,4
 	delete(aa_vint_zonal)
 	end do
 	;;connect the data together
-	system("rm -rf "+dir2+"output/"+case+"/3D/"+vars(i)+"_"+time+".nc")
 	system("rm -rf "+dir2+"output/"+case+"/2D/"+vars(i)+"_"+time+".nc")
-	;;
-	system("mkdir -p "+dir2+"output/"+case+"/3D/")
 	system("mkdir -p "+dir2+"output/"+case+"/2D/")
-	;;
-	system("ncrcat  "+dir2+vars(i)+"*3D*nc "+dir2+"output/"+case+"/3D/"+vars(i)+"_"+time+".nc")
 	system("ncrcat  "+dir2+vars(i)+"*2D*nc "+dir2+"output/"+case+"/2D/"+vars(i)+"_"+time+".nc")
-	;system("ncrcat -C -x -v lat_bnds,lon_bnds "+dir2+vars(i)+"*3D*nc "+dir2+"output/"+case+"/3D/"+vars(i)+"_"+time+".nc")
-	;system("ncrcat -C -x -v lat_bnds,lon_bnds "+dir2+vars(i)+"*2D*nc "+dir2+"output/"+case+"/2D/"+vars(i)+"_"+time+".nc")
-	;system("ncks -A -v lat_bnds,lon_bnds "+dir2+vars(i)+"*3D*_0.nc "+dir2+"output/"+case+"/3D/"+vars(i)+"_"+time+".nc")
-	;system("ncks -A -v lat_bnds,lon_bnds "+dir2+vars(i)+"*2D*_0.nc "+dir2+"output/"+case+"/2D/"+vars(i)+"_"+time+".nc")
-	system("rm -rf "+dir2+vars(i)+"*3D*nc ")
 	system("rm -rf "+dir2+vars(i)+"*2D*nc ")
 end do
 ;;
-
-
-
-
-
-
 
 exit

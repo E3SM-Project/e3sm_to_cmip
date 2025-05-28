@@ -1,5 +1,9 @@
 ;;for monthly
-vars=(/"U","V","T","OMEGA","Z3"/)
+vars=(/"TTEND_TOT","QRS","QRSC","QRL","QRLC",\
+       "UTEND_CLUBB","UTGWORO","UTGWSPEC",\
+       "VTEND_CLUBB","VTGWORO","VTGWSPEC",\
+       "TOT_CLD_VISTAU","CONCLD"/);,"CLDTOT"/)
+	;;
 case="v3.ccmi.PD_INT_custom30"
 scale="monthly"
 year="90yr"
@@ -13,12 +17,12 @@ plevo2=plevo
 plevo=plevo/100.
 plevo@units="hPa"
 ;;
-dir2="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/"
+dir2="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/";+"month/"
 ;;
 rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
 fraw=addfile(rawdata,"r")
 ;;
-do i=0,4
+do i=5,13;;
 	dir="/global/cfs/cdirs/e3sm/xie7/ccmi/"+case+"/output/"+vars(i)+"/post/atm/180x360_aave/ts/"+scale+"/"+year+"/"
 	fil=dir+vars(i)+"_"+time+".nc"
 	;;
@@ -72,18 +76,14 @@ do i=0,4
 	delete(aa_vint_zonal)
 	end do
 	;;connect the data together
-	system("rm -rf "+dir2+"output/"+case+"/3D/"+vars(i)+"_"+time+".nc")
-	system("rm -rf "+dir2+"output/"+case+"/2D/"+vars(i)+"_"+time+".nc")
+	system("rm -rf "+dir2+"output/"+case+"/month/3D/"+vars(i)+"_"+time+".nc")
+	system("rm -rf "+dir2+"output/"+case+"/month/2D/"+vars(i)+"_"+time+".nc")
 	;;
-	system("mkdir -p "+dir2+"output/"+case+"/3D/")
-	system("mkdir -p "+dir2+"output/"+case+"/2D/")
+	system("mkdir -p "+dir2+"output/"+case+"/month/3D/")
+	system("mkdir -p "+dir2+"output/"+case+"/month/2D/")
 	;;
-	system("ncrcat  "+dir2+vars(i)+"*3D*nc "+dir2+"output/"+case+"/3D/"+vars(i)+"_"+time+".nc")
-	system("ncrcat  "+dir2+vars(i)+"*2D*nc "+dir2+"output/"+case+"/2D/"+vars(i)+"_"+time+".nc")
-	;system("ncrcat -C -x -v lat_bnds,lon_bnds "+dir2+vars(i)+"*3D*nc "+dir2+"output/"+case+"/3D/"+vars(i)+"_"+time+".nc")
-	;system("ncrcat -C -x -v lat_bnds,lon_bnds "+dir2+vars(i)+"*2D*nc "+dir2+"output/"+case+"/2D/"+vars(i)+"_"+time+".nc")
-	;system("ncks -A -v lat_bnds,lon_bnds "+dir2+vars(i)+"*3D*_0.nc "+dir2+"output/"+case+"/3D/"+vars(i)+"_"+time+".nc")
-	;system("ncks -A -v lat_bnds,lon_bnds "+dir2+vars(i)+"*2D*_0.nc "+dir2+"output/"+case+"/2D/"+vars(i)+"_"+time+".nc")
+	system("ncrcat  "+dir2+vars(i)+"*3D*nc "+dir2+"output/"+case+"/month/3D/"+vars(i)+"_"+time+".nc")
+	system("ncrcat  "+dir2+vars(i)+"*2D*nc "+dir2+"output/"+case+"/month/2D/"+vars(i)+"_"+time+".nc")
 	system("rm -rf "+dir2+vars(i)+"*3D*nc ")
 	system("rm -rf "+dir2+vars(i)+"*2D*nc ")
 end do

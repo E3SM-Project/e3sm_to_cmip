@@ -1,28 +1,34 @@
 ;@/global/cscratch1/sd/xie7/qboi/TEM_calculate/idl/io/netcdf_dims.pro
 ;@/global/cscratch1/sd/xie7/qboi/TEM_calculate/idl/io/netcdf.pro
+;@/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/tem/netcdf_dims.pro
+;@/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/tem/netcdf.pro
 ;
-runname='obsclim_02'
+runname='v3.ccmi.PD_INT_custom30'
 count=2
 offset='9';'2'
-years='1979'
-runname1=runname+'_'+years+'_'+offset
+year1='0011'
+year2='0012'
+runname1=runname+'_'+year1+'_'+offset
 ;
-fdir_pre='/global/cscratch1/sd/xie7/qboi/TEM_calculate/med/qboi_ts/'+runname+'/var_h4/'
-fdir_aft='/post/atm/180x360_aave/ts/6-hourly-h4/1yr/'
+fdiri='/global/cfs/cdirs/e3sm/xie7/ccmi/'+runname+'/output/U/post/atm/180x360_aave/ts/hourly/2yr/'
 ;
-fdir1=fdir_pre+'T'+fdir_aft
-fdir2=fdir_pre+'U'+fdir_aft
-fdir3=fdir_pre+'V'+fdir_aft
-fdir4=fdir_pre+'OMEGA'+fdir_aft
+fdir1='/global/cfs/cdirs/e3sm/xie7/ccmi/'+runname+'/output/T/post/atm/180x360_aave/ts/hourly/2yr/'
+fdir2='/global/cfs/cdirs/e3sm/xie7/ccmi/'+runname+'/output/U/post/atm/180x360_aave/ts/hourly/2yr/'
+fdir3='/global/cfs/cdirs/e3sm/xie7/ccmi/'+runname+'/output/V/post/atm/180x360_aave/ts/hourly/2yr/'
+fdir4='/global/cfs/cdirs/e3sm/xie7/ccmi/'+runname+'/output/OMEGA/post/atm/180x360_aave/ts/hourly/2yr/'
 	;
-	fdiro='/global/cscratch1/sd/xie7/qboi/TEM_calculate/idl/output/'+runname+'/'
+	fdiro='/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/'+runname+'/tem/'
 	;
-	file1='T_'+years+'01_'+years+'12.nc'
-	file2='U_'+years+'01_'+years+'12.nc'
-	file3='V_'+years+'01_'+years+'12.nc'
-	file4='OMEGA_'+years+'01_'+years+'12.nc'
+	file1='T_'+year1+'01_'+year2+'12.nc'
+	file2='U_'+year1+'01_'+year2+'12.nc'
+	file3='V_'+year1+'01_'+year2+'12.nc'
+	file4='OMEGA_'+year1+'01_'+year2+'12.nc'
 	;
-	fnin=fdir1+file1
+	fnin='out.nc'
+	;print,fnin
+	;exit
+	;'/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/U/post/atm/180x360_aave/ts/hourly/2yr/new/out.nc'
+	;fnin=fdir1+file1
 	fnin1=fdir1+file1
 	fnin2=fdir2+file2
 	fnin3=fdir3+file3
@@ -37,6 +43,11 @@ fdir4=fdir_pre+'OMEGA'+fdir_aft
 ; Read in dimensions and coordinates from file
 ;------------------------------------------------------------------------
 netcdf_dims,0,fnin,'lat',lat
+
+
+print,lat
+exit
+
 netcdf_dims,0,fnin,'lon',lon
 netcdf_dims,0,fnin,'lev',lev
 netcdf_dims,0,fnin,'time',nt
@@ -114,7 +125,7 @@ NCDF_CONTROL, id, /FILL
 ;(time, lev, lat, lon)
 xid = NCDF_DIMDEF(id, 'lon', 360)
 yid = NCDF_DIMDEF(id, 'lat', 180)
-zid = NCDF_DIMDEF(id, 'lev', 72)
+zid = NCDF_DIMDEF(id, 'lev', 80);for e3smv3
 tid = NCDF_DIMDEF(id, 'time', /UNLIMITED)
 ;
 ; Define variables:
@@ -159,7 +170,7 @@ NCDF_ATTPUT, id, vid_4, 'units', 'm'
 NCDF_ATTPUT, id, vid_7, 'units',  'days since 1870-01-01 00:00:00'
 NCDF_ATTPUT, id, vid_7, 'calendar','noleap'
 ;
-NCDF_ATTPUT, id, /GLOBAL, 'Title', 'TEM calculation for QBOI'
+NCDF_ATTPUT, id, /GLOBAL, 'Title', 'TEM calculation for CCMI'
 ; Put file in data mode:
 NCDF_CONTROL, id, /ENDEF
 ; Input data:

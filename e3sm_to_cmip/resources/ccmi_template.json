@@ -7,7 +7,7 @@
 
   "#note_experiment_id": "QUOCA valid experiment_ids are found in QUOCA_CV.json",
 
-  "experiment":"Climate run with zonal-mean tropical stratosphere nudged to reanalysis",
+  "experiment":"Climate run with AMIP boundary conditions and full interactive chemistry. PD_INT in protocol document.",
 
   "experiment_id": "PDINT",
 
