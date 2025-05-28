@@ -40,13 +40,7 @@ OCEAN_TABLES = ["CMIP6_Omon.json", "CMIP6_Ofx.json"]
 SEAICE_TABLES = ["CMIP6_SImon.json"]
 
 
-FREQUENCIES = {
-    "regular": ("mon",),
-    "high": ("day", "6hrLev", "6hrPlev", "6hrPlevPt", "3hr", "1hr"),
-}
-
-# Variables that have both a self-named and "_highfreq" handler.
-HIGHFREQ_VARS = ["pr", "rlut", "tasmin", "tasmax"]
+FREQUENCIES = ["mon", "day", "6hrLev", "6hrPlev", "6hrPlevPt", "3hr", "1hr"]
 
 
 def print_debug(e):
@@ -329,29 +323,6 @@ def get_handler_info_msg(handler):
     if handler.get("levels"):
         msg["Levels"] = handler["levels"]
     return msg
-
-
-def _use_highfreq_handler(var: str, freq: str) -> bool:
-    """
-    Use the high frequency version of a variable handler based on the
-    specified frequency.
-
-    For example, for "pr" with a frequency of "day", use the handler
-    "pr_highfreq.py" instead of "pr.py".
-
-    Parameters
-    ----------
-    var : str
-        The variable.
-    freq : str
-        The frequency.
-
-    Returns
-    -------
-    bool
-        True if high frequency applies to variable, otherwise False.
-    """
-    return var in HIGHFREQ_VARS and freq in FREQUENCIES["high"]
 
 
 def _is_table_supported_by_realm(table: str, realm: str) -> bool:
