@@ -18,7 +18,7 @@ from e3sm_to_cmip._logger import _setup_child_logger
 
 logger = _setup_child_logger(__name__)
 
-
+FREQUENCIES = ["mon", "day", "6hrLev", "6hrPlev", "6hrPlevPt", "3hr", "1hr"]
 ATMOS_TABLES = [
     "CMIP6_Amon.json",
     "CMIP6_day.json",
@@ -39,8 +39,44 @@ LAND_TABLES = ["CMIP6_Lmon.json", "CMIP6_LImon.json"]
 OCEAN_TABLES = ["CMIP6_Omon.json", "CMIP6_Ofx.json"]
 SEAICE_TABLES = ["CMIP6_SImon.json"]
 
-
-FREQUENCIES = ["mon", "day", "6hrLev", "6hrPlev", "6hrPlevPt", "3hr", "1hr"]
+# Mapping from CMIP6 table names to their associated frequency.
+# This dictionary helps determine the frequency category (e.g., "mon", "day", etc.)
+# for a given CMIP6 table name when deriving or validating variable handlers.
+# Keys are CMIP6 table filenames, values are their frequency strings.
+FREQUENCY_TO_CMIP_TABLES = {
+    "mon": [
+        "CMIP6_Amon.json",
+        "CMIP6_Lmon.json",
+        "CMIP6_LImon.json",
+        "CMIP6_fx.json",
+        "CMIP6_Ofx.json",
+        "CMIP6_CFmon.json",
+        "CMIP6_AERmon.json",
+        "CMIP6_Omon.json",
+        "CMIP6_SImon.json",
+    ],
+    "day": [
+        "CMIP6_day.json",
+        "CMIP6_CFday.json",
+        "CMIP6_AERday.json",
+    ],
+    "3hr": [
+        "CMIP6_3hr.json",
+        "CMIP6_CF3hr.json",
+    ],
+    "6hrLev": [
+        "CMIP6_6hrLev.json",
+    ],
+    "6hrPlev": [
+        "CMIP6_6hrPlev.json",
+    ],
+    "6hrPlevPt": [
+        "CMIP6_6hrPlevPt.json",
+    ],
+    "1hr": [
+        "CMIP6_AERhr.json",
+    ],
+}
 
 
 def print_debug(e):

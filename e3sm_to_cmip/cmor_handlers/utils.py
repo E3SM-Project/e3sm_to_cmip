@@ -13,7 +13,7 @@ from e3sm_to_cmip import (
 )
 from e3sm_to_cmip._logger import _setup_child_logger
 from e3sm_to_cmip.cmor_handlers.handler import VarHandler
-from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
+from e3sm_to_cmip.util import FREQUENCY_TO_CMIP_TABLES, _get_table_for_non_monthly_freq
 
 logger = _setup_child_logger(__name__)
 
@@ -188,6 +188,11 @@ def derive_handlers(
             missing_handlers.append(var)
             continue
 
+        # Filter handlers whose CMIP table is not compatible with the specified
+        # frequency. For example, "CMIP6_Amon.json" is not compatible with
+        # "day" frequency, so it should not be used for deriving the handler.
+        var_handlers = _filter_handlers_by_freq(var_handlers, freq)
+
         # Try to derive the variable handler using the E3SM variables from
         # the input dataset(s).
         derived_handler = _derive_handler(var, e3sm_vars, var_handlers)
@@ -206,6 +211,8 @@ def derive_handlers(
                 cmip_tables_path,
             )
 
+        # Check the variable handler table frequency aligns with the specified
+        # frequency.
         derived_handlers.append(derived_handler)
 
     if len(missing_handlers) > 0:
@@ -221,6 +228,64 @@ def derive_handlers(
         )
 
     return derived_handlers
+
+
+def _filter_handlers_by_freq(
+    handlers: List[Dict[str, Any]], freq: Frequency
+) -> List[Dict[str, Any]]:
+    """
+    Filters a list of variable handlers to include only those compatible with
+    the requested frequency.
+
+    Parameters
+    ----------
+    handlers : List[Dict[str, Any]]
+        The list of variable handlers to filter.
+    freq : Frequency
+        The requested output frequency (e.g., "mon", "day", "1hr", etc.).
+
+    Returns
+    -------
+    List[Dict[str, Any]]
+        A filtered list of variable handlers that match the requested frequency.
+    """
+    filtered_handlers = []
+
+    for handler in handlers:
+        handler_table = handler["table"]
+
+        if _is_cmip_table_frequency_compatible(freq, handler_table):
+            filtered_handlers.append(handler)
+
+    return filtered_handlers
+
+
+def _is_cmip_table_frequency_compatible(freq: Frequency, handler_table: str) -> bool:
+    """
+    Checks if the requested frequency is compatible with the CMIP table
+    frequency used by the handler.
+
+    Parameters
+    ----------
+    freq : Frequency
+        The requested output frequency (e.g., "mon", "day", "1hr", etc.).
+    handler_table : str
+        The name of the CMIP6 table (e.g., "CMIP6_Amon.json") used by the handler.
+
+    Returns
+    -------
+    bool
+        True if the table frequency matches the requested frequency, False otherwise.
+    """
+    valid_tables = FREQUENCY_TO_CMIP_TABLES.get(freq, [])
+    is_compatible = handler_table in valid_tables
+
+    if not is_compatible:
+        logger.debug(
+            f"Handler table '{handler_table}' is not compatible with frequency '{freq}'."
+        )
+
+    return is_compatible
 
 
 def _derive_handler(
