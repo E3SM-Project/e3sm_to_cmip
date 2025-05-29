@@ -128,8 +128,8 @@ def derive_handlers(
     cmip_tables_path: str,
     cmip_vars: List[str],
     e3sm_vars: List[str],
-    freq: Frequency = "mon",
-    realm: Union[Realm, MPASRealm] = "atm",
+    freq: Frequency,
+    realm: Union[Realm, MPASRealm],
 ) -> List[Dict[str, Any]]:
     """Derives the appropriate handler for each CMIP variable.
 
@@ -154,11 +154,11 @@ def derive_handlers(
         The list of CMIP6 variables to CMORize.
     e3sm_vars : Optional[List[str]]
         The list of E3SM variables from the input files to use for CMORizing.
-    freq : Optional[Frequency], optional
+    freq : Frequency
         The frequency used to derive the appropriate CMIP6 table for each
-        variable handler, by default "mon".
-    realm : Optional[str], optional
-        The realm, by default "atm".
+        variable handler.
+    realm : str
+        The realm.
 
     Returns
     -------
@@ -434,64 +434,6 @@ def _derive_handler(
     return None
 
 
-def _adjust_handlers_cmip_table_for_freq(
-    var_handlers: List[Dict[str, Any]],
-    freq: Frequency,
-    realm: Union[Realm, MPASRealm],
-    cmip_tables_path: str,
-) -> Optional[List[Dict[str, Any]]]:
-    """Update the 'table' field of each handler for the requested frequency and realm.
-
-    This function is used as a fallback when no handler matches the requested
-    frequency directly. It updates the handler's table to the appropriate CMIP6
-    table for the given frequency and realm, then checks if a handler can be
-    derived using the available E3SM variables.
-
-    Parameters
-    ----------
-    var_handlers : List[Dict[str, Any]]
-        List of handler dictionaries.
-    freq : Frequency
-        Requested output frequency.
-    realm : Union[Realm, MPASRealm]
-        Realm.
-    cmip_tables_path : str
-        Path to CMIP6 tables.
-
-    Returns
-    -------
-    Optional[List[Dict[str, Any]]]
-        Handlers with updated 'table' fields, if any handlers could be adjusted.
-        If no handlers could be adjusted, returns None.
-    """
-    handlers_new = []
-
-    for var_handler in var_handlers:
-        # Create a deep copy of the handler to avoid modifying the original
-        # This is necessary because the handler may be used in multiple places
-        # and we want to keep the original intact.
-        handler_copy = copy.deepcopy(var_handler)
-
-        # Update the table to match the requested frequency and realm
-        handler_copy["table"] = _get_table_for_non_monthly_freq(
-            handler_copy["name"],
-            handler_copy["table"],
-            freq,
-            realm,
-            cmip_tables_path,
-        )
-        handlers_new.append(handler_copy)
-
-    if len(handlers_new) == 0:
-        logger.debug(
-            f"No handlers could be adjusted for frequency '{freq}' in realm '{realm}'. "
-            "Make sure the handlers are defined correctly in `handlers.yaml`."
-        )
-        return None
-
-    return handlers_new
-
-
 def _select_handlers_for_freq(
     handlers: List[Dict[str, Any]], freq: Frequency
 ) -> List[Dict[str, Any]]:
@@ -593,3 +535,61 @@ def _find_handler_by_e3sm_vars(
             break
 
     return matching_handler
+
+
+def _adjust_handlers_cmip_table_for_freq(
+    var_handlers: List[Dict[str, Any]],
+    freq: Frequency,
+    realm: Union[Realm, MPASRealm],
+    cmip_tables_path: str,
+) -> Optional[List[Dict[str, Any]]]:
+    """Update the 'table' field of each handler for the requested frequency and realm.
+
+    This function is used as a fallback when no handler matches the requested
+    frequency directly. It updates the handler's table to the appropriate CMIP6
+    table for the given frequency and realm, then checks if a handler can be
+    derived using the available E3SM variables.
+
+    Parameters
+    ----------
+    var_handlers : List[Dict[str, Any]]
+        List of handler dictionaries.
+    freq : Frequency
+        Requested output frequency.
+    realm : Union[Realm, MPASRealm]
+        Realm.
+    cmip_tables_path : str
+        Path to CMIP6 tables.
+
+    Returns
+    -------
+    Optional[List[Dict[str, Any]]]
+        Handlers with updated 'table' fields, if any handlers could be adjusted.
+        If no handlers could be adjusted, returns None.
+    """
+    handlers_new = []
+
+    for var_handler in var_handlers:
+        # Create a deep copy of the handler to avoid modifying the original
+        # This is necessary because the handler may be used in multiple places
+        # and we want to keep the original intact.
+        handler_copy = copy.deepcopy(var_handler)
+
+        # Update the table to match the requested frequency and realm
+        handler_copy["table"] = _get_table_for_non_monthly_freq(
+            handler_copy["name"],
+            handler_copy["table"],
+            freq,
+            realm,
+            cmip_tables_path,
+        )
+        handlers_new.append(handler_copy)
+
+    if len(handlers_new) == 0:
+        logger.debug(
+            f"No handlers could be adjusted for frequency '{freq}' in realm '{realm}'. "
+            "Make sure the handlers are defined correctly in `handlers.yaml`."
+        )
+        return None
+
+    return handlers_new
