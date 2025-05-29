@@ -15,8 +15,8 @@ def main(args: list[str] | None = None):
 
     try:
         # Defer expensive imports and initialization.
-        from e3sm_to_cmip.runner import E3SMtoCMIP
         from e3sm_to_cmip._logger import _setup_child_logger, _setup_root_logger
+        from e3sm_to_cmip.runner import E3SMtoCMIP
 
         _setup_root_logger()
         logger = _setup_child_logger(__name__)
