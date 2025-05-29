@@ -7,7 +7,6 @@ from e3sm_to_cmip.util import (
     _get_table_for_non_monthly_freq,
     _get_table_info,
     _is_table_supported_by_realm,
-    _use_highfreq_handler,
 )
 
 
@@ -177,22 +176,6 @@ class TestGetTableInfo:
         expected = self.table_info
 
         assert result == expected
-
-
-class TestUseHighFreqHandler:
-    def test_returns_true_if_variable_supports_high_freq(self):
-        highfreq_vars = ["pr", "rlut"]
-        highfreqs = ["day", "6hrLev", "6hrPlev", "6hrPlevPt", "3hr", "1hr"]
-
-        for var in highfreq_vars:
-            for freq in highfreqs:
-                assert _use_highfreq_handler(var, freq) is True
-
-    def test_returns_false_if_variable_does_not_support_high_freq(self):
-        assert _use_highfreq_handler("pfull", "day") is False
-
-    def test_returns_false_if_frequency_is_not_high(self):
-        assert _use_highfreq_handler("pr", "mon") is False
 
 
 class TestIsTableSupportedByRealm:
