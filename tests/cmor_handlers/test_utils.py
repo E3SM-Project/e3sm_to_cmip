@@ -231,6 +231,18 @@ class TestDeriveHandlers:
                 realm="atm",
             )
 
+    def test_raises_error_when_table_does_not_exist(self):
+        with pytest.raises(
+            ValueError, match="Table `CMIP6_6hrLev.json` does not exist"
+        ):
+            derive_handlers(
+                self.tables_path,
+                cmip_vars=["pr"],
+                e3sm_vars=["PRECT"],
+                freq="6hrLev",
+                realm="atm",
+            )
+
     def test_returns_handler_with_updated_referenced_CMIP6_table_based_on_freq_arg(
         self,
     ):
@@ -377,17 +389,6 @@ class TestDeriveHandlers:
             cmip_vars=["pr"],
             e3sm_vars=[],
             freq="mon",
-            realm="atm",
-        )
-        assert result == []
-
-    def test_returns_none_when_no_matching_handler_for_freq(self):
-        # Use a frequency that is not supported by any handler
-        result = derive_handlers(
-            self.tables_path,
-            cmip_vars=["pr"],
-            e3sm_vars=["PRECT"],
-            freq="6hrLev",
             realm="atm",
         )
         assert result == []
