@@ -466,7 +466,7 @@
       "frequency": "mon",
       "modeling_realm": "aerosol",
       "standard_name": "mass_fraction_of_water_in_air",
-      "units": "1",
+      "units": "mol mol-1",
       "cell_methods": "longitude: mean time: mean",
       "cell_measures": "",
       "long_name": "Mass Fraction of Water",

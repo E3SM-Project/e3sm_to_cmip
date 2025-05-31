@@ -198,7 +198,7 @@
       "frequency": "day",
       "modeling_realm": "atmos",
       "standard_name": "mass_fraction_of_water_in_air",
-      "units": "ppm",
+      "units": "mol mol-1",
       "cell_methods": "longitude: mean time: mean",
       "cell_measures": "area: areacella",
       "long_name": "Water Vapor",

@@ -1,5 +1,5 @@
 """
-U to ua converter
+O3 to o3 converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -9,10 +9,10 @@ from e3sm_to_cmip.lib import handle_variables
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('U')]
-VAR_NAME = str('ua')
-VAR_UNITS = str("m s-1")
-TABLE = str('QUOCA_dayZ.json')
+RAW_VARIABLES = [str('O3')]
+VAR_NAME = str('o3')
+VAR_UNITS = str("mol mol-1")
+TABLE = str('QUOCA_monZ.json')
 LEVELS = {
     'name': str('plev42'),
     'units': str('Pa'),

@@ -130,7 +130,8 @@
             "gr2z": "regridded zonal mean data reported on a grid other than the native latitude grid and other than the preferred latitude target grid"
         },
         "realm": {
-            "atmos": "Atmosphere"
+            "atmos": "Atmosphere",
+	    "atmosChem":"Atmosphere chemistry"
         },
         "table_id": [
             "mon",
