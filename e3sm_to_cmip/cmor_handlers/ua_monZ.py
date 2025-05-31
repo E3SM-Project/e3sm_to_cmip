@@ -14,11 +14,10 @@ VAR_NAME = str('ua')
 VAR_UNITS = str("m s-1")
 TABLE = str('QUOCA_monZ.json')
 LEVELS = {
-    'name': str('qboi30'),
+    'name': str('plev42'),
     'units': str('Pa'),
-    'e3sm_axis_name': 'qboi30'
+    'e3sm_axis_name': 'plev42'
 }
-
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     outdata = data[RAW_VARIABLES[0]][index, :]

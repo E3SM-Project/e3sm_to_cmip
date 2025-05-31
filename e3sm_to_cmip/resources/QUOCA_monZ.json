@@ -525,7 +525,7 @@
       "cell_measures": "area: areacella",
       "long_name": "Aerosol Optical Depth",
       "comment": "",
-      "dimensions": "latitude plev42 time",
+      "dimensions": "latitude longitude time",
       "out_name": "aod",
       "type": "real",
       "positive": "",

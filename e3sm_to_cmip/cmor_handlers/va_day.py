@@ -1,5 +1,5 @@
 """
-T to ta converter
+V to va converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -9,10 +9,10 @@ from e3sm_to_cmip.lib import handle_variables
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('T')]
-VAR_NAME = str('ta')
-VAR_UNITS = str("K")
-TABLE = str('QUOCA_monZ.json')
+RAW_VARIABLES = [str('V')]
+VAR_NAME = str('va')
+VAR_UNITS = str("m s-1")
+TABLE = str('QUOCA_day.json')
 LEVELS = {
     'name': str('plev42'),
     'units': str('Pa'),

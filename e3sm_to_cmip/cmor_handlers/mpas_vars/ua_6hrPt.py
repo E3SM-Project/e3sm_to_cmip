@@ -21,7 +21,7 @@ LEVELS = {
 
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
-    outdata = data[RAW_VARIABLES[0]][index, :]
+    outdata = data[RAW_VARIABLES[0]][index,:]
     outdata[np.isnan(outdata)] = FILL_VALUE
     if kwargs.get('simple'):
         return outdata

@@ -1,5 +1,5 @@
 """
-FLNT to rlutconverter
+FLUT to rlutconverter
 """
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
@@ -10,7 +10,7 @@ from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 from e3sm_to_cmip.lib import handle_variables
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('FLNT')]
+RAW_VARIABLES = [str('FLUT')]
 VAR_NAME = str('rlut')
 VAR_UNITS = str('W m-2')
 TABLE = str('QUOCA_mon.json')
@@ -18,9 +18,9 @@ POSITIVE = str('up')
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
     """
-    rlut = FLNT
+    rlut = FLUT
     """
-    outdata = data['FLNT'][index, :].values
+    outdata = data['FLUT'][index, :].values
     outdata[np.isnan(outdata)] = FILL_VALUE
 
     if kwargs.get('simple'):

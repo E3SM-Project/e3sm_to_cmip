@@ -9,19 +9,19 @@ from e3sm_to_cmip.lib import handle_variables
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('T')]
+RAW_VARIABLES = [str('U')]
 VAR_NAME = str('ta')
 VAR_UNITS = str("K")
-TABLE = str('QUOCA_monZ.json')
+TABLE = str('QUOCA_6hrPt.json')
 LEVELS = {
-    'name': str('plev42'),
-    'units': str('Pa'),
-    'e3sm_axis_name': 'plev42'
+    'name': str('plevTEM'),
+    'units': str('hPa'),
+    'e3sm_axis_name': 'plevTEM'
 }
 
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
-    outdata = data[RAW_VARIABLES[0]][index, :]
+    outdata = data[RAW_VARIABLES[0]][index,:]
     outdata[np.isnan(outdata)] = FILL_VALUE
     if kwargs.get('simple'):
         return outdata

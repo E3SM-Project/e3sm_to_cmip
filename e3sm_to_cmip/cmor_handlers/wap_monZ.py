@@ -1,5 +1,5 @@
 """
-T to ta converter
+OMEGA to wap converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -9,9 +9,9 @@ from e3sm_to_cmip.lib import handle_variables
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('T')]
-VAR_NAME = str('ta')
-VAR_UNITS = str("K")
+RAW_VARIABLES = [str('OMEGA')]
+VAR_NAME = str('wap')
+VAR_UNITS = str("Pa s-1")
 TABLE = str('QUOCA_monZ.json')
 LEVELS = {
     'name': str('plev42'),
