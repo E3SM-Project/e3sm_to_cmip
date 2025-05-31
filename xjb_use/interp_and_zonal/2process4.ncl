@@ -9,13 +9,17 @@ dir2="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/"
 ;;
 n6hours=292
 ;;
-do i=0,3
+do i=3,3;0,3
 	dir="/global/cfs/cdirs/e3sm/xie7/ccmi/"+case+"/output/"+vars(i)+"/post/atm/180x360_aave/ts/"+scale+"/"+year+"/"
 	fils=systemfunc("ls "+dir+"*nc")
 	;;
-	times=str_get_cols(fils,104,116)
+	if (i.ne.3) then
+		times=str_get_cols(fils,104,116)
+	else
+		times=str_get_cols(fils,104+8,116+8)
+	end if
 	;;
-	print(fils)
+	;print(fils)
 	;;
 	do j=0,450-1;;for 90yr simulation only
 		;;

@@ -5,23 +5,25 @@
 #python  setup.py  install
 CASE=v3.ccmi.PD_INT_custom30
 DIR=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/batch/
-VAR1=(PSL  PS  PRECT  PRECC  FLUT  TREFHT  U10  TROP_P  TROP_T)
-VAR2=(psl  ps  pr     prc    rlut  tas     uas  ptp     tatp  )
-#VAR1=(PS  PRECT  PRECC  FLUT  TREFHT  U10  TROP_P  TROP_T PSL)
-#VAR2=(ps  pr     prc    rlut  tas     uas  ptp     tatp   psl)
+VAR1=(O3  H2OLNZ  E90  NO  NO2  N2OLNZ N2O5  HNO3  NOYLNZ OH  HO2  CH4LNZ SO2  jo1dU)
+VAR2=(o3  h2o     e90  no  no2  n2o    n2o5  hno3  noy    oh  ho2  ch4    so2  j_o3)
 scale=mon
 #
-#for i in {0..8..1}; do
-for i in {0..0..1}; do
+for i in {0..15..1}; do
 FILENAME=$CASE\_${VAR1[i]}\_mon.sh
 cp $DIR/sub  $FILENAME
 echo ${VAR1[i]}
+#sed -i "/input=/c input=/global/cfs/cdirs/e3sm/xie7/ccmi/$CASE/output/${VAR1[i]}/post/atm/180x360_aave/ts/monthly/90yr/" $FILENAME
+#sed -i "/var1=/c  var1=${VAR1[i]}"       $FILENAME
+#sed -i "/var2=/c  var2=${VAR2[i]}_mon"   $FILENAME
+#./$FILENAME >& output_${VAR1[i]}_mon    
+#
 sed -i "/input=/c input=/global/cfs/cdirs/e3sm/xie7/ccmi/$CASE/output/${VAR1[i]}/post/atm/180x360_aave/ts/monthly/90yr/" $FILENAME
 sed -i "/var1=/c  var1=${VAR1[i]}"       $FILENAME
-sed -i "/var2=/c  var2=${VAR2[i]}_mon"   $FILENAME
-./$FILENAME >& output_${VAR1[i]}_mon    
+sed -i "/var2=/c  var2=${VAR2[i]}_monZ"   $FILENAME
+./$FILENAME >& output_${VAR1[i]}_monZ
 #
-FILENAME=$CASE\_${VAR1[i]}\_day.sh
+FILENAME=$CASE\_${VAR1[i]}\_monZ.sh
 cp $DIR/sub  $FILENAME
 echo ${VAR1[i]}
 sed -i "/input=/c input=/global/cfs/cdirs/e3sm/xie7/ccmi/$CASE/output/${VAR1[i]}/post/atm/180x360_aave/ts/daily/30yr/" $FILENAME

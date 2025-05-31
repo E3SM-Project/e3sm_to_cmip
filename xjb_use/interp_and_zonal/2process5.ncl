@@ -1,5 +1,5 @@
 ;;for monthly
-vars=(/"O3","H2OLNZ","AODABS","E90","NO","NO2","N2OLNZ","N2O5","HNO3","OH","HO2","CH4LNZ","SO2","jo1dU","NOYLNZ"/)
+vars=(/"O3","H2OLNZ","E90","NO","NO2","N2OLNZ","N2O5","HNO3","OH","HO2","CH4LNZ","SO2","jo1dU","NOYLNZ"/);;AODABS is 2D and just use is enough
 case="v3.ccmi.PD_INT_custom30"
 scale="monthly"
 year="90yr"
@@ -18,9 +18,10 @@ dir2="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/"
 rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
 fraw=addfile(rawdata,"r")
 ;;
-do i=0,4
+do i=7,13
 	dir="/global/cfs/cdirs/e3sm/xie7/ccmi/"+case+"/output/"+vars(i)+"/post/atm/180x360_aave/ts/"+scale+"/"+year+"/"
 	fil=dir+vars(i)+"_"+time+".nc"
+	print(fil)
 	;;
 	f1=addfile(fil,"r")
 	do j=0,9;;for 90yr simulation only
@@ -36,7 +37,7 @@ do i=0,4
 	ps=f2->PS(0+j*108:108+j*108-1,:,:)
 	;;
 	aa_vint=vinth2p(aa,fraw->hyai,fraw->hybi,plevo,ps,1,(fraw->P0)/todouble(100.),1,False)
-	;;
+	
 	aa_vint!1="plev42"
 	;;
 	plevo@units="Pa"
@@ -67,9 +68,9 @@ do i=0,4
 	delete(aa_vint_zonal)
 	end do
 	;;connect the data together
-	system("rm -rf "+dir2+"output/"+case+"/2D/"+vars(i)+"_"+time+".nc")
-	system("mkdir -p "+dir2+"output/"+case+"/2D/")
-	system("ncrcat  "+dir2+vars(i)+"*2D*nc "+dir2+"output/"+case+"/2D/"+vars(i)+"_"+time+".nc")
+	system("rm -rf "+dir2+"output/"+case+"/"+scale+"/2D/"+vars(i)+"_"+time+".nc")
+	system("mkdir -p "+dir2+"output/"+case+"/"+scale+"/2D/")
+	system("ncrcat  "+dir2+vars(i)+"*2D*nc "+dir2+"output/"+case+"/"+scale+"/2D/"+vars(i)+"_"+time+".nc")
 	system("rm -rf "+dir2+vars(i)+"*2D*nc ")
 end do
 ;;

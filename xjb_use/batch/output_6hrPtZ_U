@@ -1,23 +1,0 @@
-2025-05-28 01:52:09,535_535:INFO:main:input_path = /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/hourly/2D/
-2025-05-28 01:52:09,535_535:INFO:main:output_path = /global/cfs/cdirs/e3sm/xie7/ccmi_output/
-2025-05-28 01:52:09,535_535:INFO:main:precheck_path = None
-[94m[*] [0mLoaded `ua_6hrPtZ` handler for variable `ua`.[94m[0m
-[94m[*] [0mWriting log output to: /global/cfs/cdirs/e3sm/xie7/ccmi_output/converter.log[94m[0m
-[92m[+] [0mRunning CMOR handlers in parallel
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [01:58<00:00, 118.06s/it]100%|██████████| 1/1 [01:58<00:00, 118.06s/it]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-[92m[+] [0m1 of 1 handlers complete

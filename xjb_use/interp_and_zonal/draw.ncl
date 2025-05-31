@@ -1,6 +1,6 @@
 load "/pscratch/sd/x/xie7/from_cori/Analysis/NCLep/self.ncl"
 begin
-skip=3;2;1;0
+skip=4;3;2;1;0
 draw_name="ccmi_"
 dir_draw="/pscratch/sd/x/xie7/ccmi/Analysis/PDF/"
 ;;
