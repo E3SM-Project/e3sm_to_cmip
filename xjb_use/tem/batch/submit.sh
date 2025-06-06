@@ -1,4 +1,14 @@
 #!/bin/bash 
+
+#SBATCH  --job-name=tem
+#SBATCH  --account=e3sm
+#SBATCH  --nodes=1
+#SBATCH  --output=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/tem/batch/tem.o%j
+#SBATCH  --exclusive
+#SBATCH  --time=00:30:00
+#SBATCH  --qos=regular
+#SBATCH  --constraint=cpu
+
 	module load idl
 	case='v3.ccmi.PD_INT_custom30'
 	year=11
