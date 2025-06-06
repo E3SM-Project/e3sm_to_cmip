@@ -23,8 +23,8 @@ ndays=365
 do i=0,1
 	dir="/global/cfs/cdirs/e3sm/xie7/ccmi/"+case+"/output/"+vars(i)+"/post/atm/180x360_aave/ts/"+scale+"/"+year+"/"
 	fils=systemfunc("ls "+dir+"*nc")
-	print(fils)
-	exit
+	;print(fils)
+	;exit
 	;;
 	times=str_get_cols(fils,104,116)
 	;;

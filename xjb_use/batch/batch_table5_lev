@@ -9,8 +9,8 @@ VAR1=(O3  H2OLNZ  E90  NO  NO2  N2OLNZ N2O5  HNO3  NOYLNZ OH  HO2  CH4LNZ SO2  j
 VAR2=(o3  h2o     e90  no  no2  n2o    n2o5  hno3  noy    oh  ho2  ch4    so2  jo3)
 scale=mon
 #
-for i in {0..13..1}; do
-#for i in {0..1..1}; do
+#for i in {0..13..1}; do
+for i in {1..1..1}; do
 FILENAME=$CASE\_${VAR1[i]}\_monZ.sh
 cp $DIR/sub  $FILENAME
 echo ${VAR1[i]}
@@ -20,13 +20,15 @@ sed -i "/var1=/c  var1=${VAR1[i]}"       $FILENAME
 sed -i "/var2=/c  var2=${VAR2[i]}_monZ"   $FILENAME
 ./$FILENAME >& output_${VAR1[i]}_monZ
 #
+if [ $i -le 1 ]; then
 FILENAME=$CASE\_${VAR1[i]}\_dayZ.sh
-#cp $DIR/sub  $FILENAME
-#echo ${VAR1[i]}
-#sed -i "/input=/c input=/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$CASE/day/2D/" $FILENAME
-#sed -i "/var1=/c  var1=${VAR1[i]}"       $FILENAME
-#sed -i "/var2=/c  var2=${VAR2[i]}_dayZ"   $FILENAME
-#./$FILENAME >& output_${VAR1[i]}_dayZ
+cp $DIR/sub  $FILENAME
+echo ${VAR1[i]}
+sed -i "/input=/c input=/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$CASE/day/2D/" $FILENAME
+sed -i "/var1=/c  var1=${VAR1[i]}"       $FILENAME
+sed -i "/var2=/c  var2=${VAR2[i]}_dayZ"   $FILENAME
+./$FILENAME >& output_${VAR1[i]}_dayZ
+fi
 done
 
 

@@ -9,9 +9,6 @@ for i in 0; do
 for j in 0; do
 for k in 0; do
 	#
-	echo ${case1[i]}
-	mkdir -p /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/tem/${case1[i]}
-	#
 	if [[ $k -eq 0 ]]; then
 		nyear_s=11
 		nyear_e=100
@@ -23,17 +20,18 @@ for k in 0; do
 	for ((year=$nyear_s;year<=$nyear_e;year+=2))
 	do
 	#
-	echo ${case1[i]}\_${case2[j]}\_${case3[k]} $nyear_s $nyear_e
-	exit
-	#for offset in {0..1}; do
-	offset=0
-	if [[ ! -f "submit_${case1[i]}\_${case2[j]}\_${case3[k]}\_$year.sh" ]]; 
+	echo ${case1[i]}\_${case2[j]}\_${case3[k]} $nyear_s $nyear_e $year
+	if [[ ! -f "submit_${case1[i]}\_${case2[j]}\_$year.sh" ]]; 
 then
 	
-	cp -r submit.sh	submit_${case1[i]}\_${case2[j]}\_${case3[k]}\_$year.sh
-	sed -i  "/case=/c 	case=${case1[i]}\_${case2[j]}\_${case3[k]}"	submit_${case1[i]}\_${case2[j]}${case3[k]}\_$year.sh
-	sed -i  "/year=/c	year=$year" submit_${case1[i]}\_${case2[j]}\_${case3[k]}\_$year.sh
-	#sbatch submit_${case1[i]}\_${case2[j]}\_${case3[k]}\_$year.sh
+	cp -r submit.sh	submit_${case1[i]}\_${case2[j]}\_$year.sh
+		if [[ $i -eq 0 ]]; then
+			sed -i  "/case=/c 	case='${case1[i]}'"	submit_${case1[i]}\_${case2[j]}_$year.sh
+		else
+			sed -i  "/case=/c       case='${case1[i]}\_${case2[j]}'"        submit_${case1[i]}\_${case2[j]}_$year.sh
+		fi
+	sed -i  "/year=/c	year=$year" submit_${case1[i]}\_${case2[j]}_$year.sh
+	sbatch submit_${case1[i]}\_${case2[j]}\_${case3[k]}\_$year.sh
 fi
 
 	#sleep 5
