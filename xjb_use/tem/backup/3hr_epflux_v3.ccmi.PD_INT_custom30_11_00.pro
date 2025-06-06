@@ -3,11 +3,11 @@
 ;@/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/tem/netcdf_dims.pro
 ;@/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/tem/netcdf.pro
 ;
-runname='v3.ccmi.PD_INT_custom30'
-offset='9'
-count=12
-year1='0011'
-year2='0012'
+ runname='v3.ccmi.PD_INT_custom30'
+ offset='00'
+ count=73
+ year1='0011'
+ year2='0012'
 runname1=runname+'_'+year1+'_'+year2+'_'+offset
 	;
 	fdir1='/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/tem/'+runname+'/'
