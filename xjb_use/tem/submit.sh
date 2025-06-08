@@ -1,4 +1,16 @@
 #!/bin/bash 
+
+#SBATCH  --job-name=tem
+#SBATCH  --account=e3sm
+#SBATCH  --nodes=1
+#SBATCH  --output=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/tem/batch/tem.o%j
+#SBATCH  --exclusive
+#SBATCH  --time=00:30:00
+#SBATCH  --qos=regular
+#SBATCH  --constraint=cpu
+
+
+	source   /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
 	module load idl
 	case='v3.ccmi.PD_INT_custom30'
 	year=11
@@ -44,9 +56,9 @@
 		sed -i "/year1=/c    \ year1='$year1'"   	$filename
 		sed -i "/year2=/c    \ year2='$year2'"          $filename
 		#
-		idl  $filename  >& output_idl_$time\_$offsetf  &
+		idl  $filename  >& output_idl_$time\_$offsetf  
 	done
-	sleep 60
+	sleep 20
 	ls /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/med/*nc
 	ncrcat /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/med/*nc  /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/TEM_$case\_$time.nc
 	#

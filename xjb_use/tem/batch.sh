@@ -20,7 +20,7 @@ for k in 0; do
 	for ((year=$nyear_s;year<=$nyear_e;year+=2))
 	do
 	#
-	echo ${case1[i]}\_${case2[j]}\_${case3[k]} $nyear_s $nyear_e $year
+	echo ${case1[i]}\_${case2[j]}\_${case3[k]} $nyear_s $nyear_e
 	if [[ ! -f "submit_${case1[i]}\_${case2[j]}\_$year.sh" ]]; 
 then
 	
@@ -31,7 +31,8 @@ then
 			sed -i  "/case=/c       case='${case1[i]}\_${case2[j]}'"        submit_${case1[i]}\_${case2[j]}_$year.sh
 		fi
 	sed -i  "/year=/c	year=$year" submit_${case1[i]}\_${case2[j]}_$year.sh
-	sbatch submit_${case1[i]}\_${case2[j]}\_${case3[k]}\_$year.sh
+	#sbatch submit_${case1[i]}\_${case2[j]}\_$year.sh
+	./submit_${case1[i]}\_${case2[j]}\_$year.sh  &
 fi
 
 	#sleep 5
