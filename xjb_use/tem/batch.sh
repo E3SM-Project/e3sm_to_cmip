@@ -10,8 +10,11 @@ for j in 0; do
 for k in 0; do
 	#
 	if [[ $k -eq 0 ]]; then
-		nyear_s=11
-		nyear_e=100
+		#nyear_s=11
+		#nyear_e=100
+		nyear_s=11 #71  #41 #11 #11 #41 #71  #41 #11
+		nyear_e=11 #100 #70 #40 #100
+	       	#100 #40 #40 #70 #100 #70   #40
 	else
 		nyear_s=11
 		nyear_e=100
@@ -20,7 +23,7 @@ for k in 0; do
 	for ((year=$nyear_s;year<=$nyear_e;year+=2))
 	do
 	#
-	echo ${case1[i]}\_${case2[j]}\_${case3[k]} $nyear_s $nyear_e
+	echo ${case1[i]}\_${case2[j]}\_${case3[k]} $nyear_s $nyear_e $year
 	if [[ ! -f "submit_${case1[i]}\_${case2[j]}\_$year.sh" ]]; 
 then
 	
@@ -35,12 +38,7 @@ then
 	./submit_${case1[i]}\_${case2[j]}\_$year.sh  &
 fi
 
-	#sleep 5
-	#done
-	#sleep 5
 	done
-#done
-	#exit
 done
 done
 done
