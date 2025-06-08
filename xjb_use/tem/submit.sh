@@ -74,19 +74,14 @@ fi
 	ls /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/med/$case\_$time2\_??.nc 
 	ls /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/med/$case\_$time2\_??.nc | wc -l
 	#ncrcat /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/med/$case\_$time2\_??.nc  /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/TEM_$case\_$time.nc
-	ncrcat -v VADV /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/med/$case\_$time2\_??.nc  /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/TEM_$case\_$time.nc
-
+	#ncrcat -v VADV /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/med/$case\_$time2\_??.nc  /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/TEM_$case\_$time.nc
 	#
         dir_tem=/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/
         for ii in {0..7..1}; do
         TEM=(DELF  FPHI   FZ   VADV   WADV   VRES  WRES  KESIRES)
-        dirr=$dir_tem/${TEM[ii]}
+        dirr=$dir_tem/output/${TEM[ii]}
         mkdir -p $dirr
-        ncrcat $dir_tem
-        /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/med/
-        *nc  /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/TEM_$case\_$time.nc
+        ncrcat -O -v ${TEM[ii]}  $dir_tem/med/$case\_$time2\_??.nc  $dirr/${TEM[ii]}_$time.nc
         done
-	#remove used redundant
-	#rm $diro/*_$time\_$offsetf.nc
 	#
 exit
