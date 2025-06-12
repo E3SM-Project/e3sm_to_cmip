@@ -95,8 +95,6 @@ import numpy as np
 import xarray as xr
 from calendar import monthrange
 import pandas as pd
-import os as os
-from datetime import datetime
 
 path = './ts/'
 pathout = './'
@@ -106,88 +104,88 @@ startyear = '${y1}'
 endyear = '${y2}'
 
 filename = short_name+'.eam.h0.*.nc'
-h0_files = sorted([f for f in os.listdir(path) if 'h0' in f])
-files_count=len(h0_files)
+filenameh1 = short_name+'.${eamfile}.*.nc'
 
 varname = ["O3"]
+##,"CO","CH4LNZ","NO"]
 layer = ['']
-#
-timeperiod = len(h0_files)#h0_in['time'])
-dt = np.zeros(timeperiod)
-#
-STE_time = np.zeros(len(h0_files))
-STE_time_NH = np.zeros(len(h0_files))
-STE_time_SH = np.zeros(len(h0_files))
-#output to data
-STE_time_add=np.zeros(len(h0_files))
-STE_time_NH_add=np.zeros(len(h0_files))
-STE_time_SH_add=np.zeros(len(h0_files))
-#
-counts=0
-#
-for file in h0_files:
-    counts=counts+1
-    print(path+file)
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-    h0_in = xr.open_mfdataset(path+file)
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-    variablelist = list(h0_in.keys())
-    #
-    rearth = 6.37122e6 # Earth radius: m
-    unit_covet = 1.e-9*12 # kg/month -> Tg/year
-    #
-    area_rad = h0_in['area'][0]         # radian (ncol)
-    area = area_rad * rearth * rearth  # m2
-    lat = h0_in['lat'][0]
-    NH = area.where(lat >= 0)
-    SH = area.where(lat < 0)
-    #
-    time = h0_in['time']
-    year = np.array(time.dt.year)
-    month = np.array(time.dt.month)
-    month = (month+11)%12
-    if month==0:
-        month=[12]
-    #-1
-    print(month)
-    #
-    dt=monthrange(2001,month[0])[1]*3600*24
-    #
-    for var in range(len(varname)):
-        total_layer = len(layer)
 
-        for ll in range(total_layer):
+h0_in = xr.open_mfdataset(path+filename)
+
+variablelist = list(h0_in.keys())
+
+timeperiod = len(h0_in['time'])
+startdate = str(np.array(h0_in['time'].dt.year[0]))+'-01-01'
+
+time_range_month = pd.date_range(startdate,  periods=timeperiod, freq='ME')
+h0_in['time'] = time_range_month
+
+rearth = 6.37122e6 # Earth radius: m
+unit_covet = 1.e-9*12 # kg/month -> Tg/year
+
+area_rad = h0_in['area'][0]         # radian (ncol)
+area = area_rad * rearth * rearth  # m2
+lat = h0_in['lat'][0]
+NH = area.where(lat >= 0)
+SH = area.where(lat < 0)
+
+lev = h0_in['lev']
+time = h0_in['time']
+
+year = np.array(time.dt.year)
+month = np.array(time.dt.month)
+
+dt = np.zeros(timeperiod)
+for i in range(len(time)):
+    dt[i] = monthrange(2001,month[i])[1]*3600*24
+
+dt_array = xr.DataArray(dt, coords=[h0_in['time']], dims=["time"])
+
+STE_time = np.zeros(len(time))
+STE_time_NH = np.zeros(len(time))
+STE_time_SH = np.zeros(len(time))
+for var in range(len(varname)):
+    total_layer = len(layer)
+
+    for ll in range(total_layer):
+
+        if varname[var] == 'O3':
             TDD = h0_in[varname[var]+'_2DTDD'+layer[ll]]
             CIP = h0_in[varname[var]+'_2DCIP'+layer[ll]] #kg/m2/sec
             CIL = h0_in[varname[var]+'_2DCIL'+layer[ll]] #kg/m2/sec
-            #time
+            total_net = CIP-CIL
+	    #
+            #TDD_total = (dt*(TDD*area).sum(axis=1)).mean() #kg
+            #NET       = (dt*((CIP-CIL)*area).sum(axis=1)).mean()
+            # NH
+            #TDD_NH = (dt*(TDD*NH).sum(axis=1)).mean() #kg
+            #NET_NH = (dt*((CIP-CIL)*NH).sum(axis=1)).mean()
+            # SH
+            #TDD_SH = (dt*(TDD*SH).sum(axis=1)).mean() #kg
+            #NET_SH = (dt*((CIP-CIL)*SH).sum(axis=1)).mean()
+            # calculate STE
+	    #time
             TDD_time=dt*(TDD*area).sum(axis=1)
             NET_time=dt*((CIP-CIL)*area).sum(axis=1)
             STE_time=TDD_time-NET_time
             #
-            TDD_time_NH=dt*(TDD*NH).sum(axis=1)
-            NET_time_NH=dt*((CIP-CIL)*NH).sum(axis=1)
-            STE_time_NH=TDD_time-NET_time_NH
+            TDD_NH_time=dt*(TDD*NH).sum(axis=1)
+            NET_NH_time=dt*((CIP-CIL)*NH).sum(axis=1)
+            STE_NH_time=TDD_time-NET_NH_time
             #
-            TDD_time_SH=dt*(TDD*SH).sum(axis=1)
-            NET_time_SH=dt*((CIP-CIL)*SH).sum(axis=1)
-            STE_time_SH=TDD_time_SH-NET_time_SH
-            #
-            STE_time_add[counts-1]=STE_time
-            STE_time_NH_add[counts-1]=STE_time_NH
-            STE_time_SH_add[counts-1]=STE_time_SH
-print(STE_time_add)
-# calculate STE
-STE_time_xr =    xr.DataArray(STE_time_add,    coords=[np.arange(0,counts)], dims=["time"])
-STE_time_NH_xr = xr.DataArray(STE_time_NH_add, coords=[np.arange(0,counts)], dims=["time"])
-STE_time_SH_xr = xr.DataArray(STE_time_SH_add, coords=[np.arange(0,counts)], dims=["time"])
-ds1 = STE_time_xr.to_dataset(name='STE')
-ds2 = STE_time_NH_xr.to_dataset(name='STE_NH')
-ds3 = STE_time_SH_xr.to_dataset(name='STE_SH')
-ds = xr.merge([ds1, ds2, ds3])
-ds.to_netcdf(pathout+'E3SM_O3_STE_${case}_${y1}-${y2}.nc')
-quit()
-
+            TDD_SH_time=dt*(TDD*SH).sum(axis=1)
+            NET_SH_time=dt*((CIP-CIL)*SH).sum(axis=1)
+            STE_SH_time=TDD_SH_time-NET_SH_time
+	    # calculate STE
+            STE_time_xr =    xr.DataArray(STE_time, coords=[h0_in['time']], dims=["month"])
+            STE_time_NH_xr = xr.DataArray(STE_NH_time, coords=[h0_in['time']], dims=["time"])
+            STE_time_SH_xr = xr.DataArray(STE_SH_time, coords=[h0_in['time']], dims=["time"])
+            ds1 = STE_time_xr.to_dataset(name='STE')
+            ds2 = STE_time_NH_xr.to_dataset(name='STE_NH')
+            ds3 = STE_time_SH_xr.to_dataset(name='STE_SH')
+            ds = xr.merge([ds1, ds2, ds3])
+            ds.to_netcdf(pathout+'E3SM_O3_STE_${y1}-${y2}.nc')
+            quit()
 EOF
 
 # Run diagnostics
