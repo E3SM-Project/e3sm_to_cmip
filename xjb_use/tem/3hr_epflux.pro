@@ -87,17 +87,16 @@ WADV = fltarr(lat,lev,count)
 VRES = fltarr(lat,lev,count)
 WRES = fltarr(lat,lev,count)
 KESIRES = fltarr(lat,lev,count)
+VT   = fltarr(lat,lev,count)
 ;
 for n = 0, count-1 do begin $
     print, 'n,time=',n,time(n) &$
     T1 = reform(T(*,*,*,n)) &$
-;print,T1
-;exit
     U1 = reform(U(*,*,*,n)) &$
     V1 = reform(V(*,*,*,n)) &$
     OMEGA1 = reform(OMEGA(*,*,*,n)) &$
     calc_epflux,0,lat,lon,lev,levels,ilevels,lats,P0,T1,U1,V1,omega1,$
-                Fphi1,Fz1,DELF1,WADV1,VADV1,VRES1,WRES1,KESIRES1  &$
+                Fphi1,Fz1,DELF1,WADV1,VADV1,VRES1,WRES1,KESIRES1,VT1  &$
     FPHI(*,*,n) = Fphi1 &$
       FZ(*,*,n) = Fz1   &$
     DELF(*,*,n) = DELF1	&$
@@ -106,6 +105,8 @@ for n = 0, count-1 do begin $
     KESIRES(*,*,n)=KESIRES1 &$
     WADV(*,*,n) = WADV1 &$   
     VADV(*,*,n) = VADV1 &$
+    ;;add v't' Jinbo Xie
+    VT(*,*,n) = VT1 &$
 endfor
 ;exit
 ;
@@ -130,6 +131,7 @@ vid5 = NCDF_VARDEF(id, 'VADV', [yid,zid,tid], /FLOAT)
 vid6 = NCDF_VARDEF(id, 'VRES', [yid,zid,tid], /FLOAT)
 vid7 = NCDF_VARDEF(id, 'WRES', [yid,zid,tid], /FLOAT)
 vid8 = NCDF_VARDEF(id, 'KESIRES', [yid,zid,tid], /FLOAT)
+vid9 = NCDF_VARDEF(id, 'VT',   [yid,zid,tid], /FLOAT)
 ;
 vid_1= NCDF_VARDEF(id, 'nlat',  [yid], /FLOAT)
 vid_2= NCDF_VARDEF(id, 'lat', [yid], /DOUBLE)
@@ -148,6 +150,7 @@ NCDF_ATTPUT, id, vid5, 'long_name', 'uvstar -- meridional advection of momentum 
 NCDF_ATTPUT, id, vid6, 'long_name', 'vstar -- meridional residual circulation (m/s)'
 NCDF_ATTPUT, id, vid7, 'long_name', 'wstar -- vertical residual circulation (m/s)'
 NCDF_ATTPUT, id, vid8, 'long_name', 'psistar -- residual stream function (kg/s)'
+NCDF_ATTPUT, id, vid9, 'long_name', 'vt -- northward flux of temperature (K m s-1)'
 ;
 NCDF_ATTPUT, id, vid_1, 'long_name', 'nlat'
 NCDF_ATTPUT, id, vid_2, 'long_name', 'lats'
@@ -175,6 +178,7 @@ NCDF_VARPUT, id, vid5, VADV
 NCDF_VARPUT, id, vid6, VRES
 NCDF_VARPUT, id, vid7, WRES
 NCDF_VARPUT, id, vid8, KESIRES
+NCDF_VARPUT, id, vid9, VT
 ;
 NCDF_VARPUT, id, vid_1, lat
 NCDF_VARPUT, id, vid_2, lats

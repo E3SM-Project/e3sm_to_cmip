@@ -1,5 +1,5 @@
 ;;for monthly
-vars=(/"U","V","T","OMEGA","Z3"/)
+vars=(/"U","V","T","OMEGA","Z3","UTEND_CLUBB","UTGWORO","UTGWSPEC","VTEND_CLUBB","VTGWORO","VTGWSPEC"/)
 case="v3.ccmi.PD_INT_custom30"
 scale="daily";monthly"
 year="10yr"
@@ -15,12 +15,12 @@ plevo@units="hPa"
 ;;
 dir2="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/";+"day/"
 ;;
-rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
+rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi_orig/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
 fraw=addfile(rawdata,"r")
 ;;
 ndays=365
 ;;
-do i=4,4;0,4
+do i=6,10;4,4;0,4
 	dir="/global/cfs/cdirs/e3sm/xie7/ccmi/"+case+"/output/"+vars(i)+"/post/atm/180x360_aave/ts/"+scale+"/"+year+"/"
 	fils=systemfunc("ls "+dir+"*nc")
 	;;
@@ -59,10 +59,11 @@ do i=4,4;0,4
 	;;
 	;fil2=dir2+vars(i)+"_"+case+"_"+scale+"_"+year+"_"+times(k2)+"_3D_"+j+".nc"
 	;fil2=dir2+"output/"+case+"/day/3D/"+vars(i)+"_001101_001112"+".nc"
+if (i.ge.5) then
 	if ((11+j).lt.100) then
-		fil2=dir2+"output/"+case+"/day/3D/"+vars(i)+"_00"+(11+j)+"01_00"+(11+j)+"12"+".nc"
+		fil2=dir2+"output/"+case+"/daily/3D/"+vars(i)+"_00"+(11+j)+"01_00"+(11+j)+"12"+".nc"
 	else
-		fil2=dir2+"output/"+case+"/day/3D/"+vars(i)+"_0"+(11+j)+"01_0"+(11+j)+"12"+".nc"
+		fil2=dir2+"output/"+case+"/daily/3D/"+vars(i)+"_0"+(11+j)+"01_0"+(11+j)+"12"+".nc"
 	end if
 	;;
 	system("rm -rf "+fil2)
@@ -73,17 +74,18 @@ do i=4,4;0,4
 	f3->lat_bnds=f1->lat_bnds
 	f3->lon_bnds=f1->lon_bnds
 	f3->time_bnds=f1->time_bnds(0+kk*ndays:ndays-1+kk*ndays,:)
+end if
 	;;
 ;if (False) then
-if (i.eq.4) then;;only zg needs daily and zonal mean
+if (i.ge.4) then;;only zg needs daily and zonal mean
 	aa_vint_zonal=dim_avg_n_Wrap(aa_vint,3)
 		;fil3=dir2+vars(i)+"_"+case+"_"+scale+"_"+year+"_"+times(k2)+"_2D_"+j+".nc"
 		;fil3=dir2+"output/"+case+"/day/2D/"+vars(i)+"_001101_001112"+".nc"
 	;;
 	if ((11+j).lt.100) then
-                fil3=dir2+"output/"+case+"/day/2D/"+vars(i)+"_00"+(11+j)+"01_00"+(11+j)+"12"+".nc"
+                fil3=dir2+"output/"+case+"/daily/2D/"+vars(i)+"_00"+(11+j)+"01_00"+(11+j)+"12"+".nc"
         else
-                fil3=dir2+"output/"+case+"/day/2D/"+vars(i)+"_0"+(11+j)+"01_0"+(11+j)+"12"+".nc"
+                fil3=dir2+"output/"+case+"/daily/2D/"+vars(i)+"_0"+(11+j)+"01_0"+(11+j)+"12"+".nc"
         end if
 	;;
         system("rm -rf "+fil3)

@@ -1,5 +1,5 @@
 """
-O3 to o3 converter
+H2OLNZ to h2oconverter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -9,8 +9,8 @@ from e3sm_to_cmip.lib import handle_variables
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('O3')]
-VAR_NAME = str('o3')
+RAW_VARIABLES = [str('H2OLNZ')]
+VAR_NAME = str('h2o')
 VAR_UNITS = str("mol mol-1")
 TABLE = str('QUOCA_monZ.json')
 LEVELS = {

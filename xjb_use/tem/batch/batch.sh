@@ -12,8 +12,8 @@ for k in 0; do
 	if [[ $k -eq 0 ]]; then
 		#nyear_s=11
 		#nyear_e=100
-		nyear_s=71  #41 #89 #99 #89 #71 #41 #11 #71  #41 #11 #11 #41 #71  #41 #11
-		nyear_e=100 #70 #90 #100 #90 #100 #40 #100 #70 #40 #100
+		nyear_s=11  #11  #71  #11  #71 #89 #99 #89 #71 #41 #11 #71  #41 #11 #11 #41 #71  #41 #11
+		nyear_e=40  #100  #40  #100 #70 #90 #100 #90 #100 #40 #100 #70 #40 #100
 	       	#100 #40 #40 #70 #100 #70   #40
 	else
 		nyear_s=11
@@ -24,7 +24,7 @@ for k in 0; do
 	do
 	#
 	echo ${case1[i]}\_${case2[j]}\_${case3[k]} $nyear_s $nyear_e $year
-	if [[ ! -f "submit_${case1[i]}\_${case2[j]}\_$year.sh" ]]; 
+if [[ ! -f "submit_${case1[i]}\_${case2[j]}\_$year.sh" ]]; 
 then
 	
 	cp -r submit.sh	submit_${case1[i]}\_${case2[j]}\_$year.sh

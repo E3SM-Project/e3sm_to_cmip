@@ -75,11 +75,15 @@ fi
 	ls /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/med/$case\_$time2\_??.nc | wc -l
 	#
         dir_tem=/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/tem/
-        for ii in {0..7..1}; do
-        TEM=(DELF  FPHI   FZ   VADV   WADV   VRES  WRES  KESIRES)
-        dirr=$dir_tem/output/${TEM[ii]}
+        for ii in {0..10..1}; do
+        TEM=(DELF  FPHI   FZ   VADV   WADV   VRES  WRES  KESIRES  VT  UV  UW)
+        dirr=$dir_tem/hourly/${TEM[ii]}
         mkdir -p $dirr
         ncrcat -O -v ${TEM[ii]}  $dir_tem/med/$case\_$time2\_??.nc  $dirr/${TEM[ii]}_$time.nc
+	ncks -A -v lat_bnds,time_bnds  $diriu  $dirr/${TEM[ii]}_$time.nc
+	wait
+	ncrename -d lev,plevTEM $dirr/${TEM[ii]}_$time.nc
+	ncrename -v lev,plevTEM $dirr/${TEM[ii]}_$time.nc
         done
 	#
 exit

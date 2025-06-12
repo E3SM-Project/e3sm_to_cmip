@@ -44,7 +44,8 @@ case="v3.ccmi.PD_INT_custom30"
 short="v3.ccmi.PD_INT_custom30"
 www="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/o3ste/output"
 y1=11
-y2=100
+y2=12
+#100
 run_type=""
 tag=""
 
@@ -110,7 +111,6 @@ varname = ["O3"]
 layer = ['']
 
 h0_in = xr.open_mfdataset(path+filename)
-h1_in = xr.open_mfdataset(path+filenameh1)
 
 variablelist = list(h0_in.keys())
 
@@ -119,7 +119,6 @@ startdate = str(np.array(h0_in['time'].dt.year[0]))+'-01-01'
 
 time_range_month = pd.date_range(startdate,  periods=timeperiod, freq='ME')
 h0_in['time'] = time_range_month
-h1_in['time'] = time_range_month
 
 rearth = 6.37122e6 # Earth radius: m
 unit_covet = 1.e-9*12 # kg/month -> Tg/year
@@ -135,15 +134,6 @@ time = h0_in['time']
 
 year = np.array(time.dt.year)
 month = np.array(time.dt.month)
-linehead = '<h> E3SM chemistry high-level summary</h>'
-linehead = linehead + '<pre>The * sign indicates that the calculation involves the stratosphere, while calculations without the sign primarily pertain to the troposhere. </pre>'
-linehead = linehead + '<pre>'+short_name+'</pre>'
-linehead = linehead + '<pre>Simulation period: '+ startyear +' - '+ endyear + '</pre>'
-line_ann = linehead + '<p> Season: ANN </p>'
-
-line_ann = line_ann + '<pre> Chemistry                                   Global        N. Hemisphere   S. Hemisphere </pre>'
-
-fileout_ann = open(pathout+'chem_summary_table.html',"w")
 
 dt = np.zeros(timeperiod)
 for i in range(len(time)):
@@ -160,87 +150,42 @@ for var in range(len(varname)):
     for ll in range(total_layer):
 
         if varname[var] == 'O3':
-            MSD = h1_in[varname[var]+'_2DMSD'] #kg/m2
-
-            SCO = h0_in['SCO'] *2.1415e-14
-            TCO = h0_in['TCO'] *2.1415e-14 #DU to Tg
             TDD = h0_in[varname[var]+'_2DTDD'+layer[ll]]
             CIP = h0_in[varname[var]+'_2DCIP'+layer[ll]] #kg/m2/sec
             CIL = h0_in[varname[var]+'_2DCIL'+layer[ll]] #kg/m2/sec
             total_net = CIP-CIL
-            TOZ = SCO+TCO
-
-            MSD_total = ((MSD*area).sum(axis=1)).mean() #kg
-            TDD_total = (dt*(TDD*area).sum(axis=1)).mean() #kg
-            CIP_total = (dt*(CIP*area).sum(axis=1)).mean()
-            CIL_total = (dt*(-CIL*area).sum(axis=1)).mean()
-            NET       = (dt*((CIP-CIL)*area).sum(axis=1)).mean()
-            SCO_total = (SCO*area).sum(axis=1).mean() #kg
-            TCO_total = (TCO*area).sum(axis=1).mean() #kg
-            TOZ_total = (TOZ*area).sum(axis=1).mean() #kg
+	    #
+            #TDD_total = (dt*(TDD*area).sum(axis=1)).mean() #kg
+            #NET       = (dt*((CIP-CIL)*area).sum(axis=1)).mean()
             # NH
-            MSD_NH = ((MSD*NH).sum(axis=1)).mean() #kg
-            TDD_NH = (dt*(TDD*NH).sum(axis=1)).mean() #kg
-            CIP_NH = (dt*(CIP*NH).sum(axis=1)).mean()
-            CIL_NH = (dt*(-CIL*NH).sum(axis=1)).mean()
-            NET_NH = (dt*((CIP-CIL)*NH).sum(axis=1)).mean()
-            SCO_NH = (SCO*NH).sum(axis=1).mean() #kg
-            TCO_NH = (TCO*NH).sum(axis=1).mean() #kg
-            TOZ_NH = (TOZ*NH).sum(axis=1).mean() #kg
+            #TDD_NH = (dt*(TDD*NH).sum(axis=1)).mean() #kg
+            #NET_NH = (dt*((CIP-CIL)*NH).sum(axis=1)).mean()
             # SH
-            MSD_SH = ((MSD*SH).sum(axis=1)).mean() #kg
-            TDD_SH = (dt*(TDD*SH).sum(axis=1)).mean() #kg
-            CIP_SH = (dt*(CIP*SH).sum(axis=1)).mean()
-            CIL_SH = (dt*(-CIL*SH).sum(axis=1)).mean()
-            NET_SH = (dt*((CIP-CIL)*SH).sum(axis=1)).mean()
-            SCO_SH = (SCO*SH).sum(axis=1).mean() #kg
-            TCO_SH = (TCO*SH).sum(axis=1).mean() #kg
-            TOZ_SH = (TOZ*SH).sum(axis=1).mean() #kg
+            #TDD_SH = (dt*(TDD*SH).sum(axis=1)).mean() #kg
+            #NET_SH = (dt*((CIP-CIL)*SH).sum(axis=1)).mean()
             # calculate STE
-            for i in range(len(time)):
-                MSDt = h1_in[varname[var]+'_2DMSD_trop'][i,:] #kg/m2
-
-                TDBt = h0_in[varname[var]+'_2DTDB_trop'][i,:]
-                TDDt = h0_in[varname[var]+'_2DTDD_trop'][i,:]
-                TDEt = h0_in[varname[var]+'_2DTDE_trop'][i,:]
-                TDIt = h0_in[varname[var]+'_2DTDI_trop'][i,:]
-                TDAt = h0_in[varname[var]+'_2DTDA_trop'][i,:]
-                TDLt = h0_in[varname[var]+'_2DTDL_trop'][i,:]
-                TDNt = h0_in[varname[var]+'_2DTDN_trop'][i,:]
-                TDOt = h0_in[varname[var]+'_2DTDO_trop'][i,:]
-                TDSt = h0_in[varname[var]+'_2DTDS_trop'][i,:]
-                TDUt = h0_in[varname[var]+'_2DTDU_trop'][i,:]
-
-                total_td = (TDOt+TDEt+TDIt+TDAt+TDLt+TDNt+TDUt+TDBt+TDSt+TDDt)
-
-                MSD_total = (MSDt*area).sum()
-                td_temp = total_td*dt[i]
-                TTD_total = (td_temp*area).sum()
-
-                if i == 0:
-                    STE = 'nan'
-                    STE_NH = 'nan'
-                    STE_SH = 'nan'
-                else:
-                    temp = MSD_old+td_temp
-                    STE = ((MSDt-temp)*area).sum()
-                    STE_NH = ((MSDt-temp)*NH).sum()
-                    STE_SH = ((MSDt-temp)*SH).sum()
-
-                STE_time[i] = STE
-                STE_time_NH[i] = STE_NH
-                STE_time_SH[i] = STE_SH
-
-                MSD_old = MSDt
-
-	STE_time_xr = xr.DataArray(STE_time, coords=[np.arange(1,13)], dims=["month"])
-        STE_time_NH_xr = xr.DataArray(STE_time_NH, coords=[np.arange(1,13)], dims=["month"])
-        STE_time_SH_xr = xr.DataArray(STE_time_SH, coords=[np.arange(1,13)], dims=["month"])
-        ds1 = STE_time_xr.to_dataset(name='STE')
-        ds2 = STE_time_NH_xr.to_dataset(name='STE_NH')
-        ds3 = STE_time_SH_xr.to_dataset(name='STE_SH')
-        ds = xr.merge([ds1, ds2, ds3])
-        ds.to_netcdf(pathout+'E3SM_O3_STE_$case\_${y1}-${y2}.nc')
+	    #time
+            TDD_time=dt*(TDD*area).sum(axis=1)
+            NET_time=dt*((CIP-CIL)*area).sum(axis=1)
+            STE_time=TDD_time-NET_time
+            #
+            TDD_NH_time=dt*(TDD*NH).sum(axis=1)
+            NET_NH_time=dt*((CIP-CIL)*NH).sum(axis=1)
+            STE_NH_time=TDD_time-NET_NH_time
+            #
+            TDD_SH_time=dt*(TDD*SH).sum(axis=1)
+            NET_SH_time=dt*((CIP-CIL)*SH).sum(axis=1)
+            STE_SH_time=TDD_SH_time-NET_SH_time
+	    # calculate STE
+            STE_time_xr =    xr.DataArray(STE_time, coords=[h0_in['time']], dims=["month"])
+            STE_time_NH_xr = xr.DataArray(STE_NH_time, coords=[h0_in['time']], dims=["time"])
+            STE_time_SH_xr = xr.DataArray(STE_SH_time, coords=[h0_in['time']], dims=["time"])
+            ds1 = STE_time_xr.to_dataset(name='STE')
+            ds2 = STE_time_NH_xr.to_dataset(name='STE_NH')
+            ds3 = STE_time_SH_xr.to_dataset(name='STE_SH')
+            ds = xr.merge([ds1, ds2, ds3])
+            ds.to_netcdf(pathout+'E3SM_O3_STE_${y1}-${y2}.nc')
+            quit()
 EOF
 
 # Run diagnostics
@@ -270,6 +215,8 @@ fi
 
 # Copy files
 mv *.html ${f}
+mv *.nc   ${f}
+
 
 # Change file permissions
 chmod -R go+rX,go-w ${f}

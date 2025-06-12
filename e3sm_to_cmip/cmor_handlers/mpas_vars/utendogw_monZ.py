@@ -1,5 +1,5 @@
 """
-UTGWORO, UTGWSPEC, BUTGWSPEC to utendogw converter
+UTGWORO to utendogw converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -9,20 +9,19 @@ from e3sm_to_cmip.lib import handle_variables
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('UTGWORO'),str('UTGWSPEC'),str('BUTGWSPEC')]
+RAW_VARIABLES = [str('UTGWORO')]
 VAR_NAME = str('utendogw')
 VAR_UNITS = str("m s-2")
 TABLE = str('QUOCA_monZ.json')
 LEVELS = {
-    'name': str('qboi30'),
+    'name': str('plev42'),
     'units': str('Pa'),
-    'e3sm_axis_name': 'qboi30'
+    'e3sm_axis_name': 'plev42'
 }
 
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
-    #outdata =  data['UTGWORO'][index, :]
-    outdata = (data['UTGWORO'][index, :] + data['UTGWSPEC'][index, :] + data['BUTGWSPEC'][index, :])
+    outdata = data[RAW_VARIABLES[0]][index, :]
     outdata[np.isnan(outdata)] = FILL_VALUE
     if kwargs.get('simple'):
         return outdata

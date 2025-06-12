@@ -2,7 +2,7 @@
 vars=(/"TTEND_TOT","QRS","QRSC","QRL","QRLC",\
        "UTEND_CLUBB","UTGWORO","UTGWSPEC",\
        "VTEND_CLUBB","VTGWORO","VTGWSPEC",\
-       "TOT_CLD_VISTAU","CONCLD"/);,"CLDTOT"/)
+       "TOT_CLD_VISTAU","CONCLD","CLOUD"/);,"CLDTOT"/)
 	;;
 case="v3.ccmi.PD_INT_custom30"
 scale="monthly"
@@ -19,12 +19,14 @@ plevo@units="hPa"
 ;;
 dir2="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/";+"month/"
 ;;
-rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
+rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi_orig/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
 fraw=addfile(rawdata,"r")
 ;;
-do i=5,13;;
+do i=13,13;5,13;;
 	dir="/global/cfs/cdirs/e3sm/xie7/ccmi/"+case+"/output/"+vars(i)+"/post/atm/180x360_aave/ts/"+scale+"/"+year+"/"
 	fil=dir+vars(i)+"_"+time+".nc"
+	;print(fil)
+	;exit
 	;;
 	f1=addfile(fil,"r")
 	do j=0,9;;for 90yr simulation only
@@ -76,14 +78,14 @@ do i=5,13;;
 	delete(aa_vint_zonal)
 	end do
 	;;connect the data together
-	system("rm -rf "+dir2+"output/"+case+"/month/3D/"+vars(i)+"_"+time+".nc")
-	system("rm -rf "+dir2+"output/"+case+"/month/2D/"+vars(i)+"_"+time+".nc")
+	system("rm -rf "+dir2+"output/"+case+"/monthly/3D/"+vars(i)+"_"+time+".nc")
+	system("rm -rf "+dir2+"output/"+case+"/monthly/2D/"+vars(i)+"_"+time+".nc")
 	;;
-	system("mkdir -p "+dir2+"output/"+case+"/month/3D/")
-	system("mkdir -p "+dir2+"output/"+case+"/month/2D/")
+	system("mkdir -p "+dir2+"output/"+case+"/monthly/3D/")
+	system("mkdir -p "+dir2+"output/"+case+"/monthly/2D/")
 	;;
-	system("ncrcat  "+dir2+vars(i)+"*3D*nc "+dir2+"output/"+case+"/month/3D/"+vars(i)+"_"+time+".nc")
-	system("ncrcat  "+dir2+vars(i)+"*2D*nc "+dir2+"output/"+case+"/month/2D/"+vars(i)+"_"+time+".nc")
+	system("ncrcat  "+dir2+vars(i)+"*3D*nc "+dir2+"output/"+case+"/monthly/3D/"+vars(i)+"_"+time+".nc")
+	system("ncrcat  "+dir2+vars(i)+"*2D*nc "+dir2+"output/"+case+"/monthly/2D/"+vars(i)+"_"+time+".nc")
 	system("rm -rf "+dir2+vars(i)+"*3D*nc ")
 	system("rm -rf "+dir2+vars(i)+"*2D*nc ")
 end do
