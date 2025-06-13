@@ -44,7 +44,8 @@ case="v3.ccmi.PD_INT_custom30"
 short="v3.ccmi.PD_INT_custom30"
 www="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/o3ste/output"
 y1=11
-y2=12
+y2=100
+100
 #100
 run_type=""
 tag=""
@@ -181,6 +182,11 @@ print(STE_time_add)
 STE_time_xr =    xr.DataArray(STE_time_add,    coords=[np.arange(0,counts)], dims=["time"])
 STE_time_NH_xr = xr.DataArray(STE_time_NH_add, coords=[np.arange(0,counts)], dims=["time"])
 STE_time_SH_xr = xr.DataArray(STE_time_SH_add, coords=[np.arange(0,counts)], dims=["time"])
+#
+STE_time_xr = STE_time_xr.assign_attrs(_FillValue = 1.0e36, units="Tg/year", description='STE O3 flux mean')
+STE_time_NH_xr = STE_time_NH_xr.assign_attrs(_FillValue = 1.0e36, units="Tg/year", description='NH STE O3 flux mean')
+STE_time_SH_xr = STE_time_SH_xr.assign_attrs(_FillValue = 1.0e36, units="Tg/year", description='SH STE O3 flux mean')
+#
 ds1 = STE_time_xr.to_dataset(name='STE')
 ds2 = STE_time_NH_xr.to_dataset(name='STE_NH')
 ds3 = STE_time_SH_xr.to_dataset(name='STE_SH')
