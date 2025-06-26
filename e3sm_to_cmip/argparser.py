@@ -292,9 +292,8 @@ def _validate_parsed_args(parsed_args: argparse.Namespace):
             "Running without the --simple flag requires CMIP6 metadata json file"
         )
 
-    valid_freqs = [freq for freq_type in FREQUENCIES.values() for freq in freq_type]
-    if parsed_args.freq and parsed_args.freq not in valid_freqs:
+    if parsed_args.freq and parsed_args.freq not in FREQUENCIES:
         raise ValueError(
             f"Frequency set to {parsed_args.freq} which is not in the set of allowed "
-            "frequencies: {', '.join(valid_freqs)}"
+            f"frequencies: {', '.join(FREQUENCIES)}"
         )

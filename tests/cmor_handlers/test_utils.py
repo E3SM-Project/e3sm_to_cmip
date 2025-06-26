@@ -200,6 +200,8 @@ class TestDeriveHandlers:
             self.tables_path,
             cmip_vars=["undefined_var"],
             e3sm_vars=["incorrect_e3sm_var"],
+            freq="mon",
+            realm="atm",
         )
 
         for record in caplog.records:
@@ -209,7 +211,11 @@ class TestDeriveHandlers:
         self, caplog
     ):
         derive_handlers(
-            self.tables_path, cmip_vars=["pr"], e3sm_vars=["incorrect_e3sm_var"]
+            self.tables_path,
+            cmip_vars=["pr"],
+            e3sm_vars=["incorrect_e3sm_var"],
+            freq="mon",
+            realm="atm",
         )
 
         for record in caplog.records:
@@ -222,11 +228,30 @@ class TestDeriveHandlers:
                 cmip_vars=["rlut"],
                 e3sm_vars=["FSNTOA", "FSNT", "FLNT"],
                 freq="3hr",
+                realm="atm",
             )
 
-    def test_updates_referenced_CMIP6_table_based_on_freq_arg(self):
+    def test_raises_error_when_table_does_not_exist(self):
+        with pytest.raises(
+            ValueError, match="Table `CMIP6_6hrLev.json` does not exist"
+        ):
+            derive_handlers(
+                self.tables_path,
+                cmip_vars=["pr"],
+                e3sm_vars=["PRECT"],
+                freq="6hrLev",
+                realm="atm",
+            )
+
+    def test_returns_handler_with_updated_referenced_CMIP6_table_based_on_freq_arg(
+        self,
+    ):
         result = derive_handlers(
-            self.tables_path, cmip_vars=["pr"], e3sm_vars=["PRECL", "PRECC"], freq="3hr"
+            self.tables_path,
+            cmip_vars=["pr"],
+            e3sm_vars=["PRECL", "PRECC"],
+            freq="3hr",
+            realm="atm",
         )
 
         expected = [
@@ -251,11 +276,13 @@ class TestDeriveHandlers:
 
         assert result == expected
 
-    def test_returns_handler_objects_based_on_existing_e3sm_vars(self):
+    def test_returns_handler_objects_for_Amon_freq_based_on_existing_e3sm_vars(self):
         result = derive_handlers(
             self.tables_path,
             cmip_vars=["pr"],
             e3sm_vars=["PRECL", "PRECC"],
+            freq="mon",
+            realm="atm",
         )
         expected = [
             dict(
@@ -279,10 +306,13 @@ class TestDeriveHandlers:
 
         assert result == expected
 
+    def test_returns_handler_objects_for_day_freq_based_on_existing_e3sm_vars(self):
         result = derive_handlers(
             self.tables_path,
             cmip_vars=["pr"],
             e3sm_vars=["PRECT"],
+            freq="day",
+            realm="atm",
         )
         expected = [
             dict(
@@ -311,6 +341,8 @@ class TestDeriveHandlers:
             self.tables_path,
             cmip_vars=["orog", "sftlf"],
             e3sm_vars=["PHIS", "LANDFRAC"],
+            freq="mon",
+            realm="lnd",
         )
         expected = [
             {
@@ -340,3 +372,23 @@ class TestDeriveHandlers:
             handler["method"] = handler["method"].__name__
 
         assert result == expected
+
+    def test_returns_empty_list_when_no_cmip_vars_given(self):
+        result = derive_handlers(
+            self.tables_path,
+            cmip_vars=[],
+            e3sm_vars=["PRECT"],
+            freq="mon",
+            realm="atm",
+        )
+        assert result == []
+
+    def test_returns_empty_list_when_no_e3sm_vars_given(self):
+        result = derive_handlers(
+            self.tables_path,
+            cmip_vars=["pr"],
+            e3sm_vars=[],
+            freq="mon",
+            realm="atm",
+        )
+        assert result == []
