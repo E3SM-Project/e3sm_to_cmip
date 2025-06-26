@@ -216,7 +216,8 @@ def derive_handlers(
     if len(cannot_derive) > 0:
         logger.warning(
             f"No handlers could be derived for the variables: {cannot_derive}. "
-            "Make sure the input E3SM datasets have the variables needed derivation."
+            "Make sure the input E3SM datasets have the variables needed for "
+            "derivation."
         )
 
     return derived_handlers
