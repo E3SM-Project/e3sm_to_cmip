@@ -813,9 +813,7 @@ class E3SMtoCMIP:
             The updated number of successful handlers and the list of failed
             handlers.
         """
-        if is_cmor_successful is True or (
-            is_cmor_successful is not None and is_cmor_successful != ""
-        ):
+        if is_cmor_successful:
             num_success += 1
             logger.info(f"Successfully processed '{name}' handler.")
         else:
