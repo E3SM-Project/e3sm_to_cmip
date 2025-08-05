@@ -64,7 +64,11 @@ def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
         ds = mpas.add_time(ds, dsIn)
         ds.compute()
 
+    logger.info(f"  Completed ds.compute cycles for {VAR_NAME}")
+    logger.info(f"  Calling mpas.remap for {VAR_NAME}")
+
     ds = mpas.remap(ds, "mpasocean", mappingFileName)
+    logger.info(f"  Completed mpas.remap for {VAR_NAME}")
 
     util.setup_cmor(
         var_name=VAR_NAME,
@@ -90,6 +94,7 @@ def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
             "cell_bounds": ds.lon_bnds.values,
         },
     ]
+    logger.info(f"  Calling mpas.write_cmor for {VAR_NAME}")
     try:
         mpas.write_cmor(axes, ds, VAR_NAME, VAR_UNITS)
     except Exception:
