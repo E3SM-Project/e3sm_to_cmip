@@ -115,40 +115,50 @@ def remap_ocean(inFileName, outFileName, mappingFileName, renorm_threshold=0.05)
 def remap(ds, pcode, mappingFileName):
     """Use ncreamp to remap the xarray Dataset to a new target grid"""
 
+    logger.info(f"    Entered mpas.py remap")
     # write the dataset to a temp file
     inFileName = _get_temp_path()
     outFileName = _get_temp_path()
 
     if "depth" in ds.dims:
+        logger.info(f"    mpas.py remap: calling ds.transpose (pre-remap)")
         ds = ds.transpose("time", "depth", "nCells", "nbnd")
 
     # missing_value_mask attribute has undesired impacts in ncremap
     for varName in ds.data_vars:
         ds[varName].attrs.pop("missing_value_mask", None)
 
+    logger.info(f"    mpas.py remap: calling write_netcdf(ds, {inFileName})")
     write_netcdf(ds, inFileName, unlimited="time")
 
     if pcode == "mpasocean":
+        logger.info(f"    mpas.py remap: calling remap_ocean")
         remap_ocean(inFileName, outFileName, mappingFileName)
     elif pcode == "mpasseaice":
         # MPAS-Seaice is a special case because the of the time-varying SGS field
+        logger.info(f"    mpas.py remap: calling remap_seaice_sgs")
         remap_seaice_sgs(inFileName, outFileName, mappingFileName)
     else:
+        logger.info(f"    mpas.py remap: Unrecognized pcode {pcode}")
         raise ValueError(f"pcode: {pcode} is not supported.")
 
     ds = xarray.open_dataset(outFileName, decode_times=False)
 
     if "depth" in ds.dims:
+        logger.info(f"    mpas.py remap: calling ds.transpose (post-remap)")
         ds = ds.transpose("time", "depth", "lat", "lon", "nbnd")
 
+    logger.info(f"    mpas.py remap: calling ds.load")
     ds.load()
 
     # remove the temporary files
-    keep_temp_files = False
+    keep_temp_files = True
     if keep_temp_files:
         logger.info(f"Retaining inFileName  {inFileName}")
         logger.info(f"Retaining outFileName {outFileName}")
     else:
+        logger.info(f"Removing inFileName  {inFileName}")
+        logger.info(f"Removing outFileName {outFileName}")
         os.remove(inFileName)
         os.remove(outFileName)
 
@@ -367,7 +377,9 @@ def write_netcdf(ds, fileName, fillValues=netCDF4.default_fillvals, unlimited=No
         else:
             encodingDict[variableName] = {"_FillValue": None}
 
+    logger.info("    write_netcdf: calling update_history(ds)")
     update_history(ds)
+    logger.info("    write_netcdf: returned from update_history(ds), calling ds.to_netcdf()")
 
     if unlimited:
         ds.to_netcdf(fileName, encoding=encodingDict, unlimited_dims=unlimited)
