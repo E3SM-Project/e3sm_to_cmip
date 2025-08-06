@@ -367,25 +367,10 @@ def write_netcdf(ds, fileName, fillValues=netCDF4.default_fillvals, unlimited=No
         else:
             encodingDict[variableName] = {"_FillValue": None}
 
-    update_history(ds)
-
     if unlimited:
         ds.to_netcdf(fileName, encoding=encodingDict, unlimited_dims=unlimited)
     else:
         ds.to_netcdf(fileName, encoding=encodingDict)
-
-
-def update_history(ds):
-    """Add or append history to attributes of a data set"""
-
-    thiscommand = (
-        datetime.now().strftime("%a %b %d %H:%M:%S %Y") + ": " + " ".join(sys.argv[:])
-    )
-    if "history" in ds.attrs:
-        newhist = "\n".join([thiscommand, ds.attrs["history"]])
-    else:
-        newhist = thiscommand
-    ds.attrs["history"] = newhist
 
 
 def convert_namelist_to_dict(fileName):
