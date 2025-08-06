@@ -148,6 +148,7 @@ def setup_cmor(var_name, table_path, table_name, user_input_path, cmor_log_dir):
     defined under ``e3sm_to_cmip/cmor_handlers/vars``.
     """
     logfile = os.path.join(cmor_log_dir, var_name + ".log")
+    # NOTE: Could add "set_verbosity=cmor.CMOR_DEBUG" as an optional parameter here
     cmor.setup(inpath=table_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
 
     cmor.dataset_json(user_input_path)
