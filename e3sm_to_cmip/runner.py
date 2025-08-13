@@ -446,8 +446,7 @@ class E3SMtoCMIP:
             # Make temp_path unique by appending the process ID
             self.temp_path = f"{self.output_path}/tmp_{os.getpid()}"
 
-            if not os.path.exists(self.temp_path):
-                os.makedirs(self.temp_path, exist_ok=True)
+            os.makedirs(self.temp_path, exist_ok=True)
 
             tempfile.tempdir = self.temp_path
 
