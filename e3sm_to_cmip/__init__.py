@@ -6,6 +6,8 @@ import os
 
 from e3sm_to_cmip import cmor_handlers
 
+os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
+
 # Path to the root directory for all handler related files.
 ROOT_HANDLERS_DIR = os.path.split(os.path.abspath(cmor_handlers.__file__))[0]
 
