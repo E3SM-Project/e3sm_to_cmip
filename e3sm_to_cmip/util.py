@@ -5,7 +5,6 @@ import sys
 import traceback
 from pathlib import Path
 from pprint import pprint
-from typing import Optional
 
 import cmor
 import xarray as xr
@@ -309,7 +308,7 @@ def _get_table_for_non_monthly_freq(
     return table
 
 
-def _get_table_for_freq(base_table: str, freq: str) -> Optional[str]:
+def _get_table_for_freq(base_table: str, freq: str) -> str | None:
     """Get the table for the frequency.
 
     Parameters
@@ -321,8 +320,8 @@ def _get_table_for_freq(base_table: str, freq: str) -> Optional[str]:
 
     Returns
     -------
-    str
-        The table for the frequency.
+    str | None
+        The optional table for the frequency.
     """
     # Replace the base table (monthly) with the frequency.
     if base_table == "CMIP6_Amon.json":

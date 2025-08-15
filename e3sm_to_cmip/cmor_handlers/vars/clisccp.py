@@ -4,10 +4,7 @@ TODO: Convert this module into the new handlers API (handler.py, handlers.yaml,
 formulas.py).
 """
 
-from __future__ import absolute_import, annotations, division, unicode_literals
-
 import logging
-from typing import Dict, List, Union
 
 import cmor
 import numpy as np
@@ -26,7 +23,7 @@ TABLE = str("CMIP6_CFmon.json")
 
 
 def handle(  # noqa: C901
-    vars_to_filepaths: Dict[str, List[str]],
+    vars_to_filepaths: dict[str, list[str]],
     tables: str,
     metadata_path: str,
     cmor_log_dir: str,
@@ -41,7 +38,7 @@ def handle(  # noqa: C901
 
     Parameters
     ----------
-    vars_to_filepaths : Dict[str, List[str]]
+    vars_to_filepaths : dict[str, list[str]]
         A dictionary mapping E3SM raw variables to a list of filepath(s).
     tables_path : str
         The path to directory containing CMOR Tables directory.
@@ -85,7 +82,7 @@ def handle(  # noqa: C901
     msg = f"{VAR_NAME}: CMOR setup complete"
     logger.info(msg)
 
-    data: Dict[str, Union[np.ndarray, xr.DataArray]] = {}
+    data: dict[str, np.ndarray | xr.DataArray] = {}
 
     # assuming all year ranges are the same for every variable
     num_files_per_variable = len(vars_to_filepaths["FISCCP1_COSP"])
