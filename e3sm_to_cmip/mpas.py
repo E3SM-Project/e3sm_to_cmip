@@ -2,8 +2,6 @@
 Utilities related to converting MPAS-Ocean and MPAS-Seaice files to CMOR
 """
 
-from __future__ import absolute_import, division, print_function
-
 import argparse
 import multiprocessing
 import os

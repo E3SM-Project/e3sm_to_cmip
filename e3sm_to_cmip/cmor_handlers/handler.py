@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from typing import Any, Dict, KeysView, List, Literal, Optional, Tuple, TypedDict
+from typing import Any, KeysView, Literal, TypedDict
 
 import cmor
 import numpy as np
@@ -32,7 +32,7 @@ class BaseVarHandler:
         self,
         name: str,
         units: str,
-        raw_variables: List[str],
+        raw_variables: list[str],
         table: str,
     ):
         # The CMIP variable name.
@@ -79,11 +79,11 @@ class VarHandler(BaseVarHandler):
         name: str,
         units: str,
         table: str,
-        raw_variables: List[str],
-        unit_conversion: Optional[str] = None,
-        formula: Optional[str] = None,
-        positive: Optional[Literal["up", "down"]] = None,
-        levels: Optional[Levels] = None,
+        raw_variables: list[str],
+        unit_conversion: str | None = None,
+        formula: str | None = None,
+        positive: Literal["up", "down"] | None = None,
+        levels: Levels | None = None,
     ):
         super().__init__(name, units, raw_variables, table)
 
@@ -135,7 +135,7 @@ class VarHandler(BaseVarHandler):
         self.levels = levels
 
         # Output data for CMORizing.
-        self.output_data: Optional[np.ndarray] = None
+        self.output_data: np.ndarray | None = None
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
@@ -155,7 +155,7 @@ class VarHandler(BaseVarHandler):
     def __str__(self):
         return yaml.dump(self.__dict__, default_flow_style=False, sort_keys=False)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return __dict__ with additional entries to support existing e3sm_to_cmip
         functions.
@@ -166,7 +166,7 @@ class VarHandler(BaseVarHandler):
 
         Returns
         -------
-        Dict[str, Any]
+        dict[str, Any]
             __dict__ with additional entries.
         """
         # TODO: Remove this method e3sm_to_cmip functions parse VarHandler
@@ -175,7 +175,7 @@ class VarHandler(BaseVarHandler):
 
     def cmorize(
         self,
-        vars_to_filepaths: Dict[str, List[str]],
+        vars_to_filepaths: dict[str, list[str]],
         tables_path: str,
         metadata_path: str,
         cmor_log_dir: str,
@@ -185,7 +185,7 @@ class VarHandler(BaseVarHandler):
 
         Parameters
         ----------
-        vars_to_filepaths : Dict[str, List[str]]
+        vars_to_filepaths : dict[str, list[str]]
             A dictionary mapping E3SM raw variables to a list of filepath(s).
         tables_path : str
             The path to directory containing CMOR Tables directory.
@@ -272,13 +272,13 @@ class VarHandler(BaseVarHandler):
         return is_cmor_successful
 
     def _all_vars_have_filepaths(
-        self, vars_to_filespaths: Dict[str, List[str]]
+        self, vars_to_filespaths: dict[str, list[str]]
     ) -> bool:
         """Checks if all raw variables have filepaths found.
 
         Parameters
         ----------
-        vars_to_filespaths : Dict[str, List[str]]
+        vars_to_filespaths : dict[str, list[str]]
             A dictionary of raw variables to filepaths.
 
         Returns
@@ -347,13 +347,13 @@ class VarHandler(BaseVarHandler):
         return None
 
     def _get_mfdataset(
-        self, vars_to_filepaths: Dict[str, List[str]], index: int, time_dim: str | None
+        self, vars_to_filepaths: dict[str, list[str]], index: int, time_dim: str | None
     ) -> xr.Dataset:
         """Get the xr.Dataset using the filepaths for all raw variables.
 
         Parameters
         ----------
-        vars_to_filepaths : Dict[str, List[str]]
+        vars_to_filepaths : dict[str, list[str]]
             A dictionary mapping E3SM raw variables to a list of filepath(s).
         index : int
             The index representing the time range for the file.
@@ -374,7 +374,7 @@ class VarHandler(BaseVarHandler):
         """
         # Sort the input filepath names for each variable to ensure time axis data
         # is aligned and in order across variables.
-        sorted_v_to_fp: Dict[str, List[str]] = {
+        sorted_v_to_fp: dict[str, list[str]] = {
             var: sorted(vars_to_filepaths[var]) for var in vars_to_filepaths
         }
 
@@ -442,7 +442,7 @@ class VarHandler(BaseVarHandler):
 
     def _get_cmor_axis_ids_and_ips_id(
         self, ds: xr.Dataset, time_dim: str | None
-    ) -> Tuple[Dict[str, int], int | None]:
+    ) -> tuple[dict[str, int], int | None]:
         """Create the CMOR axes objects, which are set globally in the CMOR module.
 
         The CMOR ids for "time" and "lev" should be the starting elements of the
@@ -462,7 +462,7 @@ class VarHandler(BaseVarHandler):
 
         Returns
         -------
-        Tuple[Dict[str, int], int | None]
+        tuple[dict[str, int], int | None]
             A tuple with the first element being a dictionary (value is the
             CMOR axis and key is the ID of the CMOR axis), and the second
             element being the CMOR zfactor ID for ips if the dataset and handler
@@ -471,7 +471,7 @@ class VarHandler(BaseVarHandler):
             Example:
                 ({"time": 0, "lev": 1, "lat": 2, "lon": 3}, 4)
         """
-        axis_id_map: Dict[str, int] = {}
+        axis_id_map: dict[str, int] = {}
         cmor_ips_id = None
 
         if time_dim is not None:
@@ -540,7 +540,7 @@ class VarHandler(BaseVarHandler):
         return set(hybrid_sigma_levels).issubset(ds.data_vars)
 
     def _set_cmor_zfactor_for_hybrid_levels(
-        self, ds: xr.Dataset, cmor_axis_id_map: Dict[str, cmor.axis]
+        self, ds: xr.Dataset, cmor_axis_id_map: dict[str, cmor.axis]
     ):
         lev_id = cmor_axis_id_map["lev"]
         lev_name = self.levels["name"]  # type: ignore
@@ -580,13 +580,13 @@ class VarHandler(BaseVarHandler):
         )
 
     def _set_and_get_cmor_zfactor_ips_id(
-        self, cmor_axis_id_map: Dict[str, cmor.axis]
+        self, cmor_axis_id_map: dict[str, cmor.axis]
     ) -> int:
         """Creates ips as a cmor.zfactor and returns its global CMOR id.
 
         Parameters
         ----------
-        cmor_axis_id_map : Dict[str, cmor.axis]
+        cmor_axis_id_map : dict[str, cmor.axis]
             A dictionary mapping the name of a CMOR axis set globally to its CMOR axis
             ID.
 

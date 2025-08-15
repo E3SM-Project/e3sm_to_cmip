@@ -2,8 +2,6 @@
 compute Downward Heat Flux at Sea Water Surface, hfds
 """
 
-from __future__ import absolute_import, division, print_function
-
 import xarray
 
 from e3sm_to_cmip import mpas, util

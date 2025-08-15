@@ -7,8 +7,6 @@ pre-checking variables, generating metadata, and handling various realms and
 frequencies.
 """
 
-from __future__ import annotations
-
 import argparse
 import concurrent
 import os
@@ -23,7 +21,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from pprint import pprint
-from typing import List, Literal, Optional, Tuple, Union
+from typing import Literal
 
 import xarray as xr
 import yaml
@@ -77,26 +75,26 @@ class CLIArguments:
     timeout: int
 
     # CMOR settings
-    var_list: List[str]
-    realm: Union[Realm, MPASRealm]
+    var_list: list[str]
+    realm: Realm | MPASRealm
     freq: Frequency
 
     # Path references.
-    input_path: Optional[str]
-    output_path: Optional[str]
-    tables_path: Optional[str]
-    handlers: Optional[str]
-    map: Optional[str]
-    info_out: Optional[str]
+    input_path: str | None
+    output_path: str | None
+    tables_path: str | None
+    handlers: str | None
+    map: str | None
+    info_out: str | None
 
-    precheck: Optional[str]
+    precheck: str | None
     logdir: str
-    user_metadata: Optional[str]
-    custom_metadata: Optional[str]
+    user_metadata: str | None
+    custom_metadata: str | None
 
 
 class E3SMtoCMIP:
-    def __init__(self, args: argparse.Namespace | List[str] | None = None):
+    def __init__(self, args: argparse.Namespace | list[str] | None = None):
         self.timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
         self.log_filename = f"{self.timestamp}.log"
 
@@ -124,25 +122,23 @@ class E3SMtoCMIP:
         # ======================================================================
         # CMOR settings.
         # ======================================================================
-        self.var_list: List[str] = self._get_var_list(parsed_args.var_list)
-        self.realm: Union[Realm, MPASRealm] = parsed_args.realm
+        self.var_list: list[str] = self._get_var_list(parsed_args.var_list)
+        self.realm: Realm | MPASRealm = parsed_args.realm
         self.freq: Frequency = parsed_args.freq
 
         # ======================================================================
         # Paths references.
         # ======================================================================
-        self.input_path: Optional[str] = parsed_args.input_path
-        self.output_path: Optional[str] = self._setup_output_path(
-            parsed_args.output_path
-        )
+        self.input_path: str | None = parsed_args.input_path
+        self.output_path: str | None = self._setup_output_path(parsed_args.output_path)
         self.tables_path: str = self._get_tables_path(parsed_args.tables_path)
         self.handlers_path: str = self._get_handlers_path(parsed_args.handlers)
-        self.map_path: Optional[str] = parsed_args.map
-        self.info_out_path: Optional[str] = parsed_args.info_out
-        self.precheck_path: Optional[str] = parsed_args.precheck
+        self.map_path: str | None = parsed_args.map
+        self.info_out_path: str | None = parsed_args.info_out
+        self.precheck_path: str | None = parsed_args.precheck
         self.cmor_log_dir: str = parsed_args.logdir
-        self.user_metadata: Optional[str] = parsed_args.user_metadata
-        self.custom_metadata: Optional[str] = parsed_args.custom_metadata
+        self.user_metadata: str | None = parsed_args.user_metadata
+        self.custom_metadata: str | None = parsed_args.custom_metadata
 
         # Setup directories using the CLI argument paths (e.g., output dir).
         # ======================================================================
@@ -292,7 +288,7 @@ class E3SMtoCMIP:
 
         return handlers
 
-    def _get_e3sm_vars(self, input_path: str) -> List[str]:
+    def _get_e3sm_vars(self, input_path: str) -> list[str]:
         """Gets all E3SM variables from the input files to derive CMIP variables.
 
         This method walks through the input file path and reads each `.nc` file
@@ -309,7 +305,7 @@ class E3SMtoCMIP:
 
         Returns
         -------
-        List[str]
+        list[str]
             List of data variables in the input files.
 
         Raises
@@ -317,8 +313,8 @@ class E3SMtoCMIP:
         IndexError
             If no data variables were found in the input files.
         """
-        paths: List[str] = []
-        e3sm_vars: List[str] = []
+        paths: list[str] = []
+        e3sm_vars: list[str] = []
 
         for root, _, files in os.walk(input_path):
             for filename in files:
@@ -338,7 +334,7 @@ class E3SMtoCMIP:
 
         return e3sm_vars
 
-    def _get_var_list(self, input_var_list: List[str]) -> List[str]:
+    def _get_var_list(self, input_var_list: list[str]) -> list[str]:
         if len(input_var_list) == 1 and " " in input_var_list[0]:
             var_list = input_var_list[0].split()
         else:
@@ -348,13 +344,13 @@ class E3SMtoCMIP:
 
         return var_list
 
-    def _get_handlers_path(self, handlers_path: Optional[str]) -> str:
+    def _get_handlers_path(self, handlers_path: str | None) -> str:
         if handlers_path is None:
             return ROOT_HANDLERS_DIR
 
         return os.path.abspath(handlers_path)
 
-    def _get_tables_path(self, tables_path: Optional[str]):
+    def _get_tables_path(self, tables_path: str | None):
         if self.simple_mode and tables_path is None:
             resource_path, _ = os.path.split(os.path.abspath(resources.__file__))
 
@@ -382,7 +378,7 @@ class E3SMtoCMIP:
             logger.info(f"Setting up conversion for {' '.join(new_var_list)}", "ok")
             self.var_list = new_var_list
 
-    def _setup_output_path(self, output_path: Optional[str]) -> str:
+    def _setup_output_path(self, output_path: str | None) -> str:
         """
         Set up and return the absolute output directory path.
 
@@ -393,7 +389,7 @@ class E3SMtoCMIP:
 
         Parameters
         ----------
-        output_path : Optional[str]
+        output_path : str | None
             The desired output directory path. If None, a default directory is
             created.
 
@@ -587,7 +583,7 @@ class E3SMtoCMIP:
         """
         num_handlers = len(self.handlers)
         num_success = 0
-        failed_handlers: List[str] = []
+        failed_handlers: list[str] = []
 
         try:
             if self.realm != "atm":
@@ -677,7 +673,7 @@ class E3SMtoCMIP:
 
         num_handlers = len(self.handlers)
         num_success = 0
-        failed_handlers: List[str] = []
+        failed_handlers: list[str] = []
 
         logger.info("========== STARTING CMORIZING PROCESS ==========")
         for _, handler in enumerate(self.handlers):
@@ -784,8 +780,8 @@ class E3SMtoCMIP:
         name: str,
         num_handlers: int,
         num_success: int,
-        failed_handlers: List[str],
-    ) -> Tuple[int, List[str]]:
+        failed_handlers: list[str],
+    ) -> tuple[int, list[str]]:
         """
         Logs the status of a handler after attempting to CMORize a variable.
 
@@ -801,12 +797,12 @@ class E3SMtoCMIP:
             The total number of handlers.
         num_success : int
             The current count of successful handlers.
-        failed_handlers : List[str]
+        failed_handlers : list[str]
             A list to append failed handler names to.
 
         Returns
         -------
-        Tuple[int, List[str]]
+        tuple[int, list[str]]
             The updated number of successful handlers and the list of failed
             handlers.
         """
@@ -829,7 +825,7 @@ class E3SMtoCMIP:
         return num_success, failed_handlers
 
     def _log_final_result(
-        self, num_handlers: int, num_successes: int, failed_handlers: List[str]
+        self, num_handlers: int, num_successes: int, failed_handlers: list[str]
     ):
         """
         Logs the final result of the CMORization process.
@@ -840,7 +836,7 @@ class E3SMtoCMIP:
             The total number of handlers that were processed.
         num_successes : int
             The number of handlers that completed successfully.
-        failed_handlers : List[str]
+        failed_handlers : list[str]
             A list of handler names that failed during processing.
         """
         logger.info("========== FINAL RUN RESULTS ==========")
