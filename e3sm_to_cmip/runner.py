@@ -440,18 +440,15 @@ class E3SMtoCMIP:
         if not self.simple_mode and not self.info_mode:
             copy_user_metadata(self.user_metadata, self.output_path)
 
+        # Temporary directory for MPAS processing (e.g., regridding).
+        self.temp_path = None
         if not self.info_mode:
-            self.temp_path = os.environ.get("TMPDIR")
+            # Make temp_path unique by appending the process ID
+            self.temp_path = f"{self.output_path}/tmp_mpas/tmp_{os.getpid()}"
 
-            if self.temp_path is None:
-                self.temp_path = f"{self.output_path}/tmp"
-
-                if not os.path.exists(self.temp_path):
-                    os.makedirs(self.temp_path, exist_ok=True)
+            os.makedirs(self.temp_path, exist_ok=True)
 
             tempfile.tempdir = self.temp_path
-        else:
-            self.temp_path = None
 
     def _run_info_mode(self):  # noqa: C901
         messages = []

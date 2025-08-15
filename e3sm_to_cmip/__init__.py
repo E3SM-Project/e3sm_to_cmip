@@ -6,6 +6,11 @@ import os
 
 from e3sm_to_cmip import cmor_handlers
 
+# Disable HDF5 file locking to avoid hangs on shared filesystems (e.g., NFS,
+# Lustre). This is safe because each e3sm_to_cmip process/job writes
+# intermediate MPAS netCDF files to its own unique temporary directory.
+os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
+
 # Path to the root directory for all handler related files.
 ROOT_HANDLERS_DIR = os.path.split(os.path.abspath(cmor_handlers.__file__))[0]
 
