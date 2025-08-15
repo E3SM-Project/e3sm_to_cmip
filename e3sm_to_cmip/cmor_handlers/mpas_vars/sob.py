@@ -2,8 +2,6 @@
 compute Sea Water Salinity at Sea Floor, sob
 """
 
-from __future__ import absolute_import, division, print_function
-
 import xarray
 
 from e3sm_to_cmip import mpas, util

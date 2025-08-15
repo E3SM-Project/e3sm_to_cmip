@@ -2,8 +2,6 @@
 Utilities related to converting MPAS-Ocean and MPAS-Seaice files to CMOR
 """
 
-from __future__ import absolute_import, division, print_function
-
 import argparse
 import multiprocessing
 import os
@@ -731,7 +729,7 @@ def _compute_moc_time_series(
     lat_bnds = np.zeros((len(lat) - 1, 2))
     lat_bnds[:, 0] = lat[0:-1]
     lat_bnds[:, 1] = lat[1:]
-    lat = 0.5 * (lat_bnds[:, 0] + lat_bnds[:, 1])
+    lat = 0.5 * (lat_bnds[:, 0] + lat_bnds[:, 1])  # type: ignore
 
     lat_bnds = xarray.DataArray(lat_bnds, dims=("lat", "nbnd"))  # type: ignore
     lat = xarray.DataArray(lat, dims=("lat",))  # type: ignore

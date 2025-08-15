@@ -2,8 +2,6 @@
 compute Ocean Grid-Cell Mass per area, masscello
 """
 
-from __future__ import absolute_import, division, print_function
-
 import netCDF4
 import xarray
 

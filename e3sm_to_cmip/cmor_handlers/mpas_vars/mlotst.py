@@ -2,8 +2,6 @@
 compute Ocean Mixed Layer Thickness Defined by Sigma T, mlotst
 """
 
-from __future__ import absolute_import
-
 import xarray
 
 from e3sm_to_cmip import mpas, util
