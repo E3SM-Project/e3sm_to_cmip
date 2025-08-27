@@ -43,7 +43,6 @@ from e3sm_to_cmip.cmor_handlers.utils import (
 from e3sm_to_cmip.util import (
     _get_table_info,
     add_metadata,
-    copy_user_metadata,
     find_atm_files,
     find_mpas_files,
     get_handler_info_msg,
@@ -172,6 +171,7 @@ class E3SMtoCMIP:
             "Precheck Path": self.precheck_path,
             "Log Path": self.log_path,
             "CMOR Log Path": self.cmor_log_dir,
+            "CMIP Metadata Path": self.new_metadata_path,
             "Temp Path for Processing MPAS Files": self.temp_path,
             "Frequency": self.freq,
             "Realm": self.realm,
@@ -438,9 +438,16 @@ class E3SMtoCMIP:
         self.log_path = os.path.join(self.output_path, self.log_filename)  # type: ignore
         _add_filehandler(self.log_path)
 
-        # Copy the user's metadata json file with the updated output directory
+        # Make the metadata filename unique by appending the process ID (PID)
+        # to prevent resource conflicts when invoking multiple instances of
+        # e3sm_to_cmip simultaneously.
+        self.new_metadata_path = os.path.join(
+            self.output_path,  # type: ignore
+            f"user_metadata_{os.getpid()}.json",
+        )
+        # Copy the user's metadata json file with the updated output directory.
         if not self.simple_mode and not self.info_mode:
-            copy_user_metadata(self.user_metadata, self.output_path)
+            self._copy_user_metadata()
 
         # Temporary directory for MPAS processing (e.g., regridding).
         self.temp_path = None
@@ -451,6 +458,51 @@ class E3SMtoCMIP:
             os.makedirs(self.temp_path, exist_ok=True)
 
             tempfile.tempdir = self.temp_path
+
+    def _copy_user_metadata(self):
+        """
+        Copies user metadata from an input file to an output file, updating the
+        "outpath" field.
+
+        TODO: Refactor this method to reduce its complexity.
+
+        Raises
+        ------
+        IOError
+            If there is an error reading the input file, opening the output file,
+            or writing to the output file.
+
+        Notes
+        -----
+        If a line in the input metadata contains the string "outpath", it will
+        be replaced with a line containing the new output path. All other lines
+        are copied as-is.
+        """
+        try:
+            fin = open(self.user_metadata, "r")  # type: ignore
+        except IOError as error:
+            print("Unable to write out metadata")
+            raise error
+
+        try:
+            fout = open(self.new_metadata_path, "w")
+        except IOError as error:
+            print("Unable to open output location for custom user metadata")
+            raise error
+
+        try:
+            for line in fin:
+                if "outpath" in line:
+                    fout.write(f'\t"outpath": "{self.output_path}",\n')
+                else:
+                    fout.write(line)
+
+        except IOError as error:
+            print("Write failure for user metadata")
+            raise error
+        finally:
+            fin.close()
+            fout.close()
 
     def _run_info_mode(self):  # noqa: C901
         messages = []
