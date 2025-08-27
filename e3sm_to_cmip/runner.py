@@ -421,13 +421,6 @@ class E3SMtoCMIP:
         If the environment variable `TMPDIR` is not set, a temporary directory
         is created under the output path.
         """
-        # Make the metadata filename unique by appending the process ID (PID)
-        # to prevent resource conflicts when invoking multiple instances of
-        # e3sm_to_cmip simultaneously.
-        self.new_metadata_path = os.path.join(
-            self.output_path,  # type: ignore
-            f"user_metadata_{os.getpid()}.json",
-        )
         self.cmor_log_dir = os.path.join(self.output_path, self.cmor_log_dir)  # type: ignore
         os.makedirs(self.cmor_log_dir, exist_ok=True)
 
