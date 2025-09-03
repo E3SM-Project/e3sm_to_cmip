@@ -382,44 +382,6 @@ def _is_table_supported_by_realm(table: str, realm: str) -> bool:
     return in_tables
 
 
-def copy_user_metadata(input_path, output_path):
-    """
-    write out the users input file for cmor into the output directory
-    and replace the output line with the path to the output directory
-
-    Params:
-    -------
-        input_path (str): A path to the users original cmor metadata json file
-        output_path (str): The new path for the updated metadata file with the output path changed
-    """
-    try:
-        fin = open(input_path, "r")
-    except IOError as error:
-        print("Unable to write out metadata")
-        raise error
-    try:
-        fout = open(os.path.join(output_path, "user_metadata.json"), "w")
-    except IOError as error:
-        print("Unable to open output location for custom user metadata")
-        raise error
-    try:
-        for line in fin:
-            if "outpath" in line:
-                fout.write(f'\t"outpath": "{output_path}",\n')
-            else:
-                fout.write(line)
-
-    except IOError as error:
-        print("Write failure for user metadata")
-        raise error
-    finally:
-        fin.close()
-        fout.close()
-
-
-# ------------------------------------------------------------------
-
-
 def add_metadata(file_path, var_list, metadata_path):
     """
     Recurses down a file tree, adding metadata to any netcdf files in the tree
