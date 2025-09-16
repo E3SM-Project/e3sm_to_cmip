@@ -7,10 +7,10 @@ name = "e3sm_to_cmip"
 dynamic = ["version"]
 description = "Transform E3SM model data output into CMIP compatible data using the Climate Model Output Rewriter."
 authors = [
-    {name = "Sterling Baldwin"},
-    {name = "Tom Vo", email = "vo13@llnl.gov"},
-    {name = "Chengzhu (Jill) Zhang", email = "zhang40@llnl.gov"},
-    {name = "Anthony Bartoletti"}
+  { name = "Sterling Baldwin" },
+  { name = "Tom Vo", email = "vo13@llnl.gov" },
+  { name = "Chengzhu (Jill) Zhang", email = "zhang40@llnl.gov" },
+  { name = "Anthony Bartoletti" },
 ]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
@@ -18,14 +18,14 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
   "Natural Language :: English",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
 ]
 readme = "README.md"
-license = {file = "LICENSE"}
-requires-python = ">=3.10"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
 keywords = ["e3sm_to_cmip"]
 dependencies = [
   "cmor>=3.7.0",
