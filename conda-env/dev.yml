@@ -6,7 +6,7 @@ channels:
 dependencies:
   # Base - required for building the repository as an Anaconda package
   # ====================
-  - python >=3.11,<=3.14
+  - python >=3.11,<3.14
   - setuptools
   - cmor >=3.7.0
   - dask
