@@ -185,6 +185,30 @@
   formula: null
   positive: null
   levels: null
+- name: clmodis
+  units: "1"
+  raw_variables: [CLMODIS]
+  table: CMIP6_CFmon.json
+  unit_conversion: null
+  formula: CLMODIS/100.0
+  positive: null
+  levels: null
+- name: clmodisice
+  units: "1"
+  raw_variables: [CLIMODIS]
+  table: CMIP6_CFmon.json
+  unit_conversion: null
+  formula: CLIMODIS/100.0
+  positive: null
+  levels: null
+- name: clmodisliquid
+  units: "1"
+  raw_variables: [CLWMODIS]
+  table: CMIP6_CFmon.json
+  unit_conversion: null
+  formula: CLWMODIS/100.0
+  positive: null
+  levels: null
 - name: clw
   units: kg kg-1
   raw_variables: [CLDLIQ]
@@ -230,6 +254,54 @@
   unit_conversion: null
   formula: SFso4_a1 + SFso4_a2 + (so4_a1_CLXF + so4_a2_CLXF) * 115.107340
     / 6.02214e+22
+  positive: null
+  levels: null
+- name: od550bc
+  units: "1"
+  raw_variables: [AODBC]
+  table: CMIP6_AERmon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+- name: od550dust
+  units: "1"
+  raw_variables: [AODDUST]
+  table: CMIP6_AERmon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+- name: od550so4
+  units: "1"
+  raw_variables: [AODSO4]
+  table: CMIP6_AERmon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+- name: od550soa
+  units: "1"
+  raw_variables: [AODSOA]
+  table: CMIP6_AERmon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+- name: od550ss
+  units: "1"
+  raw_variables: [AODSS]
+  table: CMIP6_AERmon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+- name: ptp
+  units: Pa
+  raw_variables: [TROP_P]
+  table: CMIP6_AERmon.json
+  unit_conversion: null
+  formula: null
   positive: null
   levels: null
 - name: evspsbl
