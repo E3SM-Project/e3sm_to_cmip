@@ -124,7 +124,9 @@ def remap(ds, pcode, mappingFileName):
     for varName in ds.data_vars:
         ds[varName].attrs.pop("missing_value_mask", None)
 
-    write_netcdf(ds, inFileName, unlimited="time")
+    # Only set time as unlimited if it exists in the dataset dimensions
+    unlimited_dims = "time" if "time" in ds.dims else None
+    write_netcdf(ds, inFileName, unlimited=unlimited_dims)
 
     if pcode == "mpasocean":
         remap_ocean(inFileName, outFileName, mappingFileName)
