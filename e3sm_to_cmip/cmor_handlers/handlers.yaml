@@ -185,30 +185,6 @@
   formula: null
   positive: null
   levels: null
-- name: clmodis
-  units: "1"
-  raw_variables: [CLMODIS]
-  table: CMIP6_CFmon.json
-  unit_conversion: null
-  formula: CLMODIS/100.0
-  positive: null
-  levels: null
-- name: clmodisice
-  units: "1"
-  raw_variables: [CLIMODIS]
-  table: CMIP6_CFmon.json
-  unit_conversion: null
-  formula: CLIMODIS/100.0
-  positive: null
-  levels: null
-- name: clmodisliquid
-  units: "1"
-  raw_variables: [CLWMODIS]
-  table: CMIP6_CFmon.json
-  unit_conversion: null
-  formula: CLWMODIS/100.0
-  positive: null
-  levels: null
 - name: clw
   units: kg kg-1
   raw_variables: [CLDLIQ]

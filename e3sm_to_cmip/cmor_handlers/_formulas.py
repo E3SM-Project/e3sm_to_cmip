@@ -88,33 +88,6 @@ def cl(ds: xr.Dataset) -> xr.DataArray:
     return result
 
 
-def clmodis(ds: xr.Dataset) -> xr.DataArray:
-    """
-    clmodis = CLMODIS / 100.0
-    """
-    result = ds["CLMODIS"] / 100.0
-
-    return result
-
-
-def clmodisice(ds: xr.Dataset) -> xr.DataArray:
-    """
-    clmodisice = CLMODISICE / 100.0
-    """
-    result = ds["CLMODISICE"] / 100.0
-
-    return result
-
-
-def clmodisliquid(ds: xr.Dataset) -> xr.DataArray:
-    """
-    clmodisliquid = CLMODISLIQUID / 100.0
-    """
-    result = ds["CLMODISLIQUID"] / 100.0
-
-    return result
-
-
 def emibc(ds: xr.Dataset) -> xr.DataArray:
     """
     emibc = SFbc_a4 (surface emission kg/m2/s) + bc_a4_CLXF (vertically integrated molec/cm2/s) x 12.011 / 6.02214e+22
