@@ -232,6 +232,54 @@
     / 6.02214e+22
   positive: null
   levels: null
+- name: od550bc
+  units: "1"
+  raw_variables: [AODBC]
+  table: CMIP6_AERmon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+- name: od550dust
+  units: "1"
+  raw_variables: [AODDUST]
+  table: CMIP6_AERmon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+- name: od550so4
+  units: "1"
+  raw_variables: [AODSO4]
+  table: CMIP6_AERmon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+- name: od550soa
+  units: "1"
+  raw_variables: [AODSOA]
+  table: CMIP6_AERmon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+- name: od550ss
+  units: "1"
+  raw_variables: [AODSS]
+  table: CMIP6_AERmon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+- name: ptp
+  units: Pa
+  raw_variables: [TROP_P]
+  table: CMIP6_AERmon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
 - name: evspsbl
   units: kg m-2 s-1
   raw_variables: [QFLX]

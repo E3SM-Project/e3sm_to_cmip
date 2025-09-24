@@ -513,7 +513,7 @@ class E3SMtoCMIP:
                 table_info = _get_table_info(self.tables_path, handler["table"])
                 if handler["name"] not in table_info["variable_entry"]:
                     logger.error(
-                        "Variable {handler['name']} is not included in the table "
+                        f"Variable {handler['name']} is not included in the table "
                         f"{handler['table']}"
                     )
 
