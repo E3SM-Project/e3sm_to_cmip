@@ -1,0 +1,61 @@
+#!/bin/bash
+#source   /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
+#conda activate e2c
+
+sim=(	v3.ccmi.PD_INT_custom30  
+     	v3.ccmi.FD_INT_4xCO2_custom30_mem1  
+     	v3.ccmi.FD_INT_4xCO2_custom30_mem2
+     	v3.ccmi.FD_INT_4xCO2_custom30_mem3
+     	v3.ccmi.PD_NINT_custom30_mem1
+	v3.ccmi.PD_NINT_custom30_mem2
+	v3.ccmi.PD_NINT_custom30_mem3
+	v3.ccmi.FD_INT_4xCO2_PDSST_custom30_mem1
+	v3.ccmi.FD_INT_4xCO2_PDSST_custom30_mem2
+	v3.ccmi.FD_INT_4xCO2_PDSST_custom30_mem3)
+     
+     sim1=(PDINT  FTINT   FTINT   FTINT	  PDNINT  PDNINT  PDNINT   FTINT-PDSST  FTINT-PDSST  FTINT-PDSST)
+     sim2=(PD_INT FT_INT  FT_INT  FT_INT  PD_NINT PD_NINT PD_NINT  FTINT-PDSST  FTINT-PDSST  FTINT-PDSST)
+     real=(1      1       2       3	  1	  2 	  3      1      2      3)
+     name=(batch_table2_sur
+	   batch_table2_mon_lev
+	   batch_table2_day_lev
+	   batch_table3_lev
+	   batch_table3_tem
+	   batch_table4n6_lev
+	   batch_table4_tem
+	   batch_table5_sur
+	   batch_table5_lev)
+year_s=(11  11  41  71  11  41  71  11  41  71)
+year_e=(100 40  70  100 40  70  100 40  70  100)
+year_n=(90  30  30  30  30  30  30  30  30  30)
+#
+dir=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/batch/
+#
+j=9
+#0
+k=3
+sed -i "/template=/c  template=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json "
+#get  this changed first
+cp -r /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_orig.json  /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json
+sed -i "s/PDINT/${sim1[j]}/g" /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json
+sed -i "s/PD_INT/${sim2[j]}/g" /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json
+sed -i "/realization_index/c  \ \ \"realization_index\": \"${real[j]}\"," /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json
+sed -i "/parent_variant_label/c   \ \ \"parent_variant_label\": \"r${real[j]}i1p1f1\"," /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json
+
+#
+for i in {0..8..1}; do
+FILENAME=${name[i]}_run
+mkdir -p $dir
+mkdir -p $dir/case
+cp -r $dir/${name[i]}  $dir/case/$FILENAME
+echo ${sim[j]}
+sed -i "/case=/c    case=${sim[j]}"        $dir/case/$FILENAME
+	if [ $i -eq 0 ] || [ $i -eq 7 ]; then
+sed -i "/years=/c   years=${year_n[j]}"    $dir/case/$FILENAME
+	fi
+cd $dir/case
+.  $dir/case/$FILENAME  
+cd ..
+done
+#
+

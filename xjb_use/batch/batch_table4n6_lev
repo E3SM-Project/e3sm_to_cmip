@@ -12,8 +12,7 @@ scale=6hrPt
 scale1=$scale
 scale2=$scale\Z
 #
-#for i in {0..4..1}; do
-for i in {0..0..1}; do
+for i in {0..4..1}; do
 FILENAME=$case\_${VAR1[i]}_$scale1.sh
 cp $DIR/sub  $FILENAME
 echo ${VAR1[i]}
@@ -30,7 +29,3 @@ sed -i "/input=/c  input=/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output
 ./$FILENAME >& output_$scale2\_${VAR1[i]}    #&
 done
 
-
-
-
-exit
