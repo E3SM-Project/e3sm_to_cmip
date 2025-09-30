@@ -1,0 +1,3 @@
+20250930_183815_699:INFO:main:input_path = /global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem1/output/PRECT/post/atm/180x360_aave/ts/daily/30yr/
+20250930_183815_700:INFO:main:output_path = /global/cfs/cdirs/e3sm/xie7/ccmi_output/
+20250930_183815_700:INFO:main:precheck_path = None

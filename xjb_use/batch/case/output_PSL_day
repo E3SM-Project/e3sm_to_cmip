@@ -1,0 +1,17 @@
+2025-09-30 18:38:11,017_017:INFO:main:input_path = /global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem1/output/PSL/post/atm/180x360_aave/ts/daily/30yr/
+2025-09-30 18:38:11,017_017:INFO:main:output_path = /global/cfs/cdirs/e3sm/xie7/ccmi_output/
+2025-09-30 18:38:11,017_017:INFO:main:precheck_path = None
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/e3sm_to_cmip/__main__.py", line 180, in main
+    status = run_parallel(
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/e3sm_to_cmip/lib.py", line 65, in run_parallel
+    input_paths = {
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/e3sm_to_cmip/lib.py", line 66, in <dictcomp>
+    var: [
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/e3sm_to_cmip/lib.py", line 66, in <listcomp>
+    var: [
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/e3sm_to_cmip/util.py", line 845, in find_atm_files
+    for item in os.listdir(path):
+[94m[*] [0mLoaded `psl_day` handler for variable `psl`.[94m[0m
+[94m[*] [0mWriting log output to: /global/cfs/cdirs/e3sm/xie7/ccmi_output/converter.log[94m[0m
+[92m[+] [0mRunning CMOR handlers in parallel
+[Errno 2] No such file or directory: '/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem1/output/PSL/post/atm/180x360_aave/ts/daily/30yr/'

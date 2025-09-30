@@ -1,0 +1,40 @@
+Traceback (most recent call last):
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/bin/e3sm_to_cmip", line 33, in <module>
+    sys.exit(load_entry_point('e3sm_to_cmip==1.9.1rc2', 'console_scripts', 'e3sm_to_cmip')())
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/bin/e3sm_to_cmip", line 25, in importlib_load_entry_point
+    return next(matches).load()
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/importlib/metadata/__init__.py", line 171, in load
+    module = import_module(match.group('module'))
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/e3sm_to_cmip/__main__.py", line 23, in <module>
+    from e3sm_to_cmip.lib import run_parallel, run_serial
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/e3sm_to_cmip/lib.py", line 7, in <module>
+    import xarray as xr
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/xarray/__init__.py", line 3, in <module>
+    from xarray import coders, groupers, testing, tutorial, ufuncs
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/xarray/coders.py", line 6, in <module>
+    from xarray.coding.times import CFDatetimeCoder, CFTimedeltaCoder
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/xarray/coding/times.py", line 11, in <module>
+    import pandas as pd
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/pandas/__init__.py", line 49, in <module>
+    from pandas.core.api import (
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/pandas/core/api.py", line 28, in <module>
+    from pandas.core.arrays import Categorical
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/pandas/core/arrays/__init__.py", line 1, in <module>
+    from pandas.core.arrays.arrow import ArrowExtensionArray
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.10/site-packages/pandas/core/arrays/arrow/__init__.py", line 5, in <module>
+    from pandas.core.arrays.arrow.array import ArrowExtensionArray
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 879, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1012, in get_code
+  File "<frozen importlib._bootstrap_external>", line 672, in _compile_bytecode
+KeyboardInterrupt

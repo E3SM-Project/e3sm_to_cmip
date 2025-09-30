@@ -4,7 +4,7 @@ var1=PRECT
 var2=pr_mon
 year=90yr
 scale=monthly
-input=/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/2D/
+input=/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem1/output/PRECT/post/atm/180x360_aave/ts/monthly/30yr/
 output=/global/cfs/cdirs/e3sm/xie7/ccmi_output/
 template=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new0.json 
 #/global/cfs/cdirs/e3sm/xie7/ccmi/$case/output/$var1/post/atm/180x360_aave/ts/$scale/$year/
