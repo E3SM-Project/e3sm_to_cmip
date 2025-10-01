@@ -76,7 +76,14 @@ def remap_seaice_sgs(inFileName, outFileName, mappingFileName, renorm_threshold=
         run_ncremap_cmd(args, env)
     # With  data_vars='minimal', only data variables in which the dimension already appears are included.
     ds_out_all = xarray.open_mfdataset(
-        f"{outFilePath}/temp_out*nc", data_vars="minimal", decode_times=False
+        f"{outFilePath}/temp_out*nc",
+        data_vars="minimal",
+        decode_times=False,
+        # NOTE: Preserve legacy Xarray behavior by setting compat="no_conflicts"
+        # and join="outer" ("override" and "exact" are the new defaults as of
+        # Xarray v2025.08.0)
+        compat="no_conflicts",
+        join="outer",
     )
     ds_out_all = ds_out_all.drop("timeMonthly_avg_iceAreaCell")
     ds_out_all.to_netcdf(outFileName)
@@ -326,6 +333,11 @@ def open_mfdataset(
         concat_dim="Time",
         mask_and_scale=False,
         chunks=chunks,
+        # NOTE: Preserve legacy Xarray behavior by setting compat="no_conflicts"
+        # and join="outer" ("override" and "exact" are the new defaults as of
+        # Xarray v2025.08.0).
+        compat="no_conflicts",
+        join="outer",
     )
 
     if variableList is not None:

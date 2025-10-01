@@ -88,7 +88,12 @@ def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
 
     ds = mpas.remap(ds, "mpasocean", mappingFileName)
 
-    with xarray.open_mfdataset(pslFileNames, concat_dim="time") as dsIn:
+    # NOTE: Preserve legacy Xarray behavior by setting compat="no_conflicts"
+    # and join="outer" ("override" and "exact" are the new defaults as of
+    # Xarray v2025.08.0)
+    with xarray.open_mfdataset(
+        pslFileNames, concat_dim="time", compat="no_conflicts", join="outer"
+    ) as dsIn:
         ds[VAR_NAME] = ds[VAR_NAME] + dsIn.PSL.values
 
     util.setup_cmor(

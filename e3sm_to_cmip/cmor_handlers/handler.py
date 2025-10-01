@@ -390,6 +390,12 @@ class VarHandler(BaseVarHandler):
             combine="nested",
             data_vars="minimal",
             coords="minimal",
+            # NOTE: Preserve legacy Xarray behavior by setting compat="no_conflicts"
+            # and join="outer" ("override" and "exact" are the new defaults as of
+            # Xarray v2025.08.0). These settings are automatically set when
+            # using xcdat>=0.10.1.
+            compat="no_conflicts",
+            join="outer",
         )
 
         # If the output CMIP variable has an alternative time dimension name (e.g.,
