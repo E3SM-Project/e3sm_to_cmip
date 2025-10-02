@@ -37,11 +37,13 @@ year_n=(90  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30)
 #
 dir=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/batch/
 #
-j=13
-#5
-k=0
+j=2
+k=$j
+echo $j
 #
-sed -i "/template=/c  template=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json "  sub
+SUB=sub$k
+cp -r sub $SUB
+sed -i "/template=/c  template=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json "  $SUB
 #get  this changed first
 cp -r /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_orig.json  /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json
 sed -i "s/PDINT/${sim1[j]}/g" /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json
@@ -58,6 +60,8 @@ mkdir -p $dir/case
 cp -r $dir/${name[i]}  $dir/case/$FILENAME
 echo ${sim[j]}
 sed -i "/case=/c    case=${sim[j]}"        $dir/case/$FILENAME
+sed -i "/DIR=/c   DIR=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/batch/"	     $dir/case/$FILENAME
+sed -i "/SUB=/c   SUB=$SUB"  $dir/case/$FILENAME
 	if [ $i -eq 0 ] || [ $i -eq 7 ]; then
 sed -i "/years=/c   years=${year_n[j]}"    $dir/case/$FILENAME
 	fi

@@ -3,6 +3,8 @@
 
 #conda activate e2c 
 #python  setup.py  install
+SUB=sub
+echo batch_table2_sur $SUB
 case=v3.ccmi.PD_INT_custom30
 DIR=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/batch/
 VAR1=(PSL  PS  PRECT  PRECC  FLUT  TREFHT  U10  TROP_P  TROP_T)
@@ -14,7 +16,7 @@ years=90
 #
 for i in {0..8..1}; do
 FILENAME=$case\_${VAR1[i]}\_mon.sh
-cp $DIR/sub  $FILENAME
+cp $DIR/$SUB  $FILENAME
 echo ${VAR1[i]}
 sed -i "/input=/c input=/global/cfs/cdirs/e3sm/xie7/ccmi_process/$case/output/${VAR1[i]}/post/atm/180x360_aave/ts/monthly/"$years"yr/" $FILENAME
 sed -i "/var1=/c  var1=${VAR1[i]}"       $FILENAME
@@ -22,7 +24,7 @@ sed -i "/var2=/c  var2=${VAR2[i]}_mon"   $FILENAME
 ./$FILENAME >& output_${VAR1[i]}_mon    
 #
 FILENAME=$case\_${VAR1[i]}\_day.sh
-cp $DIR/sub  $FILENAME
+cp $DIR/$SUB  $FILENAME
 echo ${VAR1[i]}
 sed -i "/input=/c input=/global/cfs/cdirs/e3sm/xie7/ccmi_process/$case/output/${VAR1[i]}/post/atm/180x360_aave/ts/daily/30yr/" $FILENAME
 sed -i "/var1=/c  var1=${VAR1[i]}"       $FILENAME

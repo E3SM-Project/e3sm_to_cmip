@@ -1,12 +1,15 @@
 #!/bin/bash
 
-sed -i "40c j=13" batch_sim
-./batch_sim
+#sed -i "40c j=13" batch_sim
+#./batch_sim
 
-sed -i "40c j=14" batch_sim
-./batch_sim
+#sed -i "40c j=14" batch_sim
+#./batch_sim
 
 sed -i "40c j=15" batch_sim
+./batch_sim
+
+sed -i "40c j=2" batch_sim
 ./batch_sim
 
 

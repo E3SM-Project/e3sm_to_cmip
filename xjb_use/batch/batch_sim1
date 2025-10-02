@@ -11,11 +11,17 @@ sim=(	v3.ccmi.PD_INT_custom30
 	v3.ccmi.PD_NINT_custom30_mem3
 	v3.ccmi.FD_INT_4xCO2_PDSST_custom30_mem1
 	v3.ccmi.FD_INT_4xCO2_PDSST_custom30_mem2
-	v3.ccmi.FD_INT_4xCO2_PDSST_custom30_mem3)
+	v3.ccmi.FD_INT_4xCO2_PDSST_custom30_mem3
+	v3.ccmi.FD_NINT_4xCO2_custom30_mem1
+	v3.ccmi.FD_NINT_4xCO2_custom30_mem2
+	v3.ccmi.FD_NINT_4xCO2_custom30_mem3
+	v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem1
+	v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem2
+	v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem3)
      
-     sim1=(PDINT  FTINT   FTINT   FTINT	  PDNINT  PDNINT  PDNINT   FTINT-PDSST  FTINT-PDSST  FTINT-PDSST)
-     sim2=(PD_INT FT_INT  FT_INT  FT_INT  PD_NINT PD_NINT PD_NINT  FTINT-PDSST  FTINT-PDSST  FTINT-PDSST)
-     real=(1      1       2       3	  1	  2 	  3      1      2      3)
+     sim1=(PDINT  FTINT   FTINT   FTINT	  PDNINT  PDNINT  PDNINT   FTINT-PDSST  FTINT-PDSST  FTINT-PDSST   FTNINT   FTNINT   FTNINT  FTINT-PDCO2  FTINT-PDCO2   FTINT-PDCO2)
+     sim2=(PD_INT FT_INT  FT_INT  FT_INT  PD_NINT PD_NINT PD_NINT  FTINT-PDSST  FTINT-PDSST  FTINT-PDSST  FT_NINT   FT_NINT  FT_NINT FT_INT-PDCO2 FT_INT-PDCO2  FT_INT-PDCO2)
+     real=(1      1       2       3	  1	  2 	  3      1      2      3   1   2   3  1  2  3)
      name=(batch_table2_sur
 	   batch_table2_mon_lev
 	   batch_table2_day_lev
@@ -25,16 +31,16 @@ sim=(	v3.ccmi.PD_INT_custom30
 	   batch_table4_tem
 	   batch_table5_sur
 	   batch_table5_lev)
-year_s=(11  11  41  71  11  41  71  11  41  71)
-year_e=(100 40  70  100 40  70  100 40  70  100)
-year_n=(90  30  30  30  30  30  30  30  30  30)
+year_s=(11  11  41  71  11  41  71  11  41  71  11  41  71  11  41  71)
+year_e=(100 40  70  100 40  70  100 40  70  100 40  70  100 40  70  100)
+year_n=(90  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30)
 #
 dir=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/batch/
 #
-j=7
-#0
+j=15
 k=1
-sed -i "/template=/c  template=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json "
+#
+sed -i "/template=/c  template=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json "  sub
 #get  this changed first
 cp -r /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_orig.json  /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json
 sed -i "s/PDINT/${sim1[j]}/g" /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json
@@ -44,6 +50,7 @@ sed -i "/parent_variant_label/c   \ \ \"parent_variant_label\": \"r${real[j]}i1p
 
 #
 for i in {0..8..1}; do
+#for i in {8..8..1}; do
 FILENAME=${name[i]}_run
 mkdir -p $dir
 mkdir -p $dir/case

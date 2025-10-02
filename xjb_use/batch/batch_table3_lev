@@ -3,6 +3,8 @@
 
 #conda activate e2c 
 #python  setup.py  install
+SUB=sub
+echo batch_table3_lev $SUB
 DIR=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/batch/
 VAR1=(TTEND_TOT  QRL  QRLC  QRS  QRSC  UTEND_CLUBB  UTGWORO  UTGWSPEC  VTEND_CLUBB  VTGWORO  VTGWSPEC  TOT_CLD_VISTAU  CONCLD  CLOUD)
 VAR2=(zmtnt  tntrl  tntrlcs  tntrs  tntrscs  utendmp  utendogw  utendnogw  vtendmp  vtendogw  vtendnogw  cod cltc  clt)
@@ -17,7 +19,7 @@ scale3=mon
 #
 for i in {0..10..1}; do
 FILENAME=$case\_${VAR1[i]}_$scale1.sh
-cp $DIR/sub  $FILENAME
+cp $DIR/$SUB  $FILENAME
 echo ${VAR1[i]} $i monZ
 sed -i "/var1=/c  var1=${VAR1[i]}"       $FILENAME
 sed -i "/var2=/c  var2=${VAR2[i]}\_$scale1"   $FILENAME
@@ -30,7 +32,7 @@ done
 ##
 for i in {0..10..1}; do
 FILENAME=$case\_${VAR1[i]}_$scale2.sh
-cp $DIR/sub  $FILENAME
+cp $DIR/$SUB  $FILENAME
 echo ${VAR1[i]} $i dayZ
 sed -i "/var1=/c  var1=${VAR1[i]}"       $FILENAME
 sed -i "/var2=/c  var2=${VAR2[i]}\_$scale2"  $FILENAME
