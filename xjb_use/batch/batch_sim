@@ -42,7 +42,8 @@ k=$j
 echo $j
 #
 SUB=sub$k
-cp -r sub $SUB
+rm $SUB
+cp -rf  sub $SUB
 sed -i "/template=/c  template=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json "  $SUB
 #get  this changed first
 cp -r /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_orig.json  /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json
@@ -52,8 +53,8 @@ sed -i "/realization_index/c  \ \ \"realization_index\": \"${real[j]}\"," /globa
 sed -i "/parent_variant_label/c   \ \ \"parent_variant_label\": \"r${real[j]}i1p1f1\"," /global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/ccmi_template_new$k.json
 
 #
-for i in {0..8..1}; do
-#for i in {8..8..1}; do
+#for i in {0..8..1}; do
+for i in {3..3..1}; do
 FILENAME=${name[i]}_run
 mkdir -p $dir
 mkdir -p $dir/case

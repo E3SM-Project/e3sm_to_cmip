@@ -12,7 +12,7 @@ VAR2=(o3  h2o     e90  no  no2  n2o    n2o5  hno3  noy    oh  ho2  ch4    so2  j
 scale=mon
 #
 for i in {0..13..1}; do
-#for i in {1..1..1}; do
+#for i in {0..0..1}; do
 FILENAME=$case\_${VAR1[i]}\_monZ.sh
 cp $DIR/$SUB  $FILENAME
 echo ${VAR1[i]}

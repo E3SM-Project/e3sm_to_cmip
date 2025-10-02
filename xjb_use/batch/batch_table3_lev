@@ -15,7 +15,7 @@ scale1=monZ
 scale2=dayZ
 scale3=mon
 #
-if [[ 1 -eq 2 ]]; then
+#if [[ 1 -eq 2 ]]; then
 #
 for i in {0..10..1}; do
 FILENAME=$case\_${VAR1[i]}_$scale1.sh
@@ -41,7 +41,7 @@ sed -i "/input=/c input=/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/
 done
 #
 #exit
-fi
+#fi
 #
 for i in {11..13..1}; do
 FILENAME=$case\_${VAR1[i]}_$scale3.sh
