@@ -33,7 +33,7 @@ RADIUS = 6.37122e6
 
 def load_all_handlers(
     realm: Realm | MPASRealm, cmip_vars: list[str]
-) -> list[dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], list[str]]:
     """Loads variable handlers based on a list of variable names.
 
     This function is used specifically for printing out the handler information
@@ -48,13 +48,9 @@ def load_all_handlers(
 
     Returns
     -------
-    list[dict[str, Any]]:
-        A list of the dictionary representation of VarHandler objects.
-
-    Raises
-    ------
-    KeyError
-        If no handlers are defined for a CMIP6 variable in `handlers.yaml`.
+    tuple[list[dict[str, Any]], list[str]]:
+        A list of the dictionary representation of VarHandler objects
+        and a list of variable names that are missing handlers if any.
     """
     handlers_by_var: dict[str, list[dict[str, Any]]] = _get_handlers_by_var()
 
@@ -72,19 +68,13 @@ def load_all_handlers(
 
             handlers = handlers + var_handler
 
-        if len(missing_handlers) > 0:
-            logger.warning(
-                f"No handlers are defined for the variables: {missing_handlers}. "
-                "Make sure at least one variable handler is defined for each of these "
-                f"variables in `{HANDLER_DEFINITIONS_PATH}`."
-            )
     else:
         handlers = _get_mpas_handlers(cmip_vars)
 
-    return handlers
+    return handlers, missing_handlers
 
 
-def _get_mpas_handlers(cmip_vars: list[str]):
+def _get_mpas_handlers(cmip_vars: list[str]) -> tuple[list[dict[str, Any]], list[str]]:
     """Get MPAS variable handlers using the list of CMIP variables.
 
     All current MPAS variable handlers are defined as modules and there is only
@@ -97,8 +87,9 @@ def _get_mpas_handlers(cmip_vars: list[str]):
 
     Returns
     -------
-    KeyError
-        If no handlers are defined for the MPAS CMIP6 variable.
+    tuple[list[dict[str, Any]], list[str]]:
+        A list of the dictionary representation of VarHandler objects and
+        a list of variable names that are missing handlers if any.
     """
     handlers = _get_handlers_from_modules(MPAS_HANDLER_DIR_PATH)
 
@@ -121,7 +112,7 @@ def _get_mpas_handlers(cmip_vars: list[str]):
             f"`{MPAS_HANDLER_DIR_PATH}`."
         )
 
-    return derived_handlers
+    return derived_handlers, missing_handlers
 
 
 def derive_handlers(
@@ -130,7 +121,7 @@ def derive_handlers(
     e3sm_vars: list[str],
     freq: Frequency,
     realm: Realm | MPASRealm,
-) -> list[dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], list[str], list[str]]:
     """Derives the appropriate handler for each CMIP variable.
 
     For each CMIP variable the user wants to CMORize (`cmip_vars`), a variable
@@ -162,16 +153,12 @@ def derive_handlers(
 
     Returns
     -------
-    list[dict[str, Any]]:
-        A list of the dictionary representation of VarHandler objects.
+    tuple[list[dict[str, Any]], list[str]], list[str]]:
+        A list of the dictionary representation of VarHandler objects, a list of
+        variable names that are missing handlers (if any), and a list of
+        variable names that could not be derived using the input E3SM variables
+        if (any).
 
-    Raises
-    ------
-    KeyError
-        If no handlers are defined for a CMIP6 variable in `handlers.yaml`.
-    KeyError
-        If a handler could not be derived for a CMIP6 variable using the existing
-        E3SM variables.
     """
     # TODO: Refactor the function parameters.
     handlers_by_var: dict[str, list[dict[str, Any]]] = _get_handlers_by_var()
@@ -180,7 +167,7 @@ def derive_handlers(
     # Stores variable names that are missing handlers or the handler cannot
     # be derived using the input E3SM variables.
     missing_handlers: list[str] = []
-    cannot_derive: list[str] = []
+    non_derivable_handlers: list[str] = []
 
     for var in cmip_vars:
         var_handlers = handlers_by_var.get(var)
@@ -197,30 +184,17 @@ def derive_handlers(
             var_handlers, freq, realm, cmip_tables_path, e3sm_vars
         )
 
-        # If no handler could be derived, add it to the cannot_derive list.
-        # This can happen if the handler has no matching CMIP table for the
-        # requested frequency, or if the handler's raw E3SM variables do not
-        # match the input E3SM variables.
+        # If no handler is defined variable itself could be derived, add it to
+        # the cannot_derive list. This can happen if the handler has no matching
+        # CMIP table for the requested frequency, or if the handler's raw E3SM
+        # variables do not match the input E3SM variables.
         if derived_handler is None:
-            cannot_derive.append(var)
+            non_derivable_handlers.append(var)
             continue
 
         derived_handlers.append(derived_handler)
 
-    if len(missing_handlers) > 0:
-        logger.warning(
-            f"No handlers are defined for the variables: {missing_handlers}. "
-            "Make sure handlers are defined for these variables in `handlers.yaml`."
-        )
-
-    if len(cannot_derive) > 0:
-        logger.warning(
-            f"No handlers could be derived for the variables: {cannot_derive}. "
-            "Make sure the input E3SM datasets have the variables needed for "
-            "derivation."
-        )
-
-    return derived_handlers
+    return derived_handlers, missing_handlers, non_derivable_handlers
 
 
 def _get_handlers_by_var() -> dict[str, list[dict[str, Any]]]:

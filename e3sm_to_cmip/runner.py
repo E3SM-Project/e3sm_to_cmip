@@ -169,7 +169,8 @@ class E3SMtoCMIP:
                 if self.serial_mode
                 else "Parallel"
             ),
-            "Variable List": self.var_list,
+            "Variable Failure Behavior": self.on_var_failure,
+            "Variable List": f"{self.var_list} ({len(self.var_list)})",
             "Input Path": self.input_path,
             "Output Path": self.output_path,
             "Precheck Path": self.precheck_path,
@@ -185,7 +186,10 @@ class E3SMtoCMIP:
             logger.info(f"    * {key}: {value}")
 
         # Load the CMOR handlers based on the realm and variable list.
-        self.handlers = self._get_handlers()
+        self.handlers, self.missing_handlers, self.non_derivable_handlers = (
+            self._get_handlers()
+        )
+        self._validate_handlers()
 
     def _get_version_info(self) -> str:
         """Retrieve version information for the current codebase.
@@ -254,89 +258,10 @@ class E3SMtoCMIP:
             if timer is not None:
                 timer.cancel()
 
-    def _get_handlers(self):
-        if self.info_mode:
-            handlers = load_all_handlers(self.realm, self.var_list)
-        elif not self.info_mode and self.input_path is not None:
-            e3sm_vars = self._get_e3sm_vars(self.input_path)
-            logger.debug(f"Input dataset variables: {e3sm_vars}")
-
-            if self.realm in REALMS:
-                handlers = derive_handlers(
-                    cmip_tables_path=self.tables_path,
-                    cmip_vars=self.var_list,
-                    e3sm_vars=e3sm_vars,
-                    freq=self.freq,
-                    realm=self.realm,
-                )
-
-                cmip_to_e3sm_vars = {
-                    handler["name"]: handler["raw_variables"] for handler in handlers
-                }
-
-                logger.info("--------------------------------------")
-                logger.info("| Derived CMIP6 Variable Handlers")
-                logger.info("--------------------------------------")
-                for k, v in cmip_to_e3sm_vars.items():
-                    logger.info(f"    * '{k}' -> {v}")
-
-            elif self.realm in MPAS_REALMS:
-                handlers = _get_mpas_handlers(self.var_list)
-
-            if len(handlers) == 0:
-                logger.error(
-                    "No CMIP6 variable handlers were derived from the variables found "
-                    "in using the E3SM input datasets."
-                )
-                sys.exit(1)
-
-        return handlers
-
-    def _get_e3sm_vars(self, input_path: str) -> list[str]:
-        """Gets all E3SM variables from the input files to derive CMIP variables.
-
-        This method walks through the input file path and reads each `.nc` file
-        into a xr.Dataset to retrieve the `data_vars` keys. These `data_vars` keys
-        are appended to a list, which is returned.
-
-        NOTE: This method is not used to derive CMIP variables from MPAS input
-        files.
-
-        Parameters
-        ----------
-        input_path: str
-            The path to the input `.nc` files.
-
-        Returns
-        -------
-        list[str]
-            List of data variables in the input files.
-
-        Raises
-        ------
-        IndexError
-            If no data variables were found in the input files.
-        """
-        paths: list[str] = []
-        e3sm_vars: list[str] = []
-
-        for root, _, files in os.walk(input_path):
-            for filename in files:
-                if ".nc" in filename:
-                    paths.append(str(Path(root, filename).absolute()))
-
-        for path in paths:
-            ds = xr.open_dataset(path, decode_timedelta=True)
-            data_vars = list(ds.data_vars.keys())
-
-            e3sm_vars = e3sm_vars + data_vars
-
-        if len(e3sm_vars) == 0:
-            raise IndexError(
-                f"No variables were found in the input file(s) at '{input_path}'."
-            )
-
-        return e3sm_vars
+            # NOTE: If the run was not successful with --on-var-failure=stop,
+            # or --on-var-failure=fail, the process would have already
+            # exited with sys.exit(1) in _finalize_failure_exit().
+            sys.exit(0)
 
     def _get_var_list(self, input_var_list: list[str]) -> list[str]:
         if len(input_var_list) == 1 and " " in input_var_list[0]:
@@ -500,6 +425,143 @@ class E3SMtoCMIP:
         finally:
             fin.close()
             fout.close()
+
+    def _get_handlers(self) -> tuple[list[dict[str, object]], list[str], list[str]]:
+        handlers = []
+        missing_handlers = []
+        cannot_derive_handlers = []
+
+        if self.info_mode:
+            handlers, missing_handlers = load_all_handlers(self.realm, self.var_list)
+        elif not self.info_mode and self.input_path is not None:
+            e3sm_vars = self._get_e3sm_vars(self.input_path)
+            logger.debug(f"Input dataset variables: {e3sm_vars}")
+
+            if self.realm in REALMS:
+                handlers, missing_handlers, cannot_derive_handlers = derive_handlers(
+                    cmip_tables_path=self.tables_path,
+                    cmip_vars=self.var_list,
+                    e3sm_vars=e3sm_vars,
+                    freq=self.freq,
+                    realm=self.realm,
+                )
+
+            elif self.realm in MPAS_REALMS:
+                handlers = _get_mpas_handlers(self.var_list)
+
+        return handlers, missing_handlers, cannot_derive_handlers
+
+    def _get_e3sm_vars(self, input_path: str) -> list[str]:
+        """Gets all E3SM variables from the input files to derive CMIP variables.
+
+        This method walks through the input file path and reads each `.nc` file
+        into a xr.Dataset to retrieve the `data_vars` keys. These `data_vars` keys
+        are appended to a list, which is returned.
+
+        NOTE: This method is not used to derive CMIP variables from MPAS input
+        files.
+
+        Parameters
+        ----------
+        input_path: str
+            The path to the input `.nc` files.
+
+        Returns
+        -------
+        list[str]
+            List of data variables in the input files.
+
+        Raises
+        ------
+        IndexError
+            If no data variables were found in the input files.
+        """
+        paths: list[str] = []
+        e3sm_vars: list[str] = []
+
+        for root, _, files in os.walk(input_path):
+            for filename in files:
+                if ".nc" in filename:
+                    paths.append(str(Path(root, filename).absolute()))
+
+        for path in paths:
+            ds = xr.open_dataset(path, decode_timedelta=True)
+            data_vars = list(ds.data_vars.keys())
+
+            e3sm_vars = e3sm_vars + data_vars
+
+        if len(e3sm_vars) == 0:
+            raise IndexError(
+                f"No variables were found in the input file(s) at '{input_path}'."
+            )
+
+        return e3sm_vars
+
+    def _validate_handlers(self):
+        if not self.handlers:
+            logger.error(
+                "No CMIP6 variable handlers were derived from the variables found "
+                "in the E3SM input datasets."
+            )
+            sys.exit(1)
+
+        self._log_handlers_post_derivation()
+
+        if self.missing_handlers or self.non_derivable_handlers:
+            if self.on_var_failure in ["stop", "fail"]:
+                logger.error(
+                    "Exiting due to missing or non-derivable handlers with "
+                    f"--on-var-failure={self.on_var_failure}."
+                )
+
+                sys.exit(1)
+
+    def _log_handlers_post_derivation(self):
+        cmip_to_e3sm_vars = {
+            handler["name"]: handler["raw_variables"] for handler in self.handlers
+        }
+
+        logger.info("=======================================")
+        logger.info("| Derived CMIP6 Variable Handlers")
+        logger.info("--------------------------------------")
+        logger.info(f"   Count: {len(self.handlers)}")
+        logger.info("   Variables:")
+        for k, v in cmip_to_e3sm_vars.items():
+            logger.info(f"    * '{k}' -> {v}")
+
+        if self.missing_handlers:
+            logger.error("=======================================")
+            logger.error("| NOTICE: Missing Handlers")
+            logger.error("---------------------------------------")
+            logger.error(
+                "Solution: Make sure handlers for these variables in defined "
+                "`handlers.yaml`."
+            )
+            logger.error(f"  Count: {len(self.missing_handlers)}")
+            logger.error("  Variables:")
+
+            for handler in self.missing_handlers:
+                logger.error(f"    * {handler}")
+
+        if self.non_derivable_handlers:
+            logger.error("=======================================")
+            logger.error("* NOTICE: Non-derivable Handlers")
+            logger.error("---------------------------------------")
+            logger.error("  Possible Reasons:")
+            logger.error(
+                "    1) No matching CMIP table was found for the requested frequency."
+            )
+            logger.error(
+                "    2) The input E3SM variables already match the required format."
+            )
+            logger.error(f"  Count: {len(self.non_derivable_handlers)}")
+            logger.error("  Variables:")
+
+            for handler in self.non_derivable_handlers:
+                logger.error(f"    - {handler}")
+                logger.error("")
+
+        logger.error("=======================================")
 
     def _run_info_mode(self):  # noqa: C901
         """
@@ -763,7 +825,7 @@ class E3SMtoCMIP:
 
         return True
 
-    def _run_parallel(self) -> Literal[True]:
+    def _run_parallel(self) -> Literal[True]:  # noqa: C901
         """Run all handlers in parallel using ProcessPoolExecutor.
 
         This method processes handlers concurrently, tracks their success or failure,
@@ -771,11 +833,13 @@ class E3SMtoCMIP:
 
         The behavior depends on the `self.on_var_failure` setting:
 
-           - "ignore": Continues processing even if some handlers fail.
-             Always returns True.
-           - "fail": Exits with a status code of 1 if any handler fails.
-           - "stop": Terminates immediately upon the first failure and exits with a
-              status code of 1.
+        - "ignore": Continues processing even if some handlers fail.
+            Always returns True.
+        - "fail": Exits with a status code of 1 if any handler fails.
+        - "stop": Terminates immediately upon the first failure and exits with a
+            status code of 1.
+
+        TODO: Refactor this method to reduce its complexity (C901).
 
         Returns
         -------
@@ -824,8 +888,7 @@ class E3SMtoCMIP:
                 continue
 
             futures.append(future)
-            # Map future job to handler name for progress tracking as they
-            # complete
+            # Map future job to handler name for progress tracking as they complete
             future_to_name[future] = handler.get("name", "unknown")
 
         # Execute the jobs in the pool and log their status as they complete.
@@ -847,6 +910,26 @@ class E3SMtoCMIP:
                 failed_handlers = self._handle_failed_handler(
                     handler_name, failed_handlers
                 )
+
+                # Graceful stop behavior.
+                if self.on_var_failure == "stop":
+                    logger.error(
+                        f"Stopping immediately due to --on-var-failure=stop "
+                        f"(failed handler: '{handler_name}')"
+                    )
+                    # Gracefully cancel pending jobs, allow running ones to complete
+                    pool.shutdown(cancel_futures=False)
+                    pbar.close()
+
+                    # Wait briefly for active futures to settle (optional safety)
+                    for f in futures:
+                        if not f.done():
+                            try:
+                                f.result(timeout=2)
+                            except Exception:
+                                pass
+
+                    sys.exit(1)
 
             pbar.update(1)
 
@@ -946,6 +1029,7 @@ class E3SMtoCMIP:
             logger.info(f"  - Failed handler names: {', '.join(failed_handlers)}")
         else:
             logger.info("  - No failed handlers so far.")
+
         logger.info("=" * 60)
 
         return num_success, failed_handlers
@@ -965,16 +1049,26 @@ class E3SMtoCMIP:
         failed_handlers : list[str]
             A list of handler names that failed during processing.
         """
-        logger.info("========== FINAL RUN RESULTS ==========")
-        logger.info(f"* {num_successes} of {num_handlers} handlers succeeded.")
+        logger.info("")
+        logger.info("=======================================")
+        logger.info("| FINAL RUN SUMMARY")
+        logger.info("---------------------------------------")
+        logger.info(f"  Total variables (--var-list): {len(self.var_list)}")
+        logger.info(f"  Total handlers derived: {num_handlers}")
+        logger.info(
+            f"  Handlers successfully cmorized: {num_successes} / {num_handlers}"
+        )
 
         if failed_handlers:
-            logger.error(
-                "* The following handlers failed: "
-                + ", ".join(str(h) for h in failed_handlers)
-            )
-        else:
-            logger.info("* All handlers completed successfully.")
+            logger.error("")
+            logger.error("=======================================")
+            logger.error("| NOTICE: Failed Handlers")
+            logger.error("---------------------------------------")
+            logger.error(f" Count: {len(failed_handlers)}")
+            logger.error("  Variables:")
+            for handler in failed_handlers:
+                logger.error(f"    - {handler}")
+                logger.error("=======================================")
 
         logger.info("=======================================")
 
