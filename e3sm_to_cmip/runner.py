@@ -67,6 +67,7 @@ class CLIArguments:
     simple: bool
     serial: bool
     info: bool
+    on_var_failure: Literal["ignore", "fail", "stop"]
 
     # Run settings.
     num_proc: int
@@ -110,6 +111,9 @@ class E3SMtoCMIP:
         self.simple_mode: bool = parsed_args.simple
         self.serial_mode: bool = parsed_args.serial
         self.info_mode: bool = parsed_args.info
+        self.on_var_failure: Literal["ignore", "fail", "stop"] = (
+            parsed_args.on_var_failure
+        )
 
         # ======================================================================
         # Run settings.
@@ -498,30 +502,69 @@ class E3SMtoCMIP:
             fout.close()
 
     def _run_info_mode(self):  # noqa: C901
+        """
+        Executes the "info mode" logic for the runner, providing information
+        about variable handlers, their inclusion in CMIP tables, and dataset
+        consistency.
+
+        The method operates in three modes based on the provided inputs:
+
+        1. **Handler Information Mode**: Lists handler info when frequency is
+           "mon" and no input or table paths are provided.
+        2. **Variable Inclusion Mode**: Checks if variables are in CMIP tables
+           when frequency and table paths are provided, but no input path.
+        3. **Table-Dataset Consistency Mode**: Validates dataset and CMIP table
+           consistency when frequency, table paths, and input paths are given.
+
+        Logs errors for unsupported variables, missing raw variables, or invalid
+        frequency-table combinations. Outputs results to a YAML file or prints
+        them to the console.
+
+        Raises
+        ------
+        Exception
+            Logs and handles unexpected errors during execution.
+
+        Notes
+        -----
+        - Uses `self.handlers` to iterate over variable handlers.
+        - Outputs are written to `self.info_out_path` or `self.output_path` if
+          specified.
+        - Finalizes failure behavior using `_finalize_failure_exit`.
+        """
         messages = []
+        failed_handlers: list[str] = []
 
-        # if the user just asked for the handler info
-        if self.freq == "mon" and not self.input_path and not self.tables_path:
-            for handler in self.handlers:
-                hand_msg = get_handler_info_msg(handler)
-                messages.append(hand_msg)
+        try:
+            # Info mode 1: only show handler info
+            # Use case: when a user just asks for the handler information.
+            if self.freq == "mon" and not self.input_path and not self.tables_path:
+                for handler in self.handlers:
+                    hand_msg = get_handler_info_msg(handler)
+                    messages.append(hand_msg)
 
-        # if the user asked if the variable is included in the table
-        # but didnt ask about the files in the inpath
-        elif self.freq and self.tables_path and not self.input_path:  # info mode 2
-            for handler in self.handlers:
-                table_info = _get_table_info(self.tables_path, handler["table"])
-                if handler["name"] not in table_info["variable_entry"]:
-                    logger.error(
-                        f"Variable {handler['name']} is not included in the table "
-                        f"{handler['table']}"
-                    )
+            # Info mode 2: check variable inclusion in tables.
+            # Use case: when a user asked if the variable is included in the
+            # table but did not ask about the files in the inpath.
+            elif self.freq and self.tables_path and not self.input_path:
+                for handler in self.handlers:
+                    table_info = _get_table_info(self.tables_path, handler["table"])
+                    if handler["name"] not in table_info["variable_entry"]:
+                        msg = (
+                            f"Variable {handler['name']} is not included in the table "
+                            f"{handler['table']}"
+                        )
+                        logger.error(msg)
 
-                    continue
-                else:
+                        failed_handlers = self._handle_failed_handler(
+                            handler["name"], failed_handlers, msg
+                        )
+                        continue
+
+                    # Skip irrelevant table-frequency combos.
                     if self.freq == "mon" and handler["table"] == "CMIP6_day.json":
                         continue
-                    if (self.freq == "day" or self.freq == "3hr") and handler[
+                    if (self.freq in ["day", "3hr"]) and handler[
                         "table"
                     ] == "CMIP6_Amon.json":
                         continue
@@ -529,73 +572,83 @@ class E3SMtoCMIP:
                     hand_msg = get_handler_info_msg(handler)
                     messages.append(hand_msg)
 
-        elif self.freq and self.tables_path and self.input_path:  # info mode 3
-            file_path = next(Path(self.input_path).glob("*.nc"))
+            # Info mode 3: check table + dataset consistency
+            elif self.freq and self.tables_path and self.input_path:
+                file_path = next(Path(self.input_path).glob("*.nc"))
 
-            with xr.open_dataset(file_path) as ds:
-                for handler in self.handlers:
-                    table_info = _get_table_info(self.tables_path, handler["table"])
+                with xr.open_dataset(file_path) as ds:
+                    for handler in self.handlers:
+                        table_info = _get_table_info(self.tables_path, handler["table"])
 
-                    if handler["name"] not in table_info["variable_entry"]:
-                        continue
-
-                    raw_vars = handler["raw_variables"]
-                    has_vars = True
-
-                    for raw_var in raw_vars:
-                        if raw_var not in ds.data_vars:
-                            has_vars = False
-
-                            logger.error(
-                                f"Variable {handler['name']} is not present in the input dataset"
+                        # If the variable is not in the table, it is not supported
+                        # and therefore logged as a failure.
+                        if handler["name"] not in table_info["variable_entry"]:
+                            msg = (
+                                f"Variable {handler['name']} is not included in the table "
+                                f"{handler['table']}"
                             )
+                            logger.error(msg)
 
-                            break
-
-                    if not has_vars:
-                        continue
-
-                    # We test here against the input "freq", because atmos mon
-                    # data satisfies BOTH CMIP6_day.json AND CMIP6_mon.json, but
-                    # we only want the latter in the "hand_msg" output. The vars
-                    # "hass" and "rlut" have multiple freqs.
-                    if self.freq == "mon" and handler["table"] == "CMIP6_day.json":
-                        continue
-                    if (self.freq == "day" or self.freq == "3hr") and handler[
-                        "table"
-                    ] == "CMIP6_Amon.json":
-                        continue
-
-                    hand_msg = None
-                    stat_msg = None
-
-                    raw_vars = []
-                    raw_vars.extend(handler["raw_variables"])
-
-                    allpass = True
-                    for raw_var in raw_vars:
-                        if raw_var in ds.data_vars:
+                            failed_handlers = self._handle_failed_handler(
+                                handler["name"], failed_handlers, msg
+                            )
                             continue
-                        allpass = False
 
-                    if allpass:
-                        stat_msg = f"Table={handler['table']}:Variable={handler['name']}:DataSupport=TRUE"
-                        hand_msg = get_handler_info_msg(handler)
-                        messages.append(hand_msg)
-                    else:
-                        stat_msg = f"Table={handler['table']}:Variable={handler['name']}:DataSupport=FALSE"
-                    logger.info(stat_msg)
+                        # Skip invalid frequency-table pairs.
+                        # We test here against the input "freq", because atmos mon
+                        # data satisfies BOTH CMIP6_day.json AND CMIP6_mon.json, but
+                        # we only want the latter in the "hand_msg" output. The vars
+                        # "hass" and "rlut" have multiple freqs.
+                        if self.freq == "mon" and handler["table"] == "CMIP6_day.json":
+                            continue
+                        if (self.freq in ["day", "3hr"]) and handler[
+                            "table"
+                        ] == "CMIP6_Amon.json":
+                            continue
 
-        if self.info_out_path is not None:
-            with open(self.info_out_path, "w") as outstream:
-                yaml.dump(messages, outstream)
-        elif self.output_path is not None:
-            yaml_filepath = os.path.join(self.output_path, "info.yaml")
+                        raw_vars = list(handler["raw_variables"])
+                        missing_vars = [v for v in raw_vars if v not in ds.data_vars]
 
-            with open(yaml_filepath, "w") as outstream:
-                yaml.dump(messages, outstream)
-        else:
-            pprint(messages)
+                        if missing_vars:
+                            msg = (
+                                f"Variable {handler['name']} is missing raw vars "
+                                f"{missing_vars} in the input dataset"
+                            )
+                            logger.error(msg)
+                            failed_handlers = self._handle_failed_handler(
+                                handler["name"], failed_handlers, msg
+                            )
+                            continue
+
+                        if not missing_vars:
+                            # Passed all checks → supported
+                            stat_msg = f"Table={handler['table']}:Variable={handler['name']}:DataSupport=TRUE"
+                            hand_msg = get_handler_info_msg(handler)
+                            messages.append(hand_msg)
+                        else:
+                            # Missing raw vars → not supported
+                            stat_msg = f"Table={handler['table']}:Variable={handler['name']}:DataSupport=FALSE"
+
+                        logger.info(stat_msg)
+
+            # Output log messages.
+            if self.info_out_path is not None:
+                with open(self.info_out_path, "w") as outstream:
+                    yaml.dump(messages, outstream)
+            elif self.output_path is not None:
+                yaml_filepath = os.path.join(self.output_path, "info.yaml")
+                with open(yaml_filepath, "w") as outstream:
+                    yaml.dump(messages, outstream)
+            else:
+                pprint(messages)
+
+        except Exception as e:
+            logger.error(f"Unexpected error in info mode: {e}")
+            failed_handlers = self._handle_failed_handler(
+                "info_mode", failed_handlers, e
+            )
+
+        self._finalize_failure_exit(failed_handlers)
 
     def _run_by_mode(self) -> bool:
         """
@@ -622,15 +675,25 @@ class E3SMtoCMIP:
 
         return result
 
-    def _run_serial(self) -> bool:
-        """Run each of the handlers one at a time on the main process
+    def _run_serial(self) -> Literal[True]:
+        """Run each of the handlers one at a time on the main process.
+
+        This method processes each handler sequentially and logs the status of
+        each handler.
+
+        The behavior depends on the `self.on_var_failure` setting:
+
+           - "ignore": Continues processing even if some handlers fail.
+             Always returns True.
+           - "fail": Exits with a status code of 1 if any handler fails.
+           - "stop": Terminates immediately upon the first failure and exits with a
+              status code of 1.
 
         Returns
         -------
-        bool
-            True if the run was successful (even with failed handlers),
-            False if there was an exception raised beyond the CMORization
-            process.
+        Literal[True]
+            Always True, even if some handlers fail, unless `self.on_var_failure`
+            is set to "fail" or "stop", in which case the process may terminate early.
         """
         num_handlers = len(self.handlers)
         num_success = 0
@@ -638,7 +701,7 @@ class E3SMtoCMIP:
 
         try:
             if self.realm != "atm":
-                pbar = tqdm(total=len(self.handlers))
+                pbar = tqdm(total=num_handlers)
 
             logger.info("========== STARTING CMORIZING PROCESS ==========")
             for index, handler in enumerate(self.handlers):
@@ -669,9 +732,6 @@ class E3SMtoCMIP:
                             self.cmor_log_dir,
                             handler_table,
                         )
-                except TypeError as te:
-                    logger.error(f"TypeError in handler '{handler['name']}': {te}")
-                    is_cmor_successful = False
                 except Exception as e:
                     logger.error(f"Exception in handler '{handler['name']}': {e}")
                     is_cmor_successful = False
@@ -684,6 +744,11 @@ class E3SMtoCMIP:
                     failed_handlers,
                 )
 
+                if not is_cmor_successful:
+                    failed_handlers = self._handle_failed_handler(
+                        handler["name"], failed_handlers
+                    )
+
                 if self.realm != "atm":
                     pbar.update(1)
 
@@ -693,33 +758,34 @@ class E3SMtoCMIP:
         except Exception as error:
             logger.error(error)
 
-            return False
-
         self._log_final_result(num_handlers, num_success, failed_handlers)
+        self._finalize_failure_exit(failed_handlers)
 
         return True
 
     def _run_parallel(self) -> Literal[True]:
-        """Run all the handlers in parallel using multiprocessing.Pool.
+        """Run all handlers in parallel using ProcessPoolExecutor.
 
-        Note, this method will always return True even if a handler fails to
-        cmorize. This is because the handlers are run in parallel and
-        the main process does not wait for them to finish. Instead, it
-        returns immediately after starting the handlers. The handlers
-        will log their own success or failure messages.
+        This method processes handlers concurrently, tracks their success or failure,
+        and logs the results.
 
-        If the user wants to check if all handlers succeeded, they should
-        check the console output and/or log files in the output directory.
+        The behavior depends on the `self.on_var_failure` setting:
+
+           - "ignore": Continues processing even if some handlers fail.
+             Always returns True.
+           - "fail": Exits with a status code of 1 if any handler fails.
+           - "stop": Terminates immediately upon the first failure and exits with a
+              status code of 1.
 
         Returns
-        --------
+        -------
         Literal[True]
-            Always True, even with failed handlers. Failed jobs are logged
-            for the user to debug.
+            True if the process completes, unless terminated early due to "fail" or "stop".
         """
         pool = Pool(max_workers=self.num_proc)
-        jobs: list[concurrent.futures.Future] = []
-        future_to_name = {}  # Map each future to its handler name
+        futures: list[concurrent.futures.Future] = []
+        # Map each future to its handler name
+        future_to_name = {}
         pbar = tqdm(total=len(self.handlers))
 
         num_handlers = len(self.handlers)
@@ -727,7 +793,7 @@ class E3SMtoCMIP:
         failed_handlers: list[str] = []
 
         logger.info("========== STARTING CMORIZING PROCESS ==========")
-        for _, handler in enumerate(self.handlers):
+        for handler in self.handlers:
             handler_method = handler["method"]
             handler_variables = handler["raw_variables"]
             handler_table = handler["table"]
@@ -757,30 +823,37 @@ class E3SMtoCMIP:
                 )
                 continue
 
-            jobs.append(future)
+            futures.append(future)
             # Map future job to handler name for progress tracking as they
             # complete
             future_to_name[future] = handler.get("name", "unknown")
 
         # Execute the jobs in the pool and log their status as they complete.
-        for future in as_completed(jobs):
-            job_result = None
-            handler_name = future_to_name[future]  # Get the correct handler name
+        for future in as_completed(futures):
+            handler_name = future_to_name[future]
+            future_result = None
 
             try:
-                job_result = future.result()
+                future_result = future.result()
             except Exception as e:
-                logger.error(e)
+                logger.error(f"Handler '{handler_name}' raised an exception: {e}")
+                future_result = False
 
             num_success, failed_handlers = self._log_handler_status(
-                job_result, handler_name, num_handlers, num_success, failed_handlers
+                future_result, handler_name, num_handlers, num_success, failed_handlers
             )
+
+            if not future_result:
+                failed_handlers = self._handle_failed_handler(
+                    handler_name, failed_handlers
+                )
 
             pbar.update(1)
 
         pbar.close()
         pool.shutdown()
         self._log_final_result(num_handlers, num_success, failed_handlers)
+        self._finalize_failure_exit(failed_handlers)
 
         return True
 
@@ -868,11 +941,13 @@ class E3SMtoCMIP:
         logger.info("STATUS UPDATE:")
         logger.info(f"  * Successful handlers: {num_success} of {num_handlers}")
         logger.info(f"  * Failed handlers: {len(failed_handlers)}")
+
         if failed_handlers:
             logger.info(f"  - Failed handler names: {', '.join(failed_handlers)}")
         else:
             logger.info("  - No failed handlers so far.")
         logger.info("=" * 60)
+
         return num_success, failed_handlers
 
     def _log_final_result(
@@ -900,11 +975,74 @@ class E3SMtoCMIP:
             )
         else:
             logger.info("* All handlers completed successfully.")
+
         logger.info("=======================================")
 
     def _timeout_exit(self):
         logger.info("Hit timeout limit, exiting")
         os.kill(os.getpid(), signal.SIGINT)
+
+    def _handle_failed_handler(
+        self,
+        handler_name: str,
+        failed_handlers: list[str],
+        reason: str | Exception | None = None,
+    ) -> list[str]:
+        """Record and log a failed handler.
+
+        If ``self.on_var_failure`` is set to "stop", the program will log an
+        error message and terminate execution immediately (exit code 1).
+
+        Parameters
+        ----------
+        handler_name : str
+            The name of the handler that failed.
+        failed_handlers : list of str
+            A list of handler names that failed during processing.
+        reason : str or Exception or None, optional
+            The reason for the handler failure. Can be a string, an exception, or None.
+
+        Returns
+        -------
+        list[str]
+            The updated list of failed handler names.
+        """
+        failed_handlers.append(handler_name)
+
+        msg = f"Handler '{handler_name}' failed."
+        if reason:
+            msg += f" Reason: {reason}"
+
+        logger.error(msg)
+
+        if self.on_var_failure == "stop":
+            logger.error(
+                f"Stopping immediately due to --on-var-failure=stop "
+                f"(failed handler: '{handler_name}')"
+            )
+            sys.exit(1)
+
+        return failed_handlers
+
+    def _finalize_failure_exit(self, failed_handlers: list[str]) -> None:
+        """Handle final exit behavior based on --on-var-failure mode.
+
+        This method finalizes the process by checking for failed handlers and
+        exiting if necessary if ``self.on_var_failure`` is set to "fail"
+        (exit code 1).
+
+        Parameters
+        ----------
+        failed_handlers : list[str]
+            A list of handler names that failed during processing.
+        """
+        if failed_handlers and self.on_var_failure == "fail":
+            logger.error(
+                f"{len(failed_handlers)} handler(s) failed. "
+                f"Exiting with code 1 (--on-var-failure=fail)."
+            )
+
+            sys.exit(1)
 
     def convert_parsed_args_to_data_class(
         self, parsed_args: argparse.Namespace

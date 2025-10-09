@@ -68,6 +68,18 @@ def setup_argparser() -> argparse.ArgumentParser:
         action="store_true",
     )
 
+    optional_mode.add_argument(
+        "--on-var-failure",
+        choices=["ignore", "fail", "stop"],
+        default="ignore",
+        help=(
+            "Behavior when a variable fails:\n"
+            "  ignore - continue and exit 0 (default)\n"
+            "  fail   - process all variables, exit 1 if any failed\n"
+            "  stop   - exit immediately on first failure, useful for debugging\n"
+        ),
+    )
+
     # ======================================================================
     # Run settings.
     # ======================================================================
