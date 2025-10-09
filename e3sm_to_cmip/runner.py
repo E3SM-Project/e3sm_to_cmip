@@ -72,6 +72,7 @@ class CLIArguments:
     num_proc: int
     debug: bool
     timeout: int
+    return_1_on_failure: bool
 
     # CMOR settings
     var_list: list[str]
@@ -117,6 +118,7 @@ class E3SMtoCMIP:
         self.num_proc: int = parsed_args.num_proc
         self.debug: bool = parsed_args.debug
         self.timeout: int = parsed_args.timeout
+        self.return_1_on_failure: bool = parsed_args.return_1_on_failure
 
         # ======================================================================
         # CMOR settings.
@@ -227,8 +229,8 @@ class E3SMtoCMIP:
         # Run e3sm_to_cmip with info mode.
         # ======================================================================
         if self.info_mode:
-            self._run_info_mode()
-            sys.exit(0)
+            rv = self._run_info_mode()
+            sys.exit(rv)
 
         # Run e3sm_to_cmip to CMORize serially or in parallel.
         # ======================================================================
@@ -249,6 +251,11 @@ class E3SMtoCMIP:
 
             if timer is not None:
                 timer.cancel()
+
+            return 0
+        else if self.return_1_on_failure:
+            return 1
+        return 0
 
     def _get_handlers(self):
         if self.info_mode:
@@ -499,6 +506,7 @@ class E3SMtoCMIP:
 
     def _run_info_mode(self):  # noqa: C901
         messages = []
+        err_count = 0
 
         # if the user just asked for the handler info
         if self.freq == "mon" and not self.input_path and not self.tables_path:
@@ -516,7 +524,7 @@ class E3SMtoCMIP:
                         "Variable {handler['name']} is not included in the table "
                         f"{handler['table']}"
                     )
-
+                    err_count += 1
                     continue
                 else:
                     if self.freq == "mon" and handler["table"] == "CMIP6_day.json":
@@ -584,6 +592,7 @@ class E3SMtoCMIP:
                         messages.append(hand_msg)
                     else:
                         stat_msg = f"Table={handler['table']}:Variable={handler['name']}:DataSupport=FALSE"
+                        err_count += 1
                     logger.info(stat_msg)
 
         if self.info_out_path is not None:
@@ -596,6 +605,10 @@ class E3SMtoCMIP:
                 yaml.dump(messages, outstream)
         else:
             pprint(messages)
+
+        if err_count > 0 and self.return_1_on_failure:
+            return 1
+        return 0
 
     def _run_by_mode(self) -> bool:
         """

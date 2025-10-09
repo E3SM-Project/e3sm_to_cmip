@@ -90,6 +90,12 @@ def setup_argparser() -> argparse.ArgumentParser:
         type=int,
         help="Exit with code -1 if execution time exceeds given time in seconds.",
     )
+    optional.add_argument(
+        "--return-1-on-failure",
+        type=int,
+        help="Exit with code -1 if any variable fails to process",
+        action="store_true"
+    )
 
     # ======================================================================
     # CMOR settings.
