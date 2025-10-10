@@ -31,8 +31,7 @@ MPAS_HANDLER_DIR_PATH = f"{ROOT_HANDLERS_DIR}/mpas_vars"
 # See https://xarray.pydata.org/en/stable/user-guide/io.html#combining-multiple-files
 # and https://xarray.pydata.org/en/stable/whats-new.html#id14
 LEGACY_XARRAY_MERGE_SETTINGS = {
-    # "override", "exact", and None are the new defaults as of Xarray v2025.08.0
+    # "override", "exact" are the new defaults as of Xarray v2025.08.0
     "compat": "no_conflicts",
     "join": "outer",
-    "data_vars": "all",
 }

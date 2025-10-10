@@ -331,6 +331,7 @@ def open_mfdataset(
         mask_and_scale=False,
         chunks=chunks,
         **LEGACY_XARRAY_MERGE_SETTINGS,  # type: ignore
+        data_vars="all",
     )
 
     if variableList is not None:
