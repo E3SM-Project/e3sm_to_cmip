@@ -2,7 +2,7 @@ import copy
 import os
 from collections import defaultdict
 from importlib.machinery import SourceFileLoader
-from typing import Any, Literal, get_args
+from typing import Literal, get_args
 
 import pandas as pd
 import yaml
@@ -13,7 +13,7 @@ from e3sm_to_cmip import (
     MPAS_HANDLER_DIR_PATH,
 )
 from e3sm_to_cmip._logger import _setup_child_logger
-from e3sm_to_cmip.cmor_handlers.handler import VarHandler
+from e3sm_to_cmip.cmor_handlers.handler import VarHandler, VarHandlerDict
 from e3sm_to_cmip.util import FREQUENCY_TO_CMIP_TABLES, _get_table_for_non_monthly_freq
 
 logger = _setup_child_logger(__name__)
@@ -33,7 +33,7 @@ RADIUS = 6.37122e6
 
 def load_all_handlers(
     realm: Realm | MPASRealm, cmip_vars: list[str]
-) -> tuple[list[dict[str, Any]], list[str]]:
+) -> tuple[list[VarHandlerDict], list[str]]:
     """Loads variable handlers based on a list of variable names.
 
     This function is used specifically for printing out the handler information
@@ -48,16 +48,16 @@ def load_all_handlers(
 
     Returns
     -------
-    tuple[list[dict[str, Any]], list[str]]:
+    tuple[list[VarHandlerDict], list[str]]:
         A list of the dictionary representation of VarHandler objects
         and a list of variable names that are missing handlers if any.
     """
-    handlers_by_var: dict[str, list[dict[str, Any]]] = _get_handlers_by_var()
+    handlers_by_var: dict[str, list[VarHandlerDict]] = _get_handlers_by_var()
 
     missing_handlers: list[str] = []
 
     if realm in REALMS:
-        handlers: list[dict[str, Any]] = []
+        handlers: list[VarHandlerDict] = []
 
         for var in cmip_vars:
             var_handler = handlers_by_var.get(var)
@@ -69,12 +69,12 @@ def load_all_handlers(
             handlers = handlers + var_handler
 
     else:
-        handlers = _get_mpas_handlers(cmip_vars)
+        handlers, missing_handlers = _get_mpas_handlers(cmip_vars)
 
     return handlers, missing_handlers
 
 
-def _get_mpas_handlers(cmip_vars: list[str]) -> tuple[list[dict[str, Any]], list[str]]:
+def _get_mpas_handlers(cmip_vars: list[str]) -> tuple[list[VarHandlerDict], list[str]]:
     """Get MPAS variable handlers using the list of CMIP variables.
 
     All current MPAS variable handlers are defined as modules and there is only
@@ -87,13 +87,13 @@ def _get_mpas_handlers(cmip_vars: list[str]) -> tuple[list[dict[str, Any]], list
 
     Returns
     -------
-    tuple[list[dict[str, Any]], list[str]]:
+    tuple[list[VarHandlerDict], list[str]]:
         A list of the dictionary representation of VarHandler objects and
         a list of variable names that are missing handlers if any.
     """
     handlers = _get_handlers_from_modules(MPAS_HANDLER_DIR_PATH)
 
-    derived_handlers: list[dict[str, Any]] = []
+    derived_handlers: list[VarHandlerDict] = []
     missing_handlers: list[str] = []
 
     for var in cmip_vars:
@@ -121,7 +121,7 @@ def derive_handlers(
     e3sm_vars: list[str],
     freq: Frequency,
     realm: Realm | MPASRealm,
-) -> tuple[list[dict[str, Any]], list[str], list[str]]:
+) -> tuple[list[VarHandlerDict], list[str], list[str]]:
     """Derives the appropriate handler for each CMIP variable.
 
     For each CMIP variable the user wants to CMORize (`cmip_vars`), a variable
@@ -153,7 +153,7 @@ def derive_handlers(
 
     Returns
     -------
-    tuple[list[dict[str, Any]], list[str]], list[str]]:
+    tuple[list[VarHandlerDict], list[str]], list[str]]:
         A list of the dictionary representation of VarHandler objects, a list of
         variable names that are missing handlers (if any), and a list of
         variable names that could not be derived using the input E3SM variables
@@ -161,8 +161,8 @@ def derive_handlers(
 
     """
     # TODO: Refactor the function parameters.
-    handlers_by_var: dict[str, list[dict[str, Any]]] = _get_handlers_by_var()
-    derived_handlers: list[dict[str, Any]] = []
+    handlers_by_var: dict[str, list[VarHandlerDict]] = _get_handlers_by_var()
+    derived_handlers: list[VarHandlerDict] = []
 
     # Stores variable names that are missing handlers or the handler cannot
     # be derived using the input E3SM variables.
@@ -185,9 +185,9 @@ def derive_handlers(
         )
 
         # If no handler is defined variable itself could be derived, add it to
-        # the cannot_derive list. This can happen if the handler has no matching
-        # CMIP table for the requested frequency, or if the handler's raw E3SM
-        # variables do not match the input E3SM variables.
+        # the non_derivable_handlers list. This can happen if the handler has no
+        # matching CMIP table for the requested frequency, or if the handler's
+        # raw E3SM variables do not match the input E3SM variables.
         if derived_handler is None:
             non_derivable_handlers.append(var)
             continue
@@ -197,7 +197,7 @@ def derive_handlers(
     return derived_handlers, missing_handlers, non_derivable_handlers
 
 
-def _get_handlers_by_var() -> dict[str, list[dict[str, Any]]]:
+def _get_handlers_by_var() -> dict[str, list[VarHandlerDict]]:
     """Retrieve all variable handlers from YAML and legacy module sources.
 
     This function combines handlers loaded from a YAML configuration and from
@@ -206,7 +206,7 @@ def _get_handlers_by_var() -> dict[str, list[dict[str, Any]]]:
 
     Returns
     -------
-    dict[str, list[dict[str, Any]]]
+    dict[str, list[VarHandlerDict]]
         A dictionary mapping variable names to a list of handler definitions,
         where each handler is represented as a dictionary containing handler
         metadata and logic.
@@ -218,12 +218,12 @@ def _get_handlers_by_var() -> dict[str, list[dict[str, Any]]]:
     return all_handlers
 
 
-def _get_handlers_from_yaml() -> dict[str, list[dict[str, Any]]]:
+def _get_handlers_from_yaml() -> dict[str, list[VarHandlerDict]]:
     """Get VarHandler objects using the `handlers.yaml` file.
 
     Returns
     -------
-    dict[str, list[dict[str, Any]]]
+    dict[str, list[VarHandlerDict]]
         A dictionary, with the key being the CMIP6 variable ID and the value
         being a list of VarHandler objects.
     """
@@ -249,7 +249,7 @@ def _get_handlers_from_yaml() -> dict[str, list[dict[str, Any]]]:
     return dict(handlers)  # type: ignore
 
 
-def _get_handlers_from_modules(path: str) -> dict[str, list[dict[str, Any]]]:
+def _get_handlers_from_modules(path: str) -> dict[str, list[VarHandlerDict]]:
     """Gets variable handlers defined in Python modules.
 
     A Python module variable handler defines information about a variable,
@@ -289,7 +289,7 @@ def _get_handlers_from_modules(path: str) -> dict[str, list[dict[str, Any]]]:
 
     Returns
     -------
-    dict[str, list[dict[str, Any]]]
+    dict[str, list[VarHandlerDict]]
         A dictionary of a list of dictionaries, with each dictionary defining a
         handler.
     """
@@ -353,12 +353,12 @@ def _get_handler_module(module_name: str, module_path: str):
 
 
 def _derive_handler(
-    var_handlers: list[dict[str, Any]],
+    var_handlers: list[VarHandlerDict],
     freq: Frequency,
     realm: Realm | MPASRealm,
     cmip_tables_path: str,
     e3sm_vars: list[str],
-) -> dict[str, Any] | None:
+) -> VarHandlerDict | None:
     """Attempts to derive a handler for a CMIP variable.
 
     The function first filters the handlers to those compatible with the
@@ -369,7 +369,7 @@ def _derive_handler(
 
     Parameters
     ----------
-    var_handlers : list[dict[str, Any]]
+    var_handlers : list[VarHandlerDict]
         List of variable handler dictionaries.
     freq : Frequency
         The requested output frequency.
@@ -382,7 +382,7 @@ def _derive_handler(
 
     Returns
     -------
-    dict[str, Any] | None
+    VarHandlerDict | None
         The derived handler dictionary if found, otherwise None.
     """
     # Step 1: Filter handlers by frequency and attempt to derive a handler.
@@ -410,8 +410,8 @@ def _derive_handler(
 
 
 def _select_handlers_for_freq(
-    handlers: list[dict[str, Any]], freq: Frequency
-) -> list[dict[str, Any]]:
+    handlers: list[VarHandlerDict], freq: Frequency
+) -> list[VarHandlerDict]:
     """
     Filters a list of variable handlers to include only those with CMIP
     tables that are compatible with the requested frequency.
@@ -424,14 +424,14 @@ def _select_handlers_for_freq(
 
     Parameters
     ----------
-    handlers : list[dict[str, Any]]
+    handlers : list[VarHandlerDict]
         The list of variable handlers to filter.
     freq : Frequency
         The requested output frequency (e.g., "mon", "day", "1hr", etc.).
 
     Returns
     -------
-    list[dict[str, Any]]
+    list[VarHandlerDict]
         A filtered list of variable handlers that match the requested frequency.
     """
     handlers_filtered = []
@@ -474,8 +474,8 @@ def table_matches_freq(freq: str, handler_table: str) -> bool:
 
 
 def _find_handler_by_e3sm_vars(
-    e3sm_vars: list[str], handlers: list[dict[str, Any]]
-) -> dict[str, Any] | None:
+    e3sm_vars: list[str], handlers: list[VarHandlerDict]
+) -> VarHandlerDict | None:
     """Finds a handler a CMIP variable based on the input E3SM variables.
 
     This function loops through a list of VarHandler objects defined for a
@@ -487,13 +487,13 @@ def _find_handler_by_e3sm_vars(
     ----------
     e3sm_vars : list[str]
         The list of E3SM variables from the input files to use for CMORizing.
-    handlers : list[dict[str, Any]]
+    handlers : list[VarHandlerDict]
         The list of VarHandler objects as dictionaries, defined for a CMIP6
         variable.
 
     Returns
     -------
-    dict[str, Any] | None
+    VarHandlerDict | None
         A derived handler.
 
     Raises
@@ -513,11 +513,11 @@ def _find_handler_by_e3sm_vars(
 
 
 def _adjust_handlers_cmip_table_for_freq(
-    var_handlers: list[dict[str, Any]],
+    var_handlers: list[VarHandlerDict],
     freq: Frequency,
     realm: Realm | MPASRealm,
     cmip_tables_path: str,
-) -> list[dict[str, Any]] | None:
+) -> list[VarHandlerDict] | None:
     """Update the 'table' field of each handler for the requested frequency and realm.
 
     This function is used as a fallback when no handler matches the requested
@@ -527,7 +527,7 @@ def _adjust_handlers_cmip_table_for_freq(
 
     Parameters
     ----------
-    var_handlers : list[dict[str, Any]]
+    var_handlers : list[VarHandlerDict]
         List of handler dictionaries.
     freq : Frequency
         Requested output frequency.
@@ -538,7 +538,7 @@ def _adjust_handlers_cmip_table_for_freq(
 
     Returns
     -------
-    list[dict[str, Any]] | None
+    list[VarHandlerDict] | None
         Handlers with updated 'table' fields, if any handlers could be adjusted.
         If no handlers could be adjusted, returns None.
     """

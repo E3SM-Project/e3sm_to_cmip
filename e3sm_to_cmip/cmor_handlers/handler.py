@@ -26,6 +26,9 @@ HYBRID_SIGMA_LEVEL_NAMES = [
 # handled appropriately.
 TIME_DIMS = ["time", "time1", "time2"]
 
+# Type alias for the dictionary representation of a VarHandler object.
+VarHandlerDict = dict[str, Any]
+
 
 class BaseVarHandler:
     def __init__(
@@ -155,7 +158,7 @@ class VarHandler(BaseVarHandler):
     def __str__(self):
         return yaml.dump(self.__dict__, default_flow_style=False, sort_keys=False)
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> VarHandlerDict:
         """
         Return __dict__ with additional entries to support existing e3sm_to_cmip
         functions.
@@ -166,7 +169,7 @@ class VarHandler(BaseVarHandler):
 
         Returns
         -------
-        dict[str, Any]
+        VarHandlerDict
             __dict__ with additional entries.
         """
         # TODO: Remove this method e3sm_to_cmip functions parse VarHandler

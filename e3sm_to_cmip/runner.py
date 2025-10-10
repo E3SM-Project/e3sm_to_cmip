@@ -8,15 +8,13 @@ frequencies.
 """
 
 import argparse
-import concurrent
 import os
 import signal
 import subprocess
-import sys
 import tempfile
 import threading
+from concurrent.futures import Future, as_completed
 from concurrent.futures import ProcessPoolExecutor as Pool
-from concurrent.futures import as_completed
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -30,6 +28,7 @@ from tqdm import tqdm
 from e3sm_to_cmip import ROOT_HANDLERS_DIR, __version__, resources
 from e3sm_to_cmip._logger import _add_filehandler, _setup_child_logger
 from e3sm_to_cmip.argparser import parse_args
+from e3sm_to_cmip.cmor_handlers.handler import VarHandlerDict
 from e3sm_to_cmip.cmor_handlers.utils import (
     MPAS_REALMS,
     REALMS,
@@ -43,6 +42,8 @@ from e3sm_to_cmip.cmor_handlers.utils import (
 from e3sm_to_cmip.util import (
     _get_table_info,
     add_metadata,
+    exit_failure,
+    exit_success,
     find_atm_files,
     find_mpas_files,
     get_handler_info_msg,
@@ -169,21 +170,21 @@ class E3SMtoCMIP:
                 if self.serial_mode
                 else "Parallel"
             ),
-            "Variable Failure Behavior": self.on_var_failure,
-            "Variable List": f"{self.var_list} ({len(self.var_list)})",
-            "Input Path": self.input_path,
-            "Output Path": self.output_path,
-            "Precheck Path": self.precheck_path,
-            "Log Path": self.log_path,
-            "CMOR Log Path": self.cmor_log_dir,
-            "CMIP Metadata Path": self.new_metadata_path,
+            "Variable Failure Behavior (--on-var-failure)": self.on_var_failure,
+            "Variable List (--var-list)": f"{self.var_list} ({len(self.var_list)})",
+            "Input Path (--input-path)": self.input_path,
+            "Output Path (--output-path)": self.output_path,
+            "Precheck Path (--precheck)": self.precheck_path,
+            "Log Path (--logdir)": self.log_path,
+            "CMOR Log Path (--logdir)": self.cmor_log_dir,
+            "CMIP Metadata Path (--user-metadata)": self.new_metadata_path,
             "Temp Path for Processing MPAS Files": self.temp_path,
-            "Frequency": self.freq,
-            "Realm": self.realm,
+            "Frequency (--freq)": self.freq,
+            "Realm (--realm)": self.realm,
         }
 
         for key, value in config_details.items():
-            logger.info(f"    * {key}: {value}")
+            logger.info(f"  * {key}: {value}")
 
         # Load the CMOR handlers based on the realm and variable list.
         self.handlers, self.missing_handlers, self.non_derivable_handlers = (
@@ -236,7 +237,7 @@ class E3SMtoCMIP:
         # ======================================================================
         if self.info_mode:
             self._run_info_mode()
-            sys.exit(0)
+            exit_success()
 
         # Run e3sm_to_cmip to CMORize serially or in parallel.
         # ======================================================================
@@ -261,7 +262,7 @@ class E3SMtoCMIP:
             # NOTE: If the run was not successful with --on-var-failure=stop,
             # or --on-var-failure=fail, the process would have already
             # exited with sys.exit(1) in _finalize_failure_exit().
-            sys.exit(0)
+            exit_success()
 
     def _get_var_list(self, input_var_list: list[str]) -> list[str]:
         if len(input_var_list) == 1 and " " in input_var_list[0]:
@@ -426,10 +427,10 @@ class E3SMtoCMIP:
             fin.close()
             fout.close()
 
-    def _get_handlers(self) -> tuple[list[dict[str, object]], list[str], list[str]]:
-        handlers = []
-        missing_handlers = []
-        cannot_derive_handlers = []
+    def _get_handlers(self) -> tuple[list[VarHandlerDict], list[str], list[str]]:
+        handlers: list[VarHandlerDict] = []
+        missing_handlers: list[str] = []
+        non_derivable_handlers: list[str] = []
 
         if self.info_mode:
             handlers, missing_handlers = load_all_handlers(self.realm, self.var_list)
@@ -438,7 +439,7 @@ class E3SMtoCMIP:
             logger.debug(f"Input dataset variables: {e3sm_vars}")
 
             if self.realm in REALMS:
-                handlers, missing_handlers, cannot_derive_handlers = derive_handlers(
+                handlers, missing_handlers, non_derivable_handlers = derive_handlers(
                     cmip_tables_path=self.tables_path,
                     cmip_vars=self.var_list,
                     e3sm_vars=e3sm_vars,
@@ -447,9 +448,9 @@ class E3SMtoCMIP:
                 )
 
             elif self.realm in MPAS_REALMS:
-                handlers = _get_mpas_handlers(self.var_list)
+                handlers, missing_handlers = _get_mpas_handlers(self.var_list)
 
-        return handlers, missing_handlers, cannot_derive_handlers
+        return handlers, missing_handlers, non_derivable_handlers
 
     def _get_e3sm_vars(self, input_path: str) -> list[str]:
         """Gets all E3SM variables from the input files to derive CMIP variables.
@@ -498,14 +499,78 @@ class E3SMtoCMIP:
         return e3sm_vars
 
     def _validate_handlers(self):
+        """Validates the derived CMOR handlers and logs a summary.
+
+        If there are any missing or non-derivable handlers, they are logged
+        as errors. Depending on the `on_var_failure` setting, the program may
+        exit with a failure code ``sys.exit(1)`` if such issues are detected.
+        """
+        self._log_handler_summary()
+
+        if self._exit_due_to_handler_issues():
+            exit_failure()
+
+    def _log_handler_summary(self):
+        """
+        Logs a summary of the derived CMOR handlers, including any missing or
+        non-derivable handlers.
+        """
+        if self.handlers:
+            cmip_to_e3sm_vars = {
+                handler["name"]: handler["raw_variables"] for handler in self.handlers
+            }
+
+            logger.info("--------------------------------------")
+            logger.info("| SUCCESS: Derived Variable Handlers")
+            logger.info("--------------------------------------")
+            logger.info(f"  * Count: {len(self.handlers)}")
+            logger.info("  * Variable Mappings (CMIP to E3SM):")
+            for k, v in cmip_to_e3sm_vars.items():
+                logger.info(f"    * '{k}' -> {v}")
+
+        if self.missing_handlers:
+            logger.error("--------------------------------------")
+            logger.error("| NOTICE: Missing Handlers")
+            logger.error("---------------------------------------")
+            logger.error(
+                "Solution: Make sure handlers for these variables are defined "
+                "in `handlers.yaml`."
+            )
+            logger.error(f"  * Count: {len(self.missing_handlers)}")
+            logger.error(f"  * Variables: {self.missing_handlers}")
+
+        if self.non_derivable_handlers:
+            logger.error("--------------------------------------")
+            logger.error("| NOTICE: Non-derivable Handlers")
+            logger.error("---------------------------------------")
+            logger.error(
+                "Handlers were defined for these variables, but they could not "
+                "be derived using the input E3SM datasets."
+            )
+            logger.error(
+                "Possible Reasons: 1) No matching CMIP table was found for the "
+                "requested frequency or 2) The input E3SM datasets don't have "
+                "the required variables."
+            )
+            logger.error(f"  * Count: {len(self.non_derivable_handlers)}")
+            logger.error(f"  * Variables: {self.non_derivable_handlers}")
+
+    def _exit_due_to_handler_issues(self) -> bool:
+        """
+        Determines if the program should exit due to missing or non-derivable
+        handlers based on the ``on_var_failure`` setting.
+
+        Returns
+        -------
+        bool
+            True if the program should exit, False otherwise.
+        """
         if not self.handlers:
             logger.error(
-                "No CMIP6 variable handlers were derived from the variables found "
-                "in the E3SM input datasets."
+                "No variable handlers are defined or derivable from the raw "
+                "variables found in the E3SM input datasets."
             )
-            sys.exit(1)
-
-        self._log_handlers_post_derivation()
+            return True
 
         if self.missing_handlers or self.non_derivable_handlers:
             if self.on_var_failure in ["stop", "fail"]:
@@ -514,54 +579,9 @@ class E3SMtoCMIP:
                     f"--on-var-failure={self.on_var_failure}."
                 )
 
-                sys.exit(1)
+                return True
 
-    def _log_handlers_post_derivation(self):
-        cmip_to_e3sm_vars = {
-            handler["name"]: handler["raw_variables"] for handler in self.handlers
-        }
-
-        logger.info("=======================================")
-        logger.info("| Derived CMIP6 Variable Handlers")
-        logger.info("--------------------------------------")
-        logger.info(f"   Count: {len(self.handlers)}")
-        logger.info("   Variables:")
-        for k, v in cmip_to_e3sm_vars.items():
-            logger.info(f"    * '{k}' -> {v}")
-
-        if self.missing_handlers:
-            logger.error("=======================================")
-            logger.error("| NOTICE: Missing Handlers")
-            logger.error("---------------------------------------")
-            logger.error(
-                "Solution: Make sure handlers for these variables in defined "
-                "`handlers.yaml`."
-            )
-            logger.error(f"  Count: {len(self.missing_handlers)}")
-            logger.error("  Variables:")
-
-            for handler in self.missing_handlers:
-                logger.error(f"    * {handler}")
-
-        if self.non_derivable_handlers:
-            logger.error("=======================================")
-            logger.error("* NOTICE: Non-derivable Handlers")
-            logger.error("---------------------------------------")
-            logger.error("  Possible Reasons:")
-            logger.error(
-                "    1) No matching CMIP table was found for the requested frequency."
-            )
-            logger.error(
-                "    2) The input E3SM variables already match the required format."
-            )
-            logger.error(f"  Count: {len(self.non_derivable_handlers)}")
-            logger.error("  Variables:")
-
-            for handler in self.non_derivable_handlers:
-                logger.error(f"    - {handler}")
-                logger.error("")
-
-        logger.error("=======================================")
+        return False
 
     def _run_info_mode(self):  # noqa: C901
         """
@@ -610,19 +630,24 @@ class E3SMtoCMIP:
             # table but did not ask about the files in the inpath.
             elif self.freq and self.tables_path and not self.input_path:
                 for handler in self.handlers:
+                    # FIXME: This check is duplicated in mode 3 below. Refactor.
+                    # --- DUPLICATE CODE ---
                     table_info = _get_table_info(self.tables_path, handler["table"])
+
                     if handler["name"] not in table_info["variable_entry"]:
-                        msg = (
+                        logger.error(
                             f"Variable {handler['name']} is not included in the table "
                             f"{handler['table']}"
                         )
-                        logger.error(msg)
 
-                        failed_handlers = self._handle_failed_handler(
-                            handler["name"], failed_handlers, msg
-                        )
+                        failed_handlers.append(handler["name"])
+                        self._stop_with_failed_handler(handler["name"])
+
                         continue
+                    # --- DUPLICATE CODE ---
 
+                    # FIXME: This check is duplicated in mode 3 below. Refactor.
+                    # --- DUPLICATE CODE ---
                     # Skip irrelevant table-frequency combos.
                     if self.freq == "mon" and handler["table"] == "CMIP6_day.json":
                         continue
@@ -630,32 +655,37 @@ class E3SMtoCMIP:
                         "table"
                     ] == "CMIP6_Amon.json":
                         continue
+                    # --- DUPLICATE CODE ---
 
                     hand_msg = get_handler_info_msg(handler)
                     messages.append(hand_msg)
 
             # Info mode 3: check table + dataset consistency
             elif self.freq and self.tables_path and self.input_path:
-                file_path = next(Path(self.input_path).glob("*.nc"))
+                file_paths = next(Path(self.input_path).glob("*.nc"))
 
-                with xr.open_dataset(file_path) as ds:
+                with xr.open_dataset(file_paths) as ds:
                     for handler in self.handlers:
+                        # FIXME: This check is duplicated in mode 2 above. Refactor.
+                        # --- DUPLICATE CODE ---
                         table_info = _get_table_info(self.tables_path, handler["table"])
 
                         # If the variable is not in the table, it is not supported
                         # and therefore logged as a failure.
                         if handler["name"] not in table_info["variable_entry"]:
-                            msg = (
+                            logger.error(
                                 f"Variable {handler['name']} is not included in the table "
                                 f"{handler['table']}"
                             )
-                            logger.error(msg)
 
-                            failed_handlers = self._handle_failed_handler(
-                                handler["name"], failed_handlers, msg
-                            )
+                            failed_handlers.append(handler["name"])
+                            self._stop_with_failed_handler(handler["name"])
+
                             continue
+                        # --- DUPLICATE CODE ---
 
+                        # FIXME: This check is duplicated in mode 2 above. Refactor.
+                        # --- DUPLICATE CODE ---
                         # Skip invalid frequency-table pairs.
                         # We test here against the input "freq", because atmos mon
                         # data satisfies BOTH CMIP6_day.json AND CMIP6_mon.json, but
@@ -667,19 +697,19 @@ class E3SMtoCMIP:
                             "table"
                         ] == "CMIP6_Amon.json":
                             continue
+                        # --- DUPLICATE CODE ---
 
                         raw_vars = list(handler["raw_variables"])
                         missing_vars = [v for v in raw_vars if v not in ds.data_vars]
 
                         if missing_vars:
-                            msg = (
+                            logger.error(
                                 f"Variable {handler['name']} is missing raw vars "
                                 f"{missing_vars} in the input dataset"
                             )
-                            logger.error(msg)
-                            failed_handlers = self._handle_failed_handler(
-                                handler["name"], failed_handlers, msg
-                            )
+                            failed_handlers.append(handler["name"])
+                            self._stop_with_failed_handler(handler["name"])
+
                             continue
 
                         if not missing_vars:
@@ -706,11 +736,8 @@ class E3SMtoCMIP:
 
         except Exception as e:
             logger.error(f"Unexpected error in info mode: {e}")
-            failed_handlers = self._handle_failed_handler(
-                "info_mode", failed_handlers, e
-            )
 
-        self._finalize_failure_exit(failed_handlers)
+        self._finalize_on_failure(failed_handlers)
 
     def _run_by_mode(self) -> bool:
         """
@@ -807,9 +834,7 @@ class E3SMtoCMIP:
                 )
 
                 if not is_cmor_successful:
-                    failed_handlers = self._handle_failed_handler(
-                        handler["name"], failed_handlers
-                    )
+                    self._stop_with_failed_handler(handler["name"])
 
                 if self.realm != "atm":
                     pbar.update(1)
@@ -821,7 +846,7 @@ class E3SMtoCMIP:
             logger.error(error)
 
         self._log_final_result(num_handlers, num_success, failed_handlers)
-        self._finalize_failure_exit(failed_handlers)
+        self._finalize_on_failure(failed_handlers)
 
         return True
 
@@ -847,7 +872,7 @@ class E3SMtoCMIP:
             True if the process completes, unless terminated early due to "fail" or "stop".
         """
         pool = Pool(max_workers=self.num_proc)
-        futures: list[concurrent.futures.Future] = []
+        futures: list[Future[bool]] = []
         # Map each future to its handler name
         future_to_name = {}
         pbar = tqdm(total=len(self.handlers))
@@ -865,7 +890,7 @@ class E3SMtoCMIP:
 
             try:
                 if self.realm in MPAS_REALMS:
-                    future = pool.submit(
+                    future: Future[bool] = pool.submit(
                         handler_method,
                         vars_to_filepaths,
                         self.tables_path,
@@ -907,36 +932,16 @@ class E3SMtoCMIP:
             )
 
             if not future_result:
-                failed_handlers = self._handle_failed_handler(
-                    handler_name, failed_handlers
+                self._stop_with_failed_handler_parallel(
+                    handler_name, pool, pbar, futures
                 )
-
-                # Graceful stop behavior.
-                if self.on_var_failure == "stop":
-                    logger.error(
-                        f"Stopping immediately due to --on-var-failure=stop "
-                        f"(failed handler: '{handler_name}')"
-                    )
-                    # Gracefully cancel pending jobs, allow running ones to complete
-                    pool.shutdown(cancel_futures=False)
-                    pbar.close()
-
-                    # Wait briefly for active futures to settle (optional safety)
-                    for f in futures:
-                        if not f.done():
-                            try:
-                                f.result(timeout=2)
-                            except Exception:
-                                pass
-
-                    sys.exit(1)
 
             pbar.update(1)
 
         pbar.close()
         pool.shutdown()
         self._log_final_result(num_handlers, num_success, failed_handlers)
-        self._finalize_failure_exit(failed_handlers)
+        self._finalize_on_failure(failed_handlers)
 
         return True
 
@@ -1053,22 +1058,31 @@ class E3SMtoCMIP:
         logger.info("=======================================")
         logger.info("| FINAL RUN SUMMARY")
         logger.info("---------------------------------------")
-        logger.info(f"  Total variables (--var-list): {len(self.var_list)}")
-        logger.info(f"  Total handlers derived: {num_handlers}")
+        logger.info(f"  * Total variables (--var-list): {len(self.var_list)}")
+        logger.info(f"  * Total handlers successfully derived: {num_handlers}")
         logger.info(
-            f"  Handlers successfully cmorized: {num_successes} / {num_handlers}"
+            f"  * Total handlers successfully cmorized: {num_successes} / {num_handlers}"
         )
 
         if failed_handlers:
-            logger.error("")
-            logger.error("=======================================")
-            logger.error("| NOTICE: Failed Handlers")
-            logger.error("---------------------------------------")
-            logger.error(f" Count: {len(failed_handlers)}")
-            logger.error("  Variables:")
-            for handler in failed_handlers:
-                logger.error(f"    - {handler}")
-                logger.error("=======================================")
+            logger.error(
+                f"  * Total handlers failed to cmorize: {len(failed_handlers)}"
+            )
+            logger.error(f"    - Failed variables: {failed_handlers}")
+
+        if self.missing_handlers:
+            logger.error(
+                f"  * Total handlers missing (not defined in handlers.yaml): "
+                f"{len(self.missing_handlers)}"
+            )
+            logger.error(f"    - Includes: {self.missing_handlers}")
+
+        if self.non_derivable_handlers:
+            logger.error(
+                f"  * Total handlers non-derivable (defined but not derivable): "
+                f"{len(self.non_derivable_handlers)}"
+            )
+            logger.error(f"    - Includes: {self.non_derivable_handlers}")
 
         logger.info("=======================================")
 
@@ -1076,13 +1090,8 @@ class E3SMtoCMIP:
         logger.info("Hit timeout limit, exiting")
         os.kill(os.getpid(), signal.SIGINT)
 
-    def _handle_failed_handler(
-        self,
-        handler_name: str,
-        failed_handlers: list[str],
-        reason: str | Exception | None = None,
-    ) -> list[str]:
-        """Record and log a failed handler.
+    def _stop_with_failed_handler(self, handler_name: str) -> None:
+        """Gracefully stop with a failed handler in serial or info mode.
 
         If ``self.on_var_failure`` is set to "stop", the program will log an
         error message and terminate execution immediately (exit code 1).
@@ -1091,35 +1100,65 @@ class E3SMtoCMIP:
         ----------
         handler_name : str
             The name of the handler that failed.
-        failed_handlers : list of str
-            A list of handler names that failed during processing.
-        reason : str or Exception or None, optional
-            The reason for the handler failure. Can be a string, an exception, or None.
 
         Returns
         -------
-        list[str]
-            The updated list of failed handler names.
+        None
         """
-        failed_handlers.append(handler_name)
-
-        msg = f"Handler '{handler_name}' failed."
-        if reason:
-            msg += f" Reason: {reason}"
-
-        logger.error(msg)
-
         if self.on_var_failure == "stop":
             logger.error(
                 f"Stopping immediately due to --on-var-failure=stop "
-                f"(failed handler: '{handler_name}')"
+                f"(failed at handler: '{handler_name}')"
             )
-            sys.exit(1)
 
-        return failed_handlers
+            exit_failure()
 
-    def _finalize_failure_exit(self, failed_handlers: list[str]) -> None:
-        """Handle final exit behavior based on --on-var-failure mode.
+    def _stop_with_failed_handler_parallel(
+        self, handler_name: str, pool: Pool, pbar: tqdm, futures: list[Future[bool]]
+    ) -> None:
+        """Gracefully stop parallel processing when a handler fails.
+
+        This method is triggered when a handler fails during parallel processing.
+        It logs the failure, shuts down the processing pool, closes the progress
+        bar, and waits for active futures to settle before exiting with a
+        failure code.
+
+        The function ensures that pending jobs are canceled gracefully while
+        allowing running jobs to complete. Active futures are given a brief
+        timeout to settle before the process exits. The process exits with a
+        failure code after handling the failure.
+
+        Parameters
+        ----------
+        handler_name : str
+            The name of the handler that failed.
+        pool : Pool
+            The multiprocessing pool managing parallel tasks.
+        pbar : tqdm
+            The progress bar instance to be closed.
+        futures : Future[bool]
+            A collection of futures representing the parallel tasks.
+        """
+        logger.error(
+            f"Stopping immediately due to --on-var-failure=stop "
+            f"(failed handler: '{handler_name}')"
+        )
+        # Gracefully cancel pending jobs, allow running ones to complete
+        pool.shutdown(cancel_futures=False)
+        pbar.close()
+
+        # Wait briefly for active futures to settle (optional safety)
+        for f in futures:
+            if not f.done():
+                try:
+                    f.result(timeout=2)
+                except Exception:
+                    pass
+
+        exit_failure()
+
+    def _finalize_on_failure(self, failed_handlers: list[str]) -> None:
+        """Finalize exit behavior based on --on-var-failure mode "fail".
 
         This method finalizes the process by checking for failed handlers and
         exiting if necessary if ``self.on_var_failure`` is set to "fail"
@@ -1136,7 +1175,7 @@ class E3SMtoCMIP:
                 f"Exiting with code 1 (--on-var-failure=fail)."
             )
 
-            sys.exit(1)
+            exit_failure()
 
     def convert_parsed_args_to_data_class(
         self, parsed_args: argparse.Namespace
