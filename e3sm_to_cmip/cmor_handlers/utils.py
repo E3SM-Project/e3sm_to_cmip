@@ -185,7 +185,7 @@ def derive_handlers(
             var_handlers, freq, realm, cmip_tables_path, e3sm_vars
         )
 
-        # If no handler is defined variable itself could be derived, add it to
+        # If a var handler handler is defined but could not be derived, add it to
         # the non_derivable_handlers list. This can happen if the handler has no
         # matching CMIP table for the requested frequency, or if the handler's
         # raw E3SM variables do not match the input E3SM variables.
