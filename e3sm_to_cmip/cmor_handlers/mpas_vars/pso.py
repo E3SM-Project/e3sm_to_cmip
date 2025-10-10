@@ -89,6 +89,7 @@ def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
         pslFileNames,
         concat_dim="time",
         **LEGACY_XARRAY_MERGE_SETTINGS,  # type: ignore
+        data_vars="all",
     ) as dsIn:
         ds[VAR_NAME] = ds[VAR_NAME] + dsIn.PSL.values
 
