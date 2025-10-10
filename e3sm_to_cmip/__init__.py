@@ -24,3 +24,14 @@ LEGACY_HANDLER_DIR_PATH = f"{ROOT_HANDLERS_DIR}/vars"
 # Path to the directory where MPAS handlers are defined.
 # TODO: MPAS handlers should eventually be refactored to `handlers.yaml` too.
 MPAS_HANDLER_DIR_PATH = f"{ROOT_HANDLERS_DIR}/mpas_vars"
+
+# Settings to preserve legacy Xarray behavior when opening multiple files with
+# xarray.open_mfdataset(). These settings are automatically set when using
+# xcdat>=0.10.1.
+# See https://xarray.pydata.org/en/stable/user-guide/io.html#combining-multiple-files
+# and https://xarray.pydata.org/en/stable/whats-new.html#id14
+LEGACY_XARRAY_MERGE_SETTINGS = {
+    # "override", "exact" are the new defaults as of Xarray v2025.08.0
+    "compat": "no_conflicts",
+    "join": "outer",
+}
