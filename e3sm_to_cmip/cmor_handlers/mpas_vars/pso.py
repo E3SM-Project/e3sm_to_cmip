@@ -4,7 +4,7 @@ compute Sea Water Pressure at Sea Water Surface, pso
 
 import xarray
 
-from e3sm_to_cmip import mpas, util
+from e3sm_to_cmip import LEGACY_XARRAY_MERGE_SETTINGS, mpas, util
 from e3sm_to_cmip._logger import _setup_child_logger
 from e3sm_to_cmip.util import print_message
 
@@ -85,11 +85,10 @@ def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
 
     ds = mpas.remap(ds, "mpasocean", mappingFileName)
 
-    # NOTE: Preserve legacy Xarray behavior by setting compat="no_conflicts"
-    # and join="outer" ("override" and "exact" are the new defaults as of
-    # Xarray v2025.08.0)
     with xarray.open_mfdataset(
-        pslFileNames, concat_dim="time", compat="no_conflicts", join="exact"
+        pslFileNames,
+        concat_dim="time",
+        **LEGACY_XARRAY_MERGE_SETTINGS,  # type: ignore
     ) as dsIn:
         ds[VAR_NAME] = ds[VAR_NAME] + dsIn.PSL.values
 

@@ -9,6 +9,7 @@ import xarray as xr
 import xcdat as xc
 import yaml
 
+from e3sm_to_cmip import LEGACY_XARRAY_MERGE_SETTINGS
 from e3sm_to_cmip._logger import _setup_child_logger
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE, _formulas
 from e3sm_to_cmip.util import _get_table_for_non_monthly_freq
@@ -390,12 +391,7 @@ class VarHandler(BaseVarHandler):
             combine="nested",
             data_vars="minimal",
             coords="minimal",
-            # NOTE: Preserve legacy Xarray behavior by setting compat="no_conflicts"
-            # and join="outer" ("override" and "exact" are the new defaults as of
-            # Xarray v2025.08.0). These settings are automatically set when
-            # using xcdat>=0.10.1.
-            compat="no_conflicts",
-            join="outer",
+            **LEGACY_XARRAY_MERGE_SETTINGS,
         )
 
         # If the output CMIP variable has an alternative time dimension name (e.g.,

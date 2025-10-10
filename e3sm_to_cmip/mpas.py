@@ -20,6 +20,7 @@ import numpy as np
 import xarray
 from dask.diagnostics import ProgressBar
 
+from e3sm_to_cmip import LEGACY_XARRAY_MERGE_SETTINGS
 from e3sm_to_cmip._logger import _setup_child_logger
 
 logger = _setup_child_logger(__name__)
@@ -79,11 +80,7 @@ def remap_seaice_sgs(inFileName, outFileName, mappingFileName, renorm_threshold=
         f"{outFilePath}/temp_out*nc",
         data_vars="minimal",
         decode_times=False,
-        # NOTE: Preserve legacy Xarray behavior by setting compat="no_conflicts"
-        # and join="outer" ("override" and "exact" are the new defaults as of
-        # Xarray v2025.08.0)
-        compat="no_conflicts",
-        join="outer",
+        **LEGACY_XARRAY_MERGE_SETTINGS,  # type: ignore
     )
     ds_out_all = ds_out_all.drop("timeMonthly_avg_iceAreaCell")
     ds_out_all.to_netcdf(outFileName)
@@ -333,11 +330,7 @@ def open_mfdataset(
         concat_dim="Time",
         mask_and_scale=False,
         chunks=chunks,
-        # NOTE: Preserve legacy Xarray behavior by setting compat="no_conflicts"
-        # and join="outer" ("override" and "exact" are the new defaults as of
-        # Xarray v2025.08.0).
-        compat="no_conflicts",
-        join="outer",
+        **LEGACY_XARRAY_MERGE_SETTINGS,  # type: ignore
     )
 
     if variableList is not None:
