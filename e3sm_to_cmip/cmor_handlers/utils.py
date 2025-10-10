@@ -154,7 +154,7 @@ def derive_handlers(
 
     Returns
     -------
-    tuple[list[VarHandlerDict], list[str]], list[str]]:
+    tuple[list[VarHandlerDict], list[str], list[str]]:
         A list of the dictionary representation of VarHandler objects, a list of
         variable names that are missing handlers (if any), and a list of
         variable names that could not be derived using the input E3SM variables

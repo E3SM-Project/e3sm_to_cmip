@@ -662,9 +662,9 @@ class E3SMtoCMIP:
 
             # Info mode 3: check table + dataset consistency
             elif self.freq and self.tables_path and self.input_path:
-                file_paths = next(Path(self.input_path).glob("*.nc"))
+                filepath = next(Path(self.input_path).glob("*.nc"))
 
-                with xr.open_dataset(file_paths) as ds:
+                with xr.open_dataset(filepath) as ds:
                     for handler in self.handlers:
                         # FIXME: This check is duplicated in mode 2 above. Refactor.
                         # --- DUPLICATE CODE ---
@@ -1136,7 +1136,7 @@ class E3SMtoCMIP:
             The multiprocessing pool managing parallel tasks.
         pbar : tqdm
             The progress bar instance to be closed.
-        futures : Future[bool]
+        futures : list[Future[bool]]
             A collection of futures representing the parallel tasks.
         """
         logger.error(
