@@ -78,8 +78,8 @@ def remap_seaice_sgs(inFileName, outFileName, mappingFileName, renorm_threshold=
     # With  data_vars='minimal', only data variables in which the dimension already appears are included.
     ds_out_all = xarray.open_mfdataset(
         f"{outFilePath}/temp_out*nc",
-        data_vars="minimal",
         decode_times=False,
+        data_vars="minimal",
         **LEGACY_XARRAY_MERGE_SETTINGS,  # type: ignore
     )
     ds_out_all = ds_out_all.drop("timeMonthly_avg_iceAreaCell")
@@ -330,8 +330,8 @@ def open_mfdataset(
         concat_dim="Time",
         mask_and_scale=False,
         chunks=chunks,
-        **LEGACY_XARRAY_MERGE_SETTINGS,  # type: ignore
         data_vars="all",
+        **LEGACY_XARRAY_MERGE_SETTINGS,  # type: ignore
     )
 
     if variableList is not None:
