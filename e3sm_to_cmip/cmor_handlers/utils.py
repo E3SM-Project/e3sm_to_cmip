@@ -157,7 +157,7 @@ def derive_handlers(
         A list of the dictionary representation of VarHandler objects, a list of
         variable names that are missing handlers (if any), and a list of
         variable names that could not be derived using the input E3SM variables
-        if (any).
+        (if any).
 
     """
     # TODO: Refactor the function parameters.
