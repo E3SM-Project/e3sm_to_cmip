@@ -58,7 +58,7 @@ class TestLoadAllHandlers:
             assert record.levelname == "WARNING"
 
     def test_updates_CMIP_table_for_variable_based_on_freq_param(self):
-        result = load_all_handlers("lnd", cmip_vars=["pr"])
+        result, missing_handlers = load_all_handlers("lnd", cmip_vars=["pr"])
         expected = [
             dict(
                 name="pr",
@@ -93,9 +93,10 @@ class TestLoadAllHandlers:
             handler["method"] = handler["method"].__func__
 
         assert result == expected
+        assert not missing_handlers
 
     def test_returns_handlers_based_on_var_list(self):
-        result = load_all_handlers("lnd", cmip_vars=["orog", "sftlf"])
+        result, missing_handlers = load_all_handlers("lnd", cmip_vars=["orog", "sftlf"])
         expected = [
             {
                 "name": "orog",
@@ -124,9 +125,10 @@ class TestLoadAllHandlers:
             handler["method"] = handler["method"].__name__
 
         assert result == expected
+        assert not missing_handlers
 
     def test_returns_mpas_var_handlers_based_on_var_list(self):
-        result = load_all_handlers("Omon", cmip_vars=["so", "uo"])
+        result, missing_handlers = load_all_handlers("Omon", cmip_vars=["so", "uo"])
         expected = [
             {
                 "name": "so",
@@ -155,6 +157,7 @@ class TestLoadAllHandlers:
             handler["method"] = handler["method"].__name__
 
         assert result == expected
+        assert not missing_handlers
 
 
 class TestDeriveHandlers:
@@ -246,7 +249,7 @@ class TestDeriveHandlers:
     def test_returns_handler_with_updated_referenced_CMIP6_table_based_on_freq_arg(
         self,
     ):
-        result = derive_handlers(
+        result, missing_handlers, non_derivable_handlers = derive_handlers(
             self.tables_path,
             cmip_vars=["pr"],
             e3sm_vars=["PRECL", "PRECC"],
@@ -275,9 +278,11 @@ class TestDeriveHandlers:
             handler["method"] = handler["method"].__func__
 
         assert result == expected
+        assert not missing_handlers
+        assert not non_derivable_handlers
 
     def test_returns_handler_objects_for_Amon_freq_based_on_existing_e3sm_vars(self):
-        result = derive_handlers(
+        result, missing_handlers, non_derivable_handlers = derive_handlers(
             self.tables_path,
             cmip_vars=["pr"],
             e3sm_vars=["PRECL", "PRECC"],
@@ -305,9 +310,11 @@ class TestDeriveHandlers:
             handler["method"] = handler["method"].__func__
 
         assert result == expected
+        assert not missing_handlers
+        assert not non_derivable_handlers
 
     def test_returns_handler_objects_for_day_freq_based_on_existing_e3sm_vars(self):
-        result = derive_handlers(
+        result, missing_handlers, non_derivable_handlers = derive_handlers(
             self.tables_path,
             cmip_vars=["pr"],
             e3sm_vars=["PRECT"],
@@ -335,9 +342,11 @@ class TestDeriveHandlers:
             handler["method"] = handler["method"].__func__
 
         assert result == expected
+        assert not missing_handlers
+        assert not non_derivable_handlers
 
     def test_loads_handler_from_module(self):
-        result = derive_handlers(
+        result, missing_handlers, non_derivable_handlers = derive_handlers(
             self.tables_path,
             cmip_vars=["orog", "sftlf"],
             e3sm_vars=["PHIS", "LANDFRAC"],
@@ -372,23 +381,29 @@ class TestDeriveHandlers:
             handler["method"] = handler["method"].__name__
 
         assert result == expected
+        assert not missing_handlers
+        assert not non_derivable_handlers
 
     def test_returns_empty_list_when_no_cmip_vars_given(self):
-        result = derive_handlers(
+        result, missing_handlers, non_derivable_handlers = derive_handlers(
             self.tables_path,
             cmip_vars=[],
             e3sm_vars=["PRECT"],
             freq="mon",
             realm="atm",
         )
-        assert result == []
+        assert not result
+        assert not missing_handlers
+        assert not non_derivable_handlers
 
     def test_returns_empty_list_when_no_e3sm_vars_given(self):
-        result = derive_handlers(
+        result, missing_handlers, non_derivable_handlers = derive_handlers(
             self.tables_path,
             cmip_vars=["pr"],
             e3sm_vars=[],
             freq="mon",
             realm="atm",
         )
-        assert result == []
+        assert not result
+        assert not missing_handlers
+        assert "pr" in non_derivable_handlers
