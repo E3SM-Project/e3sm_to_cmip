@@ -1,7 +1,8 @@
 import copy
+import importlib.util
 import os
+import sys
 from collections import defaultdict
-from importlib.machinery import SourceFileLoader
 from typing import Literal, get_args
 
 import pandas as pd
@@ -337,8 +338,7 @@ def _get_handler_module(module_name: str, module_path: str):
     Parameters
     ----------
     module_name : str
-        The name of the module, which should be the key of the variable (e.g.,
-        "orog").
+        The name of the module, which should be the key of the variable (e.g., "orog").
     module_path : str
         The absolute path to the variable handler Python module.
 
@@ -346,8 +346,19 @@ def _get_handler_module(module_name: str, module_path: str):
     -------
     module
         The module.
+
+    Raises
+    ------
+    ImportError
+        If the module cannot be loaded from the specified path.
     """
-    module = SourceFileLoader(module_name, module_path).load_module()
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load module {module_name} from {module_path}")
+
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
 
     return module
 
