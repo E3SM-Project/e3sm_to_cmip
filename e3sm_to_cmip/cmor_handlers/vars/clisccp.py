@@ -156,6 +156,14 @@ def handle(  # noqa: C901
 
         varid = cmor.variable(VAR_NAME, VAR_UNITS, axis_ids)
 
+        # replace NaNs in data with appropriate fill-value
+        FILL_VALUE = 1.e20
+        data["FISCCP1_COSP"] = np.where(
+            np.isnan(data["FISCCP1_COSP"]),
+            FILL_VALUE,
+            data["FISCCP1_COSP"]
+        )
+
         # write out the data
         msg = f"{VAR_NAME}: time {data['time_bnds'][0][0]:1.1f} - {data['time_bnds'][-1][-1]:1.1f}"
         logger.info(msg)
