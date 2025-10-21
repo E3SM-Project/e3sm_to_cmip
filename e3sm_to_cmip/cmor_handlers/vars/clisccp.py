@@ -11,7 +11,7 @@ import numpy as np
 import xarray as xr
 
 from e3sm_to_cmip._logger import _setup_child_logger
-from e3sm_to_cmip.cmor_handlers import FILL_VALUE
+from e3sm_to_cmip.cmor_handlers.vars.utils import fill_nan
 from e3sm_to_cmip.util import print_message, setup_cmor
 
 logger = _setup_child_logger(__name__)
@@ -159,9 +159,7 @@ def handle(  # noqa: C901
 
         # Replace NaNs in data with appropriate fill-value for cmor.write,
         # which does not support np.nan as a fill value.
-        data["FISCCP1_COSP"] = np.where(
-            np.isnan(data["FISCCP1_COSP"]), FILL_VALUE, data["FISCCP1_COSP"]
-        )
+        data["FISCCP1_COSP"] = fill_nan(data["FISCCP1_COSP"])  # type: ignore
 
         # write out the data
         msg = f"{VAR_NAME}: time {data['time_bnds'][0][0]:1.1f} - {data['time_bnds'][-1][-1]:1.1f}"
