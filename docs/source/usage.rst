@@ -71,6 +71,10 @@ Please be aware that some arguments are required or optional based on how ``e3sm
                            (WARNING: NOT WORKING AS OF 1.8.2)
    -s, --serial          Run in serial mode (by default parallel). Useful for
                            debugging purposes.
+   --on-var-failure {ignore,fail,stop} Behavior when a variable fails:
+                           ignore - continue and exit 0 (default)
+                           fail   - process all variables, exit 1 if any failed
+                           stop   - exit immediately on first failure, useful for debugging
    optional arguments (run settings):
    --realm <realm>       The realm to process. Must be atm, lnd, mpaso or
                            mpassi. Default is atm.
@@ -162,8 +166,11 @@ when the output is intended for analysis, but is not suited for publication.
 
 Serial
 ^^^^^^
-For debugging purposes, or when running in a resource constrained environment, the "--serial" or "-s" boolean flag can be used to cause the conversion process
-to be run in serial, using the main process.
+For debugging purposes, or when running in a resource constrained environment, the "--serial" or "-s" boolean flag can be used to cause the conversion process to be run in serial, using the main process.
+
+On-var-failure
+^^^^^^^^^^^^^^^
+This optional flag controls the behavior of the tool when a variable fails to process. The default behavior is to ignore the failure and continue processing the remaining variables, exiting with a return code of 0. The "fail" option will cause the tool to continue processing all variables, but exit with a return code of 1 if any variable failed. The "stop" option will cause the tool to exit immediately on the first variable failure, which is useful for debugging.
 
 Optional arguments (run settings)
 ---------------------------------

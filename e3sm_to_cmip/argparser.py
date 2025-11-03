@@ -11,6 +11,7 @@ def setup_argparser() -> argparse.ArgumentParser:
         prog="e3sm_to_cmip",
         usage="%(prog)s [-h]",
         add_help=False,
+        formatter_class=argparse.RawTextHelpFormatter,
     )
 
     # Argument groups to organize the numerous arguments printed by --help.
@@ -38,19 +39,16 @@ def setup_argparser() -> argparse.ArgumentParser:
         "--info",
         action="store_true",
         help=(
-            "Produce information about the CMIP6 variables passed in the --var-list "
-            "argument and exit without doing any processing. There are three modes "
-            "for getting the info. (Mode 1) If you just pass the --info flag with the "
-            "--var-list then it will print out the handler information as yaml data for "
-            "the requested variable to your default output path (or to a file designated "
-            "by the --info-out path). (Mode 2) If the --freq <frequency> is passed "
-            "along with the --tables-path, then the variable handler information will "
-            "only be output if the requested variables are present in the CMIP6 table matching the freq. "
-            "NOTE: For MPAS data, one must also include --realm mpaso (or mpassi) and --map no_map. "
-            "(Mode 3) For non-MPAS data, if the --freq <freq> is passed with the --tables-path, and the "
-            "--input-path, and the input-path points to raw unprocessed E3SM files, "
-            "then an additional check will me made for if the required raw "
-            "variables are present in the E3SM native output. "
+            "Produce information about the CMIP6 variables passed in the "
+            "--var-list argument and exit without processing. Modes:\n"
+            "  1) Default: Print handler info as YAML for requested variables "
+            "to the default output path, or to a file specified by --info-out.\n"
+            "  2) With --freq <frequency> and --tables-path: Output handler info "
+            "only if variables are in the CMIP6 table matching the frequency. "
+            "For MPAS data, include --realm mpaso/mpassi and --map no_map.\n"
+            "  3) For non-MPAS data: With --freq <frequency>, --tables-path, "
+            "and --input-path pointing to raw E3SM files, check if required raw "
+            "variables are present in the E3SM native output."
         ),
     )
     optional_mode.add_argument(
@@ -66,6 +64,18 @@ def setup_argparser() -> argparse.ArgumentParser:
         "--serial",
         help="Run in serial mode (by default parallel). Useful for debugging purposes.",
         action="store_true",
+    )
+
+    optional_mode.add_argument(
+        "--on-var-failure",
+        choices=["ignore", "fail", "stop"],
+        default="ignore",
+        help=(
+            "Behavior when a variable fails:\n"
+            "  1) 'ignore' - continue and exit 0 (default)\n"
+            "  2) 'fail'   - process all variables, exit 1 if any failed\n"
+            "  3) 'stop'   - exit immediately on first failure, useful for debugging\n"
+        ),
     )
 
     # ======================================================================
