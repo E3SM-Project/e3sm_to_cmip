@@ -167,14 +167,6 @@
   formula: SNOBCMSL+SNODSTMSL+SNOOCMSL
   positive: null
   levels: null
-- name: sfcWind
-  units: m s-1
-  raw_variables: [WIND]
-  table: CMIP6_Lmon.json
-  unit_conversion: null
-  formula: WIND
-  positive: null
-  levels: null
 - name: albisccp
   units: "1"
   raw_variables: [MEANCLDALB_ISCCP]
