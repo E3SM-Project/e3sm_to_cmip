@@ -31,6 +31,150 @@
   formula: null
   positive: null
   levels: null
+- name: burntFractionAll
+  units: "%"
+  raw_variables: [FAREA_BURNED]
+  table: CMIP6_Lmon.json
+  unit_conversion: null
+  formula: FAREA_BURNED*3600*24*30*100
+  positive: null
+  levels: null
+- name: cCwd
+  units: kg m-2
+  raw_variables: [CWDC]
+  table: CMIP6_Lmon.json
+  unit_conversion: null
+  formula: CWDC/1000
+  positive: null
+  levels: null
+- name: cLeaf
+  units: kg m-2
+  raw_variables: [LEAFC]
+  table: CMIP6_Lmon.json
+  unit_conversion: null
+  formula: LEAFC/1000
+  positive: null
+  levels: null
+- name: cRoot
+  units: kg m-2
+  raw_variables: [FROOTC, LIVECROOTC, DEADCROOTC]
+  table: CMIP6_Lmon.json
+  unit_conversion: null
+  formula: (FROOTC+LIVECROOTC+DEADCROOTC)/1000
+  positive: null
+  levels: null
+- name: fLuc
+  units: kg m-2 s-1
+  raw_variables: [LAND_USE_FLUX]
+  table: CMIP6_Lmon.json
+  unit_conversion: null
+  formula: LAND_USE_FLUX/1000
+  positive: null
+  levels: null
+- name: hfdsn
+  units: W m-2
+  raw_variables: [FGR]
+  table: CMIP6_LImon.json
+  unit_conversion: null
+  formula: -FGR
+  positive: null
+  levels: null
+- name: lwsnl
+  units: kg m-2
+  raw_variables: [SNOWLIQ]
+  table: CMIP6_LImon.json
+  unit_conversion: null
+  formula: SNOWLIQ
+  positive: null
+  levels: null
+- name: nppLeaf
+  units: kg m-2 s-1
+  raw_variables: [LEAFC_ALLOC]
+  table: CMIP6_Lmon.json
+  unit_conversion: null
+  formula: LEAFC_ALLOC
+  positive: null
+  levels: null
+- name: nppRoot
+  units: kg m-2 s-1
+  raw_variables: [FROOTC_ALLOC]
+  table: CMIP6_Lmon.json
+  unit_conversion: null
+  formula: FROOTC_ALLOC/1000
+  positive: null
+  levels: null
+- name: nppWood
+  units: kg m-2 s-1
+  raw_variables: [WOODC_ALLOC]
+  table: CMIP6_Lmon.json
+  unit_conversion: null
+  formula: WOODC_ALLOC/1000
+  positive: null
+  levels: null
+- name: rGrowth
+  units: kg m-2 s-1
+  raw_variables: [AR, MR]
+  table: CMIP6_Lmon.json
+  unit_conversion: null
+  formula: (AR-MR)/1000
+  positive: null
+  levels: null
+- name: rMaint
+  units: kg m-2 s-1
+  raw_variables: [MR]
+  table: CMIP6_Lmon.json
+  unit_conversion: null
+  formula: MR/1000
+  positive: null
+  levels: null
+- name: snc
+  units: "%"
+  raw_variables: [FSNO]
+  table: CMIP6_LImon.json
+  unit_conversion: null
+  formula: FSNO*100
+  positive: null
+  levels: null
+- name: snd
+  units: m
+  raw_variables: [SNOWDP]
+  table: CMIP6_LImon.json
+  unit_conversion: null
+  formula: SNOWDP
+  positive: null
+  levels: null
+- name: snm
+  units: kg m-2 s-1
+  raw_variables: [QSNOMELT]
+  table: CMIP6_LImon.json
+  unit_conversion: null
+  formula: QSNOMELT
+  positive: null
+  levels: null
+- name: snw
+  units: kg m-2
+  raw_variables: [H2OSNO_TOP]
+  table: CMIP6_LImon.json
+  unit_conversion: null
+  formula: H2OSNO_TOP
+  positive: null
+  levels: null
+- name: sootsn
+  units: kg m-2
+  raw_variables: [SNOBCMSL, SNODSTMSL, SNOOCMSL]
+  table: CMIP6_LImon.json
+  unit_conversion: null
+  formula: SNOBCMSL+SNODSTMSL+SNOOCMSL
+  positive: null
+  levels: null
+- name: sfcWind
+  units: m s-1
+  raw_variables: [WIND]
+  table: CMIP6_Lmon.json
+  unit_conversion: null
+  formula: WIND
+  positive: null
+  levels: null
 - name: albisccp
   units: "1"
   raw_variables: [MEANCLDALB_ISCCP]
@@ -980,10 +1124,10 @@
   levels: null
 - name: tran
   units: kg m-2 s-1
-  raw_variables: [QVEGT, QSOIL]
+  raw_variables: [QVEGT]
   table: CMIP6_Lmon.json
   unit_conversion: null
-  formula: QSOIL + QVEGT
+  formula: QVEGT
   positive: up
   levels: null
 - name: ts
