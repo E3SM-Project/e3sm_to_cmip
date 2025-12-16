@@ -43,16 +43,16 @@
   units: kg m-2
   raw_variables: [CWDC]
   table: CMIP6_Lmon.json
-  unit_conversion: null
-  formula: CWDC/1000
+  unit_conversion: g-to-kg
+  formula: null
   positive: null
   levels: null
 - name: cLeaf
   units: kg m-2
   raw_variables: [LEAFC]
   table: CMIP6_Lmon.json
-  unit_conversion: null
-  formula: LEAFC/1000
+  unit_conversion: g-to-kg
+  formula: null
   positive: null
   levels: null
 - name: cRoot
@@ -63,28 +63,20 @@
   formula: (FROOTC+LIVECROOTC+DEADCROOTC)/1000
   positive: null
   levels: null
-- name: fLuc
-  units: kg m-2 s-1
-  raw_variables: [LAND_USE_FLUX]
-  table: CMIP6_Lmon.json
-  unit_conversion: null
-  formula: LAND_USE_FLUX/1000
-  positive: null
-  levels: null
 - name: hfdsn
   units: W m-2
   raw_variables: [FGR]
   table: CMIP6_LImon.json
-  unit_conversion: null
-  formula: -FGR
-  positive: null
+  unit_conversion: "-1"
+  formula: null
+  positive: down
   levels: null
 - name: lwsnl
   units: kg m-2
   raw_variables: [SNOWLIQ]
   table: CMIP6_LImon.json
   unit_conversion: null
-  formula: SNOWLIQ
+  formula: null
   positive: null
   levels: null
 - name: nppLeaf
@@ -92,24 +84,24 @@
   raw_variables: [LEAFC_ALLOC]
   table: CMIP6_Lmon.json
   unit_conversion: null
-  formula: LEAFC_ALLOC
-  positive: null
+  formula: null
+  positive: down
   levels: null
 - name: nppRoot
   units: kg m-2 s-1
   raw_variables: [FROOTC_ALLOC]
   table: CMIP6_Lmon.json
-  unit_conversion: null
-  formula: FROOTC_ALLOC/1000
-  positive: null
+  unit_conversion: g-to-kg
+  formula: null
+  positive: down
   levels: null
 - name: nppWood
   units: kg m-2 s-1
   raw_variables: [WOODC_ALLOC]
   table: CMIP6_Lmon.json
-  unit_conversion: null
-  formula: WOODC_ALLOC/1000
-  positive: null
+  unit_conversion: g-to-kg
+  formula: null
+  positive: down
   levels: null
 - name: rGrowth
   units: kg m-2 s-1
@@ -117,22 +109,22 @@
   table: CMIP6_Lmon.json
   unit_conversion: null
   formula: (AR-MR)/1000
-  positive: null
+  positive: down
   levels: null
 - name: rMaint
   units: kg m-2 s-1
   raw_variables: [MR]
   table: CMIP6_Lmon.json
-  unit_conversion: null
-  formula: MR/1000
-  positive: null
+  unit_conversion: g-to-kg
+  formula: null
+  positive: down
   levels: null
 - name: snc
   units: "%"
   raw_variables: [FSNO]
   table: CMIP6_LImon.json
-  unit_conversion: null
-  formula: FSNO*100
+  unit_conversion: 1-to-%
+  formula: null
   positive: null
   levels: null
 - name: snd
@@ -140,7 +132,7 @@
   raw_variables: [SNOWDP]
   table: CMIP6_LImon.json
   unit_conversion: null
-  formula: SNOWDP
+  formula: null
   positive: null
   levels: null
 - name: snm
@@ -148,7 +140,7 @@
   raw_variables: [QSNOMELT]
   table: CMIP6_LImon.json
   unit_conversion: null
-  formula: QSNOMELT
+  formula: null
   positive: null
   levels: null
 - name: snw
@@ -156,7 +148,7 @@
   raw_variables: [H2OSNO_TOP]
   table: CMIP6_LImon.json
   unit_conversion: null
-  formula: H2OSNO_TOP
+  formula: null
   positive: null
   levels: null
 - name: sootsn
