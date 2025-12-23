@@ -382,21 +382,19 @@ def test_rtmt():
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        rsuscs(xr.Dataset())
+        rtmt(xr.Dataset())
 
 
 def test_tran():
-    ds = xr.Dataset(
-        data_vars={"QSOIL": _dummy_dataarray(), "QVEGT": _dummy_dataarray()}
-    )
+    ds = xr.Dataset(data_vars={"QVEGT": _dummy_dataarray()})
 
     result = tran(ds)
     expected = xr.DataArray(
         dims=["lat", "lon"],
-        data=np.array([[0, 2, 4], [0, 2, 4], [0, 2, 4]]),
+        data=np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]]),
     )
     xr.testing.assert_allclose(result, expected)
 
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
-        rsuscs(xr.Dataset())
+        tran(xr.Dataset())

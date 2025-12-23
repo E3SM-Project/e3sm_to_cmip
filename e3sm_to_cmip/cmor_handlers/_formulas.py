@@ -580,8 +580,44 @@ def rtmt(ds: xr.Dataset) -> xr.DataArray:
 
 def tran(ds: xr.Dataset) -> xr.DataArray:
     """
-    tran = QSOIL + QVEGT
+    tran = QVEGT
     """
-    result = ds["QSOIL"] + ds["QVEGT"]
+    result = ds["QVEGT"]
+
+    return result
+
+
+def burntFractionAll(ds: xr.Dataset) -> xr.DataArray:
+    """
+    burntFractionAll = FAREA_BURNED*3600*24*30*100
+    """
+    result = ds["FAREA_BURNED"] * 3600 * 24 * 30 * 100
+
+    return result
+
+
+def cRoot(ds: xr.Dataset) -> xr.DataArray:
+    """
+    cRoot = (FROOTC+LIVECROOTC+DEADCROOTC)/1000
+    """
+    result = (ds["FROOTC"] + ds["LIVECROOTC"] + ds["DEADCROOTC"]) / 1000
+
+    return result
+
+
+def rGrowth(ds: xr.Dataset) -> xr.DataArray:
+    """
+    rGrowth = (AR-MR)/1000
+    """
+    result = (ds["AR"] - ds["MR"]) / 1000
+
+    return result
+
+
+def sootsn(ds: xr.Dataset) -> xr.DataArray:
+    """
+    sootsn = SNOBCMSL+SNODSTMSL+SNOOCMSL
+    """
+    result = ds["SNOBCMSL"] + ds["SNODSTMSL"] + ds["SNOOCMSL"]
 
     return result

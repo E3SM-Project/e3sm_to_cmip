@@ -802,19 +802,26 @@ def _compute_moc_time_series(
             ).sum(dim="nCells")
             mocSlices.append(mocTop)
 
-        moc = xarray.concat(mocSlices, dim="lat")  # type: ignore
-        moc = moc.transpose("Time", "nVertLevelsP1", "lat")  # type: ignore
+        moc = xarray.concat(mocSlices, dim="lat")  # type: ignore[arg-type]
+        moc = moc.transpose("Time", "nVertLevelsP1", "lat")
+
         # average to bin and level centers
-        moc = 0.25 * (
-            moc[:, 0:-1, 0:-1] + moc[:, 0:-1, 1:] + moc[:, 1:, 0:-1] + moc[:, 1:, 1:]
+        moc_avg = (
+            0.25
+            * (
+                moc[:, 0:-1, 0:-1]  # type: ignore[index]
+                + moc[:, 0:-1, 1:]  # type: ignore[index]
+                + moc[:, 1:, 0:-1]  # type: ignore[index]
+                + moc[:, 1:, 1:]  # type: ignore[index]
+            )
         )
-        moc = moc.rename({"nVertLevelsP1": "depth"})  # type: ignore
-        binCounts = xarray.DataArray(binCounts, dims=("lat"))  # type: ignore
-        moc = moc.where(binCounts > 0)  # type: ignore
+        moc_avg = moc_avg.rename({"nVertLevelsP1": "depth"})
+        binCounts = xarray.DataArray(binCounts, dims=("lat"))  # type: ignore[assignment]
+        moc_masked = moc_avg.where(binCounts > 0)  # type: ignore[operator]
 
-        _compute_dask(moc, showProgress, "Computing {} MOC".format(regionName))
+        _compute_dask(moc_masked, showProgress, "Computing {} MOC".format(regionName))
 
-        mocs[regionName] = moc
+        mocs[regionName] = moc_masked
 
     mocs = xarray.concat(mocs.values(), dim="basin")  # type: ignore
     mocs = mocs.transpose("Time", "basin", "depth", "lat")  # type: ignore
