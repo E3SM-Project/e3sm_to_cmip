@@ -218,6 +218,8 @@ class VarHandler(BaseVarHandler):
         # ----------------------------------------------------------------------
         self._setup_cmor_module(self.name, tables_path, metadata_path, cmor_log_dir)
 
+        print(metadata_path)
+
         # Get parameters for running CMOR operations
         # ----------------------------------------------------------------------
         # Check if the output CMIP variable has a time dimension, which determines
@@ -339,7 +341,11 @@ class VarHandler(BaseVarHandler):
         with open(table_path, "r") as inputstream:
             table_info = json.load(inputstream)
 
-        axis_info = table_info["variable_entry"][self.name]["dimensions"].split(" ")
+        try:
+            axis_info = table_info["variable_entry"][self.name]["dimensions"].split(" ")
+        
+        except AttributeError:
+            axis_info = table_info["variable_entry"][self.name]["dimensions"][:]
 
         for dim in TIME_DIMS:
             if dim in axis_info:

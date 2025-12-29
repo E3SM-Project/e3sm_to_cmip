@@ -121,6 +121,17 @@ def setup_argparser() -> argparse.ArgumentParser:
         default="mon",
     )
 
+    optional_run.add_argument(
+        "-M",
+        "--mip_era",
+        type=str,
+        help=(
+            "The cmip_era (default is 'cmip6'). Accepted "
+            "values are 'cmip6', 'cmip6plus', 'cmip7'."
+        ),
+        default="cmip6",
+    )
+
     # ======================================================================
     # Paths references.
     # ======================================================================

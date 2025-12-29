@@ -15,8 +15,43 @@ from e3sm_to_cmip._logger import _setup_child_logger
 
 logger = _setup_child_logger(__name__)
 
-FREQUENCIES = ["mon", "day", "6hrLev", "6hrPlev", "6hrPlevPt", "3hr", "1hr"]
+FREQUENCIES = ["yr", "mon", "day", "6hrLev", "6hrPlev", "6hrPlevPt", "6hrPtZ", "3hr", "3hrPt", "3hrPtLev", "1hr", "1hrPt", "subhr"]
 ATMOS_TABLES = [
+    "MIP_ACmon.json",
+    "MIP_ACmonZ.json",
+    "MIP_AE1hr.json",
+    "MIP_AE3hrPt.json",
+    "MIP_AE3hrPtLev.json",
+    "MIP_AE6hr.json",
+    "MIP_AE6hrPt.json",
+    "MIP_AE6hrPtLev.json",
+    "MIP_AEday.json",
+    "MIP_AEmon.json",
+    "MIP_AEmonLev.json",
+    "MIP_AEmonZ.json",
+    "MIP_AEsubhrPt.json",
+    "MIP_AEsubhrPtSite.json",
+    "MIP_AP1hr.json",
+    "MIP_AP1hrPt.json",
+    "MIP_AP3hr.json",
+    "MIP_AP3hrPt.json",
+    "MIP_AP3hrPtLev.json"
+    "MIP_AP6hr.json",
+    "MIP_AP6hrPt.json",
+    "MIP_AP6hrPtLev.json",
+    "MIP_AP6hrPtZ.json",
+    "MIP_APday.json",
+    "MIP_APdayLev.json",
+    "MIP_APdayZ.json",
+    "MIP_APfx.json",
+    "MIP_APmonClim.json",
+    "MIP_APmonClimLev.json",
+    "MIP_APmonDiurnal.json",
+    "MIP_APmon.json",
+    "MIP_APmonLev.json",
+    "MIP_APmonZ.json",
+    "MIP_APsubhrPt.json",
+    "MIP_APsubhrPtLev.json",
     "CMIP6_Amon.json",
     "CMIP6_day.json",
     "CMIP6_3hr.json",
@@ -32,16 +67,53 @@ ATMOS_TABLES = [
     "CMIP6_fx.json",
 ]
 
-LAND_TABLES = ["CMIP6_Lmon.json", "CMIP6_LImon.json"]
-OCEAN_TABLES = ["CMIP6_Omon.json", "CMIP6_Ofx.json"]
-SEAICE_TABLES = ["CMIP6_SImon.json"]
+LAND_TABLES = ["MIP_LI3hrPt.json", "MIP_LI6hrPt.json", "MIP_LIday.json", "MIP_LIfx.json", "MIP_LImon.json", "MIP_LIsubhrPtSite.json", "MIP_LP3hr.json", "MIP_LP3hrPt.json", "MIP_LP6hrPt.json", "MIP_LPday.json", "MIP_LPfx.json", "MIP_LPmon.json", "MIP_LPyr.json", "MIP_LPyrPt.json", "CMIP6_Lmon.json", "CMIP6_LImon.json"]
+OCEAN_TABLES = ["MIP_OBday.json", "MIP_OBmon.json", "MIP_OBmonLev.json", "MIP_OByr.json", "MIP_OByrLev.json", "MIP_OP3hrPt.json", "MIP_OPday.json", "MIP_OPdec.json", "MIP_OPdecLev.json", "MIP_OPdecZ.json", "MIP_OPfx.json", "MIP_OPmonClim.json", "MIP_OPmonClimLev.json", "MIP_OPmon.json", "MIP_OPmonLev.json", "MIP_OPmonZ.json", "MIP_OPyr.json", "MIP_OPyrLev.json", "CMIP6_Omon.json", "CMIP6_Ofx.json"]
+SEAICE_TABLES = ["MIP_SIday.json", "MIP_SImon.json", "MIP_SImonPt.json", "CMIP6_SImon.json"]
 
 # Mapping from CMIP6 table names to their associated frequency.
 # This dictionary helps determine the frequency category (e.g., "mon", "day", etc.)
 # for a given CMIP6 table name when deriving or validating variable handlers.
 # Keys are CMIP6 table filenames, values are their frequency strings.
 FREQUENCY_TO_CMIP_TABLES = {
+    "yr": [
+         "MIP_LPyr.json", 
+         "MIP_LPyrPt.json",
+         "MIP_OByr.json", 
+         "MIP_OByrLev.json",
+         "MIP_OPyr.json", 
+         "MIP_OPyrLev.json",
+    ],
     "mon": [
+        "MIP_ACmon.json",
+        "MIP_ACmonZ.json",
+        "MIP_AEmon.json",
+        "MIP_AEmonLev.json",
+        "MIP_AEmonZ.json",
+        "MIP_APmonClim.json",
+        "MIP_APmonClimLev.json",
+        "MIP_APmonDiurnal.json",
+        "MIP_APmon.json",
+        "MIP_APmonLev.json",
+        "MIP_APmonZ.json",
+        "MIP_APfx.json",
+        "MIP_LPmon.json",
+        "MIP_LPfx.json",
+        "MIP_LImon.json",
+        "MIP_LIfx.json",
+        "MIP_OBmon.json", 
+        "MIP_OBmonLev.json",
+        "MIP_OPmonClim.json", 
+        "MIP_OPdec.json", 
+        "MIP_OPdecLev.json", 
+        "MIP_OPdecZ.json",
+        "MIP_OPmonClimLev.json", 
+        "MIP_OPmon.json", 
+        "MIP_OPmonLev.json", 
+        "MIP_OPmonZ.json",
+        "MIP_OPfx.json",
+        "MIP_SImon.json",
+        "MIP_SImonPt.json",
         "CMIP6_Amon.json",
         "CMIP6_Lmon.json",
         "CMIP6_LImon.json",
@@ -53,26 +125,64 @@ FREQUENCY_TO_CMIP_TABLES = {
         "CMIP6_SImon.json",
     ],
     "day": [
+        "MIP_AEday.json",
+        "MIP_APday.json",
+        "MIP_APdayLev.json",
+        "MIP_APdayZ.json",
+        "MIP_LPday.json",
+        "MIP_LIday.json",
+        "MIP_OBday.json",
+        "MIP_OPday.json",
+        "MIP_SIday.json",
         "CMIP6_day.json",
         "CMIP6_CFday.json",
         "CMIP6_AERday.json",
     ],
     "3hr": [
+        "MIP_AE1hr.json",
+        "MIP_AE3hrPt.json",
+        "MIP_AE3hrPtLev.json",
+        "MIP_AP3hr.json",
+        "MIP_AP3hrPt.json",
+        "MIP_AP3hrPtLev.json",
+        "MIP_LP3hr.json",
+        "MIP_LP3hrPt.json",
+        "MIP_LI3hrPt.json",
+        "MIP_OP3hrPt.json",
         "CMIP6_3hr.json",
         "CMIP6_CF3hr.json",
     ],
     "6hrLev": [
+        "MIP_AE6hr.json",
+        "MIP_AP6hr.json",
         "CMIP6_6hrLev.json",
     ],
     "6hrPlev": [
+        "MIP_AE6hrPt.json",
+        "MIP_AP6hrPt.json",
+        "MIP_LP6hrPt.json",
+        "MIP_LI6hrPt.json",
         "CMIP6_6hrPlev.json",
     ],
     "6hrPlevPt": [
+        "MIP_AE6hrPtLev.json",
+        "MIP_AP6hrPtLev.json",
+        "MIP_AP6hrPtZ.json",
         "CMIP6_6hrPlevPt.json",
     ],
     "1hr": [
+        "MIP_AE1hr.json",
+        "MIP_AP1hr.json",
+        "MIP_AP1hrPt.json",
         "CMIP6_AERhr.json",
     ],
+    "subhr": [
+        "MIP_AEsubhrPt.json",
+        "MIP_AEsubhrPtSite.json",
+        "MIP_APsubhrPt.json",
+        "MIP_APsubhrPtLev.json",
+        "MIP_LIsubhrPtSite.json",
+    ]
 }
 
 
@@ -136,7 +246,7 @@ def print_message(message, status="error"):
 # ------------------------------------------------------------------
 
 
-def setup_cmor(var_name, table_path, table_name, user_input_path, cmor_log_dir):
+def setup_cmor(var_name, table_path, table_name, user_input_path, cmor_log_dir, mip_era):
     """
     Sets up cmor and logging for a single handler.
 
@@ -144,6 +254,13 @@ def setup_cmor(var_name, table_path, table_name, user_input_path, cmor_log_dir):
     under ``e3sm_to_cmip/cmor_handlers/mpas_vars`` and legacy handlers
     defined under ``e3sm_to_cmip/cmor_handlers/vars``.
     """
+    if type(table_name) is list:
+        if mip_era == "cmip6" and len(table_name) > 1:
+            table_name = str(table_name[0])
+
+        elif mip_era == "cmip6plus" and len(table_name) > 1:
+            table_name = str(table_name[1])
+
     logfile = os.path.join(cmor_log_dir, var_name + ".log")
     cmor.setup(inpath=table_path, netcdf_file_action=cmor.CMOR_REPLACE, logfile=logfile)
 
@@ -324,10 +441,10 @@ def _get_table_for_freq(base_table: str, freq: str) -> str | None:
         The optional table for the frequency.
     """
     # Replace the base table (monthly) with the frequency.
-    if base_table == "CMIP6_Amon.json":
+    if base_table == ["MIP_ACmon.json", "MIP_AEmon.json", "MIP_APmon.json", "CMIP6_Amon.json"]:
         return f"CMIP6_{freq}.json"
     # Tables not supported for frequencies other than month.
-    elif base_table in ["CMIP6_Lmon.json", "CMIP6_LImon.json"] and freq != "mon":
+    elif base_table in ["MIP_LPmon.json", "MIP_LImon.json", "CMIP6_Lmon.json", "CMIP6_LImon.json"] and freq != "mon":
         return None
     # "fx" tables not supported for frequencies other than month.
     elif "fx" in base_table and freq != "mon":

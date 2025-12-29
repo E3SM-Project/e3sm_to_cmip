@@ -26,7 +26,7 @@
 - name: abs550aer
   units: "1"
   raw_variables: [AODABS]
-  table: CMIP6_AERmon.json
+  table: [CMIP6_AERmon.json, MIP_AEmon.json]
   unit_conversion: null
   formula: null
   positive: null
@@ -34,7 +34,7 @@
 - name: albisccp
   units: "1"
   raw_variables: [MEANCLDALB_ISCCP]
-  table: CMIP6_CFmon.json
+  table: [CMIP6_CFmon.json, MIP_APmon.json]
   unit_conversion: null
   formula: null
   positive: null
@@ -42,7 +42,7 @@
 - name: cLitter
   units: kg m-2
   raw_variables: [TOTLITC, CWDC]
-  table: CMIP6_Lmon.json
+  table: [CMIP6_Lmon.json, MIP_LPmon.json]
   unit_conversion: null
   formula: (TOTLITC + CWDC)/1000.0
   positive: null
@@ -50,7 +50,7 @@
 - name: cProduct
   units: kg m-2
   raw_variables: [TOTPRODC]
-  table: CMIP6_Lmon.json
+  table: [CMIP6_Lmon.json, MIP_LPmon.json]
   unit_conversion: g-to-kg
   formula: null
   positive: null
@@ -58,7 +58,7 @@
 - name: cSoilFast
   units: kg m-2
   raw_variables: [SOIL1C]
-  table: CMIP6_Lmon.json
+  table: [CMIP6_Lmon.json, MIP_LPmon.json]
   unit_conversion: g-to-kg
   formula: null
   positive: null
@@ -66,7 +66,7 @@
 - name: cSoilMedium
   units: kg m-2
   raw_variables: [SOIL2C]
-  table: CMIP6_Lmon.json
+  table: [CMIP6_Lmon.json, MIP_LPmon.json]
   unit_conversion: g-to-kg
   formula: null
   positive: null
@@ -74,7 +74,7 @@
 - name: cSoilSlow
   units: kg m-2
   raw_variables: [SOIL3C]
-  table: CMIP6_Lmon.json
+  table: [CMIP6_Lmon.json, MIP_LPmon.json]
   unit_conversion: g-to-kg
   formula: null
   positive: null
@@ -82,7 +82,7 @@
 - name: cVeg
   units: kg m-2
   raw_variables: [TOTVEGC]
-  table: CMIP6_Lmon.json
+  table: [CMIP6_Lmon.json, MIP_LPmon.json]
   unit_conversion: g-to-kg
   formula: null
   positive: null
@@ -104,7 +104,7 @@
 - name: clcalipso
   units: "%"
   raw_variables: [CLD_CAL]
-  table: CMIP6_CFmon.json
+  table: [CMIP6_CFmon.json, MIP_APmon.json]
   unit_conversion: null
   formula: null
   positive: null
@@ -118,7 +118,7 @@
 - name: clhcalipso
   units: "%"
   raw_variables: [CLDHGH_CAL]
-  table: CMIP6_CFmon.json
+  table: [CMIP6_CFmon.json, MIP_APmon.json]
   unit_conversion: null
   formula: null
   positive: null
@@ -148,7 +148,7 @@
 - name: cllcalipso
   units: "%"
   raw_variables: [CLDLOW_CAL]
-  table: CMIP6_CFmon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -156,7 +156,7 @@
 - name: clmcalipso
   units: "%"
   raw_variables: [CLDMED_CAL]
-  table: CMIP6_CFmon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -164,7 +164,7 @@
 - name: clt
   units: "%"
   raw_variables: [CLDTOT]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: 1-to-%
   formula: null
   positive: null
@@ -172,7 +172,7 @@
 - name: cltcalipso
   units: "%"
   raw_variables: [CLDTOT_CAL]
-  table: CMIP6_CFmon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -180,7 +180,7 @@
 - name: cltisccp
   units: "%"
   raw_variables: [CLDTOT_ISCCP]
-  table: CMIP6_CFmon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -202,7 +202,7 @@
 - name: clwvi
   units: kg m-2
   raw_variables: [TGCLDCWP]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -210,7 +210,7 @@
 - name: emibc
   units: kg m-2 s-1
   raw_variables: [SFbc_a4, bc_a4_CLXF]
-  table: CMIP6_AERmon.json
+  table: MIP_AEmon.json
   unit_conversion: null
   formula: SFbc_a4 + bc_a4_CLXF * 12.011 / 6.02214e+22
   positive: null
@@ -218,7 +218,7 @@
 - name: emiso2
   units: kg m-2 s-1
   raw_variables: [SFSO2, SO2_CLXF]
-  table: CMIP6_AERmon.json
+  table: MIP_AEmon.json
   unit_conversion: null
   formula: SFSO2 + SO2_CLXF * 64.064800 / 6.02214e+22
   positive: null
@@ -226,64 +226,16 @@
 - name: emiso4
   units: kg m-2 s-1
   raw_variables: [SFso4_a1, SFso4_a2, so4_a1_CLXF, so4_a2_CLXF]
-  table: CMIP6_AERmon.json
+  table: MIP_AEmon.json
   unit_conversion: null
   formula: SFso4_a1 + SFso4_a2 + (so4_a1_CLXF + so4_a2_CLXF) * 115.107340
     / 6.02214e+22
   positive: null
   levels: null
-- name: od550bc
-  units: "1"
-  raw_variables: [AODBC]
-  table: CMIP6_AERmon.json
-  unit_conversion: null
-  formula: null
-  positive: null
-  levels: null
-- name: od550dust
-  units: "1"
-  raw_variables: [AODDUST]
-  table: CMIP6_AERmon.json
-  unit_conversion: null
-  formula: null
-  positive: null
-  levels: null
-- name: od550so4
-  units: "1"
-  raw_variables: [AODSO4]
-  table: CMIP6_AERmon.json
-  unit_conversion: null
-  formula: null
-  positive: null
-  levels: null
-- name: od550soa
-  units: "1"
-  raw_variables: [AODSOA]
-  table: CMIP6_AERmon.json
-  unit_conversion: null
-  formula: null
-  positive: null
-  levels: null
-- name: od550ss
-  units: "1"
-  raw_variables: [AODSS]
-  table: CMIP6_AERmon.json
-  unit_conversion: null
-  formula: null
-  positive: null
-  levels: null
-- name: ptp
-  units: Pa
-  raw_variables: [TROP_P]
-  table: CMIP6_AERmon.json
-  unit_conversion: null
-  formula: null
-  positive: null
-  levels: null
 - name: evspsbl
   units: kg m-2 s-1
   raw_variables: [QFLX]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -291,7 +243,7 @@
 - name: evspsblsoi
   units: kg m-2 s-1
   raw_variables: [QSOIL]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: null
   formula: null
   positive: up
@@ -299,7 +251,7 @@
 - name: evspsblveg
   units: kg m-2 s-1
   raw_variables: [QVEGE]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: null
   formula: null
   positive: up
@@ -307,7 +259,7 @@
 - name: fFire
   units: kg m-2 s-1
   raw_variables: [COL_FIRE_CLOSS]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: g-to-kg
   formula: null
   positive: up
@@ -315,7 +267,7 @@
 - name: fHarvest
   units: kg m-2 s-1
   raw_variables: [WOOD_HARVESTC]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: g-to-kg
   formula: null
   positive: up
@@ -323,7 +275,7 @@
 - name: gpp
   units: kg m-2 s-1
   raw_variables: [GPP]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: g-to-kg
   formula: null
   positive: down
@@ -331,7 +283,7 @@
 - name: hfls
   units: W m-2
   raw_variables: [LHFLX]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: up
@@ -339,7 +291,7 @@
 - name: hfss
   units: W m-2
   raw_variables: [SHFLX]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: up
@@ -347,15 +299,7 @@
 - name: hur
   units: "%"
   raw_variables: [RELHUM]
-  table: CMIP6_Amon.json
-  unit_conversion: null
-  formula: null
-  positive: null
-  levels: { name: plev19, units: Pa, e3sm_axis_name: plev }
-- name: hus
-  units: "1"
-  raw_variables: [Q]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -363,7 +307,7 @@
 - name: huss
   units: "1"
   raw_variables: [QREFHT]
-  table: CMIP6_Amon.json
+  table: [CMIP6_Amon.json, MIP_APmon.json]
   unit_conversion: null
   formula: null
   positive: null
@@ -371,7 +315,7 @@
 - name: huss
   units: "1"
   raw_variables: [QREFHT]
-  table: CMIP6_day.json
+  table: [CMIP6_day.json, MIP_APday.json]
   unit_conversion: null
   formula: null
   positive: null
@@ -379,17 +323,17 @@
 - name: lai
   units: "1"
   raw_variables: [LAISHA, LAISUN]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: null
   formula: LAISHA + LAISUN
   positive: null
   levels: null
 - name: mmrbc
   units: kg kg-1
-  raw_variables: [bc_a1, bc_a3, bc_a4, bc_c1, bc_c3, bc_c4]
+  raw_variables: [bc_a1, bc_a4, bc_c1, bc_c4]
   table: CMIP6_AERmon.json
   unit_conversion: null
-  formula: bc_a1+bc_a3+bc_a4+bc_c1+bc_c3+bc_c4
+  formula: bc_a1+bc_a4+bc_c1+bc_c4
   positive: null
   levels:
     {
@@ -403,119 +347,7 @@
   raw_variables: [Mass_bc]
   table: CMIP6_AERmon.json
   unit_conversion: null
-  formula: Mass_bc
-  positive: null
-  levels:
-    {
-      name: standard_hybrid_sigma,
-      units: "1",
-      e3sm_axis_name: lev,
-      e3sm_axis_bnds: ilev,
-    }
-- name: mmrdust
-  units: kg kg-1
-  raw_variables: [Mass_dst]
-  table: CMIP6_AERmon.json
-  unit_conversion: null
-  formula: Mass_dst
-  positive: null
-  levels:
-    {
-      name: standard_hybrid_sigma,
-      units: "1",
-      e3sm_axis_name: lev,
-      e3sm_axis_bnds: ilev,
-    }
-- name: mmrdust
-  units: kg kg-1
-  raw_variables: [dst_a1, dst_c1, dst_a3, dst_c3]
-  table: CMIP6_AERmon.json
-  unit_conversion: null
-  formula: dst_a1+dst_c1+dst_a3+dst_c3
-  positive: null
-  levels:
-    {
-      name: standard_hybrid_sigma,
-      units: "1",
-      e3sm_axis_name: lev,
-      e3sm_axis_bnds: ilev,
-    }
-- name: mmroa
-  units: kg kg-1
-  raw_variables: [Mass_pom, Mass_soa]
-  table: CMIP6_AERmon.json
-  unit_conversion: null
-  formula: Mass_pom + Mass_soa
-  positive: null
-  levels:
-    {
-      name: standard_hybrid_sigma,
-      units: "1",
-      e3sm_axis_name: lev,
-      e3sm_axis_bnds: ilev,
-    }
-- name: mmroa
-  units: kg kg-1
-  raw_variables: [pom_a1, pom_c1, pom_a3, pom_c3, pom_a4, pom_c4, soa_a1, soa_c1, soa_a2, soa_c2, soa_a3, soa_c3]
-  table: CMIP6_AERmon.json
-  unit_conversion: null
-  formula: pom_a1+pom_c1+pom_a3+pom_c3+pom_a4+pom_c4+soa_a1+soa_c1+soa_a2+soa_c2+soa_a3+soa_c3
-  positive: null
-  levels:
-    {
-      name: standard_hybrid_sigma,
-      units: "1",
-      e3sm_axis_name: lev,
-      e3sm_axis_bnds: ilev,
-    }
-- name: mmrsoa
-  units: kg kg-1
-  raw_variables: [Mass_soa]
-  table: CMIP6_AERmon.json
-  unit_conversion: null
-  formula: Mass_soa
-  positive: null
-  levels:
-    {
-      name: standard_hybrid_sigma,
-      units: "1",
-      e3sm_axis_name: lev,
-      e3sm_axis_bnds: ilev,
-    }
-- name: mmrsoa
-  units: kg kg-1
-  raw_variables: [soa_a1, soa_c1, soa_a2, soa_c2, soa_a3, soa_c3]
-  table: CMIP6_AERmon.json
-  unit_conversion: null
-  formula: soa_a1+soa_c1+soa_a2+soa_c2+soa_a3+soa_c3
-  positive: null
-  levels:
-    {
-      name: standard_hybrid_sigma,
-      units: "1",
-      e3sm_axis_name: lev,
-      e3sm_axis_bnds: ilev,
-    }
-- name: mmrss
-  units: kg kg-1
-  raw_variables: [Mass_ncl]
-  table: CMIP6_AERmon.json
-  unit_conversion: null
-  formula: Mass_ncl
-  positive: null
-  levels:
-    {
-      name: standard_hybrid_sigma,
-      units: "1",
-      e3sm_axis_name: lev,
-      e3sm_axis_bnds: ilev,
-    }
-- name: mmrss
-  units: kg kg-1
-  raw_variables: [ncl_a1, ncl_c1, ncl_a2, ncl_c2, ncl_a3, ncl_c3]
-  table: CMIP6_AERmon.json
-  unit_conversion: null
-  formula: ncl_a1+ncl_c1+ncl_a2+ncl_c2+ncl_a3+ncl_c3
+  formula: bc_a1+bc_a4+bc_c1+bc_c4
   positive: null
   levels:
     {
@@ -529,21 +361,7 @@
   raw_variables: [Mass_so4]
   table: CMIP6_AERmon.json
   unit_conversion: null
-  formula: Mass_so4 * 96.0636 / 115.10734
-  positive: null
-  levels:
-    {
-      name: standard_hybrid_sigma,
-      units: "1",
-      e3sm_axis_name: lev,
-      e3sm_axis_bnds: ilev,
-    }
-- name: mmrso4
-  units: kg kg-1
-  raw_variables: [so4_a1, so4_c1, so4_a2, so4_c2, so4_a3, so4_c3, so4_a5, so4_c5]
-  table: CMIP6_AERmon.json
-  unit_conversion: null
-  formula: (so4_a1+so4_c1+so4_a2+so4_c2+so4_a3+so4_c3+so4_a5+so4_c5) * 96.0636 / 115.10734
+  formula: so4_a1+so4_c1+so4_a2+so4_c2+so4_a3+so4_c3
   positive: null
   levels:
     {
@@ -557,7 +375,7 @@
   raw_variables: [so4_a1, so4_c1, so4_a2, so4_c2, so4_a3, so4_c3]
   table: CMIP6_AERmon.json
   unit_conversion: null
-  formula: (so4_a1+so4_c1+so4_a2+so4_c2+so4_a3+so4_c3)* 96.0636 / 115.10734
+  formula: so4_a1+so4_c1+so4_a2+so4_c2+so4_a3+so4_c3
   positive: null
   levels:
     {
@@ -569,7 +387,7 @@
 - name: mrfso
   units: kg m-2
   raw_variables: [SOILICE]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: null
   formula: verticalSum(SOILICE, capped_at=5000)
   positive: null
@@ -577,7 +395,7 @@
 - name: mrro
   units: kg m-2 s-1
   raw_variables: [QRUNOFF]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -585,7 +403,7 @@
 - name: mrros
   units: kg m-2 s-1
   raw_variables: [QOVER]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -593,7 +411,7 @@
 - name: mrso
   units: kg m-2
   raw_variables: [SOILICE, SOILLIQ]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: null
   formula: verticalSum(SOILICE + SOILLIQ, capped_at=5000)
   positive: null
@@ -601,7 +419,7 @@
 - name: mrsos
   units: kg m-2
   raw_variables: [SOILWATER_10CM]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -609,7 +427,7 @@
 - name: nbp
   units: kg m-2 s-1
   raw_variables: [NBP]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: g-to-kg
   formula: null
   positive: down
@@ -671,7 +489,7 @@
 - name: pr
   units: kg m-2 s-1
   raw_variables: [PRECT]
-  table: CMIP6_day.json
+  table: [CMIP6_day.json, MIP_APday.json]
   unit_conversion: null
   formula: PRECT * 1000.0
   positive: null
@@ -679,7 +497,7 @@
 - name: pr
   units: kg m-2 s-1
   raw_variables: [PRECC, PRECL]
-  table: CMIP6_Amon.json
+  table: [CMIP6_Amon.json, MIP_APmon.json]
   unit_conversion: null
   formula: (PRECC + PRECL) * 1000.0
   positive: null
@@ -687,7 +505,7 @@
 - name: prc
   units: kg m-2 s-1
   raw_variables: [PRECC]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: m/s-to-kg/ms
   formula: null
   positive: null
@@ -695,7 +513,7 @@
 - name: prsn
   units: kg m-2 s-1
   raw_variables: [PRECSC, PRECSL]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: (PRECSC + PRECSL) * 1000.0
   positive: null
@@ -703,7 +521,7 @@
 - name: prveg
   units: kg m-2 s-1
   raw_variables: [QINTR]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -711,7 +529,7 @@
 - name: prw
   units: kg m-2
   raw_variables: [TMQ]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -719,7 +537,7 @@
 - name: ps
   units: Pa
   raw_variables: [PS]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -727,7 +545,7 @@
 - name: psl
   units: Pa
   raw_variables: [PSL]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -735,7 +553,7 @@
 - name: ra
   units: kg m-2 s-1
   raw_variables: [AR]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: g-to-kg
   formula: null
   positive: up
@@ -743,7 +561,7 @@
 - name: rh
   units: kg m-2 s-1
   raw_variables: [HR]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: g-to-kg
   formula: null
   positive: up
@@ -751,7 +569,7 @@
 - name: rlds
   units: W m-2
   raw_variables: [FLDS]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: down
@@ -759,7 +577,7 @@
 - name: rldscs
   units: W m-2
   raw_variables: [FLDS, FLNS, FLNSC]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: FLDS + FLNS - FLNSC
   positive: down
@@ -767,7 +585,7 @@
 - name: rlus
   units: W m-2
   raw_variables: [FLDS, FLNS]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: FLDS + FLNS
   positive: up
@@ -775,7 +593,7 @@
 - name: rlut
   units: W m-2
   raw_variables: [FLUT]
-  table: CMIP6_day.json
+  table: MIP_APday.json
   unit_conversion: null
   formula: FSNTOA - FSNT + FLNT
   positive: up
@@ -783,7 +601,7 @@
 - name: rlut
   units: W m-2
   raw_variables: [FSNTOA, FSNT, FLNT]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: FSNTOA - FSNT + FLNT
   positive: up
@@ -791,7 +609,7 @@
 - name: rlutcs
   units: W m-2
   raw_variables: [FLUTC]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: up
@@ -799,7 +617,7 @@
 - name: rsds
   units: W m-2
   raw_variables: [FSDS]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: down
@@ -807,7 +625,7 @@
 - name: rsdscs
   units: W m-2
   raw_variables: [FSDSC]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: down
@@ -815,7 +633,7 @@
 - name: rsdt
   units: W m-2
   raw_variables: [SOLIN]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: down
@@ -823,7 +641,7 @@
 - name: rsus
   units: W m-2
   raw_variables: [FSNS, FSDS]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: FSDS - FSNS
   positive: up
@@ -831,7 +649,7 @@
 - name: rsuscs
   units: W m-2
   raw_variables: [FSDSC, FSNSC]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: FSDSC - FSNSC
   positive: up
@@ -839,7 +657,7 @@
 - name: rsut
   units: W m-2
   raw_variables: [SOLIN, FSNTOA]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: SOLIN - FSNTOA
   positive: up
@@ -847,7 +665,7 @@
 - name: rsut
   units: W m-2
   raw_variables: [FSUTOA]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: up
@@ -855,7 +673,7 @@
 - name: rsutcs
   units: W m-2
   raw_variables: [SOLIN, FSNTOAC]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: SOLIN - FSNTOAC
   positive: up
@@ -863,7 +681,7 @@
 - name: rsutcs
   units: W m-2
   raw_variables: [FSUTOAC]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: up
@@ -871,7 +689,7 @@
 - name: rtmt
   units: W m-2
   raw_variables: [FSNT, FLNT]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: FSNT - FLNT
   positive: down
@@ -879,7 +697,7 @@
 - name: sfcWind
   units: m s-1
   raw_variables: [U10]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -909,7 +727,7 @@
 - name: ta
   units: K
   raw_variables: [T]
-  table: CMIP6_Amon.json
+  table: [MIP_APmon.json]
   unit_conversion: null
   formula: null
   positive: null
@@ -917,7 +735,7 @@
 - name: tas
   units: K
   raw_variables: [TREFHT]
-  table: CMIP6_Amon.json
+  table: [CMIP6_Amon.json, MIP_APmon.json]
   unit_conversion: null
   formula: null
   positive: null
@@ -925,7 +743,7 @@
 - name: tas
   units: K
   raw_variables: [TREFHT]
-  table: CMIP6_day.json
+  table: [CMIP6_day.json, MIP_APday.json]
   unit_conversion: null
   formula: null
   positive: null
@@ -933,7 +751,7 @@
 - name: tasmax
   units: K
   raw_variables: [TREFHTMX]
-  table: CMIP6_day.json
+  table: MIP_APday.json
   unit_conversion: null
   formula: null
   positive: null
@@ -941,7 +759,7 @@
 - name: tasmax
   units: K
   raw_variables: [TREFMXAV]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -949,7 +767,7 @@
 - name: tasmin
   units: K
   raw_variables: [TREFHTMN]
-  table: CMIP6_day.json
+  table: MIP_APday.json
   unit_conversion: null
   formula: null
   positive: null
@@ -957,7 +775,7 @@
 - name: tasmin
   units: K
   raw_variables: [TREFMNAV]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -965,7 +783,7 @@
 - name: tauu
   units: Pa
   raw_variables: [TAUX]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: "-1"
   formula: null
   positive: down
@@ -973,7 +791,7 @@
 - name: tauv
   units: Pa
   raw_variables: [TAUY]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: "-1"
   formula: null
   positive: down
@@ -981,7 +799,7 @@
 - name: tran
   units: kg m-2 s-1
   raw_variables: [QVEGT, QSOIL]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: null
   formula: QSOIL + QVEGT
   positive: up
@@ -989,7 +807,7 @@
 - name: ts
   units: K
   raw_variables: [TS]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -997,7 +815,7 @@
 - name: tsl
   units: K
   raw_variables: [TSOI]
-  table: CMIP6_Lmon.json
+  table: MIP_LPmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -1011,7 +829,7 @@
 - name: ua
   units: m s-1
   raw_variables: [U]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -1019,7 +837,7 @@
 - name: va
   units: m s-1
   raw_variables: [V]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -1027,7 +845,7 @@
 - name: wap
   units: Pa s-1
   raw_variables: [OMEGA]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null
@@ -1035,7 +853,7 @@
 - name: zg
   units: m
   raw_variables: [Z3]
-  table: CMIP6_Amon.json
+  table: MIP_APmon.json
   unit_conversion: null
   formula: null
   positive: null

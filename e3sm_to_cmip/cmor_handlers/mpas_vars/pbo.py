@@ -14,13 +14,13 @@ RAW_VARIABLES = ["MPASO", "MPASO_namelist", "MPAS_mesh", "MPAS_map", "PSL"]
 # output variable name
 VAR_NAME = "pbo"
 VAR_UNITS = "Pa"
-TABLE = "CMIP6_Omon.json"
+TABLE = ["CMIP6_Omon.json", "MIP_OPmon.json"]
 
 
 logger = _setup_child_logger(__name__)
 
 
-def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
+def handle(infiles, tables, user_input_path, cmor_log_dir, mip_era, **kwargs):
     """
     Transform MPASO timeMonthly_avg_pressureAdjustedSSH, timeMonthly_avg_ssh,
     timeMonthly_avg_density, timeMonthly_avg_layerThickness, and EAM PSL into
@@ -102,6 +102,7 @@ def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
         table_name=TABLE,
         user_input_path=user_input_path,
         cmor_log_dir=cmor_log_dir,
+        mip_era=mip_era,
     )
 
     # create axes
