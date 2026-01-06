@@ -2,11 +2,10 @@
 name: e3sm_to_cmip_dev
 channels:
   - conda-forge
-  - defaults
 dependencies:
   # Base - required for building the repository as an Anaconda package
   # ====================
-  - python >=3.11,<3.14
+  - python >=3.11
   - setuptools
   - cmor >=3.7.0
   - dask
@@ -16,7 +15,7 @@ dependencies:
   - pyyaml
   - tqdm
   - xarray >=2024.03.0
-  - xcdat >=0.8.0
+  - xcdat >=0.11.1,<1.0.0
   # Testing
   # ==================
   - pytest
@@ -29,8 +28,8 @@ dependencies:
   # ==================
   # NOTE: If versions are updated, also update 'rev' in `.pre-commit.config.yaml`
   - pre-commit=4.2.0
-  - ruff=0.11.10
-  - mypy=1.15.0
+  - ruff=0.14.10
+  - mypy=1.19.1
   - types-pytz
   - types-PyYAML
   - types-tqdm

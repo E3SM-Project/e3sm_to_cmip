@@ -802,13 +802,13 @@ def _compute_moc_time_series(
             ).sum(dim="nCells")
             mocSlices.append(mocTop)
 
-        moc = xarray.concat(mocSlices, dim="lat")  # type: ignore
-        moc = moc.transpose("Time", "nVertLevelsP1", "lat")  # type: ignore
+        moc = xarray.concat(mocSlices, dim="lat")  # type: ignore[arg-type]
+        moc = moc.transpose("Time", "nVertLevelsP1", "lat")
         # average to bin and level centers
         moc = 0.25 * (
             moc[:, 0:-1, 0:-1] + moc[:, 0:-1, 1:] + moc[:, 1:, 0:-1] + moc[:, 1:, 1:]
         )
-        moc = moc.rename({"nVertLevelsP1": "depth"})  # type: ignore
+        moc = moc.rename({"nVertLevelsP1": "depth"})
         binCounts = xarray.DataArray(binCounts, dims=("lat"))  # type: ignore
         moc = moc.where(binCounts > 0)  # type: ignore
 
@@ -816,8 +816,8 @@ def _compute_moc_time_series(
 
         mocs[regionName] = moc
 
-    mocs = xarray.concat(mocs.values(), dim="basin")  # type: ignore
-    mocs = mocs.transpose("Time", "basin", "depth", "lat")  # type: ignore
+    mocs = xarray.concat(mocs.values(), dim="basin")
+    mocs = mocs.transpose("Time", "basin", "depth", "lat")
 
     regionNames = xarray.DataArray(regionNames, dims=("basin",))  # type: ignore
 
