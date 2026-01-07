@@ -14,13 +14,13 @@ RAW_VARIABLES = ["MPAS_mesh", "MPAS_map"]
 # output variable name
 VAR_NAME = "areacello"
 VAR_UNITS = "m2"
-TABLE = "CMIP6_Ofx.json"
+TABLE =["CMIP6_Ofx.json", "MIP_OPfx.json"]
 
 
 logger = _setup_child_logger(__name__)
 
 
-def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
+def handle(infiles, tables, user_input_path, cmor_log_dir, mip_era, **kwargs):
     """
     Transform MPASO cellArea into CMIP.areacello
     Parameters
@@ -75,6 +75,7 @@ def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
         table_name=TABLE,
         user_input_path=user_input_path,
         cmor_log_dir=cmor_log_dir,
+        mip_era=mip_era,
     )
 
     # create axes

@@ -15,13 +15,13 @@ RAW_VARIABLES = ["MPASO", "MPAS_mesh", "MPAS_map"]
 # output variable name
 VAR_NAME = "volcello"
 VAR_UNITS = "m3"
-TABLE = "CMIP6_Omon.json"
+TABLE = ["CMIP6_Omon.json", "MIP_OPmonLev.json"]
 
 
 logger = _setup_child_logger(__name__)
 
 
-def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
+def handle(infiles, tables, user_input_path, cmor_log_dir, mip_era, **kwargs):
     """
     Transform MPASO timeMonthly_avg_layerThickness into CMIP.thkcello
 
@@ -99,6 +99,7 @@ def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
         table_name=TABLE,
         user_input_path=user_input_path,
         cmor_log_dir=cmor_log_dir,
+        mip_era=mip_era,
     )
 
     # create axes

@@ -9,7 +9,6 @@ import sys
 
 from e3sm_to_cmip.argparser import parse_args
 
-
 def main(args: list[str] | None = None):
     parsed_args = parse_args(args)
 
