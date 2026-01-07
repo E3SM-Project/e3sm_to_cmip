@@ -384,7 +384,7 @@
   formula: LAISHA + LAISUN
   positive: null
   levels: null
-name: mmrbc
+- name: mmrbc
   units: kg kg-1
   raw_variables: [bc_a1, bc_a3, bc_a4, bc_c1, bc_c3, bc_c4]
   table: [CMIP6_AERmon.json, MIP_AEmonLev.json]
