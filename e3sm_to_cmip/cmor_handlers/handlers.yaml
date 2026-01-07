@@ -565,6 +565,7 @@
       units: "1",
       e3sm_axis_name: lev,
       e3sm_axis_bnds: ilev,
+    } 
 - name: mrfso
   units: kg m-2
   raw_variables: [SOILICE]
@@ -585,6 +586,7 @@
   units: kg m-2 s-1
   raw_variables: [QOVER]
   table: [CMIP6_Lmon.json, MIP_LPmon.json] 
+  unit_conversion: null
   formula: null
   positive: null
   levels: null
