@@ -32,7 +32,7 @@ RADIUS = 6.37122e6
 
 
 def load_all_handlers(
-    realm: Realm | MPASRealm, cmip_vars: list[str]
+        realm: Realm | MPASRealm, cmip_vars: list[str], mip_era: str,
 ) -> list[dict[str, Any]]:
     """Loads variable handlers based on a list of variable names.
 
@@ -45,7 +45,8 @@ def load_all_handlers(
         The realm.
     cmip_vars : list[str]
         The list of CMIP6 variables to CMORize.
-
+    mip_era : str
+        CMIP era (cmip6 or cmip6plus)
     Returns
     -------
     list[dict[str, Any]]:
@@ -70,7 +71,15 @@ def load_all_handlers(
                 missing_handlers.append(var)
                 continue
 
-            handlers = handlers + var_handler
+            for var_handlers in var_handler:
+                if isinstance(var_handlers["table"], list):
+                    if mip_era == "cmip6" and len(var_handlers["table"]) > 1:
+                        var_handlers["table"] = str(var_handlers["table"][0])
+
+                    elif mip_era == "cmip6plus" and len(var_handlers["table"]) > 1:
+                        var_handlers["table"] = str(var_handlers["table"][1])
+            
+        handlers = handlers + var_handler
 
         if len(missing_handlers) > 0:
             logger.warning(
@@ -79,12 +88,13 @@ def load_all_handlers(
                 f"variables in `{HANDLER_DEFINITIONS_PATH}`."
             )
     else:
-        handlers = _get_mpas_handlers(cmip_vars)
+        handlers = _get_mpas_handlers(cmip_vars, mip_era)
 
+       
     return handlers
 
 
-def _get_mpas_handlers(cmip_vars: list[str]):
+def _get_mpas_handlers(cmip_vars: list[str], mip_era: str):
     """Get MPAS variable handlers using the list of CMIP variables.
 
     All current MPAS variable handlers are defined as modules and there is only
@@ -111,7 +121,13 @@ def _get_mpas_handlers(cmip_vars: list[str]):
         if var_handler is None:
             missing_handlers.append(var)
             continue
+        for var_handlers in var_handler:
+            if type(var_handlers["table"]) is list:
+                if mip_era == "cmip6" and len(var_handlers["table"]) > 1:
+                    var_handlers["table"] = str(var_handlers["table"][0])
 
+                elif mip_era == "cmip6plus" and len(var_handlers["table"]) > 1:
+                    var_handlers["table"] = str(var_handlers["table"][1])
         derived_handlers.append(var_handler[0])
 
     if len(missing_handlers) > 0:
@@ -130,6 +146,7 @@ def derive_handlers(
     e3sm_vars: list[str],
     freq: Frequency,
     realm: Realm | MPASRealm,
+    mip_era: str,
 ) -> list[dict[str, Any]]:
     """Derives the appropriate handler for each CMIP variable.
 
@@ -159,6 +176,8 @@ def derive_handlers(
         variable handler.
     realm : str
         The realm.
+    mip_era : str
+        The CMIP era (cmip6 or cmip6plus).
 
     Returns
     -------
@@ -192,6 +211,18 @@ def derive_handlers(
         if var_handlers is None:
             missing_handlers.append(var)
             continue
+
+        for var_handler in var_handlers:
+            if type(var_handler["table"]) is list:
+                if mip_era == "cmip6" and len(var_handler["table"]) > 1:
+                    var_handler["table"]= str(var_handler["table"][0])
+                    
+                elif mip_era == "cmip6plus" and len(var_handler["table"]) > 1:
+                    var_handler["table"] = str(var_handler["table"][1])
+                # If more than one handler table corresponding to different mip_era is
+                # defined for a variable, the coresponding handler table for the mip_era is selected. 
+                # Handler table is assumed to be list type and cmip6 is first item and cmip6plus
+                # else if only one mip era table is defined for a variable nothing is done
 
         derived_handler = _derive_handler(
             var_handlers, freq, realm, cmip_tables_path, e3sm_vars

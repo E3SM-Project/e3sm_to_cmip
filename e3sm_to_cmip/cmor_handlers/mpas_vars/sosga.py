@@ -14,13 +14,13 @@ RAW_VARIABLES = ["MPASO", "MPAS_mesh"]
 # output variable name
 VAR_NAME = "sosga"
 VAR_UNITS = "0.001"
-TABLE = "CMIP6_Omon.json"
+TABLE = ["CMIP6_Omon.json", "MIP_OPmon.json"]
 
 
 logger = _setup_child_logger(__name__)
 
 
-def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
+def handle(infiles, tables, user_input_path, cmor_log_dir, mip_era, **kwargs):
     """
     Transform MPASO timeMonthly_avg_activeTracers_salinity into CMIP.sosga
 
@@ -76,6 +76,7 @@ def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
         table_name=TABLE,
         user_input_path=user_input_path,
         cmor_log_dir=cmor_log_dir,
+        mip_era=mip_era,
     )
 
     # create axes

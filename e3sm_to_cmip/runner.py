@@ -77,6 +77,7 @@ class CLIArguments:
     var_list: list[str]
     realm: Realm | MPASRealm
     freq: Frequency
+    mip_era: str
 
     # Path references.
     input_path: str | None
@@ -124,6 +125,7 @@ class E3SMtoCMIP:
         self.var_list: list[str] = self._get_var_list(parsed_args.var_list)
         self.realm: Realm | MPASRealm = parsed_args.realm
         self.freq: Frequency = parsed_args.freq
+        self.mip_era: str | None = parsed_args.mip_era
 
         # ======================================================================
         # Paths references.
@@ -175,6 +177,7 @@ class E3SMtoCMIP:
             "Temp Path for Processing MPAS Files": self.temp_path,
             "Frequency": self.freq,
             "Realm": self.realm,
+            "MIP Era": self.mip_era
         }
 
         for key, value in config_details.items():
@@ -252,7 +255,7 @@ class E3SMtoCMIP:
 
     def _get_handlers(self):
         if self.info_mode:
-            handlers = load_all_handlers(self.realm, self.var_list)
+            handlers = load_all_handlers(self.realm, self.var_list, self.mip_era)
         elif not self.info_mode and self.input_path is not None:
             e3sm_vars = self._get_e3sm_vars(self.input_path)
             logger.debug(f"Input dataset variables: {e3sm_vars}")
@@ -264,6 +267,7 @@ class E3SMtoCMIP:
                     e3sm_vars=e3sm_vars,
                     freq=self.freq,
                     realm=self.realm,
+                    mip_era=self.mip_era
                 )
 
                 cmip_to_e3sm_vars = {
@@ -277,7 +281,7 @@ class E3SMtoCMIP:
                     logger.info(f"    * '{k}' -> {v}")
 
             elif self.realm in MPAS_REALMS:
-                handlers = _get_mpas_handlers(self.var_list)
+                handlers = _get_mpas_handlers(self.var_list, self.mip_era)
 
             if len(handlers) == 0:
                 logger.error(
@@ -660,6 +664,7 @@ class E3SMtoCMIP:
                             self.tables_path,
                             self.new_metadata_path,
                             self.cmor_log_dir,
+                            self.mip_era,
                         )
                     else:
                         is_cmor_successful = handler_method(
@@ -732,7 +737,7 @@ class E3SMtoCMIP:
             handler_variables = handler["raw_variables"]
             handler_table = handler["table"]
             vars_to_filepaths = self._get_handler_input_files(handler_variables)
-
+            print(self.tables_path, self.new_metadata_path)
             try:
                 if self.realm in MPAS_REALMS:
                     future = pool.submit(
@@ -741,6 +746,7 @@ class E3SMtoCMIP:
                         self.tables_path,
                         self.new_metadata_path,
                         self.cmor_log_dir,
+                        self.mip_era,
                     )
                 else:
                     future = pool.submit(

@@ -14,13 +14,13 @@ RAW_VARIABLES = ["MPASSI", "MPAS_mesh", "MPAS_map"]
 # output variable name
 VAR_NAME = "siconc"
 VAR_UNITS = "%"
-TABLE = "CMIP6_SImon.json"
+TABLE = ["CMIP6_SImon.json", "MIP_SImon.json"]
 
 
 logger = _setup_child_logger(__name__)
 
 
-def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
+def handle(infiles, tables, user_input_path, cmor_log_dir, mip_era, **kwargs):
     """
     Transform MPASSI timeMonthly_avg_iceAreaCell into CMIP.siconc
 
@@ -72,6 +72,7 @@ def handle(infiles, tables, user_input_path, cmor_log_dir, **kwargs):
         table_name=TABLE,
         user_input_path=user_input_path,
         cmor_log_dir=cmor_log_dir,
+        mip_era=mip_era,
     )
 
     # create axes
