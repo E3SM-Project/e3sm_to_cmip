@@ -343,7 +343,6 @@ class VarHandler(BaseVarHandler):
 
         try:
             axis_info = table_info["variable_entry"][self.name]["dimensions"].split(" ")
-        
         except AttributeError:
             axis_info = table_info["variable_entry"][self.name]["dimensions"][:]
 
