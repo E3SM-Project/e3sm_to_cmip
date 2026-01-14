@@ -72,7 +72,7 @@ def load_all_handlers(
                 continue
 
             for var_handlers in var_handler:
-                if type(var_handlers["table"]) is list: 
+                if isinstance(var_handlers["table"], list):
                     if mip_era == "cmip6" and len(var_handlers["table"]) > 1:
                         var_handlers["table"] = str(var_handlers["table"][0])
 
