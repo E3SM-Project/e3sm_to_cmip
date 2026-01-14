@@ -177,7 +177,7 @@ def derive_handlers(
     realm : str
         The realm.
     mip_era : str
-        CMIP era 
+        The CMIP era (cmip6 or cmip6plus).
 
     Returns
     -------
