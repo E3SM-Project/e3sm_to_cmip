@@ -8,7 +8,7 @@ dependencies:
   # ====================
   - python >=3.11,<3.14
   - setuptools
-  - cmor =3.9.0
+  - cmor >=3.9.0
   - dask
   - nco >=5.1.4
   - netcdf4
