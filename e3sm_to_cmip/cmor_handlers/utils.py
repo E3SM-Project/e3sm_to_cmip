@@ -258,6 +258,13 @@ def _get_handlers_from_yaml() -> dict[str, list[dict[str, Any]]]:
 
     df_in = pd.DataFrame.from_dict(handlers_file)
 
+    def _nan_to_none(val: Any) -> Any:
+        """Convert NaN (from pandas null) to None."""
+        try:
+            return None if pd.isna(val) else val
+        except (TypeError, ValueError):
+            return val
+
     handlers = defaultdict(list)
     for row in df_in.itertuples():
         var_handler = VarHandler(
@@ -265,10 +272,10 @@ def _get_handlers_from_yaml() -> dict[str, list[dict[str, Any]]]:
             units=row.units,  # type: ignore
             raw_variables=row.raw_variables,  # type: ignore
             table=row.table,  # type: ignore
-            formula=row.formula,  # type: ignore
-            unit_conversion=row.unit_conversion,  # type: ignore
-            positive=row.positive,  # type: ignore
-            levels=row.levels,  # type: ignore
+            formula=_nan_to_none(row.formula),  # type: ignore
+            unit_conversion=_nan_to_none(row.unit_conversion),  # type: ignore
+            positive=_nan_to_none(row.positive),  # type: ignore
+            levels=_nan_to_none(row.levels),  # type: ignore
         ).to_dict()
         handlers[row.name].append(var_handler)
 
