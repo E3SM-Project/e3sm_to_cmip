@@ -1040,3 +1040,280 @@
   formula: null
   positive: null
   levels: { name: plev19, units: Pa, e3sm_axis_name: plev }
+# ============================================================
+# EAMxx variable handlers (issue #339)
+# Maps EAMxx output variable names to CMIP6 variables.
+# These entries coexist with EAM entries above; the handler
+# system selects whichever raw_variables are present in input.
+# ============================================================
+# --- Precipitation and column water ---
+- name: pr
+  units: kg m-2 s-1
+  raw_variables: [precip_liq_surf_mass_flux, precip_ice_surf_mass_flux]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: precip_liq_surf_mass_flux + precip_ice_surf_mass_flux
+  positive: null
+  levels: null
+- name: prw
+  units: kg m-2
+  raw_variables: [VapWaterPath]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+# --- Surface temperature and humidity ---
+- name: ts
+  units: K
+  raw_variables: [surf_radiative_T]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+- name: tas
+  units: K
+  raw_variables: [T_2m]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+- name: huss
+  units: "1"
+  raw_variables: [qv_2m]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+# --- Surface energy and momentum fluxes ---
+- name: hfls
+  units: W m-2
+  raw_variables: [surface_upward_latent_heat_flux]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: up
+  levels: null
+- name: hfss
+  units: W m-2
+  raw_variables: [surf_sens_flux]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: up
+  levels: null
+- name: evspsbl
+  units: kg m-2 s-1
+  raw_variables: [surf_evap]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+- name: tauu
+  units: Pa
+  raw_variables: [surf_mom_flux_U]
+  table: CMIP6_Amon.json
+  unit_conversion: "-1"
+  formula: null
+  positive: down
+  levels: null
+- name: tauv
+  units: Pa
+  raw_variables: [surf_mom_flux_V]
+  table: CMIP6_Amon.json
+  unit_conversion: "-1"
+  formula: null
+  positive: down
+  levels: null
+# --- 10m wind speed ---
+- name: sfcWind
+  units: m s-1
+  raw_variables: [wind_speed_10m]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+# --- Sea-level pressure ---
+- name: psl
+  units: Pa
+  raw_variables: [SeaLevelPressure]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+# --- TOA radiation ---
+- name: rsdt
+  units: W m-2
+  raw_variables: [SW_flux_dn_at_model_top]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: down
+  levels: null
+- name: rsut
+  units: W m-2
+  raw_variables: [SW_flux_up_at_model_top]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: up
+  levels: null
+- name: rsutcs
+  units: W m-2
+  raw_variables: [SW_clrsky_flux_up_at_model_top]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: up
+  levels: null
+- name: rlut
+  units: W m-2
+  raw_variables: [LW_flux_up_at_model_top]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: up
+  levels: null
+- name: rlutcs
+  units: W m-2
+  raw_variables: [LW_clrsky_flux_up_at_model_top]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: up
+  levels: null
+# --- Surface radiation ---
+- name: rsds
+  units: W m-2
+  raw_variables: [SW_flux_dn_at_model_bot]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: down
+  levels: null
+- name: rsus
+  units: W m-2
+  raw_variables: [SW_flux_up_at_model_bot]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: up
+  levels: null
+- name: rsdscs
+  units: W m-2
+  raw_variables: [SW_clrsky_flux_dn_at_model_bot]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: down
+  levels: null
+- name: rsuscs
+  units: W m-2
+  raw_variables: [SW_clrsky_flux_up_at_model_bot]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: up
+  levels: null
+- name: rlds
+  units: W m-2
+  raw_variables: [LW_flux_dn_at_model_bot]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: down
+  levels: null
+- name: rlus
+  units: W m-2
+  raw_variables: [LW_flux_up_at_model_bot]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: up
+  levels: null
+- name: rldscs
+  units: W m-2
+  raw_variables: [LW_clrsky_flux_dn_at_model_bot]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: down
+  levels: null
+# --- Cloud water paths ---
+# CMIP6 clwvi = "condensed water path" = liquid + ice (per CMIP6_Amon.json comment).
+# In EAMxx, LiqWaterPath is liquid-only (equiv. EAM TGCLDLWP), and
+# IceWaterPath is ice-only (equiv. EAM TGCLDIWP). Their sum gives the
+# total condensed water path required by CMIP6 clwvi.
+# By contrast, EAM uses TGCLDCWP (total = liquid + ice) directly for clwvi.
+- name: clwvi
+  units: kg m-2
+  raw_variables: [LiqWaterPath, IceWaterPath]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: LiqWaterPath + IceWaterPath
+  positive: null
+  levels: null
+- name: clivi
+  units: kg m-2
+  raw_variables: [IceWaterPath]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+# --- Aerosol optical depth ---
+- name: od550aer
+  units: "1"
+  raw_variables: [AerosolOpticalDepth550nm]
+  table: CMIP6_AERmon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+# --- 3D pressure-level variables (requires data interpolated to plev) ---
+- name: ta
+  units: K
+  raw_variables: [T_mid]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: { name: plev19, units: Pa, e3sm_axis_name: plev }
+- name: hus
+  units: "1"
+  raw_variables: [qv]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: { name: plev19, units: Pa, e3sm_axis_name: plev }
+- name: hur
+  units: "%"
+  raw_variables: [RelativeHumidity]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: { name: plev19, units: Pa, e3sm_axis_name: plev }
+- name: wap
+  units: Pa s-1
+  raw_variables: [omega]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: { name: plev19, units: Pa, e3sm_axis_name: plev }
+- name: zg
+  units: m
+  raw_variables: [z_mid]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: { name: plev19, units: Pa, e3sm_axis_name: plev }

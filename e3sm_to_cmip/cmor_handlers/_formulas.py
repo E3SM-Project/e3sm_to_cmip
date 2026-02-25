@@ -466,18 +466,47 @@ def pr(ds: xr.Dataset) -> xr.DataArray:
 
     High frequency version:
     pr = PRECT * 1000.0
+
+    EAMxx version:
+    pr = precip_liq_surf_mass_flux + precip_ice_surf_mass_flux
+    or:
+    pr = precip_total_surf_mass_flux
     """
     if all(key in ds.data_vars for key in ["PRECC", "PRECL"]):
         result = (ds["PRECC"] + ds["PRECL"]) * 1000.0
     elif "PRECT" in ds:
         result = ds["PRECT"] * 1000.0
+    elif all(
+        key in ds.data_vars
+        for key in ["precip_liq_surf_mass_flux", "precip_ice_surf_mass_flux"]
+    ):
+        result = ds["precip_liq_surf_mass_flux"] + ds["precip_ice_surf_mass_flux"]
+    elif "precip_total_surf_mass_flux" in ds:
+        result = ds["precip_total_surf_mass_flux"]
     else:
         raise KeyError(
             "No formula could be applied for 'pr'. Check the handler entry for 'pr' "
-            "and input file(s) contain either 'PRECC' and 'PRECL', or 'PRECT."
+            "and input file(s) contain either 'PRECC' and 'PRECL', 'PRECT', "
+            "'precip_liq_surf_mass_flux' and 'precip_ice_surf_mass_flux', "
+            "or 'precip_total_surf_mass_flux'."
         )
 
     return result
+
+
+def clwvi(ds: xr.Dataset) -> xr.DataArray:
+    """
+    CMIP6 clwvi = condensed water path (liquid + ice).
+
+    EAM version:
+    clwvi = TGCLDCWP  (total condensed = liquid + ice, single variable)
+
+    EAMxx version:
+    clwvi = LiqWaterPath + IceWaterPath
+    In EAMxx, LiqWaterPath is liquid-only and IceWaterPath is ice-only;
+    they must be summed to match the CMIP6 definition.
+    """
+    return ds["LiqWaterPath"] + ds["IceWaterPath"]
 
 
 def prsn(ds: xr.Dataset) -> xr.DataArray:
