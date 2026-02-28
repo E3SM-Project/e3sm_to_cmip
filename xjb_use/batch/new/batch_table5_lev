@@ -4,16 +4,14 @@
 #conda activate e2c 
 #python  setup.py  install
 SUB=sub
-echo batch_table5_lev $SUB
 case=v3.ccmi.PD_INT_custom30
 DIR=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/batch/
 VAR1=(O3  H2OLNZ  E90  NO  NO2  N2OLNZ N2O5  HNO3  NOYLNZ OH  HO2  CH4LNZ SO2  jo1dU)
 VAR2=(o3  h2o     e90  no  no2  n2o    n2o5  hno3  noy    oh  ho2  ch4    so2  jo3)
 scale=mon
 #
-#
 for i in {0..13..1}; do
-#for i in {0..1..1}; do
+#for i in {1..1..1}; do
 FILENAME=$case\_${VAR1[i]}\_monZ.sh
 cp $DIR/$SUB  $FILENAME
 echo ${VAR1[i]}

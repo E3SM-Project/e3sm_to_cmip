@@ -5,12 +5,12 @@
 #python  setup.py  install
 SUB=sub
 echo batch_table5_sur  $SUB
-case=v3.ccmi.PD_INT_custom30
+case=v3.ccmi.FD_INT_4xCO2_custom30_mem1
 DIR=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/batch/
 VAR1=(AODABS  TOZ)
 VAR2=(aod     toz)
 scale=mon
-years=90
+years=30
 #
 for i in {0..1..1}; do
 FILENAME=$case\_${VAR1[i]}\_mon.sh
