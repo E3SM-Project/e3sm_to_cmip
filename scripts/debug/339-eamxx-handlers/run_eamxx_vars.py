@@ -10,7 +10,7 @@ NOTE: This script can only be executed on Perlmutter.
 
 Run with:
     conda activate e3sm_to_cmip_dev
-    python scripts/debug/339-eamxx-handlers/mvce.py
+    python scripts/debug/339-eamxx-handlers/run_eamxx_vars.py
 
 Workflow:
     1. Generate monthly time-series from native EAMxx run output using ncclimo
@@ -87,23 +87,40 @@ E3SM_UNIFIED_ENV = (
 )
 
 # 2D variables for ncclimo (EAMxx native names).
-VARS_2D = "T_2m"
+VARS_2D = (
+    "ps,surf_radiative_T,SeaLevelPressure,IceWaterPath,qv_2m,"
+    "precip_liq_surf_mass_flux,precip_ice_surf_mass_flux,"
+    "omega_at_500hPa,omega_at_700hPa,omega_at_850hPa,T_mid_at_700hPa,T_2m,"
+    "surface_upward_latent_heat_flux,surf_sens_flux,z_mid_at_700hPa,"
+    "wind_speed_10m,surf_evap,U_at_10m_above_surface,"
+    "LW_clrsky_flux_dn_at_model_bot,LW_clrsky_flux_up_at_model_top,"
+    "LW_flux_dn_at_model_bot,LW_flux_up_at_model_bot,LW_flux_up_at_model_top,"
+    "SW_clrsky_flux_dn_at_model_bot,SW_clrsky_flux_dn_at_model_top,"
+    "SW_clrsky_flux_up_at_model_bot,SW_clrsky_flux_up_at_model_top,"
+    "SW_flux_dn_at_model_bot,SW_flux_dn_at_model_top,"
+    "SW_flux_up_at_model_bot,SW_flux_up_at_model_top,"
+    "ShortwaveCloudForcing,LongwaveCloudForcing"
+)
 VAR_XTR_2D = "area,landfrac,ocnfrac"
 
 # 3D variables for ncclimo (EAMxx native names).
-#VARS_3D = "U,V,T_mid,z_mid,omega,RelativeHumidity,p_mid,qv,cldfrac_tot_for_analysis"
-VARS_3D = "T_mid"
+VARS_3D = "U,V,T_mid,z_mid,omega,RelativeHumidity,p_mid,qv"
 VAR_XTR_3D = "ps,hyai,hyam,hybi,hybm,area,landfrac,ocnfrac"
 
 # EAMxx native variable name prefixes for 3D files that need vertical regridding.
 # Corresponds to CMIP variables: ta, hus, hur, wap, zg.
-RAW_VARS_3D = ["T_mid"]
+RAW_VARS_3D = ["T_mid", "qv", "RelativeHumidity", "omega", "z_mid"]
 
 # 2D CMIP variables (no vertical remapping needed).
-VAR_LIST_2D = "tas"
+VAR_LIST_2D = (
+    "pr, ts, tas, huss, hfls, hfss, evspsbl, sfcWind, psl, "
+    "rsdt, rsut, rsutcs, rlut, rlutcs, "
+    "rsds, rsus, rsdscs, rsuscs, rlds, rlus, rldscs, "
+    "clivi"
+)
 
 # 3D CMIP variables (require vertical remapping from model levels to plev19).
-VAR_LIST_3D = "ta"
+VAR_LIST_3D = "ta, hus, hur, wap, zg"
 
 
 def run(cmd: str) -> None:
@@ -162,12 +179,10 @@ for fname in sorted(os.listdir(DRC_TS_RGR)):
     for v in RAW_VARS_3D:
         # Match only: v_YYYYMM_YYYYMM.nc
         if re.match(rf"^{v}_[0-9]{{6}}_[0-9]{{6}}\.nc$", fname):
-            date_suffix = fname[len(v):]   # e.g. _199501_199912.nc
-            ps_file = os.path.join(DRC_TS_RGR, f"ps{date_suffix}")
             src = os.path.join(DRC_TS_RGR, fname)
             dst = os.path.join(INPUT_VERT_PLEV, fname)
 
-            print(f"  Vertically remapping: {fname}  (ps: {ps_file})")
+            print(f"  Vertically remapping: {fname}")
             run(
                 f"ncremap --ps_nm={src}/ps "
                 f"--vrt_in={VRT_IN_FILE} "
