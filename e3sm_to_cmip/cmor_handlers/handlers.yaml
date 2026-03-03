@@ -1055,6 +1055,14 @@
   formula: precip_liq_surf_mass_flux + precip_ice_surf_mass_flux
   positive: null
   levels: null
+- name: pr
+  units: kg m-2 s-1
+  raw_variables: [precip_total_surf_mass_flux]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
 - name: prw
   units: kg m-2
   raw_variables: [VapWaterPath]
