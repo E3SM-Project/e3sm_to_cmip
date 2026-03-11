@@ -1052,7 +1052,7 @@
   raw_variables: [precip_liq_surf_mass_flux, precip_ice_surf_mass_flux]
   table: CMIP6_Amon.json
   unit_conversion: null
-  formula: precip_liq_surf_mass_flux + precip_ice_surf_mass_flux
+  formula: (precip_liq_surf_mass_flux + precip_ice_surf_mass_flux) * 1000.0
   positive: null
   levels: null
 - name: pr
@@ -1060,7 +1060,7 @@
   raw_variables: [precip_total_surf_mass_flux]
   table: CMIP6_Amon.json
   unit_conversion: null
-  formula: null
+  formula: precip_total_surf_mass_flux * 1000.0
   positive: null
   levels: null
 - name: prw

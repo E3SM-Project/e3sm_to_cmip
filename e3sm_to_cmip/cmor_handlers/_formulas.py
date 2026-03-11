@@ -468,9 +468,9 @@ def pr(ds: xr.Dataset) -> xr.DataArray:
     pr = PRECT * 1000.0
 
     EAMxx version:
-    pr = precip_liq_surf_mass_flux + precip_ice_surf_mass_flux
+    pr = (precip_liq_surf_mass_flux + precip_ice_surf_mass_flux) * 1000.0
     or:
-    pr = precip_total_surf_mass_flux
+    pr = precip_total_surf_mass_flux * 1000.0
     """
     if all(key in ds.data_vars for key in ["PRECC", "PRECL"]):
         result = (ds["PRECC"] + ds["PRECL"]) * 1000.0
@@ -480,9 +480,11 @@ def pr(ds: xr.Dataset) -> xr.DataArray:
         key in ds.data_vars
         for key in ["precip_liq_surf_mass_flux", "precip_ice_surf_mass_flux"]
     ):
-        result = ds["precip_liq_surf_mass_flux"] + ds["precip_ice_surf_mass_flux"]
+        result = (
+            ds["precip_liq_surf_mass_flux"] + ds["precip_ice_surf_mass_flux"]
+        ) * 1000.0
     elif "precip_total_surf_mass_flux" in ds:
-        result = ds["precip_total_surf_mass_flux"]
+        result = ds["precip_total_surf_mass_flux"] * 1000.0
     else:
         raise KeyError(
             "No formula could be applied for 'pr'. Check the handler entry for 'pr' "
