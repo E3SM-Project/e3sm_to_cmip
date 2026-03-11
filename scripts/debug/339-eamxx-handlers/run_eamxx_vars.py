@@ -185,6 +185,7 @@ for fname in sorted(os.listdir(DRC_TS_RGR)):
             print(f"  Vertically remapping: {fname}")
             run(
                 f"ncremap --ps_nm={src}/ps "
+                f"--vrt_ntp=log --vrt_xtr=mss_val "
                 f"--vrt_in={VRT_IN_FILE} "
                 f"--vrt_out={VRT_REMAP_FILE} {src} {dst}"
             )
