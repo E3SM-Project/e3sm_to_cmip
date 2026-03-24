@@ -806,14 +806,8 @@ def _compute_moc_time_series(
         moc = moc.transpose("Time", "nVertLevelsP1", "lat")
 
         # average to bin and level centers
-        moc_avg = (
-            0.25
-            * (
-                moc[:, 0:-1, 0:-1]  # type: ignore[index]
-                + moc[:, 0:-1, 1:]  # type: ignore[index]
-                + moc[:, 1:, 0:-1]  # type: ignore[index]
-                + moc[:, 1:, 1:]  # type: ignore[index]
-            )
+        moc_avg = 0.25 * (
+            moc[:, 0:-1, 0:-1] + moc[:, 0:-1, 1:] + moc[:, 1:, 0:-1] + moc[:, 1:, 1:]
         )
         moc_avg = moc_avg.rename({"nVertLevelsP1": "depth"})
         binCounts = xarray.DataArray(binCounts, dims=("lat"))  # type: ignore[assignment]
