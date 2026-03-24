@@ -86,6 +86,35 @@ class TestLoadAllHandlers:
                 output_data=None,
                 method=VarHandler.cmorize,
             ),
+            dict(
+                name="pr",
+                units="kg m-2 s-1",
+                raw_variables=[
+                    "precip_liq_surf_mass_flux",
+                    "precip_ice_surf_mass_flux",
+                ],
+                table="CMIP6_Amon.json",
+                unit_conversion=None,
+                formula="(precip_liq_surf_mass_flux + precip_ice_surf_mass_flux) * 1000.0",
+                formula_method=_formulas.pr,
+                positive=None,
+                levels=None,
+                output_data=None,
+                method=VarHandler.cmorize,
+            ),
+            dict(
+                name="pr",
+                units="kg m-2 s-1",
+                raw_variables=["precip_total_surf_mass_flux"],
+                table="CMIP6_Amon.json",
+                unit_conversion=None,
+                formula="precip_total_surf_mass_flux * 1000.0",
+                formula_method=_formulas.pr,
+                positive=None,
+                levels=None,
+                output_data=None,
+                method=VarHandler.cmorize,
+            ),
         ]
 
         # Update each handler objects' BoundMethod to the underlying function.

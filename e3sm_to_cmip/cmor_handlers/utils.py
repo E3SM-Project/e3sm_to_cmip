@@ -4,7 +4,6 @@ from collections import defaultdict
 from importlib.machinery import SourceFileLoader
 from typing import Any, Literal, get_args
 
-import pandas as pd
 import yaml
 
 from e3sm_to_cmip import (
@@ -256,23 +255,21 @@ def _get_handlers_from_yaml() -> dict[str, list[dict[str, Any]]]:
     with open(HANDLER_DEFINITIONS_PATH, "r") as infile:
         handlers_file = yaml.load(infile, yaml.SafeLoader)
 
-    df_in = pd.DataFrame.from_dict(handlers_file)
-
     handlers = defaultdict(list)
-    for row in df_in.itertuples():
+    for entry in handlers_file:
         var_handler = VarHandler(
-            name=row.name,  # type: ignore
-            units=row.units,  # type: ignore
-            raw_variables=row.raw_variables,  # type: ignore
-            table=row.table,  # type: ignore
-            formula=row.formula,  # type: ignore
-            unit_conversion=row.unit_conversion,  # type: ignore
-            positive=row.positive,  # type: ignore
-            levels=row.levels,  # type: ignore
+            name=entry["name"],
+            units=entry["units"],
+            raw_variables=entry["raw_variables"],
+            table=entry["table"],
+            formula=entry.get("formula"),
+            unit_conversion=entry.get("unit_conversion"),
+            positive=entry.get("positive"),
+            levels=entry.get("levels"),
         ).to_dict()
-        handlers[row.name].append(var_handler)
+        handlers[entry["name"]].append(var_handler)
 
-    return dict(handlers)  # type: ignore
+    return dict(handlers)
 
 
 def _get_handlers_from_modules(path: str) -> dict[str, list[dict[str, Any]]]:

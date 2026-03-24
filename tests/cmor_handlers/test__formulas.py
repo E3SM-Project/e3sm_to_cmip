@@ -259,6 +259,29 @@ def test_pr():
 
     np.testing.assert_array_equal(result, expected)
 
+    ds = xr.Dataset(
+        data_vars={
+            "precip_liq_surf_mass_flux": _dummy_dataarray(),
+            "precip_ice_surf_mass_flux": _dummy_dataarray(),
+        }
+    )
+    result = pr(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"],
+        data=np.array([[0, 2000, 4000], [0, 2000, 4000], [0, 2000, 4000]]),
+    )
+
+    np.testing.assert_array_equal(result, expected)
+
+    ds = xr.Dataset(data_vars={"precip_total_surf_mass_flux": _dummy_dataarray()})
+    result = pr(ds)
+    expected = xr.DataArray(
+        dims=["lat", "lon"],
+        data=np.array([[0, 1000, 2000], [0, 1000, 2000], [0, 1000, 2000]]),
+    )
+
+    np.testing.assert_array_equal(result, expected)
+
     # Test when required variable keys are NOT in the data dictionary.
     with pytest.raises(KeyError):
         pr(xr.Dataset())

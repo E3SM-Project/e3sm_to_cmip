@@ -823,8 +823,8 @@ def _compute_moc_time_series(
 
         mocs[regionName] = moc_masked
 
-    mocs = xarray.concat(mocs.values(), dim="basin")  # type: ignore
-    mocs = mocs.transpose("Time", "basin", "depth", "lat")  # type: ignore
+    mocs = xarray.concat(mocs.values(), dim="basin")
+    mocs = mocs.transpose("Time", "basin", "depth", "lat")
 
     regionNames = xarray.DataArray(regionNames, dims=("basin",))  # type: ignore
 
