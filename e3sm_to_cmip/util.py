@@ -2,7 +2,6 @@ import json
 import os
 import re
 import sys
-import traceback
 from pathlib import Path
 from pprint import pprint
 
@@ -76,11 +75,16 @@ FREQUENCY_TO_CMIP_TABLES = {
 }
 
 
-def print_debug(e):
-    # TODO: Deprecate this function. We use Python logger now.
-    _, _, tb = sys.exc_info()
-    traceback.print_tb(tb)
-    print(e)
+def exit_success():
+    """A convenience function to exit with a success code (0)."""
+    logger.info("Exiting with success code (0).")
+    sys.exit(0)
+
+
+def exit_failure():
+    """A convenience function to exit with a failure code (1)."""
+    logger.error("Exiting with failure code (1).")
+    sys.exit(1)
 
 
 class colors:
