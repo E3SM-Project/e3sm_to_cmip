@@ -931,7 +931,7 @@ class E3SMtoCMIP:
                 future_result, handler_name, num_handlers, num_success, failed_handlers
             )
 
-            if not future_result:
+            if not future_result and self.on_var_failure == "stop":
                 self._stop_with_failed_handler_parallel(
                     handler_name, pool, pbar, futures
                 )
