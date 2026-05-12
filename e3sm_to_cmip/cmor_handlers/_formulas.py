@@ -612,10 +612,16 @@ def rtmt(ds: xr.Dataset) -> xr.DataArray:
         result = ds["FSNT"] - ds["FLNT"]
     elif all(
         key in ds.data_vars
-        for key in ["SW_flux_dn_at_model_top", "SW_flux_up_at_model_top", "LW_flux_up_at_model_top"]
+        for key in [
+            "SW_flux_dn_at_model_top",
+            "SW_flux_up_at_model_top",
+            "LW_flux_up_at_model_top",
+        ]
     ):
         result = (
-            ds["SW_flux_dn_at_model_top"] - ds["SW_flux_up_at_model_top"] - ds["LW_flux_up_at_model_top"]
+            ds["SW_flux_dn_at_model_top"]
+            - ds["SW_flux_up_at_model_top"]
+            - ds["LW_flux_up_at_model_top"]
         )
     else:
         raise KeyError(
@@ -625,6 +631,7 @@ def rtmt(ds: xr.Dataset) -> xr.DataArray:
         )
 
     return result
+
 
 def tran(ds: xr.Dataset) -> xr.DataArray:
     """
