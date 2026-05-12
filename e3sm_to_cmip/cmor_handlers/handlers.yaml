@@ -1274,6 +1274,42 @@
   formula: null
   positive: null
   levels: null
+# --- 10m zonal wind component---
+- name: uas
+  units: m s-1
+  raw_variables: [U_at_10m_above_surface]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+# --- 10m meridional wind component---
+- name: vas
+  units: m s-1
+  raw_variables: [V_at_10m_above_surface]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+# --- cloud ---
+- name: cltisccp
+  units: "%"
+  raw_variables: [isccp_cldtot]
+  table: CMIP6_CFmon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
+# -- surface pressure--
+- name: ps
+  units: Pa
+  raw_variables: [ps]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: null
+  positive: null
+  levels: null
 # --- Sea-level pressure ---
 - name: psl
   units: Pa
@@ -1323,6 +1359,14 @@
   unit_conversion: null
   formula: null
   positive: up
+  levels: null
+- name: rtmt
+  units: W m-2
+  raw_variables: [SW_flux_dn_at_model_top, SW_flux_up_at_model_top, LW_flux_up_at_model_top]
+  table: CMIP6_Amon.json
+  unit_conversion: null
+  formula: SW_flux_dn_at_model_top - SW_flux_up_at_model_top - LW_flux_up_at_model_top
+  positive: down
   levels: null
 # --- Surface radiation ---
 - name: rsds
