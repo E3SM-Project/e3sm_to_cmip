@@ -9,6 +9,7 @@ frequencies.
 
 import argparse
 import os
+import re
 import signal
 import subprocess
 import tempfile
@@ -265,12 +266,8 @@ class E3SMtoCMIP:
             exit_success()
 
     def _get_var_list(self, input_var_list: list[str]) -> list[str]:
-        if len(input_var_list) == 1 and " " in input_var_list[0]:
-            var_list = input_var_list[0].split()
-        else:
-            var_list = input_var_list
-
-        var_list = [x.strip(",") for x in var_list]
+        joined = " ".join(input_var_list)
+        var_list = [x for x in re.split(r"[\s,]+", joined) if x]
 
         return var_list
 
