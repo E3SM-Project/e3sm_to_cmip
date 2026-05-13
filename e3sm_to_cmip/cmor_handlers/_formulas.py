@@ -625,9 +625,10 @@ def rtmt(ds: xr.Dataset) -> xr.DataArray:
         )
     else:
         raise KeyError(
-            "No formula could be applied for 'rtmt'. Check the handler entry for 'rtmt' "
-            "and input file(s) contain either 'FSNT' and 'FLNT',"
-            "'SW_flux_dn_at_model_top', 'SW_flux_up_at_model_top' and 'LW_flux_up_at_model_top'. "
+            "No formula could be applied for 'rtmt'. Check that the handler entry "
+            "for 'rtmt' and the input file(s) contain either 'FSNT' and 'FLNT', "
+            "or 'SW_flux_dn_at_model_top', 'SW_flux_up_at_model_top', and "
+            "'LW_flux_up_at_model_top'."
         )
 
     return result
