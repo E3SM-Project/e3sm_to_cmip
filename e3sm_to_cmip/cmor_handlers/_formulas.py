@@ -605,7 +605,7 @@ def rtmt(ds: xr.Dataset) -> xr.DataArray:
     rtmt = FSNT - FLNT
 
     EAMxx version:
-    pr = SW_flux_dn_at_model_top - SW_flux_up_at_model_top - LW_flux_up_at_model_top
+    rtmt = SW_flux_dn_at_model_top - SW_flux_up_at_model_top - LW_flux_up_at_model_top
     """
 
     if all(key in ds.data_vars for key in ["FSNT", "FLNT"]):
