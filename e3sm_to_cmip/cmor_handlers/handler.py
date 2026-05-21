@@ -306,7 +306,7 @@ class VarHandler(BaseVarHandler):
             ds_out = xr.Dataset(attrs=ds.attrs)
             # Use `.data` to avoid xarray's ambiguity error when constructing a
             # variable from `(dims, data)` with a DataArray object.
-            ds_out[self.name] = (da_output.dims, da_output.data)
+            ds_out[self.name] = (da_output.dims, da_output.data)  # not DataArray
 
             for dim in da_output.dims:
                 if dim in ds:

@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 from inspect import Parameter, signature
 from pathlib import Path
 from pprint import pprint
-from typing import Literal
+from typing import Any, Literal
 
 import xarray as xr
 import yaml
@@ -961,7 +961,7 @@ class E3SMtoCMIP:
             for param in method_sig.parameters.values()
         )
 
-    def _get_simple_handler_kwargs(self, supports_simple: bool) -> dict[str, bool]:
+    def _get_simple_handler_kwargs(self, supports_simple: bool) -> dict[str, Any]:
         if self.simple_mode and supports_simple:
             return {"simple": True}
 
