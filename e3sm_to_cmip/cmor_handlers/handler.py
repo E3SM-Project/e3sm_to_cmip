@@ -303,6 +303,8 @@ class VarHandler(BaseVarHandler):
             da_output = self._get_output_data_array(ds)
 
             ds_out = xr.Dataset(attrs=ds.attrs)
+            # Use `.data` to avoid xarray's ambiguity error when constructing a
+            # variable from `(dims, data)` with a DataArray object.
             ds_out[self.name] = (da_output.dims, da_output.data)
 
             for dim in da_output.dims:
@@ -783,6 +785,7 @@ class VarHandler(BaseVarHandler):
         return output
 
     def _get_output_data_array(self, ds: xr.Dataset) -> xr.DataArray:
+        """Get the output data as an ``xr.DataArray`` with NaNs filled."""
         if self.unit_conversion is not None:
             var = ds[self.raw_variables[0]]
             da_output = _formulas.convert_units(var, self.unit_conversion)
