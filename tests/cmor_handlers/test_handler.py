@@ -214,7 +214,7 @@ class TestCmorizeMethod:
     def test_cmorizes_serial_and_returns_output_variable_name(self):
         assert 0
 
-    def test_writes_output_file_in_simple_mode(self, monkeypatch):
+    def test_writes_and_validates_output_in_simple_mode(self, monkeypatch):
         handler = VarHandler(
             name="mrsos",
             units="kg m-2",

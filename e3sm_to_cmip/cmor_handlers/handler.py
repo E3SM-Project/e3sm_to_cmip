@@ -785,7 +785,18 @@ class VarHandler(BaseVarHandler):
         return output
 
     def _get_output_data_array(self, ds: xr.Dataset) -> xr.DataArray:
-        """Get the output data as an ``xr.DataArray`` with NaNs filled."""
+        """Get the output data as an ``xr.DataArray`` with NaNs filled.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset containing raw variables used to derive output.
+
+        Returns
+        -------
+        xr.DataArray
+            The output variable data with NaNs replaced by ``FILL_VALUE``.
+        """
         if self.unit_conversion is not None:
             var = ds[self.raw_variables[0]]
             da_output = _formulas.convert_units(var, self.unit_conversion)
