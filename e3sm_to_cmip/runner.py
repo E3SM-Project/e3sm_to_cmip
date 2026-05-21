@@ -805,11 +805,7 @@ class E3SMtoCMIP:
                     # MPAS handlers require a different set of arguments than other
                     # handlers.
                     supports_simple = self._handler_supports_simple_kwarg(handler_method)
-                    kwargs = (
-                        {"simple": True}
-                        if self.simple_mode and supports_simple
-                        else {}
-                    )
+                    kwargs = self._get_simple_handler_kwargs(supports_simple)
                     if self.realm in MPAS_REALMS:
                         is_cmor_successful = handler_method(
                             vars_to_filepaths,
@@ -896,11 +892,7 @@ class E3SMtoCMIP:
 
             try:
                 supports_simple = self._handler_supports_simple_kwarg(handler_method)
-                kwargs = (
-                    {"simple": True}
-                    if self.simple_mode and supports_simple
-                    else {}
-                )
+                kwargs = self._get_simple_handler_kwargs(supports_simple)
                 if self.realm in MPAS_REALMS:
                     future: Future[bool] = pool.submit(
                         handler_method,
@@ -968,6 +960,12 @@ class E3SMtoCMIP:
             param.kind is Parameter.VAR_KEYWORD
             for param in method_sig.parameters.values()
         )
+
+    def _get_simple_handler_kwargs(self, supports_simple: bool) -> dict[str, bool]:
+        if self.simple_mode and supports_simple:
+            return {"simple": True}
+
+        return {}
 
     def _get_handler_input_files(
         self, handler_variables: dict[str, str]

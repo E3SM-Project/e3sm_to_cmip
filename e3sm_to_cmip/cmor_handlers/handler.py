@@ -26,6 +26,20 @@ HYBRID_SIGMA_LEVEL_NAMES = [
 # CMIP variable does have a time dimension, subsequent CMOR operations are
 # handled appropriately.
 TIME_DIMS = ["time", "time1", "time2"]
+SIMPLE_AXIS_NAMES = [
+    "lat",
+    "lon",
+    "lat_bnds",
+    "lon_bnds",
+    "time",
+    "time_bnds",
+    "time_bounds",
+    "lev",
+    "ilev",
+    "plev",
+    "levgrnd",
+    "levgrnd_bnds",
+]
 
 # Type alias for the dictionary representation of a VarHandler object.
 VarHandlerDict = dict[str, Any]
@@ -289,26 +303,13 @@ class VarHandler(BaseVarHandler):
             da_output = self._get_output_data_array(ds)
 
             ds_out = xr.Dataset(attrs=ds.attrs)
-            ds_out[self.name] = (tuple(da_output.dims), da_output.data)
+            ds_out[self.name] = (da_output.dims, da_output.data)
 
             for dim in da_output.dims:
                 if dim in ds:
                     ds_out.coords[dim] = ds[dim]
 
-            for axis in [
-                "lat",
-                "lon",
-                "lat_bnds",
-                "lon_bnds",
-                "time",
-                "time_bnds",
-                "time_bounds",
-                "lev",
-                "ilev",
-                "plev",
-                "levgrnd",
-                "levgrnd_bnds",
-            ]:
+            for axis in SIMPLE_AXIS_NAMES:
                 if axis in ds and axis not in ds_out:
                     ds_out[axis] = ds[axis]
 

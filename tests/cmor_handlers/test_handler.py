@@ -214,7 +214,7 @@ class TestCmorizeMethod:
     def test_cmorizes_serial_and_returns_output_variable_name(self):
         assert 0
 
-    def test_returns_output_variable_with_simple_mode(self):
+    def test_returns_output_variable_with_simple_mode(self, monkeypatch):
         handler = VarHandler(
             name="mrsos",
             units="kg m-2",
@@ -240,7 +240,7 @@ class TestCmorizeMethod:
             }
         )
 
-        handler._get_mfdataset = lambda *_args, **_kwargs: ds  # type: ignore[method-assign]
+        monkeypatch.setattr(handler, "_get_mfdataset", lambda *_args, **_kwargs: ds)
 
         result = handler.cmorize(
             vars_to_filepaths={"SOILWATER_10CM": ["dummy.nc"]},
