@@ -240,7 +240,10 @@ class TestCmorizeMethod:
             }
         )
 
-        monkeypatch.setattr(handler, "_get_mfdataset", lambda *_args, **_kwargs: ds)
+        def mock_get_mfdataset(*_args, **_kwargs):
+            return ds
+
+        monkeypatch.setattr(handler, "_get_mfdataset", mock_get_mfdataset)
 
         result = handler.cmorize(
             vars_to_filepaths={"SOILWATER_10CM": ["dummy.nc"]},

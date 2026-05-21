@@ -40,6 +40,7 @@ SIMPLE_AXIS_NAMES = [
     "levgrnd",
     "levgrnd_bnds",
 ]
+SIMPLE_OUTPUT_FILENAME_PATTERN = "{name}_{index:04d}.nc"
 
 # Type alias for the dictionary representation of a VarHandler object.
 VarHandlerDict = dict[str, Any]
@@ -315,7 +316,10 @@ class VarHandler(BaseVarHandler):
                 if axis in ds and axis not in ds_out:
                     ds_out[axis] = ds[axis]
 
-            output_filepath = os.path.join(output_dir, f"{self.name}_{index:04d}.nc")
+            output_filename = SIMPLE_OUTPUT_FILENAME_PATTERN.format(
+                name=self.name, index=index
+            )
+            output_filepath = os.path.join(output_dir, output_filename)
             ds_out.to_netcdf(output_filepath)
 
             ds.close()
