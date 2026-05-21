@@ -18,6 +18,7 @@ from concurrent.futures import Future, as_completed
 from concurrent.futures import ProcessPoolExecutor as Pool
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from inspect import Parameter, signature
 from pathlib import Path
 from pprint import pprint
 from typing import Literal
@@ -803,12 +804,19 @@ class E3SMtoCMIP:
                 try:
                     # MPAS handlers require a different set of arguments than other
                     # handlers.
+                    supports_simple = self._handler_supports_simple_kwarg(handler_method)
+                    kwargs = (
+                        {"simple": True}
+                        if self.simple_mode and supports_simple
+                        else {}
+                    )
                     if self.realm in MPAS_REALMS:
                         is_cmor_successful = handler_method(
                             vars_to_filepaths,
                             self.tables_path,
                             self.new_metadata_path,
                             self.cmor_log_dir,
+                            **kwargs,
                         )
                     else:
                         is_cmor_successful = handler_method(
@@ -817,6 +825,7 @@ class E3SMtoCMIP:
                             self.new_metadata_path,
                             self.cmor_log_dir,
                             handler_table,
+                            **kwargs,
                         )
                 except Exception as e:
                     logger.error(f"Exception in handler '{handler['name']}': {e}")
@@ -886,6 +895,12 @@ class E3SMtoCMIP:
             vars_to_filepaths = self._get_handler_input_files(handler_variables)
 
             try:
+                supports_simple = self._handler_supports_simple_kwarg(handler_method)
+                kwargs = (
+                    {"simple": True}
+                    if self.simple_mode and supports_simple
+                    else {}
+                )
                 if self.realm in MPAS_REALMS:
                     future: Future[bool] = pool.submit(
                         handler_method,
@@ -893,6 +908,7 @@ class E3SMtoCMIP:
                         self.tables_path,
                         self.new_metadata_path,
                         self.cmor_log_dir,
+                        **kwargs,
                     )
                 else:
                     future = pool.submit(
@@ -902,6 +918,7 @@ class E3SMtoCMIP:
                         self.new_metadata_path,
                         self.cmor_log_dir,
                         handler_table,
+                        **kwargs,
                     )
             except Exception as exc:
                 logger.error(
@@ -941,6 +958,16 @@ class E3SMtoCMIP:
         self._finalize_on_failure(failed_handlers)
 
         return True
+
+    def _handler_supports_simple_kwarg(self, method) -> bool:
+        method_sig = signature(method)
+        if "simple" in method_sig.parameters:
+            return True
+
+        return any(
+            param.kind is Parameter.VAR_KEYWORD
+            for param in method_sig.parameters.values()
+        )
 
     def _get_handler_input_files(
         self, handler_variables: dict[str, str]

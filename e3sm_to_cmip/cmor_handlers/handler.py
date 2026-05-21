@@ -184,6 +184,7 @@ class VarHandler(BaseVarHandler):
         metadata_path: str,
         cmor_log_dir: str,
         table: str | None = None,
+        simple: bool = False,
     ) -> bool:
         """CMORizes a list of E3SM raw variables to a CMIP variable.
 
@@ -216,18 +217,16 @@ class VarHandler(BaseVarHandler):
         if not self._all_vars_have_filepaths(vars_to_filepaths):
             return False
 
+        table_abs_path = os.path.join(tables_path, self.table)
+        time_dim: str | None = self._get_var_time_dim(table_abs_path)
+
+        if simple:
+            return self._write_simple(vars_to_filepaths, cmor_log_dir, time_dim)
+
         # Create the logging directory and setup the CMOR module globally before
         # running any CMOR functions.
         # ----------------------------------------------------------------------
         self._setup_cmor_module(self.name, tables_path, metadata_path, cmor_log_dir)
-
-        # Get parameters for running CMOR operations
-        # ----------------------------------------------------------------------
-        # Check if the output CMIP variable has a time dimension, which determines
-        # how to handle downstream operations such writing files out with CMOR
-        # with or without a time axis.
-        table_abs_path = os.path.join(tables_path, self.table)
-        time_dim: str | None = self._get_var_time_dim(table_abs_path)
 
         # Assuming all year ranges are the same for every variable.
         # TODO: Is this a good keep this legacy assumption?
@@ -274,6 +273,52 @@ class VarHandler(BaseVarHandler):
         )
 
         return is_cmor_successful
+
+    def _write_simple(
+        self,
+        vars_to_filepaths: dict[str, list[str]],
+        cmor_log_dir: str,
+        time_dim: str | None,
+    ) -> bool:
+        """Write simple (non-CMORized) output netCDF files."""
+        output_dir = os.path.dirname(cmor_log_dir)
+        num_files_per_variable = len(list(vars_to_filepaths.values())[0])
+
+        for index in range(num_files_per_variable):
+            ds = self._get_mfdataset(vars_to_filepaths, index, time_dim)
+            da_output = self._get_output_data_array(ds)
+
+            ds_out = xr.Dataset(attrs=ds.attrs)
+            ds_out[self.name] = (tuple(da_output.dims), da_output.data)
+
+            for dim in da_output.dims:
+                if dim in ds:
+                    ds_out.coords[dim] = ds[dim]
+
+            for axis in [
+                "lat",
+                "lon",
+                "lat_bnds",
+                "lon_bnds",
+                "time",
+                "time_bnds",
+                "time_bounds",
+                "lev",
+                "ilev",
+                "plev",
+                "levgrnd",
+                "levgrnd_bnds",
+            ]:
+                if axis in ds and axis not in ds_out:
+                    ds_out[axis] = ds[axis]
+
+            output_filepath = os.path.join(output_dir, f"{self.name}_{index:04d}.nc")
+            ds_out.to_netcdf(output_filepath)
+
+            ds.close()
+            ds_out.close()
+
+        return True
 
     def _all_vars_have_filepaths(
         self, vars_to_filespaths: dict[str, list[str]]
@@ -731,6 +776,12 @@ class VarHandler(BaseVarHandler):
         np.ndarray
             The final variable output data to pass to ``cmor.write``.
         """
+        da_output = self._get_output_data_array(ds)
+        output = da_output.values
+
+        return output
+
+    def _get_output_data_array(self, ds: xr.Dataset) -> xr.DataArray:
         if self.unit_conversion is not None:
             var = ds[self.raw_variables[0]]
             da_output = _formulas.convert_units(var, self.unit_conversion)
@@ -739,10 +790,7 @@ class VarHandler(BaseVarHandler):
         else:
             da_output = ds[self.raw_variables[0]]
 
-        da_output = da_output.fillna(FILL_VALUE)
-        output = da_output.values
-
-        return output
+        return da_output.fillna(FILL_VALUE)
 
     def _update_table_ref(self, freq: str, realm: str, cmip_tables_path: str):
         """

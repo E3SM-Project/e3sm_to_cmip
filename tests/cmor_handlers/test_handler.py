@@ -1,7 +1,9 @@
 import json
 import os
 
+import numpy as np
 import pytest
+import xarray as xr
 
 from e3sm_to_cmip import cmor_handlers
 from e3sm_to_cmip.cmor_handlers import _formulas
@@ -185,13 +187,76 @@ class TestVarHandler:
 
 
 class TestCmorizeMethod:
+    @pytest.fixture(autouse=True)
+    def setup(self, tmp_path):
+        self.tables_path = tmp_path / "cmip6-cmor-tables"
+        self.tables_path.mkdir()
+
+        file_path = f"{self.tables_path}/CMIP6_Lmon.json"
+        with open(file_path, "w") as json_file:
+            json.dump(
+                {
+                    "variable_entry": {
+                        "mrsos": {
+                            "dimensions": "time lat lon",
+                        }
+                    }
+                },
+                json_file,
+            )
+
+        self.output_path = tmp_path / "output"
+        self.output_path.mkdir()
+        self.cmor_log_dir = self.output_path / "cmor_logs"
+        self.cmor_log_dir.mkdir()
+
     @pytest.mark.xfail
     def test_cmorizes_serial_and_returns_output_variable_name(self):
         assert 0
 
-    @pytest.mark.xfail
     def test_returns_output_variable_with_simple_mode(self):
-        assert 0
+        handler = VarHandler(
+            name="mrsos",
+            units="kg m-2",
+            raw_variables=["SOILWATER_10CM"],
+            table="CMIP6_Lmon.json",
+        )
+        data = xr.DataArray(
+            np.ones((1, 2, 2)),
+            dims=("time", "lat", "lon"),
+            coords={
+                "time": [0],
+                "lat": [-1.0, 1.0],
+                "lon": [0.0, 2.0],
+            },
+            name="SOILWATER_10CM",
+        )
+        ds = xr.Dataset(
+            {
+                "SOILWATER_10CM": data,
+                "lat_bnds": (("lat", "nbnd"), np.array([[-2.0, 0.0], [0.0, 2.0]])),
+                "lon_bnds": (("lon", "nbnd"), np.array([[-1.0, 1.0], [1.0, 3.0]])),
+                "time_bounds": (("time", "nbnd"), np.array([[0.0, 1.0]])),
+            }
+        )
+
+        handler._get_mfdataset = lambda *_args, **_kwargs: ds  # type: ignore[method-assign]
+
+        result = handler.cmorize(
+            vars_to_filepaths={"SOILWATER_10CM": ["dummy.nc"]},
+            tables_path=str(self.tables_path),
+            metadata_path="unused.json",
+            cmor_log_dir=str(self.cmor_log_dir),
+            simple=True,
+        )
+
+        output_file = self.output_path / "mrsos_0000.nc"
+        assert result is True
+        assert output_file.exists()
+
+        with xr.open_dataset(output_file) as output_ds:
+            assert "mrsos" in output_ds.data_vars
+            np.testing.assert_array_equal(output_ds["mrsos"].values, data.values)
 
     @pytest.mark.xfail
     def test_returns_error_if_unable_to_find_input_files_for_variables(self):
