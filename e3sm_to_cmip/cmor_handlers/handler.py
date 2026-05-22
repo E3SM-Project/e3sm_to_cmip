@@ -336,6 +336,8 @@ class VarHandler(BaseVarHandler):
                     else:
                         ds_out[name] = var
 
+            self._rewrite_time_to_bnds_midpoint(ds_out, time_dim)
+
             output_filename = self._simple_output_filename(
                 primary_filepaths[index], index
             )
@@ -356,6 +358,36 @@ class VarHandler(BaseVarHandler):
             return f"{self.name}_{match.group(1)}_{match.group(2)}.nc"
 
         return f"{self.name}_{index:04d}.nc"
+
+    def _rewrite_time_to_bnds_midpoint(
+        self, ds_out: xr.Dataset, time_dim: str | None
+    ) -> None:
+        """Set ``time`` to the midpoint of its bounds in place.
+
+        E3SM stamps monthly time series at the end of each interval; CF tooling
+        (and CMOR mode) expects the coord to fall inside its bounds. Rewriting
+        to the bounds midpoint puts simple-mode output on the same time axis
+        as CMOR mode. No-op if the variable is time-invariant or the dataset
+        carries no bounds variable.
+        """
+        if time_dim is None or time_dim not in ds_out.coords:
+            return
+        try:
+            bnds_key = self._get_time_bnds_key(ds_out.data_vars.keys())
+        except KeyError:
+            return
+
+        bnds = ds_out[bnds_key]
+        other_dims = [d for d in bnds.dims if d != time_dim]
+        if not other_dims:
+            return
+
+        midpoints = bnds.mean(dim=other_dims).values
+        attrs = dict(ds_out[time_dim].attrs)
+        encoding = dict(ds_out[time_dim].encoding)
+        ds_out[time_dim] = (time_dim, midpoints)
+        ds_out[time_dim].attrs = attrs
+        ds_out[time_dim].encoding.update(encoding)
 
     def _read_simple_var_attrs(self, table_path: str) -> dict[str, str]:
         """Pull CF/CMIP6-canonical attrs for ``self.name`` from a CMIP6 table.

@@ -293,6 +293,61 @@ class TestCmorizeMethod:
             )
             assert mrsos_attrs["cell_measures"] == "area: areacella"
 
+    def test_simple_mode_rewrites_time_to_bnds_midpoint(self, monkeypatch):
+        handler = VarHandler(
+            name="mrsos",
+            units="kg m-2",
+            raw_variables=["SOILWATER_10CM"],
+            table="CMIP6_Lmon.json",
+        )
+        data = xr.DataArray(
+            np.ones((2, 2, 2)),
+            dims=("time", "lat", "lon"),
+            coords={
+                # E3SM stamps at end-of-interval; expect rewrite to midpoint.
+                "time": [31.0, 59.0],
+                "lat": [-1.0, 1.0],
+                "lon": [0.0, 2.0],
+            },
+            name="SOILWATER_10CM",
+        )
+        ds = xr.Dataset(
+            {
+                "SOILWATER_10CM": data,
+                "lat_bnds": (("lat", "nbnd"), np.array([[-2.0, 0.0], [0.0, 2.0]])),
+                "lon_bnds": (("lon", "nbnd"), np.array([[-1.0, 1.0], [1.0, 3.0]])),
+                "time_bounds": (
+                    ("time", "nbnd"),
+                    np.array([[0.0, 31.0], [31.0, 59.0]]),
+                ),
+            }
+        )
+        ds["time"].attrs["units"] = "days since 1850-01-01"
+
+        monkeypatch.setattr(handler, "_get_mfdataset", lambda *a, **k: ds)
+
+        handler.cmorize(
+            vars_to_filepaths={
+                "SOILWATER_10CM": ["SOILWATER_10CM_185001_185412.nc"]
+            },
+            tables_path=str(self.tables_path),
+            metadata_path="unused.json",
+            cmor_log_dir=str(self.cmor_log_dir),
+            simple=True,
+            output_path=str(self.output_path),
+        )
+
+        with xr.open_dataset(
+            self.output_path / "mrsos_185001_185412.nc", decode_times=False
+        ) as out:
+            np.testing.assert_array_equal(out["time"].values, [15.5, 45.0])
+            # Bounds themselves are preserved untouched.
+            np.testing.assert_array_equal(
+                out["time_bounds"].values, [[0.0, 31.0], [31.0, 59.0]]
+            )
+            # Units attribute survives the rewrite.
+            assert out["time"].attrs["units"] == "days since 1850-01-01"
+
     def test_cmorize_simple_requires_output_path(self, monkeypatch):
         handler = VarHandler(
             name="mrsos",
