@@ -252,9 +252,7 @@ class TestCmorizeMethod:
         monkeypatch.setattr(handler, "_get_mfdataset", mock_get_mfdataset)
 
         result = handler.cmorize(
-            vars_to_filepaths={
-                "SOILWATER_10CM": ["SOILWATER_10CM_185001_185412.nc"]
-            },
+            vars_to_filepaths={"SOILWATER_10CM": ["SOILWATER_10CM_185001_185412.nc"]},
             tables_path=str(self.tables_path),
             metadata_path="unused.json",
             cmor_log_dir=str(self.cmor_log_dir),
@@ -284,13 +282,8 @@ class TestCmorizeMethod:
             assert mrsos_attrs["long_name"] == (
                 "Moisture in Upper Portion of Soil Column"
             )
-            assert (
-                mrsos_attrs["standard_name"]
-                == "mass_content_of_water_in_soil_layer"
-            )
-            assert mrsos_attrs["cell_methods"] == (
-                "area: mean where land time: mean"
-            )
+            assert mrsos_attrs["standard_name"] == "mass_content_of_water_in_soil_layer"
+            assert mrsos_attrs["cell_methods"] == ("area: mean where land time: mean")
             assert mrsos_attrs["cell_measures"] == "area: areacella"
 
     def test_simple_mode_rewrites_time_to_bnds_midpoint(self, monkeypatch):
@@ -327,9 +320,7 @@ class TestCmorizeMethod:
         monkeypatch.setattr(handler, "_get_mfdataset", lambda *a, **k: ds)
 
         handler.cmorize(
-            vars_to_filepaths={
-                "SOILWATER_10CM": ["SOILWATER_10CM_185001_185412.nc"]
-            },
+            vars_to_filepaths={"SOILWATER_10CM": ["SOILWATER_10CM_185001_185412.nc"]},
             tables_path=str(self.tables_path),
             metadata_path="unused.json",
             cmor_log_dir=str(self.cmor_log_dir),
@@ -379,10 +370,7 @@ class TestCmorizeMethod:
             == "mrsos_185001_185412.nc"
         )
         # No time-range suffix (e.g. fx data) -> indexed fallback.
-        assert (
-            handler._simple_output_filename("LANDFRAC.nc", 3)
-            == "mrsos_0003.nc"
-        )
+        assert handler._simple_output_filename("LANDFRAC.nc", 3) == "mrsos_0003.nc"
 
     @pytest.mark.xfail
     def test_returns_error_if_unable_to_find_input_files_for_variables(self):

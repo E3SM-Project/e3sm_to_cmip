@@ -362,9 +362,7 @@ class VarHandler(BaseVarHandler):
 
         return f"{self.name}_{index:04d}.nc"
 
-    def _carry_hybrid_sigma_support(
-        self, ds: xr.Dataset, ds_out: xr.Dataset
-    ) -> None:
+    def _carry_hybrid_sigma_support(self, ds: xr.Dataset, ds_out: xr.Dataset) -> None:
         """Copy hybrid-sigma metadata that the dim-subset auto-copy misses.
 
         Downstream tools need ``P0`` and the interface coefficients

@@ -37,7 +37,8 @@ flags='-7 --dfl_lvl=1 --no_cll_msr'
 #raw_var_list="LAISHA,LAISUN,QINTR,QOVER,QRUNOFF,QSOIL,QVEGE,QVEGT,SOILICE,SOILLIQ,SOILWATER_10CM,TSA,TSOI,H2OSNO"
 #cmip_var_list="mrsos, mrso, mrfso, mrros, mrro, prveg, evspsblveg, evspsblsoi, tran, tsl, lai"
 raw_var_list="LEAFC,FROOTC,LIVECROOTC,DEADCROOTC,CWDC,AR,MR,QVEGT,LEAFC_ALLOC,FROOTC_ALLOC,WOODC_ALLOC,FAREA_BURNED,LAND_USE_FLUX,FSNO,SNOWDP,SNOWLIQ,H2OSNO_TOP,QSNOMELT,FGR,SNOBCMSL,SNODSTMSL,SNOOCMSL"
-cmip_var_list="burntFractionAll, cCwd, cLeaf, cRoot, nppLeaf, nppRoot, nppWood, rGrowth, rMaint, tran, hfdsn, lwsnl, snc, snd, snm, snw, sootsn"
+#cmip_var_list="burntFractionAll, cCwd, cLeaf, cRoot, nppLeaf, nppRoot, nppWood, rGrowth, rMaint, tran, hfdsn, lwsnl, snc, snd, snm, snw, sootsn"
+cmip_var_list="burntFractionAll,cCwd,cLeaf,cRoot, nppLeaf, nppRoot, nppWood, rGrowth, rMaint, tran, hfdsn, lwsnl, snc, snd, snm, snw, sootsn,"
 
 rgr_dir=${result_dir}/rgr_lnd
 native_dir=${result_dir}/native_lnd

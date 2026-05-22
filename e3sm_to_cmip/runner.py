@@ -804,7 +804,9 @@ class E3SMtoCMIP:
                 try:
                     # MPAS handlers require a different set of arguments than other
                     # handlers.
-                    supports_simple = self._handler_supports_simple_kwarg(handler_method)
+                    supports_simple = self._handler_supports_simple_kwarg(
+                        handler_method
+                    )
                     kwargs = self._get_simple_handler_kwargs(supports_simple)
                     if self.realm in MPAS_REALMS:
                         is_cmor_successful = handler_method(
