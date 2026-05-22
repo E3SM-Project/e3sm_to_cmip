@@ -315,7 +315,9 @@ class VarHandler(BaseVarHandler):
         var_attrs = self._read_simple_var_attrs(table_abs_path)
 
         for index in range(num_files_per_variable):
-            ds = self._get_mfdataset(vars_to_filepaths, index, time_dim)
+            ds = self._get_mfdataset(
+                vars_to_filepaths, index, time_dim, convert_hybrid_lev=False
+            )
             da_output = self._get_output_data_array(ds)
 
             ds_out = xr.Dataset(attrs=ds.attrs)
@@ -336,6 +338,7 @@ class VarHandler(BaseVarHandler):
                     else:
                         ds_out[name] = var
 
+            self._carry_hybrid_sigma_support(ds, ds_out)
             self._rewrite_time_to_bnds_midpoint(ds_out, time_dim)
 
             output_filename = self._simple_output_filename(
@@ -358,6 +361,30 @@ class VarHandler(BaseVarHandler):
             return f"{self.name}_{match.group(1)}_{match.group(2)}.nc"
 
         return f"{self.name}_{index:04d}.nc"
+
+    def _carry_hybrid_sigma_support(
+        self, ds: xr.Dataset, ds_out: xr.Dataset
+    ) -> None:
+        """Copy hybrid-sigma metadata that the dim-subset auto-copy misses.
+
+        Downstream tools need ``P0`` and the interface coefficients
+        ``hyai``/``hybi`` (on ``ilev``) to reconstruct the
+        ``standard_hybrid_sigma`` formula, but neither passes the rule used
+        by the main copy loop: ``P0`` is a scalar (no dims), and
+        ``hyai``/``hybi`` live on ``ilev``, which isn't a subset of the
+        output variable's dim set. Skipped unless the input carries the full
+        hybrid-sigma quintet ``PS, hyai, hybi, hyam, hybm``.
+        """
+        if not self._has_hybrid_sigma_levels(ds):
+            return
+
+        for name in ("ilev", "ilev_bnds", "hyai", "hybi", "P0"):
+            if name not in ds.variables or name in ds_out.variables:
+                continue
+            if name in ds.coords:
+                ds_out.coords[name] = ds[name]
+            else:
+                ds_out[name] = ds[name]
 
     def _rewrite_time_to_bnds_midpoint(
         self, ds_out: xr.Dataset, time_dim: str | None
@@ -399,8 +426,13 @@ class VarHandler(BaseVarHandler):
         with open(table_path) as f:
             entry = json.load(f).get("variable_entry", {}).get(self.name, {})
 
-        keys = ("long_name", "standard_name", "comment",
-                "cell_methods", "cell_measures")
+        keys = (
+            "long_name",
+            "standard_name",
+            "comment",
+            "cell_methods",
+            "cell_measures",
+        )
         attrs = {k: entry[k] for k in keys if entry.get(k)}
         attrs["units"] = self.units
         if self.positive:
@@ -484,7 +516,11 @@ class VarHandler(BaseVarHandler):
         return None
 
     def _get_mfdataset(
-        self, vars_to_filepaths: dict[str, list[str]], index: int, time_dim: str | None
+        self,
+        vars_to_filepaths: dict[str, list[str]],
+        index: int,
+        time_dim: str | None,
+        convert_hybrid_lev: bool = True,
     ) -> xr.Dataset:
         """Get the xr.Dataset using the filepaths for all raw variables.
 
@@ -536,11 +572,15 @@ class VarHandler(BaseVarHandler):
             with xr.set_options(keep_attrs=True):
                 ds = ds.rename({"time": time_dim})
 
-        # Convert "lev" and "ilev" units from mb to Pa for downstream operations.
-        if "lev" in ds:
-            ds["lev"] = ds["lev"] / 1000
-        if "ilev" in ds:
-            ds["ilev"] = ds["ilev"] / 1000
+        # Convert lev/ilev from E3SM's stored 1000*(A+B) scaling into the
+        # dimensionless A+B form CMOR's `standard_hybrid_sigma` axis expects.
+        # Disabled in simple mode so output preserves the E3SM input form
+        # (values + units="hPa" + long_name reflecting 1000*(A+B)).
+        if convert_hybrid_lev:
+            if "lev" in ds:
+                ds["lev"] = ds["lev"] / 1000
+            if "ilev" in ds:
+                ds["ilev"] = ds["ilev"] / 1000
 
         # If the variable has levels for "sdepth", make sure it has bounds
         # for the "levgrnd" axis using a statically defined list of bound
