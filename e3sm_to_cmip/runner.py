@@ -963,7 +963,7 @@ class E3SMtoCMIP:
 
     def _get_simple_handler_kwargs(self, supports_simple: bool) -> dict[str, Any]:
         if self.simple_mode and supports_simple:
-            return {"simple": True}
+            return {"simple": True, "output_path": self.output_path}
 
         return {}
 

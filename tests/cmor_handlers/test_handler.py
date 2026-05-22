@@ -199,6 +199,12 @@ class TestCmorizeMethod:
                     "variable_entry": {
                         "mrsos": {
                             "dimensions": "time lat lon",
+                            "long_name": "Moisture in Upper Portion of Soil Column",
+                            "standard_name": "mass_content_of_water_in_soil_layer",
+                            "units": "kg m-2",
+                            "cell_methods": "area: mean where land time: mean",
+                            "cell_measures": "area: areacella",
+                            "comment": "Mass of water in upper 10cm of soil layer.",
                         }
                     }
                 },
@@ -207,7 +213,7 @@ class TestCmorizeMethod:
 
         self.output_path = tmp_path / "output"
         self.output_path.mkdir()
-        self.cmor_log_dir = self.output_path / "cmor_logs"
+        self.cmor_log_dir = tmp_path / "logs"
         self.cmor_log_dir.mkdir()
 
     @pytest.mark.xfail
@@ -246,20 +252,82 @@ class TestCmorizeMethod:
         monkeypatch.setattr(handler, "_get_mfdataset", mock_get_mfdataset)
 
         result = handler.cmorize(
-            vars_to_filepaths={"SOILWATER_10CM": ["dummy.nc"]},
+            vars_to_filepaths={
+                "SOILWATER_10CM": ["SOILWATER_10CM_185001_185412.nc"]
+            },
             tables_path=str(self.tables_path),
             metadata_path="unused.json",
             cmor_log_dir=str(self.cmor_log_dir),
             simple=True,
+            output_path=str(self.output_path),
         )
 
-        output_file = self.output_path / "mrsos_0000.nc"
+        # Filename mirrors the zppy input convention (YYYYMM_YYYYMM).
+        output_file = self.output_path / "mrsos_185001_185412.nc"
         assert result is True
         assert output_file.exists()
 
         with xr.open_dataset(output_file) as output_ds:
             assert "mrsos" in output_ds.data_vars
             np.testing.assert_array_equal(output_ds["mrsos"].values, data.values)
+            # Coords and bounds are auto-copied via dim-subset match.
+            assert "lat" in output_ds.coords
+            assert "lon" in output_ds.coords
+            assert "lat_bnds" in output_ds.data_vars
+            assert "lon_bnds" in output_ds.data_vars
+            assert "time_bounds" in output_ds.data_vars
+            # Raw variable must not leak into the simple output.
+            assert "SOILWATER_10CM" not in output_ds.variables
+            # CMIP6 table attrs are propagated; units come from the handler.
+            mrsos_attrs = output_ds["mrsos"].attrs
+            assert mrsos_attrs["units"] == "kg m-2"
+            assert mrsos_attrs["long_name"] == (
+                "Moisture in Upper Portion of Soil Column"
+            )
+            assert (
+                mrsos_attrs["standard_name"]
+                == "mass_content_of_water_in_soil_layer"
+            )
+            assert mrsos_attrs["cell_methods"] == (
+                "area: mean where land time: mean"
+            )
+            assert mrsos_attrs["cell_measures"] == "area: areacella"
+
+    def test_cmorize_simple_requires_output_path(self, monkeypatch):
+        handler = VarHandler(
+            name="mrsos",
+            units="kg m-2",
+            raw_variables=["SOILWATER_10CM"],
+            table="CMIP6_Lmon.json",
+        )
+        monkeypatch.setattr(handler, "_get_mfdataset", lambda *a, **k: xr.Dataset())
+
+        with pytest.raises(ValueError, match="output_path is required"):
+            handler.cmorize(
+                vars_to_filepaths={"SOILWATER_10CM": ["dummy.nc"]},
+                tables_path=str(self.tables_path),
+                metadata_path="unused.json",
+                cmor_log_dir=str(self.cmor_log_dir),
+                simple=True,
+            )
+
+    def test_simple_output_filename_falls_back_to_index(self):
+        handler = VarHandler(
+            name="mrsos",
+            units="kg m-2",
+            raw_variables=["SOILWATER_10CM"],
+            table="CMIP6_Lmon.json",
+        )
+        # YYYYMM_YYYYMM suffix present -> mirrored on output.
+        assert (
+            handler._simple_output_filename("SOILWATER_10CM_185001_185412.nc", 0)
+            == "mrsos_185001_185412.nc"
+        )
+        # No time-range suffix (e.g. fx data) -> indexed fallback.
+        assert (
+            handler._simple_output_filename("LANDFRAC.nc", 3)
+            == "mrsos_0003.nc"
+        )
 
     @pytest.mark.xfail
     def test_returns_error_if_unable_to_find_input_files_for_variables(self):

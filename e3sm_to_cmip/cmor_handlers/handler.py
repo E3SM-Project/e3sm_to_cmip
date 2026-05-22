@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 from typing import Any, KeysView, Literal, TypedDict
 
 import cmor
@@ -26,21 +27,17 @@ HYBRID_SIGMA_LEVEL_NAMES = [
 # CMIP variable does have a time dimension, subsequent CMOR operations are
 # handled appropriately.
 TIME_DIMS = ["time", "time1", "time2"]
-SIMPLE_AXIS_NAMES = [
-    "lat",
-    "lon",
-    "lat_bnds",
-    "lon_bnds",
-    "time",
-    "time_bnds",
-    "time_bounds",
-    "lev",
-    "ilev",
-    "plev",
-    "levgrnd",
-    "levgrnd_bnds",
-]
-SIMPLE_OUTPUT_FILENAME_PATTERN = "{name}_{index:04d}.nc"
+
+# Bounds-dimension names that appear on `*_bnds`/`*_bounds` coord variables
+# alongside the spatial/temporal dim (e.g. lat_bnds has dims (lat, nbnd),
+# E3SM land time_bounds has dims (time, hist_interval)). Treated as
+# transparent when matching input variables to the output variable's dims in
+# simple mode.
+BOUNDS_DIM_NAMES = {"nbnd", "bnds", "d2", "nv", "hist_interval"}
+
+# Matches the zppy time-series filename convention `..._YYYYMM_YYYYMM.nc`,
+# used to mirror the input time range on simple-mode output filenames.
+_TIME_RANGE_RE = re.compile(r"_(\d{6})_(\d{6})\.nc$", re.IGNORECASE)
 
 # Type alias for the dictionary representation of a VarHandler object.
 VarHandlerDict = dict[str, Any]
@@ -200,6 +197,7 @@ class VarHandler(BaseVarHandler):
         cmor_log_dir: str,
         table: str | None = None,
         simple: bool = False,
+        output_path: str | None = None,
     ) -> bool:
         """CMORizes a list of E3SM raw variables to a CMIP variable.
 
@@ -216,6 +214,13 @@ class VarHandler(BaseVarHandler):
         table : str | None
             The CMOR table filename, derived from a custom `freq`, by default
             None.
+        simple : bool
+            If True, skip the full CMOR pipeline and write a plain netCDF file
+            containing the output variable and its coordinates. Requires
+            `output_path`.
+        output_path : str | None
+            Directory to write simple-mode output files into. Required when
+            `simple=True`; ignored otherwise.
 
         Returns
         -------
@@ -236,7 +241,13 @@ class VarHandler(BaseVarHandler):
         time_dim: str | None = self._get_var_time_dim(table_abs_path)
 
         if simple:
-            return self._write_simple(vars_to_filepaths, cmor_log_dir, time_dim)
+            if output_path is None:
+                raise ValueError(
+                    "output_path is required when calling cmorize(simple=True)"
+                )
+            return self._write_simple(
+                vars_to_filepaths, output_path, time_dim, table_abs_path
+            )
 
         # Create the logging directory and setup the CMOR module globally before
         # running any CMOR functions.
@@ -292,12 +303,16 @@ class VarHandler(BaseVarHandler):
     def _write_simple(
         self,
         vars_to_filepaths: dict[str, list[str]],
-        cmor_log_dir: str,
+        output_path: str,
         time_dim: str | None,
+        table_abs_path: str,
     ) -> bool:
         """Write simple (non-CMORized) output netCDF files."""
-        output_dir = os.path.dirname(cmor_log_dir)
-        num_files_per_variable = len(list(vars_to_filepaths.values())[0])
+        # Sort to match _get_mfdataset's ordering so the filename derived
+        # below points to the same input file _get_mfdataset reads at `index`.
+        primary_filepaths = sorted(list(vars_to_filepaths.values())[0])
+        num_files_per_variable = len(primary_filepaths)
+        var_attrs = self._read_simple_var_attrs(table_abs_path)
 
         for index in range(num_files_per_variable):
             ds = self._get_mfdataset(vars_to_filepaths, index, time_dim)
@@ -306,29 +321,60 @@ class VarHandler(BaseVarHandler):
             ds_out = xr.Dataset(attrs=ds.attrs)
             # Use `.data` to avoid xarray's ambiguity error when constructing a
             # variable from `(dims, data)` with a DataArray object.
-            ds_out[self.name] = (
-                da_output.dims,
-                da_output.data,  # extract raw array to avoid DataArray ambiguity
+            ds_out[self.name] = (da_output.dims, da_output.data)
+            ds_out[self.name].attrs = var_attrs
+            ds_out[self.name].encoding["_FillValue"] = FILL_VALUE
+
+            output_dims = set(da_output.dims)
+            skip = set(self.raw_variables) | {self.name}
+            for name, var in ds.variables.items():
+                if name in skip or name in ds_out.variables or not var.dims:
+                    continue
+                if set(var.dims) - BOUNDS_DIM_NAMES <= output_dims:
+                    if name in ds.coords:
+                        ds_out.coords[name] = var
+                    else:
+                        ds_out[name] = var
+
+            output_filename = self._simple_output_filename(
+                primary_filepaths[index], index
             )
-
-            for dim in da_output.dims:
-                if dim in ds:
-                    ds_out.coords[dim] = ds[dim]
-
-            for axis in SIMPLE_AXIS_NAMES:
-                if axis in ds and axis not in ds_out:
-                    ds_out[axis] = ds[axis]
-
-            output_filename = SIMPLE_OUTPUT_FILENAME_PATTERN.format(
-                name=self.name, index=index
-            )
-            output_filepath = os.path.join(output_dir, output_filename)
-            ds_out.to_netcdf(output_filepath)
+            ds_out.to_netcdf(os.path.join(output_path, output_filename))
 
             ds.close()
             ds_out.close()
 
         return True
+
+    def _simple_output_filename(self, input_filepath: str, index: int) -> str:
+        """Mirror the zppy `_YYYYMM_YYYYMM.nc` suffix on the input filename;
+        fall back to a zero-padded index when no time range is present (e.g.
+        time-invariant `fx` inputs).
+        """
+        match = _TIME_RANGE_RE.search(os.path.basename(input_filepath))
+        if match:
+            return f"{self.name}_{match.group(1)}_{match.group(2)}.nc"
+
+        return f"{self.name}_{index:04d}.nc"
+
+    def _read_simple_var_attrs(self, table_path: str) -> dict[str, str]:
+        """Pull CF/CMIP6-canonical attrs for ``self.name`` from a CMIP6 table.
+
+        ``units`` is taken from the handler (the canonical unit string the
+        runner targets) rather than the table, to stay consistent with what
+        ``_get_output_data_array`` produces after any unit conversion.
+        """
+        with open(table_path) as f:
+            entry = json.load(f).get("variable_entry", {}).get(self.name, {})
+
+        keys = ("long_name", "standard_name", "comment",
+                "cell_methods", "cell_measures")
+        attrs = {k: entry[k] for k in keys if entry.get(k)}
+        attrs["units"] = self.units
+        if self.positive:
+            attrs["positive"] = self.positive
+
+        return attrs
 
     def _all_vars_have_filepaths(
         self, vars_to_filespaths: dict[str, list[str]]

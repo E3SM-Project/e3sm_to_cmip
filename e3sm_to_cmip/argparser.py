@@ -284,6 +284,11 @@ def _validate_parsed_args(parsed_args: argparse.Namespace):
     if parsed_args.realm == "mpassi" and not parsed_args.map:
         raise ValueError("MPAS sea-ice handling requires a map file")
 
+    if parsed_args.simple and parsed_args.realm in ("mpaso", "mpassi"):
+        raise ValueError(
+            "--simple mode is not supported for MPAS realms (mpaso, mpassi)."
+        )
+
     if not parsed_args.simple and not parsed_args.tables_path and not parsed_args.info:
         raise ValueError("Running without the --simple flag requires CMIP6 tables path")
 
