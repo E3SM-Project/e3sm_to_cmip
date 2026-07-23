@@ -18,7 +18,7 @@ from concurrent.futures import Future, as_completed
 from concurrent.futures import ProcessPoolExecutor as Pool
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from inspect import Parameter, signature
+from inspect import signature
 from pathlib import Path
 from pprint import pprint
 from typing import Any, Literal
@@ -42,6 +42,7 @@ from e3sm_to_cmip.cmor_handlers.utils import (
     load_all_handlers,
 )
 from e3sm_to_cmip.util import (
+    CMIPTableNotFoundError,
     _get_table_info,
     add_metadata,
     exit_failure,
@@ -437,16 +438,41 @@ class E3SMtoCMIP:
             logger.debug(f"Input dataset variables: {e3sm_vars}")
 
             if self.realm in REALMS:
-                handlers, missing_handlers, non_derivable_handlers = derive_handlers(
-                    cmip_tables_path=self.tables_path,
-                    cmip_vars=self.var_list,
-                    e3sm_vars=e3sm_vars,
-                    freq=self.freq,
-                    realm=self.realm,
-                )
+                try:
+                    handlers, missing_handlers, non_derivable_handlers = (
+                        derive_handlers(
+                            cmip_tables_path=self.tables_path,
+                            cmip_vars=self.var_list,
+                            e3sm_vars=e3sm_vars,
+                            freq=self.freq,
+                            realm=self.realm,
+                        )
+                    )
+                except CMIPTableNotFoundError as exc:
+                    if self.simple_mode:
+                        raise ValueError(
+                            f"{exc} Pass --tables-path with the required CMIP6 "
+                            "table for this simple-mode request."
+                        ) from exc
+                    raise
 
             elif self.realm in MPAS_REALMS:
                 handlers, missing_handlers = _get_mpas_handlers(self.var_list)
+
+        if self.simple_mode:
+            missing_tables = sorted(
+                {
+                    handler["table"]
+                    for handler in handlers
+                    if not Path(self.tables_path, handler["table"]).is_file()
+                }
+            )
+            if missing_tables:
+                raise ValueError(
+                    "Simple mode requires unavailable CMIP6 table(s): "
+                    f"{', '.join(missing_tables)}. Pass --tables-path with the "
+                    "required table files."
+                )
 
         return handlers, missing_handlers, non_derivable_handlers
 
@@ -796,7 +822,6 @@ class E3SMtoCMIP:
                 handler_method = handler["method"]
                 handler_variables = handler["raw_variables"]
                 handler_table = handler["table"]
-                vars_to_filepaths = self._get_handler_input_files(handler_variables)
 
                 logger.info(
                     f"CMOR attempt {index + 1}/{num_handlers} -- '{handler['name']}' handler: {handler}"
@@ -804,10 +829,8 @@ class E3SMtoCMIP:
                 try:
                     # MPAS handlers require a different set of arguments than other
                     # handlers.
-                    supports_simple = self._handler_supports_simple_kwarg(
-                        handler_method
-                    )
-                    kwargs = self._get_simple_handler_kwargs(supports_simple)
+                    kwargs = self._get_simple_handler_kwargs(handler_method)
+                    vars_to_filepaths = self._get_handler_input_files(handler_variables)
                     if self.realm in MPAS_REALMS:
                         is_cmor_successful = handler_method(
                             vars_to_filepaths,
@@ -890,11 +913,10 @@ class E3SMtoCMIP:
             handler_method = handler["method"]
             handler_variables = handler["raw_variables"]
             handler_table = handler["table"]
-            vars_to_filepaths = self._get_handler_input_files(handler_variables)
 
             try:
-                supports_simple = self._handler_supports_simple_kwarg(handler_method)
-                kwargs = self._get_simple_handler_kwargs(supports_simple)
+                kwargs = self._get_simple_handler_kwargs(handler_method)
+                vars_to_filepaths = self._get_handler_input_files(handler_variables)
                 if self.realm in MPAS_REALMS:
                     future: Future[bool] = pool.submit(
                         handler_method,
@@ -918,6 +940,18 @@ class E3SMtoCMIP:
                 logger.error(
                     f"Failed to submit handler '{handler.get('name', 'unknown')}' to pool: {exc}"
                 )
+                num_success, failed_handlers = self._log_handler_status(
+                    False,
+                    handler["name"],
+                    num_handlers,
+                    num_success,
+                    failed_handlers,
+                )
+                if self.on_var_failure == "stop":
+                    self._stop_with_failed_handler_parallel(
+                        handler["name"], pool, pbar, futures
+                    )
+                pbar.update(1)
                 continue
 
             futures.append(future)
@@ -953,18 +987,14 @@ class E3SMtoCMIP:
 
         return True
 
-    def _handler_supports_simple_kwarg(self, method) -> bool:
+    def _handler_supports_simple(self, method) -> bool:
         method_sig = signature(method)
-        if "simple" in method_sig.parameters:
-            return True
+        return {"simple", "output_path"}.issubset(method_sig.parameters)
 
-        return any(
-            param.kind is Parameter.VAR_KEYWORD
-            for param in method_sig.parameters.values()
-        )
-
-    def _get_simple_handler_kwargs(self, supports_simple: bool) -> dict[str, Any]:
-        if self.simple_mode and supports_simple:
+    def _get_simple_handler_kwargs(self, method) -> dict[str, Any]:
+        if self.simple_mode:
+            if not self._handler_supports_simple(method):
+                raise ValueError("Handler does not support --simple mode")
             return {"simple": True, "output_path": self.output_path}
 
         return {}

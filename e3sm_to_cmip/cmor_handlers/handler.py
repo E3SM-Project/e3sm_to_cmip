@@ -363,20 +363,29 @@ class VarHandler(BaseVarHandler):
         return f"{self.name}_{index:04d}.nc"
 
     def _carry_hybrid_sigma_support(self, ds: xr.Dataset, ds_out: xr.Dataset) -> None:
-        """Copy hybrid-sigma metadata that the dim-subset auto-copy misses.
+        """Copy complete hybrid-sigma metadata into simple-mode output.
 
-        Downstream tools need ``P0`` and the interface coefficients
-        ``hyai``/``hybi`` (on ``ilev``) to reconstruct the
-        ``standard_hybrid_sigma`` formula, but neither passes the rule used
-        by the main copy loop: ``P0`` is a scalar (no dims), and
-        ``hyai``/``hybi`` live on ``ilev``, which isn't a subset of the
-        output variable's dim set. Skipped unless the input carries the full
-        hybrid-sigma quintet ``PS, hyai, hybi, hyam, hybm``.
+        Hybrid formula inputs can be excluded by the raw-variable filter or
+        dimension-subset matching. Copy the complete support set whenever the
+        input carries the required ``PS, hyai, hybi, hyam, hybm`` quintet.
+        Preserve an input ``P0`` when present.
         """
         if not self._has_hybrid_sigma_levels(ds):
             return
 
-        for name in ("ilev", "ilev_bnds", "hyai", "hybi", "P0"):
+        support_names = (
+            "lev",
+            "lev_bnds",
+            "ilev",
+            "ilev_bnds",
+            "hyam",
+            "hybm",
+            "hyai",
+            "hybi",
+            "PS",
+            "P0",
+        )
+        for name in support_names:
             if name not in ds.variables or name in ds_out.variables:
                 continue
             if name in ds.coords:

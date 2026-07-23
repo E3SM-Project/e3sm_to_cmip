@@ -54,8 +54,10 @@ def setup_argparser() -> argparse.ArgumentParser:
     optional_mode.add_argument(
         "--simple",
         help=(
-            "Perform a simple translation of the E3SM output to CMIP format, but "
-            "without the CMIP6 metadata checks. (WARNING: NOT WORKING AS OF 1.8.2)"
+            "Write flat, non-CMORized netCDF output with CMIP variable metadata. "
+            "Bundled tables are used by default; pass --tables-path when the "
+            "requested frequency is not bundled. Variables backed by legacy "
+            "handlers that do not support simple mode are rejected."
         ),
         action="store_true",
     )
