@@ -8,11 +8,15 @@ from e3sm_to_cmip.cmor_handlers._formulas import (
     emibc,
     emiso2,
     emiso4,
+    get_surface_pressure,
+    get_surface_pressure_name,
     lai,
     mmrbc,
     mmrso4,
     mrfso,
     mrso,
+    pfull,
+    phalf,
     pr,
     prsn,
     rldscs,
@@ -30,6 +34,73 @@ def _dummy_dataarray():
         dims=["lat", "lon"],
         data=np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2]], dtype="float64"),
     )
+
+
+def _hybrid_dataset(ps_name: str) -> xr.Dataset:
+    """Get a dataset with hybrid-sigma coefficients and surface pressure.
+
+    `ps_name` is "PS" for EAM output and "ps" for EAMxx output.
+    """
+    return xr.Dataset(
+        data_vars={
+            "hyam": xr.DataArray(dims=["lev"], data=np.array([0.1, 0.2])),
+            "hybm": xr.DataArray(dims=["lev"], data=np.array([0.9, 0.8])),
+            "hyai": xr.DataArray(dims=["ilev"], data=np.array([0.0, 0.15, 0.3])),
+            "hybi": xr.DataArray(dims=["ilev"], data=np.array([1.0, 0.85, 0.7])),
+            ps_name: xr.DataArray(
+                dims=["time2", "lat", "lon"],
+                data=np.full((1, 1, 1), 100000.0),
+            ),
+        }
+    )
+
+
+@pytest.mark.parametrize("ps_name", ["PS", "ps"])
+def test_get_surface_pressure(ps_name):
+    ds = _hybrid_dataset(ps_name)
+
+    assert get_surface_pressure_name(ds) == ps_name
+    xr.testing.assert_identical(get_surface_pressure(ds), ds[ps_name])
+
+
+def test_get_surface_pressure_prefers_eam_name():
+    ds = _hybrid_dataset("PS")
+    ds["ps"] = ds["PS"] * 2
+
+    assert get_surface_pressure_name(ds) == "PS"
+
+
+def test_get_surface_pressure_without_surface_pressure_variable():
+    ds = xr.Dataset()
+
+    assert get_surface_pressure_name(ds) is None
+
+    with pytest.raises(KeyError):
+        get_surface_pressure(ds)
+
+
+@pytest.mark.parametrize("ps_name", ["PS", "ps"])
+def test_pfull(ps_name):
+    ds = _hybrid_dataset(ps_name)
+
+    result = pfull(ds)
+    expected = xr.DataArray(
+        dims=["time2", "lev", "lat", "lon"],
+        data=np.array([[[[100000.0]], [[100000.0]]]]),
+    )
+    xr.testing.assert_allclose(result, expected)
+
+
+@pytest.mark.parametrize("ps_name", ["PS", "ps"])
+def test_phalf(ps_name):
+    ds = _hybrid_dataset(ps_name)
+
+    result = phalf(ds)
+    expected = xr.DataArray(
+        dims=["time2", "ilev", "lat", "lon"],
+        data=np.array([[[[100000.0]], [[100000.0]], [[100000.0]]]]),
+    )
+    xr.testing.assert_allclose(result, expected)
 
 
 def test_cLitter():

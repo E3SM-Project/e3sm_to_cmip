@@ -465,6 +465,24 @@ class TestCmorizeMethod:
             assert (name in ds_out.coords) == (name in ds.coords)
         assert ds_out["P0"].encoding == ds["P0"].encoding
 
+    def test_hybrid_sigma_support_carries_eamxx_lowercase_surface_pressure(self):
+        # EAMxx writes surface pressure as "ps" instead of EAM's "PS".
+        handler = VarHandler(
+            name="pfull",
+            units="Pa",
+            raw_variables=["hyai", "hybi", "hyam", "hybm", "ps"],
+            table="CMIP6_Amon.json",
+            formula="hyam * p0 + hybm * ps",
+        )
+        ds = self._get_hybrid_sigma_dataset(include_p0=True, ps_name="ps")
+        ds_out = xr.Dataset()
+
+        handler._carry_hybrid_sigma_support(ds, ds_out)
+
+        for name in ("lev", "ilev", "hyam", "hybm", "hyai", "hybi", "ps", "P0"):
+            xr.testing.assert_identical(ds_out[name], ds[name])
+        assert "PS" not in ds_out.variables
+
     def test_incomplete_hybrid_sigma_support_does_not_synthesize_p0(self):
         handler = VarHandler(
             name="pfull",
@@ -515,14 +533,16 @@ class TestCmorizeMethod:
             np.testing.assert_array_equal(out["snc"].values, [[[50.0]]])
             assert out["snc"].attrs["long_name"] == "Snow Area Percentage"
 
-    def _get_hybrid_sigma_dataset(self, include_p0: bool) -> xr.Dataset:
+    def _get_hybrid_sigma_dataset(
+        self, include_p0: bool, ps_name: str = "PS"
+    ) -> xr.Dataset:
         ds = xr.Dataset(
             {
                 "hyam": (("lev",), [0.1, 0.2]),
                 "hybm": (("lev",), [0.9, 0.8]),
                 "hyai": (("ilev",), [0.0, 0.15, 0.3]),
                 "hybi": (("ilev",), [1.0, 0.85, 0.7]),
-                "PS": (
+                ps_name: (
                     ("time2", "lat", "lon"),
                     np.full((1, 1, 1), 100000.0),
                 ),

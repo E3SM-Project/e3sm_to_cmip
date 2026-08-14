@@ -367,13 +367,14 @@ class VarHandler(BaseVarHandler):
 
         Hybrid formula inputs can be excluded by the raw-variable filter or
         dimension-subset matching. Copy the complete support set whenever the
-        input carries the required ``PS, hyai, hybi, hyam, hybm`` quintet.
-        Preserve an input ``P0`` when present.
+        input carries the required ``hyai, hybi, hyam, hybm`` coefficients and
+        a surface pressure variable (``PS`` in EAM, ``ps`` in EAMxx). Preserve
+        an input ``P0`` when present.
         """
         if not self._has_hybrid_sigma_levels(ds):
             return
 
-        support_names = (
+        support_names = [
             "lev",
             "lev_bnds",
             "ilev",
@@ -382,9 +383,13 @@ class VarHandler(BaseVarHandler):
             "hybm",
             "hyai",
             "hybi",
-            "PS",
             "P0",
-        )
+        ]
+
+        ps_name = _formulas.get_surface_pressure_name(ds)
+        if ps_name is not None:
+            support_names.append(ps_name)
+
         for name in support_names:
             if name not in ds.variables or name in ds_out.variables:
                 continue
@@ -720,9 +725,14 @@ class VarHandler(BaseVarHandler):
         return lev_id
 
     def _has_hybrid_sigma_levels(self, ds: xr.Dataset):
-        hybrid_sigma_levels = ["PS", "hyai", "hybi", "hybm", "hyam"]
+        hybrid_sigma_levels = ["hyai", "hybi", "hybm", "hyam"]
+        has_coefficients = set(hybrid_sigma_levels).issubset(ds.data_vars)
 
-        return set(hybrid_sigma_levels).issubset(ds.data_vars)
+        # Surface pressure is matched by name rather than membership because
+        # EAM writes "PS" and EAMxx writes "ps".
+        has_surface_pressure = _formulas.get_surface_pressure_name(ds) is not None
+
+        return has_coefficients and has_surface_pressure
 
     def _set_cmor_zfactor_for_hybrid_levels(
         self, ds: xr.Dataset, cmor_axis_id_map: dict[str, cmor.axis]
@@ -876,7 +886,7 @@ class VarHandler(BaseVarHandler):
                 try:
                     cmor.write(
                         var_id=cmor_ips_id,
-                        data=ds["PS"].values,
+                        data=_formulas.get_surface_pressure(ds).values,
                         time_vals=time_vals,
                         time_bnds=time_bnds,
                         store_with=cmor_var_id,

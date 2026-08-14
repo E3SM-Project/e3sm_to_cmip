@@ -14,6 +14,11 @@ RADIUS = 6.37122e6
 # P0 defined in Pa units (Pascal), used for reconstructing pressure to hybrid.
 P0_VALUE = 100000
 
+# The accepted names for the surface pressure variable. EAM writes it as "PS",
+# while EAMxx writes it as "ps". "PS" is checked first so EAM input keeps its
+# existing behavior.
+SURFACE_PRESSURE_NAMES = ("PS", "ps")
+
 LEVGRND_BNDS = [
     0,
     0.01751106046140194,
@@ -32,6 +37,56 @@ LEVGRND_BNDS = [
     28.249208575114608,
     42.098968505859375,
 ]
+
+
+def get_surface_pressure_name(ds: xr.Dataset) -> str | None:
+    """Get the name of the surface pressure variable in the dataset.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset that may contain a surface pressure variable.
+
+    Returns
+    -------
+    str | None
+        The first name in ``SURFACE_PRESSURE_NAMES`` found in the dataset,
+        or None if the dataset has no surface pressure variable.
+    """
+    for name in SURFACE_PRESSURE_NAMES:
+        if name in ds.variables:
+            return name
+
+    return None
+
+
+def get_surface_pressure(ds: xr.Dataset) -> xr.DataArray:
+    """Get the surface pressure variable from the dataset.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset containing a surface pressure variable.
+
+    Returns
+    -------
+    xr.DataArray
+        The surface pressure variable.
+
+    Raises
+    ------
+    KeyError
+        If the dataset has no surface pressure variable.
+    """
+    name = get_surface_pressure_name(ds)
+
+    if name is None:
+        raise KeyError(
+            "No surface pressure variable found in the dataset (expected one "
+            f"of {', '.join(SURFACE_PRESSURE_NAMES)})."
+        )
+
+    return ds[name]
 
 
 def convert_units(var: xr.DataArray, unit_conversion: str) -> xr.DataArray:
@@ -415,7 +470,7 @@ def pfull(ds: xr.Dataset):
     This function is equivalent to `geocat.comp.interp_hybrid_to_pressure()`
     and `cdutil.vertical.reconstructPressureFromHybrid()`.
     """
-    result = ds["hyam"] * P0_VALUE + ds["hybm"] * ds["PS"]
+    result = ds["hyam"] * P0_VALUE + ds["hybm"] * get_surface_pressure(ds)
 
     # After Xarray broadcasting, the dimensions need to be reordered from
     # ["lev", "time2", "lat", "lon"] to ["time2", "lev", "lat", "lon"].
@@ -451,7 +506,7 @@ def phalf(ds: xr.Dataset):
     This function is equivalent to `geocat.comp.interp_hybrid_to_pressure()`
     and `cdutil.vertical.reconstructPressureFromHybrid()`.
     """
-    result = ds["hyai"] * P0_VALUE + ds["hybi"] * ds["PS"]
+    result = ds["hyai"] * P0_VALUE + ds["hybi"] * get_surface_pressure(ds)
 
     # After Xarray broadcasting, the dimensions need to be reordered from
     # ["ilev", "time2", "lat", "lon"] to ["time2", "ilev", "lat", "lon"].
