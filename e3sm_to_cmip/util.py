@@ -14,6 +14,11 @@ from e3sm_to_cmip._logger import _setup_child_logger
 
 logger = _setup_child_logger(__name__)
 
+
+class CMIPTableNotFoundError(ValueError):
+    """Raised when a required CMIP6 table file is unavailable."""
+
+
 FREQUENCIES = ["mon", "day", "6hrLev", "6hrPlev", "6hrPlevPt", "3hr", "1hr"]
 ATMOS_TABLES = [
     "CMIP6_Amon.json",
@@ -294,7 +299,9 @@ def _get_table_for_non_monthly_freq(
     # Example: "/home/user/PCMDI/cmip6-cmor-tables/Tables/CMIP6_6hr.json"
     table_path = Path(tables_path, table_for_freq)
     if not table_path.exists():
-        raise ValueError(f"Table `{table_for_freq}` does not exist in `{tables_path}`.")
+        raise CMIPTableNotFoundError(
+            f"Table `{table_for_freq}` does not exist in `{tables_path}`."
+        )
 
     # Set table to the name of the table file
     # Example: "CMIP6_3hr.json"
@@ -343,7 +350,7 @@ def _get_table_for_freq(base_table: str, freq: str) -> str | None:
 def _get_table_info(tables, table):
     table = Path(tables, table)
     if not table.exists():
-        raise ValueError(f"CMIP6 table doesnt exist: {table}")
+        raise CMIPTableNotFoundError(f"CMIP6 table doesnt exist: {table}")
     with open(table, "r") as instream:
         return json.load(instream)
 

@@ -54,8 +54,10 @@ def setup_argparser() -> argparse.ArgumentParser:
     optional_mode.add_argument(
         "--simple",
         help=(
-            "Perform a simple translation of the E3SM output to CMIP format, but "
-            "without the CMIP6 metadata checks. (WARNING: NOT WORKING AS OF 1.8.2)"
+            "Write flat, non-CMORized netCDF output with CMIP variable metadata. "
+            "Bundled tables are used by default; pass --tables-path when the "
+            "requested frequency is not bundled. Variables backed by legacy "
+            "handlers that do not support simple mode are rejected."
         ),
         action="store_true",
     )
@@ -283,6 +285,11 @@ def _validate_parsed_args(parsed_args: argparse.Namespace):
 
     if parsed_args.realm == "mpassi" and not parsed_args.map:
         raise ValueError("MPAS sea-ice handling requires a map file")
+
+    if parsed_args.simple and parsed_args.realm in ("mpaso", "mpassi"):
+        raise ValueError(
+            "--simple mode is not supported for MPAS realms (mpaso, mpassi)."
+        )
 
     if not parsed_args.simple and not parsed_args.tables_path and not parsed_args.info:
         raise ValueError("Running without the --simple flag requires CMIP6 tables path")

@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 from typing import Any, KeysView, Literal, TypedDict
 
 import cmor
@@ -26,6 +27,17 @@ HYBRID_SIGMA_LEVEL_NAMES = [
 # CMIP variable does have a time dimension, subsequent CMOR operations are
 # handled appropriately.
 TIME_DIMS = ["time", "time1", "time2"]
+
+# Bounds-dimension names that appear on `*_bnds`/`*_bounds` coord variables
+# alongside the spatial/temporal dim (e.g. lat_bnds has dims (lat, nbnd),
+# E3SM land time_bounds has dims (time, hist_interval)). Treated as
+# transparent when matching input variables to the output variable's dims in
+# simple mode.
+BOUNDS_DIM_NAMES = {"nbnd", "bnds", "d2", "nv", "hist_interval"}
+
+# Matches the zppy time-series filename convention `..._YYYYMM_YYYYMM.nc`,
+# used to mirror the input time range on simple-mode output filenames.
+_TIME_RANGE_RE = re.compile(r"_(\d{6})_(\d{6})\.nc$", re.IGNORECASE)
 
 # Type alias for the dictionary representation of a VarHandler object.
 VarHandlerDict = dict[str, Any]
@@ -184,6 +196,8 @@ class VarHandler(BaseVarHandler):
         metadata_path: str,
         cmor_log_dir: str,
         table: str | None = None,
+        simple: bool = False,
+        output_path: str | None = None,
     ) -> bool:
         """CMORizes a list of E3SM raw variables to a CMIP variable.
 
@@ -200,6 +214,13 @@ class VarHandler(BaseVarHandler):
         table : str | None
             The CMOR table filename, derived from a custom `freq`, by default
             None.
+        simple : bool
+            If True, skip the full CMOR pipeline and write a plain netCDF file
+            containing the output variable and its coordinates. Requires
+            `output_path`.
+        output_path : str | None
+            Directory to write simple-mode output files into. Required when
+            `simple=True`; ignored otherwise.
 
         Returns
         -------
@@ -216,18 +237,22 @@ class VarHandler(BaseVarHandler):
         if not self._all_vars_have_filepaths(vars_to_filepaths):
             return False
 
+        table_abs_path = os.path.join(tables_path, self.table)
+        time_dim: str | None = self._get_var_time_dim(table_abs_path)
+
+        if simple:
+            if output_path is None:
+                raise ValueError(
+                    "output_path is required when calling cmorize(simple=True)"
+                )
+            return self._write_simple(
+                vars_to_filepaths, output_path, time_dim, table_abs_path
+            )
+
         # Create the logging directory and setup the CMOR module globally before
         # running any CMOR functions.
         # ----------------------------------------------------------------------
         self._setup_cmor_module(self.name, tables_path, metadata_path, cmor_log_dir)
-
-        # Get parameters for running CMOR operations
-        # ----------------------------------------------------------------------
-        # Check if the output CMIP variable has a time dimension, which determines
-        # how to handle downstream operations such writing files out with CMOR
-        # with or without a time axis.
-        table_abs_path = os.path.join(tables_path, self.table)
-        time_dim: str | None = self._get_var_time_dim(table_abs_path)
 
         # Assuming all year ranges are the same for every variable.
         # TODO: Is this a good keep this legacy assumption?
@@ -274,6 +299,158 @@ class VarHandler(BaseVarHandler):
         )
 
         return is_cmor_successful
+
+    def _write_simple(
+        self,
+        vars_to_filepaths: dict[str, list[str]],
+        output_path: str,
+        time_dim: str | None,
+        table_abs_path: str,
+    ) -> bool:
+        """Write simple (non-CMORized) output netCDF files."""
+        # Sort to match _get_mfdataset's ordering so the filename derived
+        # below points to the same input file _get_mfdataset reads at `index`.
+        primary_filepaths = sorted(list(vars_to_filepaths.values())[0])
+        num_files_per_variable = len(primary_filepaths)
+        var_attrs = self._read_simple_var_attrs(table_abs_path)
+
+        for index in range(num_files_per_variable):
+            ds = self._get_mfdataset(
+                vars_to_filepaths, index, time_dim, convert_hybrid_lev=False
+            )
+            da_output = self._get_output_data_array(ds)
+
+            ds_out = xr.Dataset(attrs=ds.attrs)
+            # Use `.data` to avoid xarray's ambiguity error when constructing a
+            # variable from `(dims, data)` with a DataArray object.
+            ds_out[self.name] = (da_output.dims, da_output.data)
+            ds_out[self.name].attrs = var_attrs
+            ds_out[self.name].encoding["_FillValue"] = FILL_VALUE
+
+            output_dims = set(da_output.dims)
+            skip = set(self.raw_variables) | {self.name}
+            for name, var in ds.variables.items():
+                if name in skip or name in ds_out.variables or not var.dims:
+                    continue
+                if set(var.dims) - BOUNDS_DIM_NAMES <= output_dims:
+                    if name in ds.coords:
+                        ds_out.coords[name] = var
+                    else:
+                        ds_out[name] = var
+
+            self._carry_hybrid_sigma_support(ds, ds_out)
+            self._rewrite_time_to_bnds_midpoint(ds_out, time_dim)
+
+            output_filename = self._simple_output_filename(
+                primary_filepaths[index], index
+            )
+            ds_out.to_netcdf(os.path.join(output_path, output_filename))
+
+            ds.close()
+            ds_out.close()
+
+        return True
+
+    def _simple_output_filename(self, input_filepath: str, index: int) -> str:
+        """Mirror the zppy `_YYYYMM_YYYYMM.nc` suffix on the input filename;
+        fall back to a zero-padded index when no time range is present (e.g.
+        time-invariant `fx` inputs).
+        """
+        match = _TIME_RANGE_RE.search(os.path.basename(input_filepath))
+        if match:
+            return f"{self.name}_{match.group(1)}_{match.group(2)}.nc"
+
+        return f"{self.name}_{index:04d}.nc"
+
+    def _carry_hybrid_sigma_support(self, ds: xr.Dataset, ds_out: xr.Dataset) -> None:
+        """Copy complete hybrid-sigma metadata into simple-mode output.
+
+        Hybrid formula inputs can be excluded by the raw-variable filter or
+        dimension-subset matching. Copy the complete support set whenever the
+        input carries the required ``hyai, hybi, hyam, hybm`` coefficients and
+        a surface pressure variable (``PS`` in EAM, ``ps`` in EAMxx). Preserve
+        an input ``P0`` when present.
+        """
+        if not self._has_hybrid_sigma_levels(ds):
+            return
+
+        support_names = [
+            "lev",
+            "lev_bnds",
+            "ilev",
+            "ilev_bnds",
+            "hyam",
+            "hybm",
+            "hyai",
+            "hybi",
+            "P0",
+        ]
+
+        ps_name = _formulas.get_surface_pressure_name(ds)
+        if ps_name is not None:
+            support_names.append(ps_name)
+
+        for name in support_names:
+            if name not in ds.variables or name in ds_out.variables:
+                continue
+            if name in ds.coords:
+                ds_out.coords[name] = ds[name]
+            else:
+                ds_out[name] = ds[name]
+
+    def _rewrite_time_to_bnds_midpoint(
+        self, ds_out: xr.Dataset, time_dim: str | None
+    ) -> None:
+        """Set ``time`` to the midpoint of its bounds in place.
+
+        E3SM stamps monthly time series at the end of each interval; CF tooling
+        (and CMOR mode) expects the coord to fall inside its bounds. Rewriting
+        to the bounds midpoint puts simple-mode output on the same time axis
+        as CMOR mode. No-op if the variable is time-invariant or the dataset
+        carries no bounds variable.
+        """
+        if time_dim is None or time_dim not in ds_out.coords:
+            return
+        try:
+            bnds_key = self._get_time_bnds_key(ds_out.data_vars.keys())
+        except KeyError:
+            return
+
+        bnds = ds_out[bnds_key]
+        other_dims = [d for d in bnds.dims if d != time_dim]
+        if not other_dims:
+            return
+
+        midpoints = bnds.mean(dim=other_dims).values
+        attrs = dict(ds_out[time_dim].attrs)
+        encoding = dict(ds_out[time_dim].encoding)
+        ds_out[time_dim] = (time_dim, midpoints)
+        ds_out[time_dim].attrs = attrs
+        ds_out[time_dim].encoding.update(encoding)
+
+    def _read_simple_var_attrs(self, table_path: str) -> dict[str, str]:
+        """Pull CF/CMIP6-canonical attrs for ``self.name`` from a CMIP6 table.
+
+        ``units`` is taken from the handler (the canonical unit string the
+        runner targets) rather than the table, to stay consistent with what
+        ``_get_output_data_array`` produces after any unit conversion.
+        """
+        with open(table_path) as f:
+            entry = json.load(f).get("variable_entry", {}).get(self.name, {})
+
+        keys = (
+            "long_name",
+            "standard_name",
+            "comment",
+            "cell_methods",
+            "cell_measures",
+        )
+        attrs = {k: entry[k] for k in keys if entry.get(k)}
+        attrs["units"] = self.units
+        if self.positive:
+            attrs["positive"] = self.positive
+
+        return attrs
 
     def _all_vars_have_filepaths(
         self, vars_to_filespaths: dict[str, list[str]]
@@ -351,7 +528,11 @@ class VarHandler(BaseVarHandler):
         return None
 
     def _get_mfdataset(
-        self, vars_to_filepaths: dict[str, list[str]], index: int, time_dim: str | None
+        self,
+        vars_to_filepaths: dict[str, list[str]],
+        index: int,
+        time_dim: str | None,
+        convert_hybrid_lev: bool = True,
     ) -> xr.Dataset:
         """Get the xr.Dataset using the filepaths for all raw variables.
 
@@ -403,11 +584,15 @@ class VarHandler(BaseVarHandler):
             with xr.set_options(keep_attrs=True):
                 ds = ds.rename({"time": time_dim})
 
-        # Convert "lev" and "ilev" units from mb to Pa for downstream operations.
-        if "lev" in ds:
-            ds["lev"] = ds["lev"] / 1000
-        if "ilev" in ds:
-            ds["ilev"] = ds["ilev"] / 1000
+        # Convert lev/ilev from E3SM's stored 1000*(A+B) scaling into the
+        # dimensionless A+B form CMOR's `standard_hybrid_sigma` axis expects.
+        # Disabled in simple mode so output preserves the E3SM input form
+        # (values + units="hPa" + long_name reflecting 1000*(A+B)).
+        if convert_hybrid_lev:
+            if "lev" in ds:
+                ds["lev"] = ds["lev"] / 1000
+            if "ilev" in ds:
+                ds["ilev"] = ds["ilev"] / 1000
 
         # If the variable has levels for "sdepth", make sure it has bounds
         # for the "levgrnd" axis using a statically defined list of bound
@@ -540,9 +725,14 @@ class VarHandler(BaseVarHandler):
         return lev_id
 
     def _has_hybrid_sigma_levels(self, ds: xr.Dataset):
-        hybrid_sigma_levels = ["PS", "hyai", "hybi", "hybm", "hyam"]
+        hybrid_sigma_levels = ["hyai", "hybi", "hybm", "hyam"]
+        has_coefficients = set(hybrid_sigma_levels).issubset(ds.data_vars)
 
-        return set(hybrid_sigma_levels).issubset(ds.data_vars)
+        # Surface pressure is matched by name rather than membership because
+        # EAM writes "PS" and EAMxx writes "ps".
+        has_surface_pressure = _formulas.get_surface_pressure_name(ds) is not None
+
+        return has_coefficients and has_surface_pressure
 
     def _set_cmor_zfactor_for_hybrid_levels(
         self, ds: xr.Dataset, cmor_axis_id_map: dict[str, cmor.axis]
@@ -696,7 +886,7 @@ class VarHandler(BaseVarHandler):
                 try:
                     cmor.write(
                         var_id=cmor_ips_id,
-                        data=ds["PS"].values,
+                        data=_formulas.get_surface_pressure(ds).values,
                         time_vals=time_vals,
                         time_bnds=time_bnds,
                         store_with=cmor_var_id,
@@ -731,6 +921,24 @@ class VarHandler(BaseVarHandler):
         np.ndarray
             The final variable output data to pass to ``cmor.write``.
         """
+        da_output = self._get_output_data_array(ds)
+        output = da_output.values
+
+        return output
+
+    def _get_output_data_array(self, ds: xr.Dataset) -> xr.DataArray:
+        """Get the output data as an ``xr.DataArray`` with NaNs filled.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset containing raw variables used to derive output.
+
+        Returns
+        -------
+        xr.DataArray
+            The output variable data with NaNs replaced by ``FILL_VALUE``.
+        """
         if self.unit_conversion is not None:
             var = ds[self.raw_variables[0]]
             da_output = _formulas.convert_units(var, self.unit_conversion)
@@ -739,10 +947,7 @@ class VarHandler(BaseVarHandler):
         else:
             da_output = ds[self.raw_variables[0]]
 
-        da_output = da_output.fillna(FILL_VALUE)
-        output = da_output.values
-
-        return output
+        return da_output.fillna(FILL_VALUE)
 
     def _update_table_ref(self, freq: str, realm: str, cmip_tables_path: str):
         """
