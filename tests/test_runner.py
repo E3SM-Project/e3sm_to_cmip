@@ -263,9 +263,7 @@ def test_simple_mode_derivation_missing_table_error_requests_tables_path(
         runner._get_handlers()
 
 
-def test_simple_mode_preserves_unrelated_derivation_value_error(
-    monkeypatch, tmp_path
-):
+def test_simple_mode_preserves_unrelated_derivation_value_error(monkeypatch, tmp_path):
     runner = _get_runner()
     runner.info_mode = False
     runner.input_path = str(tmp_path)
