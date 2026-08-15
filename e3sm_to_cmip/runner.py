@@ -137,7 +137,7 @@ class E3SMtoCMIP:
         # Paths references.
         # ======================================================================
         self.input_path: str | None = parsed_args.input_path
-        self.output_path: str | None = self._setup_output_path(parsed_args.output_path)
+        self.output_path: str = self._setup_output_path(parsed_args.output_path)
         self.tables_path: str = self._get_tables_path(parsed_args.tables_path)
         self.handlers_path: str = self._get_handlers_path(parsed_args.handlers)
         self.map_path: str | None = parsed_args.map
@@ -350,21 +350,21 @@ class E3SMtoCMIP:
         If the environment variable `TMPDIR` is not set, a temporary directory
         is created under the output path.
         """
-        self.cmor_log_dir = os.path.join(self.output_path, self.cmor_log_dir)  # type: ignore
+        self.cmor_log_dir = os.path.join(self.output_path, self.cmor_log_dir)
         os.makedirs(self.cmor_log_dir, exist_ok=True)
 
         # NOTE: Any warnings that appear before the log filehandler is
         # instantiated will not be captured (e.g,. esmpy VersionWarning).
         # However, they will still be captured by the console via a
         # StreamHandler.
-        self.log_path = os.path.join(self.output_path, self.log_filename)  # type: ignore
+        self.log_path = os.path.join(self.output_path, self.log_filename)
         _add_filehandler(self.log_path)
 
         # Make the metadata filename unique by appending the process ID (PID)
         # to prevent resource conflicts when invoking multiple instances of
         # e3sm_to_cmip simultaneously.
         self.new_metadata_path = os.path.join(
-            self.output_path,  # type: ignore
+            self.output_path,
             f"user_metadata_{os.getpid()}.json",
         )
         # Copy the user's metadata json file with the updated output directory.

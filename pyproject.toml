@@ -45,7 +45,7 @@ dependencies = [
 test = ["pytest", "pytest-cov"]
 dev = [
   "ruff",
-  "mypy",
+  "ty==0.0.71",
   "pre-commit",
   "isort",
   "types-pytz",
@@ -133,7 +133,10 @@ python_files = ["tests.py", "test_*.py"]
 python-version = "3.13"
 
 [tool.ty.rules]
-unused-ignore = "error"
+unused-type-ignore-comment = "error"
+
+[tool.ty.src]
+include = ["e3sm_to_cmip", "tests"]
 
 [tool.ty.analysis]
 # Type stubs do not exist for cmor or xcdat.
