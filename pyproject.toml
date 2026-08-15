@@ -45,7 +45,7 @@ dependencies = [
 test = ["pytest", "pytest-cov"]
 dev = [
   "ruff",
-  "mypy",
+  "ty==0.0.71",
   "pre-commit",
   "isort",
   "types-pytz",
@@ -128,16 +128,16 @@ junit_family = "xunit2"
 addopts = "--cov=e3sm_to_cmip --cov-report term --cov-report html:tests_coverage_reports/htmlcov --cov-report xml:tests_coverage_reports/coverage.xml -s"
 python_files = ["tests.py", "test_*.py"]
 
-[tool.mypy]
-# Docs: https://mypy.readthedocs.io/en/stable/config_file.html
-python_version = "3.13"
-check_untyped_defs = true
-ignore_missing_imports = true
-warn_unused_ignores = true
-warn_redundant_casts = true
-warn_unused_configs = true
+[tool.ty.environment]
+# Docs: https://docs.astral.sh/ty/
+python-version = "3.13"
 
-[[tool.mypy.overrides]]
-# cmor type stubs do not exist and there are no plans to add them.
-module = ["cmor.*", "xcdat.*"]
-follow_imports = "skip"
+[tool.ty.rules]
+unused-type-ignore-comment = "error"
+
+[tool.ty.src]
+include = ["e3sm_to_cmip", "tests"]
+
+[tool.ty.analysis]
+# Type stubs do not exist for cmor or xcdat.
+replace-imports-with-any = ["cmor", "cmor.**", "xcdat", "xcdat.**"]

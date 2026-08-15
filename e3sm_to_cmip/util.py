@@ -4,6 +4,7 @@ import re
 import sys
 from pathlib import Path
 from pprint import pprint
+from typing import TypedDict
 
 import cmor
 import xarray as xr
@@ -189,7 +190,7 @@ def print_var_info(  # noqa: C901
         for handler in handlers:
             table_info = _get_table_info(tables, handler["table"])
             if handler["name"] not in table_info["variable_entry"]:
-                msg = f"Variable {handler['name']} is not included in the table {handler['table']}"  # type: ignore
+                msg = f"Variable {handler['name']} is not included in the table {handler['table']}"
                 print_message(msg, status="error")
                 continue
             else:
@@ -234,7 +235,7 @@ def print_var_info(  # noqa: C901
                 for raw_var in raw_vars:
                     if raw_var not in ds.data_vars:
                         has_vars = False
-                        msg = f"Variable {handler['name']} is not present in the input dataset"  # type: ignore
+                        msg = f"Variable {handler['name']} is not present in the input dataset"
                         print_message(msg, status="error")
                         break
                 if not has_vars:
@@ -571,9 +572,9 @@ def get_years_from_raw(path, realm, var):
         )
         p = var + r"\d{6}_\d{6}.nc"
         s = re.match(pattern=p, string=contents[0])
-        start = int(contents[0][s.start() : s.start() + 4])  # type: ignore
+        start = int(contents[0][s.start() : s.start() + 4])
         s = re.search(pattern=p, string=contents[-1])
-        end = int(contents[-1][s.start() : s.start() + 4])  # type: ignore
+        end = int(contents[-1][s.start() : s.start() + 4])
     elif realm in ["mpassi", "mpaso"]:
         files = sorted(find_mpas_files(realm, path))
         p = r"\d{4}-\d{2}-\d{2}.nc"
@@ -612,7 +613,12 @@ def precheck(inpath, precheck_path, variables, realm):
 
     # First check the inpath for the start and end years
     start, end = get_years_from_raw(inpath, realm, variables[0])
-    var_map = [{"found": False, "name": var} for var in variables]
+
+    class VarMap(TypedDict):
+        found: bool
+        name: str
+
+    var_map: list[VarMap] = [{"found": False, "name": var} for var in variables]
 
     logger.info(f"precheck: working on year-range {start} to {end}")
 

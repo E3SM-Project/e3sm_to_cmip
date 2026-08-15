@@ -39,7 +39,7 @@ def run_ncremap_cmd(args, env):
         logger.info(f"Error running ncremap command: {' '.join(args)}")
         logger.info(err.decode("utf-8"))
         raise subprocess.CalledProcessError(
-            f"ncremap returned {proc.returncode}"  # type: ignore
+            proc.returncode, args, output=out, stderr=err
         )
 
 
@@ -511,6 +511,9 @@ def compute_moc_streamfunction(dsIn=None, dsMesh=None, dsMasks=None, showProgres
 
         dsIn = open_mfdataset(args.inFileNames, variableList)
 
+    if dsIn is None or dsMesh is None or dsMasks is None:
+        raise ValueError("dsIn, dsMesh, and dsMasks must all be provided")
+
     dsOut = xarray.Dataset()
 
     dsIn = dsIn.chunk(chunks={"nCells": None, "nVertLevels": None, "Time": 6})
@@ -586,7 +589,7 @@ def interp_vertex_to_cell(varOnVertices, dsMesh):
             mask = np.logical_and(mask1, mask2)
             weights[:, iVertex] += mask * kiteAreas[vertices, iCell]
 
-    weights = xarray.DataArray.from_dict(  # type: ignore
+    weights = xarray.DataArray.from_dict(
         {"dims": ("nCells", "maxEdges"), "data": weights}
     )
 
@@ -739,8 +742,8 @@ def _compute_moc_time_series(
     lat_bnds[:, 1] = lat[1:]
     lat = 0.5 * (lat_bnds[:, 0] + lat_bnds[:, 1])
 
-    lat_bnds = xarray.DataArray(lat_bnds, dims=("lat", "nbnd"))  # type: ignore
-    lat = xarray.DataArray(lat, dims=("lat",))  # type: ignore
+    lat_bnds = xarray.DataArray(lat_bnds, dims=("lat", "nbnd"))
+    lat = xarray.DataArray(lat, dims=("lat",))
 
     depth, depth_bnds = _compute_depth(dsMesh.refBottomDepth)
 
@@ -786,10 +789,10 @@ def _compute_moc_time_series(
         mocSlice = np.zeros((nTime, nVertLevels + 1))
         mocSlice[:, 1:] = transport[regionName].cumsum(dim="nVertLevels").values
 
-        mocSlice = xarray.DataArray(mocSlice, dims=("Time", "nVertLevelsP1"))  # type: ignore
+        mocSlice = xarray.DataArray(mocSlice, dims=("Time", "nVertLevelsP1"))
         mocSlices = [mocSlice]
         binCounts = []
-        for iLat in range(lat_bnds.sizes["lat"]):  # type: ignore
+        for iLat in range(lat_bnds.sizes["lat"]):
             mask = np.logical_and(
                 np.logical_and(
                     cellMasks[regionName] == 1, latCell >= lat_bnds[iLat, 0]
@@ -820,7 +823,7 @@ def _compute_moc_time_series(
     mocs = xarray.concat(mocs.values(), dim="basin")
     mocs = mocs.transpose("Time", "basin", "depth", "lat")
 
-    regionNames = xarray.DataArray(regionNames, dims=("basin",))  # type: ignore
+    regionNames = xarray.DataArray(regionNames, dims=("basin",))
 
     coords = dict(
         lat=lat,

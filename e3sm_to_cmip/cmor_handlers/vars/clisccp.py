@@ -139,14 +139,14 @@ def handle(  # noqa: C901
             {
                 str("table_entry"): str("latitude"),
                 str("units"): ds["lat"].units,
-                str("coord_vals"): data["lat"].values,  # type: ignore
-                str("cell_bounds"): data["lat_bnds"].values,  # type: ignore
+                str("coord_vals"): data["lat"].values,
+                str("cell_bounds"): data["lat_bnds"].values,
             },
             {
                 str("table_entry"): str("longitude"),
                 str("units"): ds["lon"].units,
-                str("coord_vals"): data["lon"].values,  # type: ignore
-                str("cell_bounds"): data["lon_bnds"].values,  # type: ignore
+                str("coord_vals"): data["lon"].values,
+                str("cell_bounds"): data["lon_bnds"].values,
             },
         ]
 
@@ -159,7 +159,7 @@ def handle(  # noqa: C901
 
         # Replace NaNs in data with appropriate fill-value for cmor.write,
         # which does not support np.nan as a fill value.
-        data["FISCCP1_COSP"] = fill_nan(data["FISCCP1_COSP"])  # type: ignore
+        data["FISCCP1_COSP"] = fill_nan(data["FISCCP1_COSP"])
 
         # write out the data
         msg = f"{VAR_NAME}: time {data['time_bnds'][0][0]:1.1f} - {data['time_bnds'][-1][-1]:1.1f}"
