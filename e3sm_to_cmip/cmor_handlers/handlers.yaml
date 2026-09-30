@@ -1477,7 +1477,7 @@
   units: "%"
   raw_variables: [RelativeHumidity]
   table: CMIP6_Amon.json
-  unit_conversion: null
+  unit_conversion: 1-to-%
   formula: null
   positive: null
   levels: { name: plev19, units: Pa, e3sm_axis_name: plev }
