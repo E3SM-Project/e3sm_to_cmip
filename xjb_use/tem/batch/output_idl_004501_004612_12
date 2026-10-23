@@ -1,0 +1,87 @@
+IDL 8.9.0 (linux x86_64 m64).
+(c) 2023, L3Harris Geospatial Solutions, Inc.
+
+Licensed for use by: Lawrence Berkeley National Laboratory (Main)
+License: 731930
+/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/tem/v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem2/T_004501_004612_12.nc
+/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/tem/v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem2/U_004501_004612_12.nc
+/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/tem/v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem2/V_004501_004612_12.nc
+/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/tem/v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem2/OMEGA_004501_004612_12.nc
+% Compiled module: NETCDF_DIMS.
+% Loaded DLM: NCDF.
+% Compiled module: NETCDF.
+n,time=       0       16279.250
+% Compiled module: CALC_EPFLUX.
+% Compiled module: DERIV.
+n,time=       1       16279.500
+n,time=       2       16279.750
+n,time=       3       16280.000
+n,time=       4       16280.250
+n,time=       5       16280.500
+n,time=       6       16280.750
+n,time=       7       16281.000
+n,time=       8       16281.250
+n,time=       9       16281.500
+n,time=      10       16281.750
+n,time=      11       16282.000
+n,time=      12       16282.250
+n,time=      13       16282.500
+n,time=      14       16282.750
+n,time=      15       16283.000
+n,time=      16       16283.250
+n,time=      17       16283.500
+n,time=      18       16283.750
+n,time=      19       16284.000
+n,time=      20       16284.250
+n,time=      21       16284.500
+n,time=      22       16284.750
+n,time=      23       16285.000
+n,time=      24       16285.250
+n,time=      25       16285.500
+n,time=      26       16285.750
+n,time=      27       16286.000
+n,time=      28       16286.250
+n,time=      29       16286.500
+n,time=      30       16286.750
+n,time=      31       16287.000
+n,time=      32       16287.250
+n,time=      33       16287.500
+n,time=      34       16287.750
+n,time=      35       16288.000
+n,time=      36       16288.250
+n,time=      37       16288.500
+n,time=      38       16288.750
+n,time=      39       16289.000
+n,time=      40       16289.250
+n,time=      41       16289.500
+n,time=      42       16289.750
+n,time=      43       16290.000
+n,time=      44       16290.250
+n,time=      45       16290.500
+n,time=      46       16290.750
+n,time=      47       16291.000
+n,time=      48       16291.250
+n,time=      49       16291.500
+n,time=      50       16291.750
+n,time=      51       16292.000
+n,time=      52       16292.250
+n,time=      53       16292.500
+n,time=      54       16292.750
+n,time=      55       16293.000
+n,time=      56       16293.250
+n,time=      57       16293.500
+n,time=      58       16293.750
+n,time=      59       16294.000
+n,time=      60       16294.250
+n,time=      61       16294.500
+n,time=      62       16294.750
+n,time=      63       16295.000
+n,time=      64       16295.250
+n,time=      65       16295.500
+n,time=      66       16295.750
+n,time=      67       16296.000
+n,time=      68       16296.250
+n,time=      69       16296.500
+n,time=      70       16296.750
+n,time=      71       16297.000
+n,time=      72       16297.250

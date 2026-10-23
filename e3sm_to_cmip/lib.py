@@ -46,13 +46,13 @@ def run_parallel(
     --------
         returns 1 if an error occurs, else 0
     """
-    #print("Jinbo Xie")
-    #print(pool)
-    #print(handlers)
-    #print(input_path)
-    #print(tables_path)
-    #print(metadata_path)
-    #quit()
+    print("Jinbo Xie")
+    print(pool)
+    print(handlers)
+    print(input_path)
+    print(tables_path)
+    print(metadata_path)
+    quit()
 
     pool_res = list()
     will_run = []

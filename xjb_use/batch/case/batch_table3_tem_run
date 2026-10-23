@@ -3,13 +3,13 @@
 
 #conda activate e2c 
 #python  setup.py  install
-SUB=sub11
+SUB=sub0
 echo batch_table3_tem  $SUB
 DIR=/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/xjb_use/batch/
 VAR1=(VRES  WRES  KESIRES FPHI  FZ    VT  UV  UW)
 VAR2=(vtem  wtem  psitem  epfy  epfz  vt  uv  uomega)
 #
-case=v3.ccmi.FD_NINT_4xCO2_custom30_mem2
+case=v3.ccmi.PD_INT_custom30
 scale=mon
 #mon
 scale1=monZ

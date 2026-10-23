@@ -1,7 +1,10 @@
 load "/pscratch/sd/x/xie7/from_cori/Analysis/NCLep/self.ncl"
 begin
 ;;
-time="001101_010012"
+case="v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem2"
+;time="007101_010012"
+year="30yr"
+time="004101_007012"
 ;;
 plevo=new(42,double)
 plevo=(/100000.,92500.,85000.,70000.,60000.,50000.,40000.,30000.,25000.,20000.,17000.,15000.,\
@@ -12,15 +15,15 @@ plevo=plevo/100.
 plevo@units="hPa"
 ;;
 var=(/"DELF","FPHI","FZ","KESIRES","VADV","VRES","WADV","WRES","VT","UV","UW"/)
-dir="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/tem/hourly/"
-dir_day="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/tem/daily/"
-dir_mon="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/tem/monthly/"
+dir="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/"+case+"/tem/hourly/"
+dir_day="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/"+case+"/tem/daily/"
+dir_mon="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/"+case+"/tem/monthly/"
 ;;
-rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi_orig/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
+rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi_orig/"+case+"/archive/atm/hist/"+case+".eam.h0.0045-09.nc"
 fraw=addfile(rawdata,"r")
 ;;
-fps_day="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/PS/post/atm/180x360_aave/ts/daily/90yr/PS_001101_010012.nc"
-fps_mon="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/PS/post/atm/180x360_aave/ts/monthly/90yr/PS_001101_010012.nc"
+fps_day="/global/cfs/cdirs/e3sm/xie7/ccmi/"+case+"/output/PS/post/atm/180x360_aave/ts/daily/"+year+"/PS_"+time+".nc"
+fps_mon="/global/cfs/cdirs/e3sm/xie7/ccmi/"+case+"/output/PS/post/atm/180x360_aave/ts/monthly/"+year+"/PS_"+time+".nc"
 f1=addfile(fps_day,"r")
 f2=addfile(fps_mon,"r")
 ;;

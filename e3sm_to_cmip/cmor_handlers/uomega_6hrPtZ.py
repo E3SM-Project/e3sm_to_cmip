@@ -13,11 +13,10 @@ RAW_VARIABLES = [str('UW')]
 VAR_NAME = str('uomega')
 VAR_UNITS = str("Pa m s-2")
 TABLE = str('QUOCA_6hrPtZ.json')
-
 LEVELS = {
-    'name': str('plev42'),
-    'units': str('Pa'),
-    'e3sm_axis_name': 'plev42'
+    'name': str('plevTEM'),
+    'units': str('hPa'),
+    'e3sm_axis_name': 'plevTEM'
 }
 
 

@@ -1,0 +1,61 @@
+Traceback (most recent call last):
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/bin/e3sm_to_cmip", line 33, in <module>
+    sys.exit(load_entry_point('e3sm_to_cmip==1.9.1rc2', 'console_scripts', 'e3sm_to_cmip')())
+             ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/bin/e3sm_to_cmip", line 25, in importlib_load_entry_point
+    return next(matches).load()
+           ~~~~~~~~~~~~~~~~~~^^
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/importlib/metadata/__init__.py", line 179, in load
+    module = import_module(match.group('module'))
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/site-packages/e3sm_to_cmip/__main__.py", line 20, in <module>
+    from e3sm_to_cmip.lib import run_parallel, run_serial
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/site-packages/e3sm_to_cmip/lib.py", line 7, in <module>
+    import xarray as xr
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/site-packages/xarray/__init__.py", line 3, in <module>
+    from xarray import coders, groupers, indexes, testing, tutorial, ufuncs
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/site-packages/xarray/coders.py", line 6, in <module>
+    from xarray.coding.times import CFDatetimeCoder, CFTimedeltaCoder
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/site-packages/xarray/coding/times.py", line 15, in <module>
+    from xarray.coding.common import (
+    ...<7 lines>...
+    )
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/site-packages/xarray/coding/common.py", line 8, in <module>
+    from xarray.core import indexing
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/site-packages/xarray/core/indexing.py", line 20, in <module>
+    from xarray.core import duck_array_ops
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/site-packages/xarray/core/duck_array_ops.py", line 27, in <module>
+    from xarray.compat import dask_array_compat, dask_array_ops
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/site-packages/xarray/compat/dask_array_ops.py", line 6, in <module>
+    from xarray.core import dtypes, nputils
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/site-packages/xarray/core/nputils.py", line 15, in <module>
+    if module_available("numpy", minversion="2.0.0.dev0"):
+       ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/site-packages/xarray/namedarray/utils.py", line 61, in module_available
+    version = importlib.metadata.version(module)
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/importlib/metadata/__init__.py", line 987, in version
+    return distribution(distribution_name).version
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/importlib/metadata/__init__.py", line 960, in distribution
+    return Distribution.from_name(distribution_name)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/importlib/metadata/__init__.py", line 407, in from_name
+    return next(iter(cls.discover(name=name)))
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/importlib/metadata/__init__.py", line 891, in <genexpr>
+    path.search(prepared) for path in map(FastPath, paths)
+    ~~~~~~~~~~~^^^^^^^^^^
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/importlib/metadata/__init__.py", line 757, in search
+    return self.lookup(self.mtime).search(name)
+                       ^^^^^^^^^^
+  File "/global/homes/x/xie7/apps/miniconda3/envs/e2c/lib/python3.13/importlib/metadata/__init__.py", line 762, in mtime
+    return os.stat(self.root).st_mtime
+           ~~~~~~~^^^^^^^^^^^
+KeyboardInterrupt

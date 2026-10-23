@@ -1,0 +1,59 @@
+2026-08-11 02:45:42,815_815:INFO:main:input_path = /pscratch/sd/x/xie7/ccmi_new_correct/checkout_PDINT/PD_INT_ut/v3.ccmi.PD_INT_custom30/hourly/2D/T/
+2026-08-11 02:45:42,816_816:INFO:main:output_path = /global/cfs/cdirs/e3sm/xie7/ccmi_output/
+2026-08-11 02:45:42,816_816:INFO:main:precheck_path = None
+[94m[*] [0mLoaded `ta_6hrPtZ` handler for variable `ta`.[94m[0m
+[94m[*] [0mWriting log output to: /global/cfs/cdirs/e3sm/xie7/ccmi_output/converter.log[94m[0m
+[92m[+] [0mRunning CMOR handlers in parallel
+Jinbo Xie
+<concurrent.futures.process.ProcessPoolExecutor object at 0x7f6cf8d9b340>
+[{'name': 'ta', 'units': 'K', 'table': 'QUOCA_6hrPtZ.json', 'method': <function handle at 0x7f6850a93d90>, 'raw_variables': ['T'], 'positive': None, 'levels': {'name': 'plevTEM', 'units': 'hPa', 'e3sm_axis_name': 'plevTEM'}}]
+/pscratch/sd/x/xie7/ccmi_new_correct/checkout_PDINT/PD_INT_ut/v3.ccmi.PD_INT_custom30/hourly/2D/T/
+/global/cfs/cdirs/e3sm/xie7/ccmi/ccmi_cmor/e3sm_to_cmip/e3sm_to_cmip/resources/
+/global/cfs/cdirs/e3sm/xie7/ccmi_output/user_metadata.json
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [06:12<00:00, 372.54s/it]100%|██████████| 1/1 [06:12<00:00, 372.54s/it]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[92m[+] [0m1 of 1 handlers complete

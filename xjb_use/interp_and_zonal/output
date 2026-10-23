@@ -1,0 +1,16 @@
+ Copyright (C) 1995-2019 - All Rights Reserved
+ University Corporation for Atmospheric Research
+ NCAR Command Language Version 6.6.2
+ The use of this software is governed by a License Agreement.
+ See http://www.ncl.ucar.edu/ for more details.
+
+
+Variable: fils
+Type: string
+Total Size: 16 bytes
+            2 values
+Number of Dimensions: 1
+Dimensions and sizes:	[2]
+Coordinates: 
+(0)	/global/cfs/cdirs/e3sm/xie7/ccmi_process/v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem1/output/U/post/atm/180x360_aave/ts/daily/10yr/U_001101_002012.nc
+(1)	/global/cfs/cdirs/e3sm/xie7/ccmi_process/v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem1/output/U/post/atm/180x360_aave/ts/daily/10yr/U_003101_004012.nc

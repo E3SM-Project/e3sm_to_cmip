@@ -88,6 +88,8 @@ VRES = fltarr(lat,lev,count)
 WRES = fltarr(lat,lev,count)
 KESIRES = fltarr(lat,lev,count)
 VT   = fltarr(lat,lev,count)
+UV   = fltarr(lat,lev,count)
+UW   = fltarr(lat,lev,count)
 ;
 for n = 0, count-1 do begin $
     print, 'n,time=',n,time(n) &$
@@ -96,7 +98,7 @@ for n = 0, count-1 do begin $
     V1 = reform(V(*,*,*,n)) &$
     OMEGA1 = reform(OMEGA(*,*,*,n)) &$
     calc_epflux,0,lat,lon,lev,levels,ilevels,lats,P0,T1,U1,V1,omega1,$
-                Fphi1,Fz1,DELF1,WADV1,VADV1,VRES1,WRES1,KESIRES1,VT1  &$
+                Fphi1,Fz1,DELF1,WADV1,VADV1,VRES1,WRES1,KESIRES1,VT1,UV1,UW1  &$
     FPHI(*,*,n) = Fphi1 &$
       FZ(*,*,n) = Fz1   &$
     DELF(*,*,n) = DELF1	&$
@@ -107,6 +109,8 @@ for n = 0, count-1 do begin $
     VADV(*,*,n) = VADV1 &$
     ;;add v't' Jinbo Xie
     VT(*,*,n) = VT1 &$
+    UV(*,*,n) = UV1 &$
+    UW(*,*,n) = UW1 &$    
 endfor
 ;exit
 ;
@@ -132,6 +136,8 @@ vid6 = NCDF_VARDEF(id, 'VRES', [yid,zid,tid], /FLOAT)
 vid7 = NCDF_VARDEF(id, 'WRES', [yid,zid,tid], /FLOAT)
 vid8 = NCDF_VARDEF(id, 'KESIRES', [yid,zid,tid], /FLOAT)
 vid9 = NCDF_VARDEF(id, 'VT',   [yid,zid,tid], /FLOAT)
+vid10= NCDF_VARDEF(id, 'UV',   [yid,zid,tid], /FLOAT)
+vid11= NCDF_VARDEF(id, 'UW',   [yid,zid,tid], /FLOAT)
 ;
 vid_1= NCDF_VARDEF(id, 'nlat',  [yid], /FLOAT)
 vid_2= NCDF_VARDEF(id, 'lat', [yid], /DOUBLE)
@@ -151,6 +157,8 @@ NCDF_ATTPUT, id, vid6, 'long_name', 'vstar -- meridional residual circulation (m
 NCDF_ATTPUT, id, vid7, 'long_name', 'wstar -- vertical residual circulation (m/s)'
 NCDF_ATTPUT, id, vid8, 'long_name', 'psistar -- residual stream function (kg/s)'
 NCDF_ATTPUT, id, vid9, 'long_name', 'vt -- northward flux of temperature (K m s-1)'
+NCDF_ATTPUT, id, vid10,'long_name', 'uv -- northward flux of eastward momentum (m2 s-1)'
+NCDF_ATTPUT, id, vid11,'long_name', 'uw -- upward flux of eastward momentum (Pa m s-1)'
 ;
 NCDF_ATTPUT, id, vid_1, 'long_name', 'nlat'
 NCDF_ATTPUT, id, vid_2, 'long_name', 'lats'
@@ -179,6 +187,8 @@ NCDF_VARPUT, id, vid6, VRES
 NCDF_VARPUT, id, vid7, WRES
 NCDF_VARPUT, id, vid8, KESIRES
 NCDF_VARPUT, id, vid9, VT
+NCDF_VARPUT, id, vid10,UV
+NCDF_VARPUT, id, vid11,UW
 ;
 NCDF_VARPUT, id, vid_1, lat
 NCDF_VARPUT, id, vid_2, lats

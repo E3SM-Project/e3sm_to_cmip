@@ -1,0 +1,141 @@
+20260811_025156_887:INFO:main:input_path = /pscratch/sd/x/xie7/ccmi_new_correct/checkout_PDINT/PD_INT_ut/v3.ccmi.PD_INT_custom30/hourly/3D/U/
+20260811_025156_887:INFO:main:output_path = /global/cfs/cdirs/e3sm/xie7/ccmi_output/
+20260811_025156_887:INFO:main:precheck_path = None
+20260811_025157_081:INFO:handle_variables:ua: Starting
+20260811_025157_323:INFO:handle_variables:ua: CMOR setup complete
+20260811_025157_323:INFO:handle_variables:ua: loading U
+20260811_025208_701:INFO:handle_variables:ua: loading axes
+20260811_025208_741:INFO:handle_variables:ua: time 3650.0 - 4380.0
+20260811_025524_548:INFO:handle_variables:ua: loading U
+20260811_025536_072:INFO:handle_variables:ua: loading axes
+20260811_025536_104:INFO:handle_variables:ua: time 4380.0 - 5110.0
+20260811_025851_757:INFO:handle_variables:ua: loading U
+20260811_025904_402:INFO:handle_variables:ua: loading axes
+20260811_025905_450:INFO:handle_variables:ua: time 5110.0 - 5840.0
+20260811_030229_660:INFO:handle_variables:ua: loading U
+20260811_030241_620:INFO:handle_variables:ua: loading axes
+20260811_030241_657:INFO:handle_variables:ua: time 5840.0 - 6570.0
+20260811_030602_246:INFO:handle_variables:ua: loading U
+20260811_030613_717:INFO:handle_variables:ua: loading axes
+20260811_030613_751:INFO:handle_variables:ua: time 6570.0 - 7300.0
+20260811_030928_092:INFO:handle_variables:ua: loading U
+20260811_030939_480:INFO:handle_variables:ua: loading axes
+20260811_030939_577:INFO:handle_variables:ua: time 7300.0 - 8030.0
+20260811_031255_664:INFO:handle_variables:ua: loading U
+20260811_031307_253:INFO:handle_variables:ua: loading axes
+20260811_031307_289:INFO:handle_variables:ua: time 8030.0 - 8760.0
+20260811_031618_635:INFO:handle_variables:ua: loading U
+20260811_031630_070:INFO:handle_variables:ua: loading axes
+20260811_031630_104:INFO:handle_variables:ua: time 8760.0 - 9490.0
+20260811_031936_851:INFO:handle_variables:ua: loading U
+20260811_031948_204:INFO:handle_variables:ua: loading axes
+20260811_031948_237:INFO:handle_variables:ua: time 9490.0 - 10220.0
+20260811_032300_337:INFO:handle_variables:ua: loading U
+20260811_032312_920:INFO:handle_variables:ua: loading axes
+20260811_032315_132:INFO:handle_variables:ua: time 10220.0 - 10950.0
+20260811_032628_856:INFO:handle_variables:ua: loading U
+20260811_032640_271:INFO:handle_variables:ua: loading axes
+20260811_032640_305:INFO:handle_variables:ua: time 10950.0 - 11680.0
+20260811_032954_363:INFO:handle_variables:ua: loading U
+20260811_033005_743:INFO:handle_variables:ua: loading axes
+20260811_033005_777:INFO:handle_variables:ua: time 11680.0 - 12410.0
+20260811_033321_420:INFO:handle_variables:ua: loading U
+20260811_033332_917:INFO:handle_variables:ua: loading axes
+20260811_033332_951:INFO:handle_variables:ua: time 12410.0 - 13140.0
+20260811_033648_538:INFO:handle_variables:ua: loading U
+20260811_033700_127:INFO:handle_variables:ua: loading axes
+20260811_033700_161:INFO:handle_variables:ua: time 13140.0 - 13870.0
+20260811_034014_622:INFO:handle_variables:ua: loading U
+20260811_034026_715:INFO:handle_variables:ua: loading axes
+20260811_034026_751:INFO:handle_variables:ua: time 13870.0 - 14600.0
+20260811_034341_353:INFO:handle_variables:ua: loading U
+20260811_034352_910:INFO:handle_variables:ua: loading axes
+20260811_034352_951:INFO:handle_variables:ua: time 14600.0 - 15330.0
+20260811_034707_768:INFO:handle_variables:ua: loading U
+20260811_034719_368:INFO:handle_variables:ua: loading axes
+20260811_034719_407:INFO:handle_variables:ua: time 15330.0 - 16060.0
+20260811_035035_582:INFO:handle_variables:ua: loading U
+20260811_035047_369:INFO:handle_variables:ua: loading axes
+20260811_035047_403:INFO:handle_variables:ua: time 16060.0 - 16790.0
+20260811_035400_660:INFO:handle_variables:ua: loading U
+20260811_035412_015:INFO:handle_variables:ua: loading axes
+20260811_035412_049:INFO:handle_variables:ua: time 16790.0 - 17520.0
+20260811_035724_922:INFO:handle_variables:ua: loading U
+20260811_035736_398:INFO:handle_variables:ua: loading axes
+20260811_035736_434:INFO:handle_variables:ua: time 17520.0 - 18250.0
+20260811_040047_226:INFO:handle_variables:ua: loading U
+20260811_040058_607:INFO:handle_variables:ua: loading axes
+20260811_040058_641:INFO:handle_variables:ua: time 18250.0 - 18980.0
+20260811_040412_325:INFO:handle_variables:ua: loading U
+20260811_040424_078:INFO:handle_variables:ua: loading axes
+20260811_040424_116:INFO:handle_variables:ua: time 18980.0 - 19710.0
+20260811_040735_160:INFO:handle_variables:ua: loading U
+20260811_040746_431:INFO:handle_variables:ua: loading axes
+20260811_040746_465:INFO:handle_variables:ua: time 19710.0 - 20440.0
+20260811_041100_692:INFO:handle_variables:ua: loading U
+20260811_041112_329:INFO:handle_variables:ua: loading axes
+20260811_041112_363:INFO:handle_variables:ua: time 20440.0 - 21170.0
+20260811_041426_901:INFO:handle_variables:ua: loading U
+20260811_041438_444:INFO:handle_variables:ua: loading axes
+20260811_041438_491:INFO:handle_variables:ua: time 21170.0 - 21900.0
+20260811_041754_308:INFO:handle_variables:ua: loading U
+20260811_041807_315:INFO:handle_variables:ua: loading axes
+20260811_041807_351:INFO:handle_variables:ua: time 21900.0 - 22630.0
+20260811_042122_481:INFO:handle_variables:ua: loading U
+20260811_042134_330:INFO:handle_variables:ua: loading axes
+20260811_042134_364:INFO:handle_variables:ua: time 22630.0 - 23360.0
+20260811_042453_992:INFO:handle_variables:ua: loading U
+20260811_042505_803:INFO:handle_variables:ua: loading axes
+20260811_042505_837:INFO:handle_variables:ua: time 23360.0 - 24090.0
+20260811_042821_482:INFO:handle_variables:ua: loading U
+20260811_042833_154:INFO:handle_variables:ua: loading axes
+20260811_042833_188:INFO:handle_variables:ua: time 24090.0 - 24820.0
+20260811_043153_465:INFO:handle_variables:ua: loading U
+20260811_043205_315:INFO:handle_variables:ua: loading axes
+20260811_043205_350:INFO:handle_variables:ua: time 24820.0 - 25550.0
+20260811_043525_546:INFO:handle_variables:ua: loading U
+20260811_043537_299:INFO:handle_variables:ua: loading axes
+20260811_043537_334:INFO:handle_variables:ua: time 25550.0 - 26280.0
+20260811_043902_160:INFO:handle_variables:ua: loading U
+20260811_043914_193:INFO:handle_variables:ua: loading axes
+20260811_043914_231:INFO:handle_variables:ua: time 26280.0 - 27010.0
+20260811_044238_407:INFO:handle_variables:ua: loading U
+20260811_044249_955:INFO:handle_variables:ua: loading axes
+20260811_044249_990:INFO:handle_variables:ua: time 27010.0 - 27740.0
+20260811_044606_033:INFO:handle_variables:ua: loading U
+20260811_044617_898:INFO:handle_variables:ua: loading axes
+20260811_044617_936:INFO:handle_variables:ua: time 27740.0 - 28470.0
+20260811_044935_173:INFO:handle_variables:ua: loading U
+20260811_044946_609:INFO:handle_variables:ua: loading axes
+20260811_044946_644:INFO:handle_variables:ua: time 28470.0 - 29200.0
+20260811_045259_787:INFO:handle_variables:ua: loading U
+20260811_045311_413:INFO:handle_variables:ua: loading axes
+20260811_045311_450:INFO:handle_variables:ua: time 29200.0 - 29930.0
+20260811_045625_142:INFO:handle_variables:ua: loading U
+20260811_045636_789:INFO:handle_variables:ua: loading axes
+20260811_045636_826:INFO:handle_variables:ua: time 29930.0 - 30660.0
+20260811_045951_235:INFO:handle_variables:ua: loading U
+20260811_050002_933:INFO:handle_variables:ua: loading axes
+20260811_050003_182:INFO:handle_variables:ua: time 30660.0 - 31390.0
+20260811_050317_680:INFO:handle_variables:ua: loading U
+20260811_050329_230:INFO:handle_variables:ua: loading axes
+20260811_050329_265:INFO:handle_variables:ua: time 31390.0 - 32120.0
+20260811_050642_864:INFO:handle_variables:ua: loading U
+20260811_050653_851:INFO:handle_variables:ua: loading axes
+20260811_050653_884:INFO:handle_variables:ua: time 32120.0 - 32850.0
+20260811_051007_554:INFO:handle_variables:ua: loading U
+20260811_051018_951:INFO:handle_variables:ua: loading axes
+20260811_051018_984:INFO:handle_variables:ua: time 32850.0 - 33580.0
+20260811_051340_243:INFO:handle_variables:ua: loading U
+20260811_051352_952:INFO:handle_variables:ua: loading axes
+20260811_051352_991:INFO:handle_variables:ua: time 33580.0 - 34310.0
+20260811_051709_070:INFO:handle_variables:ua: loading U
+20260811_051720_761:INFO:handle_variables:ua: loading axes
+20260811_051720_797:INFO:handle_variables:ua: time 34310.0 - 35040.0
+20260811_052036_956:INFO:handle_variables:ua: loading U
+20260811_052048_767:INFO:handle_variables:ua: loading axes
+20260811_052048_800:INFO:handle_variables:ua: time 35040.0 - 35770.0
+20260811_052402_204:INFO:handle_variables:ua: loading U
+20260811_052413_590:INFO:handle_variables:ua: loading axes
+20260811_052413_624:INFO:handle_variables:ua: time 35770.0 - 36500.0
+20260811_053125_762:INFO:run_parallel:Finished ua, 1/1 jobs complete

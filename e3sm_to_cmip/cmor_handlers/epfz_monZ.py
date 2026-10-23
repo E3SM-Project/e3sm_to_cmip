@@ -13,6 +13,7 @@ RAW_VARIABLES = [str('FZ')]
 VAR_NAME = str('epfz')
 VAR_UNITS = str("m3 s-2")
 TABLE = str('QUOCA_monZ.json')
+POSITIVE = str('up')
 
 LEVELS = {
     'name': str('plev42'),
@@ -45,6 +46,7 @@ def handle(infiles, tables, user_input_path, **kwargs):
         write_data=write_data,
         outvar_name=VAR_NAME,
         outvar_units=VAR_UNITS,
+	positive=POSITIVE,
         serial=kwargs.get('serial'),
         levels=LEVELS,
         logdir=kwargs.get('logdir'),

@@ -1,0 +1,141 @@
+20260811_024542_815:INFO:main:input_path = /pscratch/sd/x/xie7/ccmi_new_correct/checkout_PDINT/PD_INT_ut/v3.ccmi.PD_INT_custom30/hourly/2D/T/
+20260811_024542_816:INFO:main:output_path = /global/cfs/cdirs/e3sm/xie7/ccmi_output/
+20260811_024542_816:INFO:main:precheck_path = None
+20260811_024542_966:INFO:handle_variables:ta: Starting
+20260811_024543_216:INFO:handle_variables:ta: CMOR setup complete
+20260811_024543_216:INFO:handle_variables:ta: loading T
+20260811_024543_892:INFO:handle_variables:ta: loading axes
+20260811_024543_928:INFO:handle_variables:ta: time 3650.0 - 4380.0
+20260811_024549_864:INFO:handle_variables:ta: loading T
+20260811_024550_507:INFO:handle_variables:ta: loading axes
+20260811_024550_543:INFO:handle_variables:ta: time 4380.0 - 5110.0
+20260811_024556_330:INFO:handle_variables:ta: loading T
+20260811_024556_946:INFO:handle_variables:ta: loading axes
+20260811_024556_981:INFO:handle_variables:ta: time 5110.0 - 5840.0
+20260811_024602_822:INFO:handle_variables:ta: loading T
+20260811_024603_449:INFO:handle_variables:ta: loading axes
+20260811_024603_485:INFO:handle_variables:ta: time 5840.0 - 6570.0
+20260811_024609_442:INFO:handle_variables:ta: loading T
+20260811_024610_080:INFO:handle_variables:ta: loading axes
+20260811_024610_115:INFO:handle_variables:ta: time 6570.0 - 7300.0
+20260811_024616_018:INFO:handle_variables:ta: loading T
+20260811_024616_715:INFO:handle_variables:ta: loading axes
+20260811_024616_752:INFO:handle_variables:ta: time 7300.0 - 8030.0
+20260811_024622_790:INFO:handle_variables:ta: loading T
+20260811_024623_460:INFO:handle_variables:ta: loading axes
+20260811_024623_497:INFO:handle_variables:ta: time 8030.0 - 8760.0
+20260811_024629_301:INFO:handle_variables:ta: loading T
+20260811_024629_950:INFO:handle_variables:ta: loading axes
+20260811_024629_984:INFO:handle_variables:ta: time 8760.0 - 9490.0
+20260811_024635_803:INFO:handle_variables:ta: loading T
+20260811_024636_465:INFO:handle_variables:ta: loading axes
+20260811_024636_501:INFO:handle_variables:ta: time 9490.0 - 10220.0
+20260811_024642_482:INFO:handle_variables:ta: loading T
+20260811_024643_137:INFO:handle_variables:ta: loading axes
+20260811_024643_173:INFO:handle_variables:ta: time 10220.0 - 10950.0
+20260811_024649_023:INFO:handle_variables:ta: loading T
+20260811_024649_687:INFO:handle_variables:ta: loading axes
+20260811_024649_724:INFO:handle_variables:ta: time 10950.0 - 11680.0
+20260811_024655_568:INFO:handle_variables:ta: loading T
+20260811_024656_211:INFO:handle_variables:ta: loading axes
+20260811_024656_246:INFO:handle_variables:ta: time 11680.0 - 12410.0
+20260811_024701_918:INFO:handle_variables:ta: loading T
+20260811_024702_541:INFO:handle_variables:ta: loading axes
+20260811_024702_576:INFO:handle_variables:ta: time 12410.0 - 13140.0
+20260811_024708_166:INFO:handle_variables:ta: loading T
+20260811_024708_839:INFO:handle_variables:ta: loading axes
+20260811_024708_871:INFO:handle_variables:ta: time 13140.0 - 13870.0
+20260811_024714_718:INFO:handle_variables:ta: loading T
+20260811_024715_306:INFO:handle_variables:ta: loading axes
+20260811_024715_341:INFO:handle_variables:ta: time 13870.0 - 14600.0
+20260811_024720_728:INFO:handle_variables:ta: loading T
+20260811_024721_452:INFO:handle_variables:ta: loading axes
+20260811_024721_489:INFO:handle_variables:ta: time 14600.0 - 15330.0
+20260811_024727_085:INFO:handle_variables:ta: loading T
+20260811_024727_725:INFO:handle_variables:ta: loading axes
+20260811_024727_760:INFO:handle_variables:ta: time 15330.0 - 16060.0
+20260811_024733_585:INFO:handle_variables:ta: loading T
+20260811_024734_166:INFO:handle_variables:ta: loading axes
+20260811_024734_197:INFO:handle_variables:ta: time 16060.0 - 16790.0
+20260811_024739_663:INFO:handle_variables:ta: loading T
+20260811_024740_245:INFO:handle_variables:ta: loading axes
+20260811_024740_277:INFO:handle_variables:ta: time 16790.0 - 17520.0
+20260811_024745_734:INFO:handle_variables:ta: loading T
+20260811_024746_369:INFO:handle_variables:ta: loading axes
+20260811_024746_405:INFO:handle_variables:ta: time 17520.0 - 18250.0
+20260811_024751_977:INFO:handle_variables:ta: loading T
+20260811_024752_556:INFO:handle_variables:ta: loading axes
+20260811_024752_588:INFO:handle_variables:ta: time 18250.0 - 18980.0
+20260811_024757_962:INFO:handle_variables:ta: loading T
+20260811_024758_638:INFO:handle_variables:ta: loading axes
+20260811_024758_672:INFO:handle_variables:ta: time 18980.0 - 19710.0
+20260811_024804_519:INFO:handle_variables:ta: loading T
+20260811_024805_145:INFO:handle_variables:ta: loading axes
+20260811_024805_181:INFO:handle_variables:ta: time 19710.0 - 20440.0
+20260811_024810_868:INFO:handle_variables:ta: loading T
+20260811_024811_477:INFO:handle_variables:ta: loading axes
+20260811_024811_511:INFO:handle_variables:ta: time 20440.0 - 21170.0
+20260811_024817_134:INFO:handle_variables:ta: loading T
+20260811_024817_715:INFO:handle_variables:ta: loading axes
+20260811_024817_745:INFO:handle_variables:ta: time 21170.0 - 21900.0
+20260811_024823_462:INFO:handle_variables:ta: loading T
+20260811_024824_134:INFO:handle_variables:ta: loading axes
+20260811_024824_170:INFO:handle_variables:ta: time 21900.0 - 22630.0
+20260811_024829_626:INFO:handle_variables:ta: loading T
+20260811_024830_221:INFO:handle_variables:ta: loading axes
+20260811_024830_254:INFO:handle_variables:ta: time 22630.0 - 23360.0
+20260811_024835_767:INFO:handle_variables:ta: loading T
+20260811_024836_374:INFO:handle_variables:ta: loading axes
+20260811_024836_405:INFO:handle_variables:ta: time 23360.0 - 24090.0
+20260811_024841_781:INFO:handle_variables:ta: loading T
+20260811_024842_378:INFO:handle_variables:ta: loading axes
+20260811_024842_410:INFO:handle_variables:ta: time 24090.0 - 24820.0
+20260811_024847_839:INFO:handle_variables:ta: loading T
+20260811_024848_434:INFO:handle_variables:ta: loading axes
+20260811_024848_466:INFO:handle_variables:ta: time 24820.0 - 25550.0
+20260811_024853_929:INFO:handle_variables:ta: loading T
+20260811_024854_536:INFO:handle_variables:ta: loading axes
+20260811_024854_569:INFO:handle_variables:ta: time 25550.0 - 26280.0
+20260811_024900_053:INFO:handle_variables:ta: loading T
+20260811_024900_631:INFO:handle_variables:ta: loading axes
+20260811_024900_662:INFO:handle_variables:ta: time 26280.0 - 27010.0
+20260811_024906_061:INFO:handle_variables:ta: loading T
+20260811_024906_665:INFO:handle_variables:ta: loading axes
+20260811_024906_696:INFO:handle_variables:ta: time 27010.0 - 27740.0
+20260811_024912_159:INFO:handle_variables:ta: loading T
+20260811_024912_758:INFO:handle_variables:ta: loading axes
+20260811_024912_793:INFO:handle_variables:ta: time 27740.0 - 28470.0
+20260811_024918_240:INFO:handle_variables:ta: loading T
+20260811_024918_841:INFO:handle_variables:ta: loading axes
+20260811_024918_876:INFO:handle_variables:ta: time 28470.0 - 29200.0
+20260811_024924_599:INFO:handle_variables:ta: loading T
+20260811_024925_183:INFO:handle_variables:ta: loading axes
+20260811_024925_229:INFO:handle_variables:ta: time 29200.0 - 29930.0
+20260811_024930_904:INFO:handle_variables:ta: loading T
+20260811_024931_558:INFO:handle_variables:ta: loading axes
+20260811_024931_589:INFO:handle_variables:ta: time 29930.0 - 30660.0
+20260811_024937_373:INFO:handle_variables:ta: loading T
+20260811_024938_018:INFO:handle_variables:ta: loading axes
+20260811_024938_055:INFO:handle_variables:ta: time 30660.0 - 31390.0
+20260811_024943_954:INFO:handle_variables:ta: loading T
+20260811_024944_602:INFO:handle_variables:ta: loading axes
+20260811_024944_636:INFO:handle_variables:ta: time 31390.0 - 32120.0
+20260811_024950_664:INFO:handle_variables:ta: loading T
+20260811_024951_266:INFO:handle_variables:ta: loading axes
+20260811_024951_303:INFO:handle_variables:ta: time 32120.0 - 32850.0
+20260811_024957_003:INFO:handle_variables:ta: loading T
+20260811_024957_607:INFO:handle_variables:ta: loading axes
+20260811_024957_643:INFO:handle_variables:ta: time 32850.0 - 33580.0
+20260811_025003_159:INFO:handle_variables:ta: loading T
+20260811_025003_816:INFO:handle_variables:ta: loading axes
+20260811_025003_858:INFO:handle_variables:ta: time 33580.0 - 34310.0
+20260811_025009_413:INFO:handle_variables:ta: loading T
+20260811_025010_107:INFO:handle_variables:ta: loading axes
+20260811_025010_146:INFO:handle_variables:ta: time 34310.0 - 35040.0
+20260811_025015_797:INFO:handle_variables:ta: loading T
+20260811_025016_403:INFO:handle_variables:ta: loading axes
+20260811_025016_464:INFO:handle_variables:ta: time 35040.0 - 35770.0
+20260811_025021_888:INFO:handle_variables:ta: loading T
+20260811_025022_496:INFO:handle_variables:ta: loading axes
+20260811_025022_530:INFO:handle_variables:ta: time 35770.0 - 36500.0
+20260811_025155_493:INFO:run_parallel:Finished ta, 1/1 jobs complete

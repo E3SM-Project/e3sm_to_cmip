@@ -29,8 +29,11 @@ fi
 # Make sure UVCDAT doesn't prompt us about anonymous logging
 export UVCDAT_ANONYMOUS_LOG=False
 
+
+case="v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem2"
 # Script dir
-cd /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/o3ste/post/scripts
+mkdir -p /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/o3ste/post/scripts
+cd /global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/$case/o3ste/post/scripts
 
 # Get jobid
 id=${SLURM_JOBID}
@@ -40,13 +43,12 @@ STARTTIME=$(date +%s)
 echo "RUNNING ${id}" > chemdyg_summary_table_native_0011-0100.status
 
 # Basic definitions
-case="v3.ccmi.PD_INT_custom30"
-short="v3.ccmi.PD_INT_custom30"
-www="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/o3ste/output"
-y1=11
-y2=100
-100
-#100
+#case="v3.ccmi.PD_INT_custom30"
+short=$case
+#"v3.ccmi.PD_INT_custom30"
+www="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/"$case"/o3ste/output"
+y1=41
+y2=70
 run_type=""
 tag=""
 
@@ -61,7 +63,7 @@ mkdir -p ts
 #ln -s ${tsDir}/*.nc .
 #cd ..
 # Create symbolic links to input files
-input=/global/cfs/cdirs/e3sm/xie7/ccmi_orig/v3.ccmi.PD_INT_custom30/archive/atm/hist//
+input=/global/cfs/cdirs/e3sm/xie7/ccmi_orig/$case/archive/atm/hist//
 eamfile=eam.h5
 for (( year=${y1}; year<=${y2}; year++ ))
 do
@@ -201,7 +203,7 @@ command="python -u chem_summary_table.py"
 time ${command}
 if [ $? != 0 ]; then
   cd ..
-  echo 'ERROR (1)' > chemdyg_summary_table_native_0011-0100.status
+  echo 'ERROR (1)' > chemdyg_summary_table_native_00${y1}-00${y2}.status
   exit 1
 fi
 

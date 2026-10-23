@@ -10,18 +10,22 @@ plevo=(/100000.,92500.,85000.,70000.,60000.,50000.,40000.,30000.,25000.,20000.,1
 	13000.,11500.,10000.,9000.,8000.,7000.,6000.,5000.,4000.,3500.,3000.,2500.,2000.,\
 	1700.,1500.,1300.,1100.,1000.,900.,800.,600.,500.,400.,300.,200.,150.,100.,70.,50.,40./)
 plevo2=plevo
+plevo2@units="Pa"
+delete(plevo2@_FillValue)
 plevo=plevo/100.
 plevo@units="hPa"
+plevo1=plevo
 ;;
 dir2="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/";+"day/"
 ;;
-rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi_orig/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
+;rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi_orig/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
+rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi_process/"+case+"/output/U/post/atm/180x360_aave/ts/monthly/90yr/U_"+time+".nc"
 fraw=addfile(rawdata,"r")
 ;;
 ndays=365
 ;;
-do i=6,10;4,4;0,4
-	dir="/global/cfs/cdirs/e3sm/xie7/ccmi/"+case+"/output/"+vars(i)+"/post/atm/180x360_aave/ts/"+scale+"/"+year+"/"
+do i=0,10;4,4;0,4
+	dir="/global/cfs/cdirs/e3sm/xie7/ccmi_process/"+case+"/output/"+vars(i)+"/post/atm/180x360_aave/ts/"+scale+"/"+year+"/"
 	fils=systemfunc("ls "+dir+"*nc")
 	;;
 	times=str_get_cols(fils,104,116)
@@ -37,19 +41,15 @@ do i=6,10;4,4;0,4
 	aa=f1->$vars(i)$(0+kk*ndays:ndays-1+kk*ndays,:,:,:)
 	printVarSummary(aa)
 	;;
-	fil1="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/PS/post/atm/180x360_aave/ts/daily/90yr/PS_001101_010012.nc"
+	fil1="/global/cfs/cdirs/e3sm/xie7/ccmi_process/v3.ccmi.PD_INT_custom30/output/PS/post/atm/180x360_aave/ts/daily/90yr/PS_001101_010012.nc"
 	f2=addfile(fil1,"r")
 	ps=f2->PS(0+j*ndays:ndays+j*ndays-1,:,:)
 	;;
-	aa_vint=vinth2p(aa,fraw->hyai,fraw->hybi,plevo,ps,1,(fraw->P0)/todouble(100.),1,False)
+	aa_vint=vinth2p(aa,fraw->hyai,fraw->hybi,plevo1,ps,1,(fraw->P0)/todouble(100.),1,False)
 	;;
 	aa_vint!1="plev42"
 	;;
-	plevo@units="Pa"
-	plevo=plevo2
-	delete(plevo@_FillValue)
-	;;
-	aa_vint&plev42=plevo
+	aa_vint&plev42=plevo2
 	aa_vint&plev42@standard_name="air_pressure"
 	aa_vint&plev42@axis="Z"
 	aa_vint&plev42@long_name="pressure"
@@ -59,7 +59,9 @@ do i=6,10;4,4;0,4
 	;;
 	;fil2=dir2+vars(i)+"_"+case+"_"+scale+"_"+year+"_"+times(k2)+"_3D_"+j+".nc"
 	;fil2=dir2+"output/"+case+"/day/3D/"+vars(i)+"_001101_001112"+".nc"
-if (i.ge.5) then
+	system("mkdir -p "+dir2+"output/"+case+"/daily/3D/")
+	system("mkdir -p "+dir2+"output/"+case+"/daily/2D/")
+if (i.lt.5) then
 	if ((11+j).lt.100) then
 		fil2=dir2+"output/"+case+"/daily/3D/"+vars(i)+"_00"+(11+j)+"01_00"+(11+j)+"12"+".nc"
 	else

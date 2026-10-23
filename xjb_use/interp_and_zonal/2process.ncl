@@ -10,35 +10,35 @@ plevo=(/100000.,92500.,85000.,70000.,60000.,50000.,40000.,30000.,25000.,20000.,1
 	13000.,11500.,10000.,9000.,8000.,7000.,6000.,5000.,4000.,3500.,3000.,2500.,2000.,\
 	1700.,1500.,1300.,1100.,1000.,900.,800.,600.,500.,400.,300.,200.,150.,100.,70.,50.,40./)
 plevo2=plevo
+plevo2@units="Pa"
+delete(plevo2@_FillValue)
 plevo=plevo/100.
 plevo@units="hPa"
+plevo1=plevo
 ;;
 dir2="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/"
 ;;
-rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
+;rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
+rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi_process/"+case+"/output/U/post/atm/180x360_aave/ts/monthly/90yr/U_"+time+".nc"
 fraw=addfile(rawdata,"r")
 ;;
 do i=0,4
-	dir="/global/cfs/cdirs/e3sm/xie7/ccmi/"+case+"/output/"+vars(i)+"/post/atm/180x360_aave/ts/"+scale+"/"+year+"/"
+	dir="/global/cfs/cdirs/e3sm/xie7/ccmi_process/"+case+"/output/"+vars(i)+"/post/atm/180x360_aave/ts/"+scale+"/"+year+"/"
 	fil=dir+vars(i)+"_"+time+".nc"
 	;;
 	f1=addfile(fil,"r")
 	do j=0,9;;for 90yr simulation only
 	aa=f1->$vars(i)$(0+j*108:108+j*108-1,:,:,:)
 	;;
-	fil1="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/PS/post/atm/180x360_aave/ts/monthly/90yr/PS_001101_010012.nc"
+	fil1="/global/cfs/cdirs/e3sm/xie7/ccmi_process/"+case+"/output/PS/post/atm/180x360_aave/ts/monthly/90yr/PS_"+time+".nc"
 	f2=addfile(fil1,"r")
 	ps=f2->PS(0+j*108:108+j*108-1,:,:)
 	;;
-	aa_vint=vinth2p(aa,fraw->hyai,fraw->hybi,plevo,ps,1,(fraw->P0)/todouble(100.),1,False)
+	aa_vint=vinth2p(aa,fraw->hyai,fraw->hybi,plevo1,ps,1,(fraw->P0)/todouble(100.),1,False)
 	;;
 	aa_vint!1="plev42"
 	;;
-	plevo@units="Pa"
-	plevo=plevo2
-	delete(plevo@_FillValue)
-	;;
-	aa_vint&plev42=plevo
+	aa_vint&plev42=plevo2
 	aa_vint&plev42@standard_name="air_pressure"
 	aa_vint&plev42@axis="Z"
 	aa_vint&plev42@long_name="pressure"
@@ -72,14 +72,14 @@ do i=0,4
 	delete(aa_vint_zonal)
 	end do
 	;;connect the data together
-	system("rm -rf "+dir2+"output/"+case+"/3D/"+vars(i)+"_"+time+".nc")
-	system("rm -rf "+dir2+"output/"+case+"/2D/"+vars(i)+"_"+time+".nc")
+        system("rm -rf "+dir2+"output/"+case+"/monthly/3D/"+vars(i)+"_"+time+".nc")
+        system("rm -rf "+dir2+"output/"+case+"/monthly/2D/"+vars(i)+"_"+time+".nc")
+        ;;
+        system("mkdir -p "+dir2+"output/"+case+"/monthly/3D/")
+        system("mkdir -p "+dir2+"output/"+case+"/monthly/2D/")
 	;;
-	system("mkdir -p "+dir2+"output/"+case+"/3D/")
-	system("mkdir -p "+dir2+"output/"+case+"/2D/")
-	;;
-	system("ncrcat  "+dir2+vars(i)+"*3D*nc "+dir2+"output/"+case+"/3D/"+vars(i)+"_"+time+".nc")
-	system("ncrcat  "+dir2+vars(i)+"*2D*nc "+dir2+"output/"+case+"/2D/"+vars(i)+"_"+time+".nc")
+	system("ncrcat  "+dir2+vars(i)+"*"+case+"*"+scale+"*3D*nc "+dir2+"output/"+case+"/monthly/3D/"+vars(i)+"_"+time+".nc")
+	system("ncrcat  "+dir2+vars(i)+"*"+case+"*"+scale+"*2D*nc "+dir2+"output/"+case+"/monthly/2D/"+vars(i)+"_"+time+".nc")
 	;system("ncrcat -C -x -v lat_bnds,lon_bnds "+dir2+vars(i)+"*3D*nc "+dir2+"output/"+case+"/3D/"+vars(i)+"_"+time+".nc")
 	;system("ncrcat -C -x -v lat_bnds,lon_bnds "+dir2+vars(i)+"*2D*nc "+dir2+"output/"+case+"/2D/"+vars(i)+"_"+time+".nc")
 	;system("ncks -A -v lat_bnds,lon_bnds "+dir2+vars(i)+"*3D*_0.nc "+dir2+"output/"+case+"/3D/"+vars(i)+"_"+time+".nc")

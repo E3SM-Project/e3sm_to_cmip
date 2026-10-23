@@ -7,9 +7,9 @@
 
   "#note_experiment_id": "QUOCA valid experiment_ids are found in QUOCA_CV.json",
 
-  "experiment":"Climate run with AMIP boundary conditions and full interactive chemistry. PD_INT in protocol document.",
+  "experiment":"Climate run with AMIP boundary conditions and full interactive chemistry. PD_NINT in protocol document.",
 
-  "experiment_id": "PDINT",
+  "experiment_id": "PDNINT",
 
   "activity_id": "QUOCA",
 
@@ -17,7 +17,7 @@
 
   "sub_experiment_id": "none",
 
-  "realization_index": "1",
+  "realization_index": "2",
 
   "initialization_index": "1",
 
@@ -35,7 +35,7 @@
 
   "parent_source_id": "E3SM-3-0",
 
-  "parent_variant_label": "r1i1p1f1",
+  "parent_variant_label": "r2i1p1f1",
 
   "parent_time_units": "no parent",
 
@@ -73,7 +73,7 @@
 
   "data contact": "E3SM-DATA-SUPPORT@LISTSERV.LLNL.GOV",
 
-  "history": "Output from v3.ccmi.PD_INT_custom30. resolution=ne30pg2_EC30to60E2r2.  compset = F2000",
+  "history": "Output from v3.ccmi.PD_NINT_custom30. resolution=ne30pg2_EC30to60E2r2.  compset = F2000",
 
   "comment": "This is the default metadata file, any data  should only be used for testing purposes",
 

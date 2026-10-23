@@ -10,16 +10,20 @@ plevo=(/100000.,92500.,85000.,70000.,60000.,50000.,40000.,30000.,25000.,20000.,1
 	13000.,11500.,10000.,9000.,8000.,7000.,6000.,5000.,4000.,3500.,3000.,2500.,2000.,\
 	1700.,1500.,1300.,1100.,1000.,900.,800.,600.,500.,400.,300.,200.,150.,100.,70.,50.,40./)
 plevo2=plevo
+plevo2@units="Pa"
+delete(plevo2@_FillValue)
 plevo=plevo/100.
 plevo@units="hPa"
+plevo1=plevo
 ;;
 dir2="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/"
 ;;
-rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
+;rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
+rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi_process/"+case+"/output/U/post/atm/180x360_aave/ts/monthly/90yr/U_"+time+".nc"
 fraw=addfile(rawdata,"r")
 ;;
-do i=7,13
-	dir="/global/cfs/cdirs/e3sm/xie7/ccmi/"+case+"/output/"+vars(i)+"/post/atm/180x360_aave/ts/"+scale+"/"+year+"/"
+do i=0,13;7,13
+	dir="/global/cfs/cdirs/e3sm/xie7/ccmi_process/"+case+"/output/"+vars(i)+"/post/atm/180x360_aave/ts/"+scale+"/"+year+"/"
 	fil=dir+vars(i)+"_"+time+".nc"
 	print(fil)
 	;;
@@ -32,19 +36,15 @@ do i=7,13
 	    aa=aa*1e+6
     	end if
 	;;
-	fil1="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/PS/post/atm/180x360_aave/ts/monthly/90yr/PS_001101_010012.nc"
+	fil1="/global/cfs/cdirs/e3sm/xie7/ccmi_process/v3.ccmi.PD_INT_custom30/output/PS/post/atm/180x360_aave/ts/monthly/90yr/PS_001101_010012.nc"
 	f2=addfile(fil1,"r")
 	ps=f2->PS(0+j*108:108+j*108-1,:,:)
 	;;
-	aa_vint=vinth2p(aa,fraw->hyai,fraw->hybi,plevo,ps,1,(fraw->P0)/todouble(100.),1,False)
+	aa_vint=vinth2p(aa,fraw->hyai,fraw->hybi,plevo1,ps,1,(fraw->P0)/todouble(100.),1,False)
 	
 	aa_vint!1="plev42"
 	;;
-	plevo@units="Pa"
-	plevo=plevo2
-	delete(plevo@_FillValue)
-	;;
-	aa_vint&plev42=plevo
+	aa_vint&plev42=plevo2
 	aa_vint&plev42@standard_name="air_pressure"
 	aa_vint&plev42@axis="Z"
 	aa_vint&plev42@long_name="pressure"
@@ -68,10 +68,10 @@ do i=7,13
 	delete(aa_vint_zonal)
 	end do
 	;;connect the data together
-	system("rm -rf "+dir2+"output/"+case+"/"+scale+"/2D/"+vars(i)+"_"+time+".nc")
-	system("mkdir -p "+dir2+"output/"+case+"/"+scale+"/2D/")
-	system("ncrcat  "+dir2+vars(i)+"*2D*nc "+dir2+"output/"+case+"/"+scale+"/2D/"+vars(i)+"_"+time+".nc")
-	system("rm -rf "+dir2+vars(i)+"*2D*nc ")
+        system("rm -rf "+dir2+"output/"+case+"/"+scale+"/2D/"+vars(i)+"_"+time+".nc")
+        system("mkdir -p "+dir2+"output/"+case+"/"+scale+"/2D/")
+        system("ncrcat  "+dir2+vars(i)+"*"+case+"*"+scale+"*2D*nc "+dir2+"output/"+case+"/"+scale+"/2D/"+vars(i)+"_"+time+".nc")
+        system("rm -rf  "+dir2+vars(i)+"*"+case+"*"+scale+"*2D*nc ")
 end do
 ;;
 

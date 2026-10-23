@@ -7,7 +7,7 @@
     "missing_value": "1e20",
     "int_missing_value": "-999",
     "product": "model-output",
-    "approx_interval": "1.00000",
+    "approx_interval": "30.00000",
     "generic_levels": "",
     "mip_era": "QUOCA",
     "Conventions": "CF-1.8 QUOCA",

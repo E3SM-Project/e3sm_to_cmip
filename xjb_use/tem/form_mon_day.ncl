@@ -1,7 +1,10 @@
 load "/pscratch/sd/x/xie7/from_cori/Analysis/NCLep/self.ncl"
 begin
 ;;
-time="001101_010012"
+case="v3.ccmi.FD_INT_1xCO2_4KSST_custom30_mem1"
+time="001101_004012"
+year="30yr"
+;time="004101_007012"
 ;;
 plevo=new(42,double)
 plevo=(/100000.,92500.,85000.,70000.,60000.,50000.,40000.,30000.,25000.,20000.,17000.,15000.,\
@@ -12,19 +15,19 @@ plevo=plevo/100.
 plevo@units="hPa"
 ;;
 var=(/"DELF","FPHI","FZ","KESIRES","VADV","VRES","WADV","WRES","VT","UV","UW"/)
-dir="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/tem/hourly/"
-dir_day="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/tem/daily/"
-dir_mon="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/v3.ccmi.PD_INT_custom30/tem/monthly/"
+dir="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/"+case+"/tem/hourly/"
+dir_day="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/"+case+"/tem/daily/"
+dir_mon="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/output/"+case+"/tem/monthly/"
 ;;
-rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi_orig/v3.ccmi.PD_INT_custom30/archive/atm/hist/v3.ccmi.PD_INT_custom30.eam.h0.0024-09.nc"
+rawdata="/global/cfs/cdirs/e3sm/xie7/ccmi_orig/"+case+"/archive/atm/hist/"+case+".eam.h0.0085-09.nc"
 fraw=addfile(rawdata,"r")
 ;;
-fps_day="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/PS/post/atm/180x360_aave/ts/daily/90yr/PS_001101_010012.nc"
-fps_mon="/global/cfs/cdirs/e3sm/xie7/ccmi/v3.ccmi.PD_INT_custom30/output/PS/post/atm/180x360_aave/ts/monthly/90yr/PS_001101_010012.nc"
+fps_day="/global/cfs/cdirs/e3sm/xie7/ccmi_output/"+case+"/output/PS/post/atm/180x360_aave/ts/daily/"+year+"/PS_"+time+".nc"
+fps_mon="/global/cfs/cdirs/e3sm/xie7/ccmi_output/"+case+"/output/PS/post/atm/180x360_aave/ts/monthly/"+year+"/PS_"+time+".nc"
 f1=addfile(fps_day,"r")
 f2=addfile(fps_mon,"r")
 ;;
-do i=8,10;0,7
+do i=0,10;8,10;0,7
 fils=systemfunc("ls "+dir+var(i)+"/*nc")
 fils_name=systemfunc("ls "+dir+var(i))
 ;;
@@ -72,7 +75,11 @@ fils_name=systemfunc("ls "+dir+var(i))
 		filedimdef(fmon,"time",-1,True)
 		;;
 		fday->$var(i)$=bb_day_vint(:,:,:,0)
+		;fday->lat_bnds=f1->lat_bnds
+		;fday->time_bnds=f1->time_bnds(0+j*730:729+j*730,:)
 		fmon->$var(i)$=bb_mon_vint(:,:,:,0)
+		;fmon->lat_bnds=f2->lat_bnds
+		;fmon->time_bnds=f2->time_bnds(0+j*24:23+j*24,:)
 		;;
 		delete(aa)
 		delete(aa_mon)
@@ -89,10 +96,14 @@ fils_name=systemfunc("ls "+dir+var(i))
 		delete(bb_mon_vint)
 	end do
 	;;connect data into one
-	;system("ncrcat "+dir_day+var(i)+"/med/*nc "+dir_day+var(i)+"/"+var(i)+"_"+time+".nc")
-	;system("ncrcat "+dir_mon+var(i)+"/med/*nc "+dir_mon+var(i)+"/"+var(i)+"_"+time+".nc")
-	system("ncrcat "+dir_day+var(i)+"/med/*nc "+dir_day+var(i)+"_"+time+".nc")  
-	system("ncrcat "+dir_mon+var(i)+"/med/*nc "+dir_mon+var(i)+"_"+time+".nc") 
+	system("ncrcat -O "+dir_day+var(i)+"/med/*nc "+dir_day+var(i)+"_"+time+".nc")  
+	system("ncrcat -O "+dir_mon+var(i)+"/med/*nc "+dir_mon+var(i)+"_"+time+".nc") 
+	fday_comb=addfile(dir_day+var(i)+"_"+time+".nc","w")
+	fmon_comb=addfile(dir_mon+var(i)+"_"+time+".nc","w")
+	fday_comb->time_bnds=f1->time_bnds
+	fday_comb->lat_bnds=f1->lat_bnds
+	fmon_comb->time_bnds=f2->time_bnds
+	fmon_comb->lat_bnds=f2->lat_bnds
 	;;
 delete(fils)
 delete(fils_name)

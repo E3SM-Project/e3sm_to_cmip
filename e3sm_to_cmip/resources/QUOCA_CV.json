@@ -175,7 +175,7 @@
             "FTINT": {
                 "activity_id": "QUOCA",
                 "experiment": "Climate run with 4xCO2 and SST+4K and full interactive chemistry. FT_INT_4xCO2 in protocol document.",
-                "experiment_id": "FTNINT",
+                "experiment_id": "FTINT",
                 "parent_experiment_id": "no parent",
                 "sub_experiment_id": "none"
             },

@@ -9,7 +9,7 @@ dir2="/global/cfs/cdirs/e3sm/xie7/ccmi_output/proc_med/"
 ;;
 n6hours=292
 ;;
-do i=3,3;0,3
+do i=0,3
 	dir="/global/cfs/cdirs/e3sm/xie7/ccmi/"+case+"/output/"+vars(i)+"/post/atm/180x360_aave/ts/"+scale+"/"+year+"/"
 	fils=systemfunc("ls "+dir+"*nc")
 	;;
@@ -67,11 +67,11 @@ do i=3,3;0,3
 	system("mkdir -p "+dir2+"output/"+case+"/"+scale+"//3D/")
 	system("mkdir -p "+dir2+"output/"+case+"/"+scale+"/2D/")
 	;;
-	system("ncrcat  "+dir2+vars(i)+"*"+times(k2)+"*3D*nc "+dir2+"output/"+case+"/"+scale+"/3D/"+vars(i)+"_"+times(k2)+".nc")
-	system("ncrcat  "+dir2+vars(i)+"*"+times(k2)+"*2D*nc "+dir2+"output/"+case+"/"+scale+"/2D/"+vars(i)+"_"+times(k2)+".nc")
-	;;
-	system("rm -rf "+dir2+vars(i)+"*"+times(k2)+"*3D*nc ")
-	system("rm -rf "+dir2+vars(i)+"*"+times(k2)+"*2D*nc ")
+	system("ncrcat  "+dir2+vars(i)+"*"+case+"*"+scale+"*"+times(k2)+"*3D*nc "+dir2+"output/"+case+"/"+scale+"/3D/"+vars(i)+"_"+times(k2)+".nc")
+        system("ncrcat  "+dir2+vars(i)+"*"+case+"*"+scale+"*"+times(k2)+"*2D*nc "+dir2+"output/"+case+"/"+scale+"/2D/"+vars(i)+"_"+times(k2)+".nc")
+        ;;
+        system("rm -rf "+dir2+vars(i)+"*"+case+"*"+scale+"*"+times(k2)+"*3D*nc ")
+        system("rm -rf "+dir2+vars(i)+"*"+case+"*"+scale+"*"+times(k2)+"*2D*nc ")
 	end if
 	;;
 	end do

@@ -7,7 +7,7 @@
 
 
 pro calc_epflux,flag,lat,lon,lev,levels,ilevels,lats,P0,T,U,V,omega,$
-                Fphi,Fz,DELF,WADV,VADV,vres,wres,kesires,VT
+                Fphi,Fz,DELF,WADV,VADV,vres,wres,kesires,VT,UV,UW
 
 if flag eq -1 then begin
 print,'pro calc_6hrepflux,flag,fnin,fnout'
@@ -31,8 +31,9 @@ rho=fltarr(lon,lat,lev)
 th=fltarr(lon,lat,lev)
 up=fltarr(lon,lat,lev)
 vp=fltarr(lon,lat,lev)
-;;add tp Jinbo Xie
+;;add tp,omegap Jinbo Xie
 tp=fltarr(lon,lat,lev)
+omegap=fltarr(lon,lat,lev)
 ;;
 wp=fltarr(lon,lat,lev)
 thp=fltarr(lon,lat,lev)
@@ -40,8 +41,9 @@ w=fltarr(lon,lat,lev)
 
 rhobar=fltarr(lat,lev)
 rac=fltarr(lat,lev)
-;;add tbar Jinbo Xie
+;;add tbar,omegabar Jinbo Xie
 tbar=fltarr(lat,lev)
+omegabar=fltarr(lat,lev)
 ;;
 thbar=fltarr(lat,lev)
 thzbar=fltarr(lat,lev)
@@ -49,6 +51,7 @@ ubar=fltarr(lat,lev)
 uzbar=fltarr(lat,lev)
 vbar=fltarr(lat,lev)
 wbar=fltarr(lat,lev)
+;;
 vpthpbar=fltarr(lat,lev)
 vpupbar=fltarr(lat,lev)
 wpupbar=fltarr(lat,lev)
@@ -59,8 +62,10 @@ Fphiphi=fltarr(lat,lev)
 Fz=fltarr(lat,lev)
 Fzz=fltarr(lat,lev)
 DELF=fltarr(lat,lev)
-;;add v't'
+;;add v't',u'v',u'w'
 VT=fltarr(lat,lev)
+UV=fltarr(lat,lev)
+UW=fltarr(lat,lev)
 ;;
 wres=fltarr(lat,lev)
 vres=fltarr(lat,lev)
@@ -123,6 +128,7 @@ for j=0,lat-1 do begin
         wbar(j,k)=mean(w(*,j,k))
 	;
 	tbar(j,k)=mean(t(*,j,k))
+	omegabar(j,k)=mean(omega(*,j,k))
 	;
     endfor
 	;calculate vertical derivatives
@@ -141,12 +147,18 @@ for j=0,lat-1 do begin
         vp(*,j,k)=v(*,j,k)-vbar(j,k)
         wp(*,j,k)=w(*,j,k)-wbar(j,k)
         thp(*,j,k)=th(*,j,k)-thbar(j,k)
-	;;add t tilde
+	;;add t tilde,omega tilde
 	tp(*,j,k)=t(*,j,k)-tbar(j,k)
+	omegap(*,j,k)=omega(*,j,k)-omegabar(j,k)
 	;Calculate Zonally Averaged quantities
         vpthpbar(j,k)=mean(vp(*,j,k)*thp(*,j,k))
         vpupbar(j,k)=mean(vp(*,j,k)*up(*,j,k))
         wpupbar(j,k)=mean(wp(*,j,k)*up(*,j,k))
+	;add v't',u'v',u'w'
+	VT(j,k)=mean(vp(*,j,k)*tp(*,j,k))
+	UV(j,k)=mean(up(*,j,k)*vp(*,j,k))
+	UW(j,k)=mean(up(*,j,k)*omegap(*,j,k))
+	;
     endfor
 endfor
 
@@ -205,10 +217,6 @@ endfor
 for k=0,lev-1 do begin
 	kesires(*,k)	=(2*3.14*ac/9.81)*(vbardzsum(*,k)-kesi(*,k))
 endfor
-;get v't'
-for j=0,lat-1 do begin
-    VT(j,*) = vp(j,*)*tp(j,*)
-endfor 
 
 ;------------------------------------------------------------------------
 

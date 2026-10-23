@@ -20,6 +20,7 @@
 	time=$year1\01_$year2\12
 	time2=$year1\_$year2
 	#
+	#dir=/global/cfs/cdirs/e3sm/xie7/ccmi_process/
 	dir=/global/cfs/cdirs/e3sm/xie7/ccmi/
 	#
 	diriu=$dir/$case/output/U/post/atm/180x360_aave/ts/hourly/2yr/U_$time.nc
@@ -36,7 +37,7 @@
 #if [[ 1 -eq 2 ]]; then
 	#
 	for offset in {0..39..1}; do
-	#for offset in {0..2..1}; do
+	#for offset in {1..2..1}; do
 	offsetf=$(printf "%02d\n" $offset)
 	#
 	tim1=$(($count*$offset))

@@ -1,5 +1,5 @@
 """
-VTEND_CLUBB to vtendnet converter
+VTEND_CLUBB,VTGWORO,VTGWSPEC to vtendnet converter
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -9,7 +9,7 @@ from e3sm_to_cmip.lib import handle_variables
 from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 
 # list of raw variable names needed
-RAW_VARIABLES = [str('VTEND_CLUBB')]
+RAW_VARIABLES = [str('VTEND_CLUBB'),str('VTGWORO'),str('VTGWSPEC')]
 VAR_NAME = str('vtendnet')
 VAR_UNITS = str("m s-2")
 TABLE = str('QUOCA_dayZ.json')
@@ -21,7 +21,8 @@ LEVELS = {
 
 
 def write_data(varid, data, timeval, timebnds, index, **kwargs):
-    outdata = data[RAW_VARIABLES[0]][index, :]
+    #outdata = data[RAW_VARIABLES[0]][index, :]
+    outdata = (data['VTGWORO'][index, :] + data['VTGWSPEC'][index, :] + data['BVTGWSPEC'][index, :])
     outdata[np.isnan(outdata)] = FILL_VALUE
     if kwargs.get('simple'):
         return outdata

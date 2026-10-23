@@ -11,7 +11,7 @@ from e3sm_to_cmip.cmor_handlers import FILL_VALUE
 # list of raw variable names needed
 RAW_VARIABLES = [str('UW')]
 VAR_NAME = str('uomega')
-VAR_UNITS = str("m2 s-2")
+VAR_UNITS = str("Pa m s-2")
 TABLE = str('QUOCA_6hrPtZ.json')
 LEVELS = {
     'name': str('plevTEM'),
